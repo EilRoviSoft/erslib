@@ -8,7 +8,7 @@
 #include <boost/unordered_set.hpp>
 
 // ers
-#include <erslib/hash/std.hpp>
+#include <erslib/hashing/std.hpp>
 
 namespace ers::container {
 	struct stringly_hash {
