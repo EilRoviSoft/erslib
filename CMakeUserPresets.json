@@ -1,0 +1,29 @@
+{
+    "version": 4,
+    "configurePresets": [
+        {
+            "name": "windows-local-msvc-debug",
+            "displayName": "Windows MSVC Local Debug",
+            "inherits": "windows-msvc-debug",
+            "environment": {
+                "VCPKG_ROOT": "D:/Libs/vcpkg"
+            }
+        },
+
+        {
+            "name": "windows-local-clang-debug",
+            "displayName": "Windows Clang Local Debug",
+            "inherits": "windows-clang-debug",
+            "cacheVariables": {
+                "CMAKE_CXX_COMPILER": "clang-cl.exe",
+                "CMAKE_C_COMPILER": "clang-cl.exe",
+                "CMAKE_CXX_STANDARD": "26",
+                "CMAKE_CXX_STANDARD_REQUIRED": "ON",
+                "CMAKE_CXX_FLAGS": "/W4"
+            },
+            "environment": {
+                "VCPKG_ROOT": "D:/Libs/vcpkg"
+            }
+        }
+    ]
+}
