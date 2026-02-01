@@ -126,43 +126,43 @@ namespace ers {
 		constexpr Result& operator=(Result&&) = default;
 
 		constexpr Result& operator=(const value_type& value) {
-			this->m_variant = value;
+			m_variant = value;
 			return *this;
 		}
 		constexpr Result& operator=(value_type&& value) {
-			this->m_variant = std::move(value);
+			m_variant = std::move(value);
 			return *this;
 		}
 
 		constexpr Result& operator=(const Unexpected<error_type>& unexpected) {
-			this->m_variant = unexpected.error();
+			m_variant = unexpected.error();
 			return *this;
 		}
 		constexpr Result& operator=(Unexpected<error_type>&& unexpected) {
-			this->m_variant = std::move(unexpected).error();
+			m_variant = std::move(unexpected).error();
 			return *this;
 		}
 
-		[[nodiscard]] constexpr bool has_value() const noexcept { return std::holds_alternative<value_type>(this->m_variant); }
-		[[nodiscard]] constexpr bool has_error() const noexcept { return std::holds_alternative<error_type>(this->m_variant); }
+		[[nodiscard]] constexpr bool has_value() const noexcept { return std::holds_alternative<value_type>(m_variant); }
+		[[nodiscard]] constexpr bool has_error() const noexcept { return std::holds_alternative<error_type>(m_variant); }
 
-		[[nodiscard]] constexpr explicit operator bool() const noexcept { return this->has_value(); }
+		[[nodiscard]] constexpr explicit operator bool() const noexcept { return has_value(); }
 
-		constexpr const value_type& value() & { return std::get<value_type>(this->m_variant); }
-		constexpr const value_type& value() const & { return std::get<value_type>(this->m_variant); }
-		constexpr const value_type& value() && { return std::move(std::get<value_type>(this->m_variant)); }
-		constexpr const value_type& value() const && { return std::move(std::get<value_type>(this->m_variant)); }
+		constexpr const value_type& value() & { return std::get<value_type>(m_variant); }
+		constexpr const value_type& value() const & { return std::get<value_type>(m_variant); }
+		constexpr const value_type& value() && { return std::move(std::get<value_type>(m_variant)); }
+		constexpr const value_type& value() const && { return std::move(std::get<value_type>(m_variant)); }
 
-		constexpr const value_type& operator*() & { return this->value(); }
-		constexpr const value_type& operator*() const & { return this->value(); }
-		constexpr const value_type& operator*() && { return std::move(this->value()); }
-		constexpr const value_type& operator*() const && { return std::move(this->value()); }
+		constexpr const value_type& operator*() & { return value(); }
+		constexpr const value_type& operator*() const & { return value(); }
+		constexpr const value_type& operator*() && { return std::move(value()); }
+		constexpr const value_type& operator*() const && { return std::move(value()); }
 
-		constexpr value_type* operator->() { return this->value(); }
-		constexpr const value_type* operator->() const { return this->value(); }
+		constexpr value_type* operator->() { return value(); }
+		constexpr const value_type* operator->() const { return value(); }
 
-		constexpr const error_type& error() & { return std::get<error_type>(this->m_variant); }
-		constexpr const error_type& error() const & { return std::get<error_type>(this->m_variant); }
+		constexpr const error_type& error() & { return std::get<error_type>(m_variant); }
+		constexpr const error_type& error() const & { return std::get<error_type>(m_variant); }
 
 	protected:
 		std::variant<value_type, error_type> m_variant;
@@ -237,13 +237,13 @@ namespace ers {
 			error_(std::move(unexpected).error()) {
 		}
 
-		[[nodiscard]] constexpr bool has_value() const noexcept { return this->has_value_; }
-		[[nodiscard]] constexpr bool has_error() const noexcept { return !this->has_value_; }
+		[[nodiscard]] constexpr bool has_value() const noexcept { return has_value_; }
+		[[nodiscard]] constexpr bool has_error() const noexcept { return !has_value_; }
 
-		[[nodiscard]] constexpr explicit operator bool() const noexcept { return this->has_value(); }
+		[[nodiscard]] constexpr explicit operator bool() const noexcept { return has_value(); }
 
-		constexpr const error_type& error() const & { return this->error_; }
-		constexpr error_type& error() & { return this->error_; }
+		constexpr const error_type& error() const & { return error_; }
+		constexpr error_type& error() & { return error_; }
 
 	private:
 		bool has_value_;
