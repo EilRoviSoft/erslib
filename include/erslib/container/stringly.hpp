@@ -49,26 +49,26 @@ namespace ers::container {
             return a == b;
         }
     };
+
+    template<typename TVal>
+    using stringly_allocator = std::allocator<std::pair<const std::string, TVal>>;
 }
 
 namespace ers {
-    template<typename TAllocator = std::allocator<std::string>>
+    template<typename TAlloc = std::allocator<std::string>>
     using stringly_set = boost::unordered_set<
         std::string,
         container::stringly_hash,
         container::stringly_equal,
-        TAllocator
+        TAlloc
     >;
 
-    template<typename TVal>
-    using stringly_allocator = std::allocator<std::pair<const std::string, TVal>>;
-
-    template<typename TVal, typename TAllocator = stringly_allocator<TVal>>
+    template<typename TVal, typename TAlloc = container::stringly_allocator<TVal>>
     using stringly_map = boost::unordered_map<
         std::string,
         TVal,
         container::stringly_hash,
         container::stringly_equal,
-        TAllocator
+        TAlloc
     >;
 }
