@@ -56,10 +56,16 @@ void ers::splitting::SmartIterator::_advance() {
         return;
     }
 
-    if (_parent->_delims.contains(_parent->_content[_offset]))
+    while (_parent->_delims.contains(_parent->_content[_offset]))
         _offset++;
 
     _length = 0;
-    while (_offset + _length < _parent->_content.size() && !_parent->_delims.contains(_parent->_content[_offset + _length]))
-        _length++;
+    if (_parent->_content[_offset] == '"') {
+        _offset++;
+        while (_offset + _length < _parent->_content.size() && _parent->_content[_offset + _length] != '"')
+            _length++;
+    } else {
+        while (_offset + _length < _parent->_content.size() && !_parent->_delims.contains(_parent->_content[_offset + _length]))
+            _length++;
+    }
 }

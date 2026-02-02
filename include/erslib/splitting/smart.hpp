@@ -28,10 +28,12 @@ namespace ers::splitting {
 namespace ers::splitting {
     class SmartIterator {
     public:
+        using iterator_concept = std::forward_iterator_tag;
         using iterator_category = std::forward_iterator_tag;
         using value_type = std::string_view;
         using difference_type = std::ptrdiff_t;
 
+        SmartIterator() = default;
         explicit SmartIterator(const Smart& parent, std::size_t offset = 0);
 
         value_type operator*() const;
@@ -45,8 +47,11 @@ namespace ers::splitting {
         const Smart* _parent = nullptr;
         size_t _offset = 0;
         size_t _length = 0;
-        bool _in_quote = false;
 
         void _advance();
     };
+}
+
+namespace ers {
+    using SmartSplitter = splitting::Smart;
 }

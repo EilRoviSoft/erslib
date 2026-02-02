@@ -23,7 +23,11 @@ std::string_view ers::splitting::Regular::base() const {
 ers::splitting::RegularIterator::RegularIterator(const Regular& parent, size_t offset) :
     _parent(&parent),
     _offset(offset) {
-    _advance();
+    if (_can_advance()) {
+        _advance_to_next_token();
+        _set_next_token_length();
+    } else
+        _length = 0;
 }
 
 ers::splitting::RegularIterator::value_type ers::splitting::RegularIterator::operator*() const {
@@ -33,10 +37,12 @@ ers::splitting::RegularIterator::value_type ers::splitting::RegularIterator::ope
 }
 
 ers::splitting::RegularIterator& ers::splitting::RegularIterator::operator++() {
-    if (_parent && _offset < _parent->_content.size()) {
+    if (_can_advance()) {
         _offset += _length;
-        _advance();
-    }
+        _advance_to_next_token();
+        _set_next_token_length();
+    } else
+        _length = 0;
 
     return *this;
 }
@@ -50,15 +56,15 @@ bool ers::splitting::RegularIterator::operator==(const RegularIterator& other) c
     return _parent == other._parent && _offset == other._offset;
 }
 
-void ers::splitting::RegularIterator::_advance() {
-    if (!_parent || _offset >= _parent->_content.size()) {
-        _length = 0;
-        return;
-    }
+bool ers::splitting::RegularIterator::_can_advance() const {
+    return _parent && _offset < _parent->_content.size();
+}
 
-    if (_parent->_delims.contains(_parent->_content[_offset]))
+void ers::splitting::RegularIterator::_advance_to_next_token() {
+    while (_offset < _parent->_content.size() && _parent->_delims.contains(_parent->_content[_offset]))
         _offset++;
-
+}
+void ers::splitting::RegularIterator::_set_next_token_length() {
     _length = 0;
     while (_offset + _length < _parent->_content.size() && !_parent->_delims.contains(_parent->_content[_offset + _length]))
         _length++;

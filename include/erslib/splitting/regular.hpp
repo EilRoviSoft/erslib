@@ -2,7 +2,7 @@
 
 // std
 #include <ranges>
-#include <string>
+#include <string_view>
 #include <unordered_set>
 
 namespace ers::splitting {
@@ -48,7 +48,10 @@ namespace ers::splitting {
         size_t _offset = 0;
         size_t _length = 0;
 
-        void _advance();
+        bool _can_advance() const;
+
+        void _advance_to_next_token();
+        void _set_next_token_length();
     };
 }
 

@@ -11,11 +11,13 @@ option(BUILD_SHARED_LIBS "Build shared libraries" ON)
 option(BUILD_TESTS "Build tests" OFF)
 option(BUILD_EXAMPLES "Build examples" OFF)
 
+if(BUILD_TESTS)
+    find_package(GTest CONFIG REQUIRED)
+endif()
+
 include(GNUInstallDirs)
 
 # packages
-
-include(FetchContent)
 
 find_package(fmt CONFIG REQUIRED)
 find_package(boost_serialization CONFIG REQUIRED)
@@ -32,12 +34,12 @@ target_include_directories(erslib_headers INTERFACE
 add_subdirectory(src)
 
 if(BUILD_TESTS)
-    # enable_testing()
-    # add_subdirectory(tests)
+    add_subdirectory(test)
+    enable_testing()
 endif()
 
 if(BUILD_EXAMPLES)
-    # add_subdirectory(examples)
+    add_subdirectory(example)
 endif()
 
 install(TARGETS erslib

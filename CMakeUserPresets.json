@@ -24,6 +24,22 @@
             "environment": {
                 "VCPKG_ROOT": "D:/Libs/vcpkg"
             }
+        },
+        {
+            "name": "windows-local-clang-test",
+            "displayName": "Windows Clang Local Test",
+            "inherits": "windows-clang-debug",
+            "cacheVariables": {
+                "CMAKE_CXX_COMPILER": "clang-cl.exe",
+                "CMAKE_C_COMPILER": "clang-cl.exe",
+                "CMAKE_CXX_STANDARD": "26",
+                "CMAKE_CXX_STANDARD_REQUIRED": "ON",
+                "CMAKE_CXX_FLAGS": "/W4",
+                "BUILD_TESTS": true
+            },
+            "environment": {
+                "VCPKG_ROOT": "D:/Libs/vcpkg"
+            }
         }
     ]
 }
