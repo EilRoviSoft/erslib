@@ -1,60 +1,21 @@
 #pragma once
 
-// std
-#include <ranges>
-#include <string_view>
-#include <unordered_set>
+// ers
+#include <erslib/splitting/base.hpp>
 
 namespace ers::splitting {
-    class Regular : public std::ranges::view_interface<Regular> {
-        friend class RegularIterator;
-
-        using iterator = RegularIterator;
+    class RegularIterator : public BaseIterator<RegularIterator> {
+        friend class BaseIterator;
 
     public:
-        explicit Regular(std::string_view content, std::string_view delims = " ");
-
-        iterator begin() const;
-        iterator end() const;
-
-        std::string_view base() const;
-
-    private:
-        std::string_view _content;
-        std::unordered_set<char> _delims;
-    };
-}
-
-namespace ers::splitting {
-    class RegularIterator {
-    public:
-        using iterator_concept = std::forward_iterator_tag;
-        using iterator_category = std::forward_iterator_tag;
-        using value_type = std::string_view;
-        using difference_type = std::ptrdiff_t;
-
         RegularIterator() = default;
-        explicit RegularIterator(const Regular& parent, size_t offset = 0);
-
-        value_type operator*() const;
-
-        RegularIterator& operator++();
-        RegularIterator operator++(int);
-
-        bool operator==(const RegularIterator& other) const;
+        explicit RegularIterator(const Processor<RegularIterator>& parent, size_t offset);
 
     private:
-        const Regular* _parent = nullptr;
-        size_t _offset = 0;
-        size_t _length = 0;
-
-        bool _can_advance() const;
-
-        void _advance_to_next_token();
-        void _set_next_token_length();
+        void _advance();
     };
 }
 
 namespace ers {
-    using RegularSplitter = splitting::Regular;
+    using RegularSplitter = splitting::Processor<splitting::RegularIterator>;
 }

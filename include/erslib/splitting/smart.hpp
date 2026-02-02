@@ -1,57 +1,21 @@
 #pragma once
 
-// std
-#include <ranges>
-#include <string_view>
-#include <unordered_set>
+// ers
+#include <erslib/splitting/base.hpp>
 
 namespace ers::splitting {
-    class Smart : public std::ranges::view_interface<Smart> {
-        friend class SmartIterator;
-
-        using iterator = SmartIterator;
+    class SmartIterator : public BaseIterator<SmartIterator> {
+        friend class BaseIterator;
 
     public:
-        explicit Smart(std::string_view content, std::string_view delims = " ");
-
-        iterator begin() const;
-        iterator end() const;
-
-        std::string_view base() const;
-
-    private:
-        std::string_view _content;
-        std::unordered_set<char> _delims;
-    };
-}
-
-namespace ers::splitting {
-    class SmartIterator {
-    public:
-        using iterator_concept = std::forward_iterator_tag;
-        using iterator_category = std::forward_iterator_tag;
-        using value_type = std::string_view;
-        using difference_type = std::ptrdiff_t;
-
         SmartIterator() = default;
-        explicit SmartIterator(const Smart& parent, std::size_t offset = 0);
-
-        value_type operator*() const;
-
-        SmartIterator& operator++();
-        SmartIterator operator++(int);
-
-        bool operator==(const SmartIterator& other) const;
+        explicit SmartIterator(const Processor<SmartIterator>& parent, size_t offset);
 
     private:
-        const Smart* _parent = nullptr;
-        size_t _offset = 0;
-        size_t _length = 0;
-
         void _advance();
     };
 }
 
 namespace ers {
-    using SmartSplitter = splitting::Smart;
+    using SmartSplitter = splitting::Processor<splitting::SmartIterator>;
 }

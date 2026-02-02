@@ -17,7 +17,14 @@ struct data_t {
 
 template<typename TSplit>
 std::vector<std::string_view> process(std::string_view input) {
-    return TSplit(input) | std::ranges::to<std::vector>();
+    std::vector<std::string_view> result;
+
+    for (auto it : TSplit(input))
+        result.emplace_back(it);
+
+    return result;
+
+    //return TSplit(input) | std::ranges::to<std::vector>();
 }
 
 template<typename... TArgs>
