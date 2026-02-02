@@ -1,5 +1,6 @@
 add_executable(ers_test
-    "test.cpp"
+    "case/error.cpp"
+    "case/splitting.cpp"
 )
 
 target_link_libraries(ers_test
@@ -7,20 +8,12 @@ target_link_libraries(ers_test
         erslib
         erslib_headers
         ${COMMON_LIBRARIES}
-        GTest::gtest_main
+        Catch2::Catch2WithMain
 )
 
 target_include_directories(ers_test
     PRIVATE
         "${CMAKE_CURRENT_SOURCE_DIR}/../include"
-)
-
-include(GoogleTest)
-gtest_discover_tests(ers_test
-    WORKING_DIRECTORY
-        ${PROJECT_SOURCE_DIR}
-    PROPERTIES
-        VS_DEBUGGER_WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
 )
 
 set_target_properties(ers_test

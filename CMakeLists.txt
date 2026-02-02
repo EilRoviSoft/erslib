@@ -12,7 +12,7 @@ option(BUILD_TESTS "Build tests" OFF)
 option(BUILD_EXAMPLES "Build examples" OFF)
 
 if(BUILD_TESTS)
-    find_package(GTest CONFIG REQUIRED)
+    find_package(Catch2 REQUIRED)
 endif()
 
 include(GNUInstallDirs)
