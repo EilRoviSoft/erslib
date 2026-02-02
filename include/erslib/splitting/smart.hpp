@@ -4,8 +4,8 @@
 #include <erslib/splitting/base.hpp>
 
 namespace ers::splitting {
-    class SmartIterator : public BaseIterator<SmartIterator> {
-        friend class BaseIterator;
+    class SmartIterator : public TIterator<SmartIterator> {
+        friend class TIterator;
 
     public:
         SmartIterator() = default;

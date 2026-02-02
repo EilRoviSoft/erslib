@@ -1,7 +1,7 @@
 #include "erslib/splitting/regular.hpp"
 
 ers::splitting::RegularIterator::RegularIterator(const Processor<RegularIterator>& parent, size_t offset) :
-    BaseIterator(parent, offset) {
+    TIterator(parent, offset) {
 }
 
 void ers::splitting::RegularIterator::_advance() {

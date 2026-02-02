@@ -18,10 +18,15 @@ const std::source_location& ers::Error::location() const noexcept { return m_loc
 std::string ers::Error::to_string() const {
     return std::format("[{:%Y-%m-%dT%H:%M:%S}] [{}] {}: {}\n\tat {}:{}",
         std::chrono::floor<std::chrono::seconds>(m_timestamp),
-        util::to_sv(m_severity),
+        to_sv(m_severity),
         m_code,
         m_message,
         m_location.file_name(),
         m_location.line()
     );
+}
+
+template<>
+std::string ers::to_string<ers::Error>(const Error& what) {
+    return what.to_string();
 }

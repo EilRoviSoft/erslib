@@ -3,10 +3,26 @@
 // std
 #include <string>
 
-namespace ers::util {
-    template<typename T>
-    constexpr std::string_view to_sv(const T& what) = delete("default specialization");
+// ers
+#include <erslib/trait/stringly.hpp>
 
-    template<typename T>
-    std::string to_string(const T& what) = delete("default specialization");
+namespace ers::util {
+    template<char... TChars>
+    constexpr std::string_view concat_chars() {
+        static constexpr char arr[] = { TChars..., '\0' };
+        return std::string_view { arr, sizeof...(TChars) };
+    }
+
+    template<typename... TArgs>
+    std::string concat_strings(TArgs&&... args) {
+        std::string result;
+
+        if constexpr (sizeof...(args) == 0)
+            return result;
+
+        result.reserve((trait::get_size(args) + ...));
+        (trait::append_to_string(result, std::forward<TArgs>(args)), ...);
+
+        return result;
+    }
 }

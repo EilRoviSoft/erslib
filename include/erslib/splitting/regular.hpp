@@ -4,8 +4,8 @@
 #include <erslib/splitting/base.hpp>
 
 namespace ers::splitting {
-    class RegularIterator : public BaseIterator<RegularIterator> {
-        friend class BaseIterator;
+    class RegularIterator : public TIterator<RegularIterator> {
+        friend class TIterator;
 
     public:
         RegularIterator() = default;

@@ -1,7 +1,7 @@
 #include "erslib/splitting/smart.hpp"
 
 ers::splitting::SmartIterator::SmartIterator(const Processor<SmartIterator>& parent, std::size_t offset) :
-    BaseIterator(parent, offset) {
+    TIterator(parent, offset) {
 }
 
 void ers::splitting::SmartIterator::_advance() {

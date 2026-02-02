@@ -9,7 +9,9 @@
 
 // ers
 #include <erslib/type/time.hpp>
-#include <erslib/util/string.hpp>
+#include <erslib/convert/string.hpp>
+
+// Severity
 
 namespace ers {
     enum class Severity {
@@ -22,7 +24,7 @@ namespace ers {
 }
 
 template<>
-constexpr std::string_view ers::util::to_sv<ers::Severity>(const Severity& what) {
+constexpr std::string_view ers::to_sv<ers::Severity>(const Severity& what) {
     switch (what) {
         case Severity::Debug:
             return "DEBUG";
@@ -70,3 +72,6 @@ namespace ers {
         std::source_location m_location;
     };
 }
+
+template<>
+std::string ers::to_string<ers::Error>(const Error& what);

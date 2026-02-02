@@ -8,9 +8,10 @@ set(COMMON_LIBRARIES
 add_library(erslib
     STATIC
         "erslib/error/error.cpp"
+
         "erslib/splitting/regular.cpp"
         "erslib/splitting/smart.cpp"
-)
+ )
 
 target_compile_features(erslib PUBLIC
     cxx_std_23

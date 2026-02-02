@@ -20,7 +20,7 @@ namespace ers {
 // Unexpected
 
 namespace ers {
-    template<typename TError>
+    template<typename TError = Error>
     class Unexpected {
         using error_type = TError;
 
@@ -250,6 +250,5 @@ namespace ers {
         error_type error_;
     };
 
-    template<typename TError = Error>
-    using Status = Result<TError>;
+    using Status = Result<Error>;
 }

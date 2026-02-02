@@ -7,11 +7,11 @@
 
 namespace ers::splitting {
     template<typename T>
-    class BaseIterator;
+    class TIterator;
 
     template<typename T>
     class Processor : std::ranges::view_interface<Processor<T>> {
-        friend class BaseIterator<T>;
+        friend class TIterator<T>;
         friend T;
 
     public:
@@ -39,15 +39,15 @@ namespace ers::splitting {
     };
 
     template<typename T>
-    class BaseIterator {
+    class TIterator {
     public:
         using iterator_concept = std::forward_iterator_tag;
         using iterator_category = std::forward_iterator_tag;
         using value_type = std::string_view;
         using difference_type = std::ptrdiff_t;
 
-        BaseIterator() = default;
-        explicit BaseIterator(const Processor<T>& parent, size_t offset) :
+        TIterator() = default;
+        explicit TIterator(const Processor<T>& parent, size_t offset) :
             m_parent(&parent),
             m_offset(offset) {
             interface()->_advance();
@@ -73,7 +73,7 @@ namespace ers::splitting {
             return temp;
         }
 
-        bool operator==(const BaseIterator& other) const {
+        bool operator==(const TIterator& other) const {
             return m_parent == other.m_parent && m_offset == other.m_offset;
         }
 
