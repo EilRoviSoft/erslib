@@ -12,15 +12,26 @@ elseif(Boost_FOUND)
     list(APPEND COMMON_LIBRARIES ${Boost_SERIALIZATION_LIBRARY})
 endif()
 
+if(TARGET Boost::unordered)
+    list(APPEND COMMON_LIBRARIES Boost::unordered)
+elseif(Boost_FOUND)
+    list(APPEND COMMON_LIBRARIES ${Boost_UNORDERED_LIBRARY})
+endif()
+
 # erslib
 
-add_library(erslib
-    STATIC
-        "erslib/error/error.cpp"
+set(LIBRARY_EXECUTABLES
+    "erslib/error/error.cpp"
 
-        "erslib/splitting/regular.cpp"
-        "erslib/splitting/smart.cpp"
- )
+    "erslib/splitting/regular.cpp"
+    "erslib/splitting/smart.cpp"
+)
+
+if(ERSLIB_STANDALONE)
+    add_library(erslib STATIC ${LIBRARY_EXECUTABLES})
+else()
+    add_library(erslib ${LIBRARY_EXECUTABLES})
+endif()
 
 target_compile_features(erslib
     PUBLIC

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.28)
 
 project(erslib
-    VERSION 0.1.0
+    VERSION 1.0.1
     DESCRIPTION "EilRoviSoft's universal library"
     LANGUAGES CXX
 )
@@ -10,7 +10,7 @@ option(BUILD_SHARED_LIBS "Build shared libraries" ON)
 option(ERSLIB_BUILD_TESTS "Build tests" OFF)
 option(ERSLIB_BUILD_EXAMPLES "Build examples" OFF)
 option(ERSLIB_BUILD_EXECUTABLES "Build executables" OFF)
-option(ERSLIB_STANDALONE "Build as standalone project (includes tests/executables)" ON)
+option(ERSLIB_STANDALONE "Build as standalone project (includes tests/executables)" OFF)
 
 if(ERSLIB_STANDALONE AND DEFINED ENV{VCPKG_ROOT})
     include($ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake)
