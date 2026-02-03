@@ -2,12 +2,7 @@
 
 include("${CMAKE_CURRENT_LIST_DIR}/erslib-targets.cmake")
 
-# Check for required dependencies
-include(CMakeFindDependencyMacro)
-
-find_dependency(fmt REQUIRED)
-
-# Optionally find Boost if needed by users
-# find_dependency(Boost REQUIRED COMPONENTS serialization)
+set(ERSLIB_INCLUDE_DIRS "@PACKAGE_INCLUDE_INSTALL_DIR@")
+set(ERSLIB_LIBRARIES erslib::erslib)
 
 check_required_components(erslib)

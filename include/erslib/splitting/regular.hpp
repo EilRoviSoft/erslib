@@ -1,10 +1,13 @@
 #pragma once
 
 // ers
+#include <erslib/shared.hpp>
 #include <erslib/splitting/base.hpp>
 
 namespace ers::splitting {
-    class RegularIterator : public TIterator<RegularIterator> {
+    extern template class TIterator<class RegularIterator>;
+
+    class ERSLIB_API RegularIterator : public TIterator<RegularIterator> {
         friend class TIterator;
 
     public:

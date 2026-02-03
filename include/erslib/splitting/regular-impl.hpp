@@ -1,3 +1,5 @@
+#pragma once
+
 #include "erslib/splitting/regular.hpp"
 
 namespace ers::splitting {

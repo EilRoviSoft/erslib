@@ -24,11 +24,11 @@ endif()
 # packages
 
 if(ERSLIB_STANDALONE)
-    find_package(fmt REQUIRED)
-    find_package(Boost REQUIRED serialization)
+    find_package(fmt CONFIG REQUIRED)
+    find_package(boost_unordered CONFIG REQUIRED)
 else()
     find_package(fmt QUIET)
-    find_package(Boost QUIET COMPONENTS serialization)
+    find_package(boost_unordered QUIET)
 endif()
 
 if(ERSLIB_STANDALONE AND ERSLIB_BUILD_TESTS)
@@ -48,7 +48,7 @@ install(TARGETS erslib
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/include
 )
 
 install(DIRECTORY include/

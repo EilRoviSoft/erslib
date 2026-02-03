@@ -1,3 +1,5 @@
+#pragma once
+
 #include "erslib/splitting/smart.hpp"
 
 namespace ers::splitting {

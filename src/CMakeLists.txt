@@ -6,12 +6,6 @@ elseif(fmt_FOUND)
     list(APPEND COMMON_LIBRARIES fmt)
 endif()
 
-if(TARGET Boost::serialization)
-    list(APPEND COMMON_LIBRARIES Boost::serialization)
-elseif(Boost_FOUND)
-    list(APPEND COMMON_LIBRARIES ${Boost_SERIALIZATION_LIBRARY})
-endif()
-
 if(TARGET Boost::unordered)
     list(APPEND COMMON_LIBRARIES Boost::unordered)
 elseif(Boost_FOUND)
@@ -20,26 +14,18 @@ endif()
 
 # erslib
 
-set(LIBRARY_EXECUTABLES
+add_library(erslib
     "erslib/error/error.cpp"
 
     "erslib/splitting/regular.cpp"
     "erslib/splitting/smart.cpp"
 )
 
-if(ERSLIB_STANDALONE)
-    add_library(erslib STATIC ${LIBRARY_EXECUTABLES})
-else()
-    add_library(erslib ${LIBRARY_EXECUTABLES})
-endif()
-
-target_compile_features(erslib
-    PUBLIC
-        cxx_std_26
-)
+add_library(erslib::erslib ALIAS erslib)
 
 target_include_directories(erslib
     PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
         $<INSTALL_INTERFACE:include>
 )
@@ -55,6 +41,12 @@ set_target_properties(erslib PROPERTIES
     VERSION ${PROJECT_VERSION}
     SOVERSION ${PROJECT_VERSION_MAJOR}
     EXPORT_NAME erslib
+)
+
+target_compile_definitions(erslib
+    PUBLIC
+        ERSLIB_SHARED_LIBS
+        ERSLIB_EXPORTS
 )
 
 # ers_main

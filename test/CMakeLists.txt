@@ -14,9 +14,11 @@ target_include_directories(ers_test
         "${PROJECT_SOURCE_DIR}/include"
 )
 
-set_target_properties(ers_test
-    PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/test"
+add_custom_command(TARGET ers_test POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    "$<TARGET_FILE:erslib>"
+    "$<TARGET_FILE_DIR:ers_test>"
+    COMMENT "Copying erslib DLL to test directory"
 )
 
 add_test(NAME ers_test COMMAND ers_test)

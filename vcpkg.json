@@ -1,6 +1,5 @@
 {
   "dependencies": [
-    "boost-serialization",
     "boost-unordered",
     "fmt",
     "catch2"
