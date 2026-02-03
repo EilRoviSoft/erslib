@@ -1,7 +1,16 @@
-set(COMMON_LIBRARIES
-    fmt::fmt
-    Boost::serialization
-)
+set(COMMON_LIBRARIES)
+
+if(TARGET fmt::fmt)
+    list(APPEND COMMON_LIBRARIES fmt::fmt)
+elseif(fmt_FOUND)
+    list(APPEND COMMON_LIBRARIES fmt)
+endif()
+
+if(TARGET Boost::serialization)
+    list(APPEND COMMON_LIBRARIES Boost::serialization)
+elseif(Boost_FOUND)
+    list(APPEND COMMON_LIBRARIES ${Boost_SERIALIZATION_LIBRARY})
+endif()
 
 # erslib
 
@@ -13,33 +22,37 @@ add_library(erslib
         "erslib/splitting/smart.cpp"
  )
 
-target_compile_features(erslib PUBLIC
-    cxx_std_23
+target_compile_features(erslib
+    PUBLIC
+        cxx_std_26
 )
 
-target_link_libraries(erslib
-    PRIVATE
-        ${COMMON_LIBRARIES}
+target_include_directories(erslib
+    PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
+        $<INSTALL_INTERFACE:include>
 )
+
+if(COMMON_LIBRARIES)
+    target_link_libraries(erslib
+        PUBLIC
+            ${COMMON_LIBRARIES}
+    )
+endif()
 
 set_target_properties(erslib PROPERTIES
     VERSION ${PROJECT_VERSION}
     SOVERSION ${PROJECT_VERSION_MAJOR}
-)
-
-target_include_directories(erslib PUBLIC
-    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+    EXPORT_NAME erslib
 )
 
 # ers_main
 
-add_executable(ers_main
-    "main.cpp"
-)
-
-target_link_libraries(ers_main
-    PRIVATE
-        erslib
-        erslib_headers
-        ${COMMON_LIBRARIES}
-)
+if(ERSLIB_STANDALONE AND ERSLIB_BUILD_EXECUTABLES)
+    add_executable(ers_main "main.cpp")
+    target_link_libraries(ers_main PRIVATE erslib)
+    
+    set_target_properties(ers_main PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+    )
+endif()
