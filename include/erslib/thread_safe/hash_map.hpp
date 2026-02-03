@@ -90,7 +90,7 @@ namespace ers::thread_safe {
     };
 
     template<typename TVal, typename TAlloc = container::stringly_allocator<TVal>>
-    using stringly_map = UnorderedMap<
+    using StringlyMap = UnorderedMap<
         std::string,
         TVal,
         container::stringly_hash,

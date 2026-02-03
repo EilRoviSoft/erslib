@@ -56,7 +56,7 @@ namespace ers::container {
 
 namespace ers {
     template<typename TAlloc = std::allocator<std::string>>
-    using stringly_set = boost::unordered_set<
+    using StringlySet = boost::unordered_set<
         std::string,
         container::stringly_hash,
         container::stringly_equal,
@@ -64,7 +64,7 @@ namespace ers {
     >;
 
     template<typename TVal, typename TAlloc = container::stringly_allocator<TVal>>
-    using stringly_map = boost::unordered_map<
+    using StringlyMap = boost::unordered_map<
         std::string,
         TVal,
         container::stringly_hash,
