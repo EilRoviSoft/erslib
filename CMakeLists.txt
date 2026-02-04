@@ -46,12 +46,6 @@ add_library(erslib::erslib ALIAS erslib)
 
 set(COMMON_LIBRARIES)
 
-if(TARGET fmt::fmt)
-    list(APPEND COMMON_LIBRARIES fmt::fmt)
-elseif(fmt_FOUND)
-    list(APPEND COMMON_LIBRARIES fmt)
-endif()
-
 if(TARGET Boost::unordered)
     list(APPEND COMMON_LIBRARIES Boost::unordered)
 elseif(Boost_FOUND)
@@ -61,7 +55,7 @@ endif()
 if(COMMON_LIBRARIES)
     target_link_libraries(erslib
         PUBLIC
-            
+            ${COMMON_LIBRARIES}
     )
 endif()
 
