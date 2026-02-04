@@ -15,6 +15,7 @@ include(GNUInstallDirs)
 
 string(COMPARE EQUAL "${CMAKE_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}" IS_TOP_LEVEL)
 
+option(ERSLIB_SHARED_LIBS "Build as .dll/.so" OFF)
 option(ERSLIB_BUILD_TESTS "Build erslib tests" OFF)
 option(ERSLIB_INSTALL "Generate target for installing erslib" ${IS_TOP_LEVEL})
 option(ERSLIB_STANDALONE "Build as standalone project (includes tests/executables)" OFF)
