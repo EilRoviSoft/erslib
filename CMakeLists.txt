@@ -6,74 +6,150 @@ project(erslib
     LANGUAGES CXX
 )
 
-option(BUILD_SHARED_LIBS "Build shared libraries" ON)
-option(ERSLIB_BUILD_TESTS "Build tests" OFF)
-option(ERSLIB_BUILD_EXAMPLES "Build examples" OFF)
-option(ERSLIB_BUILD_EXECUTABLES "Build executables" OFF)
+#----------------------------------------------------------------------------------------------------------------------
+# general settings and options
+#----------------------------------------------------------------------------------------------------------------------
+
+include(cmake/utils.cmake)
+include(GNUInstallDirs)
+
+string(COMPARE EQUAL "${CMAKE_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}" IS_TOP_LEVEL)
+
+option(ERSLIB_BUILD_TESTS "Build erslib tests" OFF)
+option(ERSLIB_INSTALL "Generate target for installing erslib" ${IS_TOP_LEVEL})
 option(ERSLIB_STANDALONE "Build as standalone project (includes tests/executables)" OFF)
 
-if(ERSLIB_STANDALONE AND DEFINED ENV{VCPKG_ROOT})
+set_if_undefined(ERSLIB_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/erslib"
+    CACHE STRING "Install path for erslib package-related CMake files"
+)
+
+if(IS_TOP_LEVEL AND DEFINED ENV{VCPKG_ROOT})
     include($ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake)
 endif()
 
-get_directory_property(IS_SUBPROJECT PARENT_DIRECTORY)
-if(IS_SUBPROJECT)
-    set(ERSLIB_STANDALONE OFF CACHE BOOL "Build as standalone project" FORCE)
+add_library(erslib)
+add_library(erslib::erslib ALIAS erslib)
+
+#----------------------------------------------------------------------------------------------------------------------
+# erslib dependencies
+#----------------------------------------------------------------------------------------------------------------------
+
+set(COMMON_LIBRARIES)
+
+if(TARGET fmt::fmt)
+    list(APPEND COMMON_LIBRARIES fmt::fmt)
+elseif(fmt_FOUND)
+    list(APPEND COMMON_LIBRARIES fmt)
 endif()
 
-# packages
-
-if(ERSLIB_STANDALONE)
-    find_package(fmt CONFIG REQUIRED)
-    find_package(boost_unordered CONFIG REQUIRED)
-else()
-    find_package(fmt QUIET)
-    find_package(boost_unordered QUIET)
+if(TARGET Boost::unordered)
+    list(APPEND COMMON_LIBRARIES Boost::unordered)
+elseif(Boost_FOUND)
+    list(APPEND COMMON_LIBRARIES ${Boost_UNORDERED_LIBRARY})
 endif()
 
-if(ERSLIB_STANDALONE AND ERSLIB_BUILD_TESTS)
-    find_package(Catch2 REQUIRED)
-    add_subdirectory(test)
-    enable_testing()
+if(COMMON_LIBRARIES)
+    target_link_libraries(erslib
+        PUBLIC
+            ${COMMON_LIBRARIES}
+    )
 endif()
 
-add_subdirectory(src)
+#----------------------------------------------------------------------------------------------------------------------
+# erslib sources
+#----------------------------------------------------------------------------------------------------------------------
 
-# adding sources
+include(GenerateExportHeader)
+set(EXPORT_FILE_NAME "export_static.h")
 
-include(GNUInstallDirs)
+generate_export_header(erslib EXPORT_FILE_NAME include/erslib/${EXPORT_FILE_NAME})
 
-install(TARGETS erslib
-    EXPORT erslib-targets
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/include
+set(SOURCES
+    "src/erslib/error/error.cpp"
+
+    "src/erslib/splitting/regular.cpp"
+    "src/erslib/splitting/smart.cpp"
 )
+source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${SOURCES})
 
-install(DIRECTORY include/
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-)
+#----------------------------------------------------------------------------------------------------------------------
+# erslib target
+#----------------------------------------------------------------------------------------------------------------------
 
 include(CMakePackageConfigHelpers)
 
-configure_package_config_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/erslib-config.cmake.in
-    ${CMAKE_CURRENT_BINARY_DIR}/erslib-config.cmake
-    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/erslib
+target_sources(erslib
+    PRIVATE
+        ${SOURCES}
 )
 
-install(EXPORT erslib-targets
-    FILE erslib-targets.cmake
-    NAMESPACE erslib::
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/erslib
+target_compile_definitions(erslib
+    PUBLIC
+        "ERSLIB_STATIC_DEFINE"
 )
 
-install(FILES
-    ${CMAKE_CURRENT_BINARY_DIR}/erslib-config.cmake
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/erslib
+target_include_directories(erslib
+    PUBLIC
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>"
 )
 
-message(STATUS "erslib ${PROJECT_VERSION}")
-message(STATUS "C++ Standard: ${CMAKE_CXX_STANDARD}")
-message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
+set_target_properties(erslib PROPERTIES
+    SOVERSION ${PROJECT_VERSION_MAJOR}
+    VERSION ${PROJECT_VERSION}
+)
+
+if(ERSLIB_INSTALL AND NOT CMAKE_SKIP_INSTALL_RULES)
+    configure_package_config_file(
+        cmake/erslib-config.cmake.in
+        erslib-config.cmake
+        INSTALL_DESTINATION "${ERSLIB_INSTALL_CMAKEDIR}"
+    )
+
+    write_basic_package_version_file(
+        erslib-config-version.cmake
+        COMPATIBILITY SameMajorVersion
+    )
+
+    install(TARGETS erslib EXPORT erslib_export
+        RUNTIME COMPONENT erslib
+        LIBRARY COMPONENT erslib NAMELINK_COMPONENT erslib_dev
+        ARCHIVE COMPONENT erslib_dev
+        INCLUDES DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+    )
+
+    install(
+        DIRECTORY include/
+        TYPE INCLUDE
+        COMPONENT erslib_dev
+    )
+
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/include/erslib/${EXPORT_FILE_NAME}"
+        COMPONENT erslib_dev
+        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/erslib"
+    )
+
+    set(TARGETS_FILE "erslib-static-targets.cmake")
+
+    install(EXPORT erslib_export
+        COMPONENT erslib_dev
+        FILE "${TARGETS_FILE}"
+        DESTINATION "${ERSLIB_INSTALL_CMAKEDIR}"
+        NAMESPACE erslib::
+    )
+
+    install(FILES
+        "${CMAKE_CURRENT_BINARY_DIR}/erslib-config.cmake"
+        COMPONENT erslib_dev
+        DESTINATION "${ERSLIB_INSTALL_CMAKEDIR}"
+    )
+endif()
+
+#----------------------------------------------------------------------------------------------------------------------
+# other targets
+#----------------------------------------------------------------------------------------------------------------------
+
+if(ERSLIB_BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(test)
+endif()

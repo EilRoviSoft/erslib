@@ -7,7 +7,6 @@
 
 // ers
 #include <erslib/convert/string.hpp>
-#include <erslib/shared.hpp>
 #include <erslib/type/time.hpp>
 
 // Severity
@@ -43,7 +42,7 @@ constexpr std::string_view ers::to_sv<ers::Severity>(const Severity& what) {
 // Error
 
 namespace ers {
-    class ERSLIB_API Error {
+    class Error {
     public:
         Error(
             Severity severity,

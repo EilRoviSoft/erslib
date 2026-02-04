@@ -11,24 +11,9 @@
         },
         {
             "name": "windows-local-clang-debug",
-            "displayName": "Windows Clang Local Debug",
+            "displayName": "Windows Clang Debug",
             "inherits": "windows-local-clang",
             "cacheVariables": {
-                "ERSLIB_STANDALONE": "ON",
-                "ERSLIB_BUILD_EXECUTABLES": "ON"
-            }
-        },
-        {
-            "name": "windows-local-clang-library",
-            "displayName": "Windows Clang Local Library",
-            "inherits": "windows-local-clang"
-        },
-        {
-            "name": "windows-local-clang-test",
-            "displayName": "Windows Clang Local Test",
-            "inherits": "windows-local-clang",
-            "cacheVariables": {
-                "ERSLIB_STANDALONE": "ON",
                 "ERSLIB_BUILD_TESTS": "ON"
             }
         }

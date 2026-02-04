@@ -1,8 +1,25 @@
 @PACKAGE_INIT@
 
-include("${CMAKE_CURRENT_LIST_DIR}/erslib-targets.cmake")
+macro(import_targets type)
+    if(NOT EXISTS "${CMAKE_CURRENT_LIST_DIR}/erslib-${type}-targets.cmake")
+        set(${CMAKE_FIND_PACKAGE_NAME}_NOT_FOUND_MESSAGE "erslib ${type} libraries were requested but not found")
+        set(${CMAKE_FIND_PACKAGE_NAME}_FOUND OFF)
+        return()
+    endif()
 
-set(ERSLIB_INCLUDE_DIRS "@PACKAGE_INCLUDE_INSTALL_DIR@")
-set(ERSLIB_LIBRARIES erslib::erslib)
+    include("${CMAKE_CURRENT_LIST_DIR}/erslib-${type}-targets.cmake")
+endmacro()
 
-check_required_components(erslib)
+if(NOT TARGET erslib::erslib)
+    set(type "")
+
+    eif(EXISTS "${CMAKE_CURRENT_LIST_DIR}/erslib-static-targets.cmake")
+        set(type "static")
+    else()
+        set(type "shared")
+    endif()
+
+    import_targets(${type})
+    check_required_components(erslib)
+    message("-- Found ${type} erslib (version ${${CMAKE_FIND_PACKAGE_NAME}_VERSION})")
+endif()

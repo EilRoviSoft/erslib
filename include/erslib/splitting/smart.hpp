@@ -1,11 +1,10 @@
 #pragma once
 
 // ers
-#include <erslib/shared.hpp>
 #include <erslib/splitting/base.hpp>
 
 namespace ers::splitting {
-    class ERSLIB_API SmartIterator : public TIterator<SmartIterator> {
+    class SmartIterator : public TIterator<SmartIterator> {
         friend class TIterator;
 
     public:

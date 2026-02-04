@@ -1,24 +1,60 @@
-add_executable(ers_test
+cmake_minimum_required(VERSION 3.28)
+project(erslib_test)
+
+#----------------------------------------------------------------------------------------------------------------------
+# general settings and options
+#----------------------------------------------------------------------------------------------------------------------
+
+include("../cmake/utils.cmake")
+string(COMPARE EQUAL "${CMAKE_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}" IS_TOP_LEVEL)
+
+if(IS_TOP_LEVEL)
+    enable_testing()
+endif()
+
+#----------------------------------------------------------------------------------------------------------------------
+# testing framework
+#----------------------------------------------------------------------------------------------------------------------
+
+if(IS_TOP_LEVEL AND DEFINED ENV{VCPKG_ROOT})
+    include($ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake)
+endif()
+
+#----------------------------------------------------------------------------------------------------------------------
+# tests dependencies
+#----------------------------------------------------------------------------------------------------------------------
+
+if(IS_TOP_LEVEL)
+    find_package(erslib REQUIRED)
+endif()
+
+find_package(Catch2 CONFIG REQUIRED)
+
+#----------------------------------------------------------------------------------------------------------------------
+# tests sources
+#----------------------------------------------------------------------------------------------------------------------
+
+set(SOURCES
     "case/error.cpp"
     "case/splitting.cpp"
 )
+source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${SOURCES})
 
-target_link_libraries(ers_test
+#----------------------------------------------------------------------------------------------------------------------
+# tests target
+#----------------------------------------------------------------------------------------------------------------------
+
+add_executable(erslib_test)
+target_sources(erslib_test PRIVATE ${SOURCES})
+
+target_link_libraries(erslib_test
     PRIVATE
-        erslib
+        erslib::erslib
         Catch2::Catch2WithMain
 )
 
-target_include_directories(ers_test
-    PRIVATE
-        "${PROJECT_SOURCE_DIR}/include"
-)
+if(NOT IS_TOP_LEVEL)
+    win_copy_deps_to_target_dir(erslib_test erslib::erslib)
+endif()
 
-add_custom_command(TARGET ers_test POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-    "$<TARGET_FILE:erslib>"
-    "$<TARGET_FILE_DIR:ers_test>"
-    COMMENT "Copying erslib DLL to test directory"
-)
-
-add_test(NAME ers_test COMMAND ers_test)
+add_test(NAME erslib_test COMMAND erslib_test)
