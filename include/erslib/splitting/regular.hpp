@@ -3,10 +3,13 @@
 // ers
 #include <erslib/splitting/base.hpp>
 
+// export
+#include <erslib/export.hpp>
+
 namespace ers::splitting {
     extern template class TIterator<class RegularIterator>;
 
-    class RegularIterator : public TIterator<RegularIterator> {
+    class ERSLIB_EXPORT RegularIterator : public TIterator<RegularIterator> {
         friend class TIterator;
 
     public:

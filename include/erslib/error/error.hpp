@@ -9,6 +9,9 @@
 #include <erslib/convert/string.hpp>
 #include <erslib/type/time.hpp>
 
+// export
+#include <erslib/export.hpp>
+
 // Severity
 
 namespace ers {
@@ -42,7 +45,7 @@ constexpr std::string_view ers::to_sv<ers::Severity>(const Severity& what) {
 // Error
 
 namespace ers {
-    class Error {
+    class ERSLIB_EXPORT Error {
     public:
         Error(
             Severity severity,

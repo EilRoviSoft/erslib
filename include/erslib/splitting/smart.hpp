@@ -3,8 +3,11 @@
 // ers
 #include <erslib/splitting/base.hpp>
 
+// export
+#include <erslib/export.hpp>
+
 namespace ers::splitting {
-    class SmartIterator : public TIterator<SmartIterator> {
+    class ERSLIB_EXPORT SmartIterator : public TIterator<SmartIterator> {
         friend class TIterator;
 
     public:

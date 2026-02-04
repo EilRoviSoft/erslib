@@ -23,6 +23,15 @@ set_if_undefined(ERSLIB_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/erslib"
     CACHE STRING "Install path for erslib package-related CMake files"
 )
 
+if(DEFINED ERSLIB_SHARED_LIBS)
+    set(BUILD_SHARED_LIBS ${ERSLIB_SHARED_LIBS})
+endif()
+
+if(NOT DEFINED CMAKE_BUILD_TYPE AND NOT DEFINED CMAKE_CONFIGURATION_TYPES)
+    set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
+    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+endif()
+
 if(IS_TOP_LEVEL AND DEFINED ENV{VCPKG_ROOT})
     include($ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake)
 endif()
@@ -51,7 +60,7 @@ endif()
 if(COMMON_LIBRARIES)
     target_link_libraries(erslib
         PUBLIC
-            ${COMMON_LIBRARIES}
+            
     )
 endif()
 
@@ -60,11 +69,17 @@ endif()
 #----------------------------------------------------------------------------------------------------------------------
 
 include(GenerateExportHeader)
-set(EXPORT_FILE_NAME "export_static.h")
+set(EXPORT_FILE_NAME "export_shared.hpp")
+
+if(NOT BUILD_SHARED_LIBS)
+    set(EXPORT_FILE_NAME "export_static.hpp")
+endif()
 
 generate_export_header(erslib EXPORT_FILE_NAME include/erslib/${EXPORT_FILE_NAME})
 
 set(SOURCES
+    "include/erslib/export.hpp"
+
     "src/erslib/error/error.cpp"
 
     "src/erslib/splitting/regular.cpp"
@@ -85,7 +100,7 @@ target_sources(erslib
 
 target_compile_definitions(erslib
     PUBLIC
-        "ERSLIB_STATIC_DEFINE"
+        "$<$<NOT:$<BOOL:${BUILD_SHARED_LIBS}>>:ERSLIB_STATIC_DEFINE>"
 )
 
 target_include_directories(erslib
@@ -130,6 +145,10 @@ if(ERSLIB_INSTALL AND NOT CMAKE_SKIP_INSTALL_RULES)
     )
 
     set(TARGETS_FILE "erslib-static-targets.cmake")
+
+    if(NOT BUILD_SHARED_LIBS)
+        set(targets_file "erslib-static-targets.cmake")
+    endif()
 
     install(EXPORT erslib_export
         COMPONENT erslib_dev
