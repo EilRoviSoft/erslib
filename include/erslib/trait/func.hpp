@@ -29,6 +29,7 @@ namespace ers::trait {
     template<typename T, typename R, typename... Args>
     struct function<R(T::*)(Args...) const> : function<R(*)(Args...)> {};
 
-    template<Callable T>
+    template<typename T>
+        requires CallableConcept<T>
     struct function<T> : function<decltype(&T::operator())> {};
 }

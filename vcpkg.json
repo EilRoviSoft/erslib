@@ -1,5 +1,6 @@
 {
     "dependencies": [
+        "abseil",
         "boost-thread",
         "boost-unordered",
         "catch2"

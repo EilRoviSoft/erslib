@@ -8,34 +8,42 @@
 #include <boost/unordered_map.hpp>
 
 // ers
-#include <erslib/hashing/std.hpp>
+#include <erslib/concept/container.hpp>
+#include <erslib/hashing/rapid.hpp>
 #include <erslib/type/ref.hpp>
-#include <erslib/util/string.hpp>
 
 namespace ers::thread_safe {
-    template<typename K, typename V, typename Hash, typename Equal, typename Alloc>
-    class UnorderedMap {
+    template<
+        typename K,
+        typename V,
+        typename Hash = hashing::Rapid<K>,
+        typename Equal = std::equal_to<K>,
+        template<typename...> typename Container = boost::unordered_map,
+        typename Alloc = std::allocator<std::pair<K, V>>>
+    class Map {
     public:
-        using container_type = boost::unordered_map<K, V, Hash, Equal, Alloc>;
+        using container_type = Container<K, V, Hash, Equal, Alloc>;
         using pair_type = std::pair<K, V>;
 
         using iterator = container_type::iterator;
         using const_iterator = container_type::const_iterator;
 
-        UnorderedMap() = default;
+        static_assert(HashMapConcept<container_type>, "Container must satisfy HashMap concept");
 
-        UnorderedMap(const UnorderedMap& another) :
+        Map() = default;
+
+        Map(const Map& another) :
             m_data(another.m_data) {}
-        UnorderedMap& operator=(const UnorderedMap& another) {
+        Map& operator=(const Map& another) {
             std::unique_lock lock(this->m_mutex);
             this->m_data = another.m_data;
             return *this;
         }
 
-        UnorderedMap(UnorderedMap&& another) noexcept :
+        Map(Map&& another) noexcept :
             m_data(std::move(another.m_data)) {
         }
-        UnorderedMap& operator=(UnorderedMap&& another) noexcept {
+        Map& operator=(Map&& another) noexcept {
             std::unique_lock lock(this->m_mutex);
             this->m_data = std::move(another.m_data);
             return *this;
@@ -88,16 +96,4 @@ namespace ers::thread_safe {
         mutable std::shared_mutex m_mutex;
         container_type m_data;
     };
-
-    template<
-        typename V,
-        template<typename> typename HashEngine = hashing::Std,
-        typename Alloc = std::allocator<std::pair<std::string, V>>>
-    using StringMap = UnorderedMap<
-        std::string,
-        V,
-        util::string_hash<HashEngine>,
-        util::string_equal,
-        Alloc
-    >;
 }

@@ -30,7 +30,8 @@ struct ers::byte_layout_traits<T> {
     }
 };
 
-template<ers::ContiguousContainer T>
+template<typename T>
+    requires ers::ContiguousContainerConcept<T>
 struct ers::byte_layout_traits<T> {
     static constexpr const void* data(const T& v) noexcept {
         return v.data();

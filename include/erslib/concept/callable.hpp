@@ -2,5 +2,5 @@
 
 namespace ers {
     template<typename T>
-    concept Callable = requires { &T::operator(); };
+    concept CallableConcept = requires { &T::operator(); };
 }

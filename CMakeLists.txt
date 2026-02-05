@@ -44,11 +44,13 @@ add_library(erslib::erslib ALIAS erslib)
 # erslib dependencies
 #----------------------------------------------------------------------------------------------------------------------
 
+find_package(absl CONFIG REQUIRED)
 find_package(boost_thread CONFIG REQUIRED)
 find_package(boost_unordered CONFIG REQUIRED)
 
 target_link_libraries(erslib
     PUBLIC
+        absl::flat_hash_map absl::flat_hash_set
         Boost::thread
         Boost::unordered
 )
