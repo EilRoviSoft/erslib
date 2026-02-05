@@ -4,6 +4,9 @@
 #include <concepts>
 #include <variant>
 
+// boost
+#include <boost/optional.hpp>
+
 // ers
 #include <erslib/error/error.hpp>
 
@@ -20,7 +23,7 @@ namespace ers {
 // Unexpected
 
 namespace ers {
-    template<typename E = Error>
+    template<typename E>
     class Unexpected {
         using error_type = E;
 
@@ -148,14 +151,14 @@ namespace ers {
 
         [[nodiscard]] constexpr explicit operator bool() const noexcept { return has_value(); }
 
-        constexpr const value_type& value() & { return std::get<value_type>(m_variant); }
+        constexpr value_type& value() & { return std::get<value_type>(m_variant); }
         constexpr const value_type& value() const & { return std::get<value_type>(m_variant); }
-        constexpr const value_type& value() && { return std::move(std::get<value_type>(m_variant)); }
+        constexpr value_type&& value() && { return std::move(std::get<value_type>(m_variant)); }
         constexpr const value_type& value() const && { return std::move(std::get<value_type>(m_variant)); }
 
-        constexpr const value_type& operator*() & { return value(); }
+        constexpr value_type& operator*() & { return value(); }
         constexpr const value_type& operator*() const & { return value(); }
-        constexpr const value_type& operator*() && { return std::move(value()); }
+        constexpr value_type&& operator*() && { return std::move(value()); }
         constexpr const value_type& operator*() const && { return std::move(value()); }
 
         constexpr value_type* operator->() { return value(); }
@@ -223,32 +226,33 @@ namespace ers {
         using error_type = E;
 
     public:
-        constexpr Result(ok_t) noexcept :
-            has_value_(true),
-            error_ {} {
+        constexpr Result(const ok_t) noexcept :
+            m_error(boost::none) {
         }
 
         constexpr Result(const Unexpected<error_type>& unexpected) :
-            has_value_(false),
-            error_(unexpected.error()) {
+            m_error(unexpected.error()) {
         }
         constexpr Result(Unexpected<error_type>&& unexpected) :
-            has_value_(false),
-            error_(std::move(unexpected).error()) {
+            m_error(std::move(unexpected.error())) {
         }
 
-        [[nodiscard]] constexpr bool has_value() const noexcept { return has_value_; }
-        [[nodiscard]] constexpr bool has_error() const noexcept { return !has_value_; }
+        template<typename T>
+        constexpr Result(Result<T, E>&& other) :
+            m_error(other.has_error() ? other.error() : boost::none) {
+        }
+
+        [[nodiscard]] constexpr bool has_value() const noexcept { return !m_error.has_value(); }
+        [[nodiscard]] constexpr bool has_error() const noexcept { return m_error.has_value(); }
 
         [[nodiscard]] constexpr explicit operator bool() const noexcept { return has_value(); }
 
-        constexpr const error_type& error() const & { return error_; }
-        constexpr error_type& error() & { return error_; }
+        constexpr error_type& error() { return *m_error; }
+        constexpr const error_type& error() const { return *m_error; }
 
-    private:
-        bool has_value_;
-        error_type error_;
+    protected:
+        boost::optional<error_type> m_error;
     };
 
-    using Status = Result<Error>;
+    using Status = Result<void>;
 }

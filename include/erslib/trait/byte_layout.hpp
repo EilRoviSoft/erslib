@@ -38,6 +38,6 @@ struct ers::byte_layout_traits<T> {
     }
 
     static constexpr size_t size(const T& v) noexcept {
-        return v.size() * sizeof(T::value_type);
+        return v.size() * sizeof(typename T::value_type);
     }
 };

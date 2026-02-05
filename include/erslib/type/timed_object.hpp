@@ -15,22 +15,40 @@ namespace ers {
     template<typename T, typename Clock = std::chrono::system_clock>
     class ITimedObject {
     public:
-        explicit ITimedObject(Clock::duration duration) :
-            m_expiring(T(), {}, duration) {
+        using value_type = expiring_t<T, Clock>;
+
+        explicit ITimedObject(Clock::duration lifetime) :
+            m_expiring(T(), {}, lifetime) {
         }
-        ITimedObject(Clock::duration duration, T value, Clock::time_point created_at = Clock::now()) :
-            m_expiring(value, duration, created_at) {
+        ITimedObject(Clock::duration lifetime, T value, Clock::time_point created_at = Clock::now()) :
+            m_expiring(value, lifetime, created_at) {
+        }
+
+        ITimedObject(const ITimedObject& other) :
+            m_expiring(other.m_expiring) {
+        }
+        ITimedObject& operator=(const ITimedObject& other) {
+            m_expiring = other.m_expiring;
+            return *this;
+        }
+
+        ITimedObject(ITimedObject&& other) noexcept :
+            m_expiring(std::move(other.m_expiring)) {
+        }
+        ITimedObject& operator=(ITimedObject&& other) noexcept {
+            m_expiring = std::move(other.m_expiring);
+            return *this;
         }
 
         virtual ~ITimedObject() = default;
 
-        Result<T> get() const {
+        [[nodiscard]] Result<T> get() const {
             boost::upgrade_lock read_lock(_mutex);
 
             if (m_expiring.is_expired()) {
                 boost::upgrade_to_unique_lock write_lock(read_lock);
 
-                if (auto s = this->load(); !s) {
+                if (auto s = load(); !s) {
                     m_expiring.value = T();
                     return Unexpected(s.error());
                 }
@@ -40,7 +58,7 @@ namespace ers {
         }
 
     protected:
-        mutable expiring_t<T, Clock> m_expiring;
+        mutable value_type m_expiring;
 
         virtual Status load() const = 0;
 

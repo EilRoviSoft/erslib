@@ -5,24 +5,16 @@
 #include <shared_mutex>
 
 // boost
-#include <boost/unordered_map.hpp>
+#include <boost/optional.hpp>
 
 // ers
 #include <erslib/concept/container.hpp>
-#include <erslib/hashing/rapid.hpp>
-#include <erslib/type/ref.hpp>
 
 namespace ers::thread_safe {
-    template<
-        typename K,
-        typename V,
-        typename Hash = hashing::Rapid<K>,
-        typename Equal = std::equal_to<K>,
-        template<typename...> typename Container = boost::unordered_map,
-        typename Alloc = std::allocator<std::pair<K, V>>>
+    template<typename K, typename V, typename Container>
     class Map {
     public:
-        using container_type = Container<K, V, Hash, Equal, Alloc>;
+        using container_type = Container;
         using pair_type = std::pair<K, V>;
 
         using iterator = container_type::iterator;
@@ -64,20 +56,20 @@ namespace ers::thread_safe {
         // io
 
         template<typename T>
-        bool set(const T& k, V v) {
+        bool set(const T& k, V v = V()) {
             std::unique_lock lock(this->m_mutex);
 
             auto [_, flag] = this->m_data.emplace(k, std::move(v));
             return flag;
         }
         template<typename T>
-        optref<const V> get(const T& k) const {
+        boost::optional<const V&> get(const T& k) const {
             std::shared_lock lock(this->m_mutex);
 
             auto it = this->m_data.find(k);
 
             if (it == this->m_data.end())
-                return std::nullopt;
+                return boost::none;
             return it->second;
         }
 

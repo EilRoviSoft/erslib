@@ -10,8 +10,8 @@
 namespace ers {
     template<typename T>
     concept ContiguousContainerConcept = requires(T t) {
-        { t.data() } -> std::is_pointer; // Must have .data() returning a pointer
-        { t.size() } -> size_t;          // Must have .size() returning an unsigned int
+        { t.data() } -> std::convertible_to<const typename T::value_type*>;
+        { t.size() } -> std::convertible_to<size_t>;
     };
 
     template<typename T>
@@ -26,7 +26,7 @@ namespace ers {
         } && requires(T m, typename T::key_type k, typename T::mapped_type v) {
             { m[k] } -> std::same_as<typename T::mapped_type&>;
             { m.at(k) } -> std::same_as<typename T::mapped_type&>;
-            { m.insert(std::pair { k, v }) } -> std::same_as<std::pair<typename T::iterator, bool>>;
+            { m.emplace(k, v) } -> std::same_as<std::pair<typename T::iterator, bool>>;
             { m.erase(k) } -> std::same_as<typename T::size_type>;
             { m.find(k) } -> std::same_as<typename T::iterator>;
             { m.empty() } -> std::same_as<bool>;

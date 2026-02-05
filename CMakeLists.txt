@@ -45,14 +45,14 @@ add_library(erslib::erslib ALIAS erslib)
 #----------------------------------------------------------------------------------------------------------------------
 
 find_package(absl CONFIG REQUIRED)
+find_package(boost_optional CONFIG REQUIRED)
 find_package(boost_thread CONFIG REQUIRED)
 find_package(boost_unordered CONFIG REQUIRED)
 
 target_link_libraries(erslib
     PUBLIC
         absl::flat_hash_map absl::flat_hash_set
-        Boost::thread
-        Boost::unordered
+        Boost::optional Boost::thread Boost::unordered
 )
 
 #----------------------------------------------------------------------------------------------------------------------
@@ -70,6 +70,7 @@ generate_export_header(erslib EXPORT_FILE_NAME include/erslib/${EXPORT_FILE_NAME
 
 set(SOURCES
     "include/erslib/export.hpp"
+    "src/erslib/boost-fix.cpp"
 
     "src/erslib/error/error.cpp"
 

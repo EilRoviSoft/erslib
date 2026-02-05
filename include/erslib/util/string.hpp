@@ -5,7 +5,7 @@
 
 // ers
 #include <erslib/hashing/std.hpp>
-#include <erslib/trait/stringly.hpp>
+#include <erslib/trait/string.hpp>
 
 // Common string utils for hashing, comparing and allocation
 
@@ -65,8 +65,8 @@ namespace ers::util {
         if constexpr (sizeof...(args) == 0)
             return result;
 
-        result.reserve((trait::get_size(args) + ...));
-        (trait::append_to_string(result, std::forward<TArgs>(args)), ...);
+        result.reserve((string_traits<TArgs>::size(args) + ...));
+        (string_traits<TArgs>::append(result, std::forward<TArgs>(args)), ...);
 
         return result;
     }

@@ -26,5 +26,13 @@ namespace ers {
         bool is_expired(Clock::time_point time = Clock::now()) const {
             return time >= updated_at + lifetime;
         }
+
+        constexpr T& operator*() & { return value; }
+        constexpr const T& operator*() const & { return value; }
+        constexpr T&& operator*() && { return std::move(value); }
+        constexpr const T&& operator*() const && { return std::move(value); }
+
+        constexpr T* operator->() { return value; }
+        constexpr const T* operator->() const { return value; }
     };
 }
