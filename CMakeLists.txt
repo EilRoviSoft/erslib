@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.28)
 
 project(erslib
-    VERSION 1.0.1
+    VERSION 1.1.0
     DESCRIPTION "EilRoviSoft's universal library"
     LANGUAGES CXX
 )
@@ -44,20 +44,14 @@ add_library(erslib::erslib ALIAS erslib)
 # erslib dependencies
 #----------------------------------------------------------------------------------------------------------------------
 
-set(COMMON_LIBRARIES)
+find_package(boost_thread CONFIG REQUIRED)
+find_package(boost_unordered CONFIG REQUIRED)
 
-if(TARGET Boost::unordered)
-    list(APPEND COMMON_LIBRARIES Boost::unordered)
-elseif(Boost_FOUND)
-    list(APPEND COMMON_LIBRARIES ${Boost_UNORDERED_LIBRARY})
-endif()
-
-if(COMMON_LIBRARIES)
-    target_link_libraries(erslib
-        PUBLIC
-            ${COMMON_LIBRARIES}
-    )
-endif()
+target_link_libraries(erslib
+    PUBLIC
+        Boost::thread
+        Boost::unordered
+)
 
 #----------------------------------------------------------------------------------------------------------------------
 # erslib sources

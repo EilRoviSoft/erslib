@@ -10,19 +10,19 @@
 // Forward decl
 
 namespace ers {
-    template<typename TError>
+    template<typename E>
     class Unexpected;
 
-    template<typename T, typename TError>
+    template<typename T, typename E>
     class Result;
 }
 
 // Unexpected
 
 namespace ers {
-    template<typename TError = Error>
+    template<typename E = Error>
     class Unexpected {
-        using error_type = TError;
+        using error_type = E;
 
     public:
         constexpr explicit Unexpected(const error_type& error)
@@ -59,43 +59,43 @@ namespace ers {
         error_type _error;
     };
 
-    template<typename TError>
-    Unexpected(TError) -> Unexpected<TError>;
+    template<typename E>
+    Unexpected(E) -> Unexpected<E>;
 
-    template<typename TError>
-    constexpr bool operator==(const Unexpected<TError>& lhs, const Unexpected<TError>& rhs) {
+    template<typename E>
+    constexpr bool operator==(const Unexpected<E>& lhs, const Unexpected<E>& rhs) {
         return lhs.error() == rhs.error();
     }
 
-    template<typename TError>
-    constexpr bool operator!=(const Unexpected<TError>& lhs, const Unexpected<TError>& rhs) {
+    template<typename E>
+    constexpr bool operator!=(const Unexpected<E>& lhs, const Unexpected<E>& rhs) {
         return !(lhs == rhs);
     }
 
-    template<typename TError>
-    constexpr Unexpected<std::decay_t<TError>> make_unexpected(TError&& error) {
-        return Unexpected<std::decay_t<TError>>(std::forward<TError>(error));
+    template<typename E>
+    constexpr Unexpected<std::decay_t<E>> make_unexpected(E&& error) {
+        return Unexpected<std::decay_t<E>>(std::forward<E>(error));
     }
 
-    template<typename TError, typename... TArgs>
-    constexpr Unexpected<TError> make_unexpected(TArgs&&... args) {
-        return Unexpected<TError>(std::forward<TArgs>(args)...);
+    template<typename E, typename... Args>
+    constexpr Unexpected<E> make_unexpected(Args&&... args) {
+        return Unexpected<E>(std::forward<Args>(args)...);
     }
 
-    template<typename... TArgs>
-    constexpr auto make_unexpected_from(TArgs&&... args) {
-        using TError = std::remove_cvref_t<decltype(TError(std::forward<TArgs>(args)...))>;
-        return Unexpected<TError>(std::forward<TArgs>(args)...);
+    template<typename... Args>
+    constexpr auto make_unexpected_from(Args&&... args) {
+        using E = std::remove_cvref_t<decltype(E(std::forward<Args>(args)...))>;
+        return Unexpected<E>(std::forward<Args>(args)...);
     }
 }
 
 // Result
 
 namespace ers {
-    template<typename T, typename TError = Error>
+    template<typename T, typename E = Error>
     class [[nodiscard]] Result {
         using value_type = T;
-        using error_type = TError;
+        using error_type = E;
 
     public:
         constexpr Result()
@@ -171,16 +171,16 @@ namespace ers {
     template<typename T>
     Result(T) -> Result<T>;
 
-    template<typename TError>
-    Result(Unexpected<TError>) -> Result<std::monostate, TError>;
+    template<typename E>
+    Result(Unexpected<E>) -> Result<std::monostate, E>;
 
-    template<typename T, typename TError>
-    constexpr void swap(Result<T, TError>& lhs, Result<T, TError>& rhs) noexcept(noexcept(lhs.swap(rhs))) {
+    template<typename T, typename E>
+    constexpr void swap(Result<T, E>& lhs, Result<T, E>& rhs) noexcept(noexcept(lhs.swap(rhs))) {
         lhs.swap(rhs);
     }
 
-    template<typename T, typename TError>
-    constexpr bool operator==(const Result<T, TError>& lhs, const Result<T, TError>& rhs) {
+    template<typename T, typename E>
+    constexpr bool operator==(const Result<T, E>& lhs, const Result<T, E>& rhs) {
         if (lhs.has_value() != rhs.has_value())
             return false;
 
@@ -190,24 +190,24 @@ namespace ers {
         return lhs.error() == rhs.error();
     }
 
-    template<typename T, typename TError>
-    constexpr Result<T, TError> make_result(const T& value) {
-        return Result<T, TError>(value);
+    template<typename T, typename E>
+    constexpr Result<T, E> make_result(const T& value) {
+        return Result<T, E>(value);
     }
 
-    template<typename T, typename TError>
-    constexpr Result<T, TError> make_result(T&& value) {
-        return Result<T, TError>(std::move(value));
+    template<typename T, typename E>
+    constexpr Result<T, E> make_result(T&& value) {
+        return Result<T, E>(std::move(value));
     }
 
-    template<typename T, typename TError>
-    constexpr Result<T, TError> make_result_from_error(const TError& error) {
-        return Result<T, TError>(Unexpected<TError>(error));
+    template<typename T, typename E>
+    constexpr Result<T, E> make_result_from_error(const E& error) {
+        return Result<T, E>(Unexpected<E>(error));
     }
 
-    template<typename T, typename TError>
-    constexpr Result<T, TError> make_result_from_error(TError&& error) {
-        return Result<T, TError>(Unexpected<TError>(std::move(error)));
+    template<typename T, typename E>
+    constexpr Result<T, E> make_result_from_error(E&& error) {
+        return Result<T, E>(Unexpected<E>(std::move(error)));
     }
 }
 
@@ -217,10 +217,10 @@ namespace ers {
     struct ok_t {};
     constexpr ok_t ok;
 
-    template<typename TError>
-    class [[nodiscard]] Result<void, TError> {
+    template<typename E>
+    class [[nodiscard]] Result<void, E> {
         using value_type = void;
-        using error_type = TError;
+        using error_type = E;
 
     public:
         constexpr Result(ok_t) noexcept :

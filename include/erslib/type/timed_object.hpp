@@ -12,13 +12,13 @@
 #include <erslib/type/expiring.hpp>
 
 namespace ers {
-    template<typename T, typename TClock = std::chrono::system_clock>
+    template<typename T, typename Clock = std::chrono::system_clock>
     class ITimedObject {
     public:
-        explicit ITimedObject(TClock::duration duration) :
+        explicit ITimedObject(Clock::duration duration) :
             m_expiring(T(), {}, duration) {
         }
-        ITimedObject(TClock::duration duration, T value, TClock::time_point created_at = TClock::now()) :
+        ITimedObject(Clock::duration duration, T value, Clock::time_point created_at = Clock::now()) :
             m_expiring(value, duration, created_at) {
         }
 
@@ -40,7 +40,7 @@ namespace ers {
         }
 
     protected:
-        mutable expiring_t<T, TClock> m_expiring;
+        mutable expiring_t<T, Clock> m_expiring;
 
         virtual Status load() const = 0;
 

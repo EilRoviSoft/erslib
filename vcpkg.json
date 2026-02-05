@@ -1,6 +1,7 @@
 {
-  "dependencies": [
-    "boost-unordered",
-    "catch2"
-  ]
+    "dependencies": [
+        "boost-thread",
+        "boost-unordered",
+        "catch2"
+    ]
 }

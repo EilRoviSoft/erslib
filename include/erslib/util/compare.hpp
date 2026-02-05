@@ -5,23 +5,23 @@
 
 namespace ers::util {
     // v ∈ (a, b)
-    template<std::integral Tv, std::integral Ta, std::integral Tb>
-    bool between(Tv v, Ta a, Tb b) {
+    template<std::integral V, std::integral A, std::integral B>
+    bool between(V v, A a, B b) {
         return v > a && v < b;
     }
     // v ∈ [a, b)
-    template<std::integral Tv, std::integral Ta, std::integral Tb>
-    bool between_li(Tv v, Ta a, Tb b) {
+    template<std::integral V, std::integral A, std::integral B>
+    bool between_li(V v, A a, B b) {
         return v >= a && v < b;
     }
     // v ∈ (a, b]
-    template<std::integral Tv, std::integral Ta, std::integral Tb>
-    bool between_ri(Tv v, Ta a, Tb b) {
+    template<std::integral V, std::integral A, std::integral B>
+    bool between_ri(V v, A a, B b) {
         return v > a && v <= b;
     }
     // v ∈ [a, b]
-    template<std::integral Tv, std::integral Ta, std::integral Tb>
-    bool between_lr(Tv v, Ta a, Tb b) {
+    template<std::integral V, std::integral A, std::integral B>
+    bool between_lr(V v, A a, B b) {
         return v >= a && v <= b;
     }
 }

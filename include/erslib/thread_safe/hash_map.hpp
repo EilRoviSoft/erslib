@@ -8,16 +8,16 @@
 #include <boost/unordered_map.hpp>
 
 // ers
+#include <erslib/hashing/std.hpp>
 #include <erslib/type/ref.hpp>
-
-#include "erslib/container/stringly.hpp"
+#include <erslib/util/string.hpp>
 
 namespace ers::thread_safe {
-    template<typename TKey, typename TVal, typename THash, typename TEqual, typename TAlloc>
+    template<typename K, typename V, typename Hash, typename Equal, typename Alloc>
     class UnorderedMap {
     public:
-        using container_type = boost::unordered_map<TKey, TVal, THash, TEqual, TAlloc>;
-        using pair_type = std::pair<TKey, TVal>;
+        using container_type = boost::unordered_map<K, V, Hash, Equal, Alloc>;
+        using pair_type = std::pair<K, V>;
 
         using iterator = container_type::iterator;
         using const_iterator = container_type::const_iterator;
@@ -56,14 +56,14 @@ namespace ers::thread_safe {
         // io
 
         template<typename T>
-        bool set(const T& k, TVal v) {
+        bool set(const T& k, V v) {
             std::unique_lock lock(this->m_mutex);
 
             auto [_, flag] = this->m_data.emplace(k, std::move(v));
             return flag;
         }
         template<typename T>
-        optref<const TVal> get(const T& k) const {
+        optref<const V> get(const T& k) const {
             std::shared_lock lock(this->m_mutex);
 
             auto it = this->m_data.find(k);
@@ -76,7 +76,7 @@ namespace ers::thread_safe {
         // lookup
 
         template<typename T>
-        const TVal& operator[](const T& k) const {
+        const V& operator[](const T& k) const {
             return *this->get(k);
         }
 
@@ -89,12 +89,15 @@ namespace ers::thread_safe {
         container_type m_data;
     };
 
-    template<typename TVal, typename TAlloc = container::stringly_allocator<TVal>>
-    using StringlyMap = UnorderedMap<
+    template<
+        typename V,
+        template<typename> typename HashEngine = hashing::Std,
+        typename Alloc = std::allocator<std::pair<std::string, V>>>
+    using StringMap = UnorderedMap<
         std::string,
-        TVal,
-        container::stringly_hash,
-        container::stringly_equal,
-        TAlloc
+        V,
+        util::string_hash<HashEngine>,
+        util::string_equal,
+        Alloc
     >;
 }

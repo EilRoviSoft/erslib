@@ -4,7 +4,52 @@
 #include <string>
 
 // ers
+#include <erslib/hashing/std.hpp>
 #include <erslib/trait/stringly.hpp>
+
+// Common string utils for hashing, comparing and allocation
+
+namespace ers::util {
+    template<template<typename> typename THashEngine = hashing::Std>
+    struct string_hash {
+        using is_transparent = void;
+
+        constexpr size_t operator()(const std::string_view sv) const {
+            return THashEngine<std::string_view> {}(sv);
+        }
+        constexpr size_t operator()(const std::string& str) const {
+            return THashEngine<std::string> {}(str);
+        }
+        constexpr size_t operator()(const char* cstr) const {
+            return THashEngine<std::string_view> {}(cstr);
+        }
+    };
+
+    struct string_equal {
+        using is_transparent = void;
+
+        constexpr bool operator()(const std::string& a, const std::string& b) const noexcept {
+            return a == b;
+        }
+
+        constexpr bool operator()(const std::string_view a, const std::string_view b) const noexcept {
+            return a == b;
+        }
+        constexpr bool operator()(const std::string& a, const std::string_view b) const noexcept {
+            return a == b;
+        }
+        constexpr bool operator()(const std::string_view a, const std::string& b) const noexcept {
+            return a == b;
+        }
+
+        constexpr bool operator()(const std::string& a, const char* b) const noexcept {
+            return a == b;
+        }
+        constexpr bool operator()(const char* a, const std::string& b) const noexcept {
+            return a == b;
+        }
+    };
+}
 
 namespace ers::util {
     template<char... TChars>

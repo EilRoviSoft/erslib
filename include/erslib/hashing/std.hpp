@@ -1,37 +1,31 @@
 #pragma once
 
-// std
-#include <string_view>
+// ers
+#include <erslib/hashing/base.hpp>
 
-// classes
+// algos usage
+
+namespace ers::hashing::_impl {
+    struct std_tag {};
+}
+
+template<>
+struct ers::hashing::_impl::backend<ers::hashing::_impl::std_tag> {
+    template<typename T>
+    static constexpr size_t process_value(
+        const T& value,
+        size_t /*seed*/
+    ) noexcept {
+        return std::hash<T> {}(value);
+    }
+};
 
 namespace ers::hashing {
     template<typename T>
-    struct Std {
-        constexpr size_t operator()(const T& what) const noexcept {
-            return std::hash<T> {}(what);
-        }
-    };
+    using Std = HashBase<T, _impl::std_tag>;
 }
 
 namespace ers {
     template<typename T>
-    constexpr hashing::Std<T> hash;
-}
-
-// functions
-
-namespace ers::hashing {
-    template<typename... TArgs>
-    constexpr size_t combine(const TArgs&... args) noexcept {
-        size_t r = 0;
-
-        auto combine_step = [&r]<typename T>(const T& arg) {
-            r ^= hash<T>(arg) + 0x9e3779b97f4a7c15 + (r << 6) + (r >> 2);
-        };
-
-        (combine_step(args), ...);
-
-        return r;
-    }
+    constexpr hashing::Std<T> stdhash;
 }
