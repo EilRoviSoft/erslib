@@ -1,7 +1,6 @@
 // std
 #include <array>
 #include <chrono>
-#include <limits>
 #include <print>
 #include <random>
 #include <ranges>
@@ -13,7 +12,7 @@
 #include <catch2/catch_test_macros.hpp>
 
 // ers
-#include <erslib/container/swiss.hpp>
+#include <erslib/container/swiss_table.hpp>
 #include <erslib/hashing/rapid.hpp>
 #include <erslib/thread_safe/map.hpp>
 #include <erslib/type/time.hpp>

@@ -35,9 +35,9 @@ find_package(Catch2 CONFIG REQUIRED)
 #----------------------------------------------------------------------------------------------------------------------
 
 set(SOURCES
+    "case/autorng.cpp"
     "case/error.cpp"
     "case/splitting.cpp"
-    "case/thread_safe_map.cpp"
 )
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${SOURCES})
 
