@@ -36,6 +36,7 @@ find_package(Catch2 CONFIG REQUIRED)
 
 set(SOURCES
     "case/autorng.cpp"
+    "case/easy_ecs.cpp"
     "case/error.cpp"
     "case/splitting.cpp"
 )

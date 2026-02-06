@@ -51,6 +51,8 @@ namespace ers::util {
     };
 }
 
+// concrete functions
+
 namespace ers::util {
     template<char... TChars>
     constexpr std::string_view concat_chars() {

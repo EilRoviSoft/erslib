@@ -76,6 +76,11 @@ set(SOURCES
 
     "src/erslib/splitting/regular.cpp"
     "src/erslib/splitting/smart.cpp"
+
+    "src/easy_ecs/component.cpp"
+    "src/easy_ecs/engine.cpp"
+    "src/easy_ecs/entity.cpp"
+    "src/easy_ecs/system.cpp"
 )
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${SOURCES})
 
