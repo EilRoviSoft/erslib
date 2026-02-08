@@ -12,7 +12,7 @@
 #include <catch2/catch_test_macros.hpp>
 
 // ers
-#include <erslib/container/swiss_table.hpp>
+#include <erslib/container/unordered_table.hpp>
 #include <erslib/hashing/rapid.hpp>
 #include <erslib/thread_safe/map.hpp>
 #include <erslib/type/time.hpp>
@@ -49,10 +49,10 @@ protected:
 using Map = ers::thread_safe::Map<
     std::string,
     AutoRng,
-    ers::SwissMap<
+    ers::UnorderedMap<
         std::string,
         AutoRng,
-        ers::util::string_hash<ers::hashing::Rapid>,
+        ers::util::string_hash_adaptor<ers::RapidHash>,
         ers::util::string_equal
     >
 >;
@@ -70,14 +70,16 @@ TEST_CASE("testing thread_safe map", "[ts_map]") {
 
     SECTION("intervaled output") {
         auto print = [&c, &vals](size_t i) mutable {
-            std::print("\niteration {}:\n", i);
-            for (auto it : vals)
-                std::print("{:3}: {}\n", it, *c[it].get());
+            //std::print("\niteration {}:\n", i);
+            for (auto it : vals) {
+                size_t v = *c[it].get();
+                //std::print("{:3}: {}\n", it, v);
+            }
         };
 
         for (auto [i, d] : intervals | std::views::enumerate) {
             print(i);
-            std::print("waiting for {}\n", d);
+            //std::print("waiting for {}\n", d);
             std::this_thread::sleep_for(d);
         }
         print(intervals.size());

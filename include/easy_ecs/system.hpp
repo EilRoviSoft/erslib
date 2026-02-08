@@ -2,7 +2,6 @@
 
 // std
 #include <list>
-#include <vector>
 
 // ecs
 #include <easy_ecs/component.hpp>

@@ -38,6 +38,8 @@ set(SOURCES
     "case/autorng.cpp"
     "case/easy_ecs.cpp"
     "case/error.cpp"
+    "case/memory.cpp"
+    "case/meta.cpp"
     "case/splitting.cpp"
 )
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${SOURCES})

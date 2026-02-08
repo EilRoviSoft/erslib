@@ -5,7 +5,7 @@
 
 namespace ers::hashing::_impl {
     // To work properly, you should override only 1 per algo
-    template<typename Tag>
+    template<typename Policy>
     struct backend {
         static constexpr size_t process(
             const void* data,
@@ -23,7 +23,7 @@ namespace ers::hashing::_impl {
 
 namespace ers {
     template<typename T, typename Tag>
-    struct HashBase {
+    struct THashBase {
         constexpr size_t operator()(const T& what, size_t seed = 0) const noexcept {
             if constexpr (requires { hashing::_impl::backend<Tag>::process(what, seed); }) {
                 return hashing::_impl::backend<Tag>::process_value(what, seed);

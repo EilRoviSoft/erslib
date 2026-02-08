@@ -5,20 +5,18 @@
 
 // implementation
 
-namespace ers::hashing::_impl {
 #include "rapid-impl.hpp"
-}
 
 // algos usage
 
-namespace ers::hashing::_impl {
-    struct rapid_tag {};
-    struct rapid_micro_tag {};
-    struct rapid_nano_tag {};
+namespace ers::hashing {
+    struct rapid_policy {};
+    struct rapid_micro_policy {};
+    struct rapid_nano_policy {};
 }
 
 template<>
-struct ers::hashing::_impl::backend<ers::hashing::_impl::rapid_tag> {
+struct ers::hashing::_impl::backend<ers::hashing::rapid_policy> {
     static constexpr size_t process(
         const void* data,
         size_t size,
@@ -29,7 +27,7 @@ struct ers::hashing::_impl::backend<ers::hashing::_impl::rapid_tag> {
 };
 
 template<>
-struct ers::hashing::_impl::backend<ers::hashing::_impl::rapid_micro_tag> {
+struct ers::hashing::_impl::backend<ers::hashing::rapid_micro_policy> {
     static constexpr size_t process(
         const void* data,
         size_t size,
@@ -40,7 +38,7 @@ struct ers::hashing::_impl::backend<ers::hashing::_impl::rapid_micro_tag> {
 };
 
 template<>
-struct ers::hashing::_impl::backend<ers::hashing::_impl::rapid_nano_tag> {
+struct ers::hashing::_impl::backend<ers::hashing::rapid_nano_policy> {
     static constexpr size_t process(
         const void* data,
         size_t size,
@@ -52,24 +50,13 @@ struct ers::hashing::_impl::backend<ers::hashing::_impl::rapid_nano_tag> {
 
 // declaration
 
-namespace ers::hashing {
-    template<typename T>
-    using Rapid = HashBase<T, _impl::rapid_tag>;
-
-    template<typename T>
-    using RapidMicro = HashBase<T, _impl::rapid_micro_tag>;
-
-    template<typename T>
-    using RapidNano = HashBase<T, _impl::rapid_nano_tag>;
-}
-
 namespace ers {
     template<typename T>
-    constexpr hashing::Rapid<T> rapidhash {};
+    using RapidHash = THashBase<T, hashing::rapid_policy>;
 
     template<typename T>
-    constexpr hashing::RapidMicro<T> rapidhash_micro {};
+    using RapidMicroHash = THashBase<T, hashing::rapid_micro_policy>;
 
     template<typename T>
-    constexpr hashing::RapidNano<T> rapidhash_nano {};
+    using RapidNanoHash = THashBase<T, hashing::rapid_nano_policy>;
 }

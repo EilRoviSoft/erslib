@@ -2,9 +2,12 @@
 
 // std
 #include <concepts>
+#include <cstring>
 
 // ers
 #include <erslib/concept/container.hpp>
+
+#include "byte_layout.hpp"
 
 // declaration
 
@@ -39,5 +42,16 @@ struct ers::byte_layout_traits<T> {
 
     static constexpr size_t size(const T& v) noexcept {
         return v.size() * sizeof(typename T::value_type);
+    }
+};
+
+template<>
+struct ers::byte_layout_traits<const char*> {
+    static constexpr const void* data(const char* v) noexcept {
+        return v;
+    }
+
+    static constexpr size_t size(const char* v) noexcept {
+        return strlen(v);
     }
 };

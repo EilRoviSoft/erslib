@@ -4,24 +4,23 @@
 #include <string>
 
 // ers
-#include <erslib/hashing/std.hpp>
 #include <erslib/trait/string.hpp>
 
 // Common string utils for hashing, comparing and allocation
 
 namespace ers::util {
-    template<template<typename> typename THashEngine = hashing::Std>
-    struct string_hash {
+    template<template<typename> typename HashEngine>
+    struct string_hash_adaptor {
         using is_transparent = void;
 
         constexpr size_t operator()(const std::string_view sv) const {
-            return THashEngine<std::string_view> {}(sv);
+            return HashEngine<std::string_view> {}(sv);
         }
         constexpr size_t operator()(const std::string& str) const {
-            return THashEngine<std::string> {}(str);
+            return HashEngine<std::string> {}(str);
         }
         constexpr size_t operator()(const char* cstr) const {
-            return THashEngine<std::string_view> {}(cstr);
+            return HashEngine<const char*> {}(cstr);
         }
     };
 
@@ -51,7 +50,7 @@ namespace ers::util {
     };
 }
 
-// concrete functions
+// Concrete functions
 
 namespace ers::util {
     template<char... TChars>

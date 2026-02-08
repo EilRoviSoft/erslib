@@ -24,4 +24,20 @@ namespace ers::pmr {
 
         return Holder<T>(p, deleter<T>(alloc));
     }
+
+    template<typename T, typename Derived, typename... Args>
+        requires std::derived_from<Derived, T>
+    Holder<T> make_polymorphic_holder(std::pmr::memory_resource* resource, Args&&... args) {
+        std::pmr::polymorphic_allocator<Derived> alloc(resource);
+
+        Derived* p = alloc.allocate(1);
+        try {
+            alloc.construct(p, std::forward<Args>(args)...);
+        } catch (...) {
+            alloc.deallocate(p, 1);
+            throw;
+        }
+
+        return Holder<T>(static_cast<T*>(p), deleter<T>(alloc));
+    }
 }

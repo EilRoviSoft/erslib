@@ -1,6 +1,7 @@
 #pragma once
 
 // std
+#include <iostream>
 #include <memory_resource>
 
 namespace ers::pmr {
@@ -13,9 +14,10 @@ namespace ers::pmr {
             alloc(a) {
         }
 
-        void operator()(T* p) noexcept {
+        void operator()(T* p) {
             if (!p)
                 return;
+            std::destroy_at(p);
             alloc.deallocate(p, 1);
         }
     };

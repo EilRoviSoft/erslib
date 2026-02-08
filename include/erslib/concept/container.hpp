@@ -4,9 +4,6 @@
 #include <utility>
 #include <type_traits>
 
-// ers
-#include <erslib/hashing/base.hpp>
-
 namespace ers {
     template<typename T>
     concept ContiguousContainerConcept = requires(T t) {

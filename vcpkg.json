@@ -1,6 +1,5 @@
 {
     "dependencies": [
-        "abseil",
         "boost-optional",
         "boost-thread",
         "boost-unordered",

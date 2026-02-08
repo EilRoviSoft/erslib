@@ -29,6 +29,7 @@
             "hidden": true,
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_CXX_FLAGS": "/EHsc /std:c++latest /W4",
                 "CMAKE_CXX_FLAGS_DEBUG": "/MDd /Zi /Ob0 /Od /RTC1 /D_DEBUG"
             }
         },
@@ -39,8 +40,7 @@
             "hidden": true,
             "cacheVariables": {
                 "CMAKE_C_COMPILER": "cl.exe",
-                "CMAKE_CXX_COMPILER": "cl.exe",
-                "CMAKE_CXX_FLAGS": "/EHsc /std:c++latest"
+                "CMAKE_CXX_COMPILER": "cl.exe"
             }
         },
 
@@ -51,19 +51,8 @@
             "cacheVariables": {
                 "CMAKE_CXX_COMPILER": "clang-cl.exe",
                 "CMAKE_C_COMPILER": "clang-cl.exe",
-                "CMAKE_CXX_STANDARD": "26",
-                "CMAKE_CXX_STANDARD_REQUIRED": "ON",
-                "CMAKE_CXX_FLAGS": "/W4"
+                "CMAKE_CXX_STANDARD_REQUIRED": "ON"
             }
-        }
-    ],
-
-    "buildPresets": [
-        {
-            "name": "default",
-            "configurePreset": "base",
-            "jobs": 4,
-            "verbose": false
         }
     ]
 }

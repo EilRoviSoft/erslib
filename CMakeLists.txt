@@ -44,14 +44,12 @@ add_library(erslib::erslib ALIAS erslib)
 # erslib dependencies
 #----------------------------------------------------------------------------------------------------------------------
 
-find_package(absl CONFIG REQUIRED)
 find_package(boost_optional CONFIG REQUIRED)
 find_package(boost_thread CONFIG REQUIRED)
 find_package(boost_unordered CONFIG REQUIRED)
 
 target_link_libraries(erslib
     PUBLIC
-        absl::flat_hash_map absl::flat_hash_set
         Boost::optional Boost::thread Boost::unordered
 )
 
@@ -70,17 +68,16 @@ generate_export_header(erslib EXPORT_FILE_NAME include/erslib/${EXPORT_FILE_NAME
 
 set(SOURCES
     "include/erslib/export.hpp"
-    "src/erslib/boost-fix.cpp"
 
     "src/erslib/error/error.cpp"
 
     "src/erslib/splitting/regular.cpp"
     "src/erslib/splitting/smart.cpp"
 
-    "src/easy_ecs/component.cpp"
     "src/easy_ecs/engine.cpp"
     "src/easy_ecs/entity.cpp"
     "src/easy_ecs/system.cpp"
+    
 )
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${SOURCES})
 

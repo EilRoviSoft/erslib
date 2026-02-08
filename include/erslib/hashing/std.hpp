@@ -5,12 +5,12 @@
 
 // algos usage
 
-namespace ers::hashing::_impl {
-    struct std_tag {};
+namespace ers::hashing {
+    struct std_policy {};
 }
 
 template<>
-struct ers::hashing::_impl::backend<ers::hashing::_impl::std_tag> {
+struct ers::hashing::_impl::backend<ers::hashing::std_policy> {
     template<typename T>
     static constexpr size_t process_value(
         const T& value,
@@ -20,12 +20,7 @@ struct ers::hashing::_impl::backend<ers::hashing::_impl::std_tag> {
     }
 };
 
-namespace ers::hashing {
-    template<typename T>
-    using Std = HashBase<T, _impl::std_tag>;
-}
-
 namespace ers {
     template<typename T>
-    constexpr hashing::Std<T> stdhash;
+    using Hash = THashBase<T, hashing::std_policy>;
 }
