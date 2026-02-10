@@ -6,12 +6,12 @@
 // ers
 #include <erslib/concept/callable.hpp>
 
-namespace ers::trait {
+namespace ers {
     template<typename T>
-    struct function;
+    struct fn_traits;
 
     template<typename R, typename... Args>
-    struct function<R(*)(Args...)> {
+    struct fn_traits<R(*)(Args...)> {
         using return_type = R;
         using args_tuple = std::tuple<Args...>;
         static constexpr std::size_t arity = sizeof...(Args);
@@ -21,15 +21,15 @@ namespace ers::trait {
     };
 
     template<typename R, typename... Args>
-    struct function<R(Args...)> : function<R(*)(Args...)> {};
+    struct fn_traits<R(Args...)> : fn_traits<R(*)(Args...)> {};
 
     template<typename T, typename R, typename... Args>
-    struct function<R(T::*)(Args...)> : function<R(*)(Args...)> {};
+    struct fn_traits<R(T::*)(Args...)> : fn_traits<R(*)(Args...)> {};
 
     template<typename T, typename R, typename... Args>
-    struct function<R(T::*)(Args...) const> : function<R(*)(Args...)> {};
+    struct fn_traits<R(T::*)(Args...) const> : fn_traits<R(*)(Args...)> {};
 
     template<typename T>
         requires CallableConcept<T>
-    struct function<T> : function<decltype(&T::operator())> {};
+    struct fn_traits<T> : fn_traits<decltype(&T::operator())> {};
 }

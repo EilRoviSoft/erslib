@@ -2,6 +2,7 @@
 
 // std
 #include <string_view>
+#include <type_traits>
 #include <utility>
 
 // ers
@@ -43,8 +44,7 @@ namespace ers::meta::_impl {
 
 namespace ers::meta {
     template<typename T>
-    constexpr std::string_view type_name() {
-        constexpr auto& value = _impl::type_name_holder<T>::value;
-        return { value.data(), value.size() };
-    }
+    struct type_name {
+        constexpr std::string_view value = { _impl::type_name_holder<T>::value };
+    };
 }

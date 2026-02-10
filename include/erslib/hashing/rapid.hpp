@@ -16,7 +16,7 @@ namespace ers::hashing {
 }
 
 template<>
-struct ers::hashing::_impl::backend<ers::hashing::rapid_policy> {
+struct ers::internal::backend<ers::hashing::rapid_policy> {
     static constexpr size_t process(
         const void* data,
         size_t size,
@@ -27,7 +27,7 @@ struct ers::hashing::_impl::backend<ers::hashing::rapid_policy> {
 };
 
 template<>
-struct ers::hashing::_impl::backend<ers::hashing::rapid_micro_policy> {
+struct ers::internal::backend<ers::hashing::rapid_micro_policy> {
     static constexpr size_t process(
         const void* data,
         size_t size,
@@ -38,7 +38,7 @@ struct ers::hashing::_impl::backend<ers::hashing::rapid_micro_policy> {
 };
 
 template<>
-struct ers::hashing::_impl::backend<ers::hashing::rapid_nano_policy> {
+struct ers::internal::backend<ers::hashing::rapid_nano_policy> {
     static constexpr size_t process(
         const void* data,
         size_t size,

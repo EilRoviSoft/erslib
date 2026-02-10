@@ -7,18 +7,18 @@
 namespace ers::pmr {
     template<class T>
     struct deleter {
-        std::pmr::polymorphic_allocator<T> alloc;
+        std::pmr::memory_resource* mr;
 
         deleter() = default;
-        explicit deleter(std::pmr::polymorphic_allocator<T> a) noexcept :
-            alloc(a) {
+        explicit deleter(std::pmr::memory_resource* mr) noexcept :
+            mr(mr) {
         }
 
-        void operator()(T* p) {
-            if (!p)
+        void operator()(T* ptr) {
+            if (!ptr)
                 return;
-            std::destroy_at(p);
-            alloc.deallocate(p, 1);
+            std::destroy_at(ptr);
+            mr->deallocate(ptr, 1);
         }
     };
 }

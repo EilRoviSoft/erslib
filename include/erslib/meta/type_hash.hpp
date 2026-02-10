@@ -6,8 +6,7 @@
 
 namespace ers::meta {
     template<typename T, typename Hasher = RapidMicroHash<std::string_view>>
-    constexpr size_t type_hash() {
-        constexpr auto name = type_name<T>();
-        return Hasher {}(name);
-    }
+    struct type_hash {
+        constexpr auto value = Hasher {}(type_name<T>::value);
+    };
 }

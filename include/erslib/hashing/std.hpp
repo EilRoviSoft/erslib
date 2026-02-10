@@ -10,7 +10,7 @@ namespace ers::hashing {
 }
 
 template<>
-struct ers::hashing::_impl::backend<ers::hashing::std_policy> {
+struct ers::internal::backend<ers::hashing::std_policy> {
     template<typename T>
     static constexpr size_t process_value(
         const T& value,
