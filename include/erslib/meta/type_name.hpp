@@ -47,4 +47,7 @@ namespace ers::meta {
     struct type_name {
         constexpr std::string_view value = { _impl::type_name_holder<T>::value };
     };
+
+    template<typename T>
+    constexpr std::string_view type_name_v = type_name<T>::value;
 }

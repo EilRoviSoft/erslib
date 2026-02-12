@@ -1,9 +1,11 @@
 #pragma once
 
 // std
+#include <array>
 #include <string>
 
 // ers
+#include <erslib/concept/string.hpp>
 #include <erslib/trait/string.hpp>
 
 // Common string utils for hashing, comparing and allocation
@@ -50,24 +52,57 @@ namespace ers::util {
     };
 }
 
+// Implementation
+
+namespace ers::internal {
+	template<typename... Strings>
+	auto make_literals_array(Strings&&... strs) {
+        constexpr size_t size = (string_traits<Strings>::size(strs) + ...);
+        std::array<char, size> result;
+
+        size_t ptr = 0;
+
+        auto insert = [&result]<typename T>(const size_t offset, T&& s) {
+            if constexpr (std::is_same_v<T, char>) {
+                result[offset] = s;
+            } else {
+                for (size_t i = 0; i < string_traits<T>::size(s); i++)
+                    result[i + offset] = s[i];
+            }
+
+            return string_traits<T>::size();
+        };
+
+        ((ptr += insert(ptr, strs)), ...);
+
+        return result;
+	}
+}
+
 // Concrete functions
 
 namespace ers::util {
-    template<char... TChars>
+    template<char... Chars>
     constexpr std::string_view concat_chars() {
-        static constexpr char arr[] = { TChars..., '\0' };
-        return std::string_view { arr, sizeof...(TChars) };
+        static constexpr std::array<char, sizeof...(Chars)> arr = { Chars... };
+        return std::string_view { arr, arr.size() };
     }
 
-    template<typename... TArgs>
-    std::string concat_strings(TArgs&&... args) {
+    template<typename... Strings>
+	constexpr std::string_view concat_literals(Strings&&... strs) {
+        static constexpr auto arr = internal::make_literals_array(std::forward<Strings>(strs)...);
+        return std::string_view { arr, arr.size() };
+    }
+
+    template<typename... Args>
+    std::string concat_strings(Args&&... args) {
         std::string result;
 
         if constexpr (sizeof...(args) == 0)
             return result;
 
-        result.reserve((string_traits<TArgs>::size(args) + ...));
-        (string_traits<TArgs>::append(result, std::forward<TArgs>(args)), ...);
+        result.reserve((string_traits<Args>::size(args) + ...));
+        (string_traits<Args>::append(result, std::forward<Args>(args)), ...);
 
         return result;
     }

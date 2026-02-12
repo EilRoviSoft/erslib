@@ -1,21 +1,21 @@
 {
-    "version": 4,
-    "configurePresets": [
-        {
-            "name": "windows-local-clang",
-            "inherits": "windows-clang",
-            "hidden": true,
-            "environment": {
-                "VCPKG_ROOT": "D:/Libs/vcpkg"
-            }
-        },
-        {
-            "name": "windows-local-clang-debug",
-            "displayName": "Windows Clang Debug",
-            "inherits": "windows-local-clang",
-            "cacheVariables": {
-                "ERSLIB_BUILD_TESTS": "ON"
-            }
-        }
-    ]
+	"version": 4,
+	"configurePresets": [
+		{
+			"name": "windows-local-clang",
+			"inherits": "windows-clang",
+			"hidden": true,
+			"environment": {
+				"VCPKG_ROOT": "D:/Libs/vcpkg"
+			}
+		},
+		{
+			"name": "windows-local-clang-debug",
+			"displayName": "Windows Clang Debug",
+			"inherits": "windows-local-clang",
+			"cacheVariables": {
+				"ERSLIB_BUILD_TESTS": "ON"
+			}
+		}
+	]
 }

@@ -78,7 +78,7 @@ set(SOURCES
     "src/easy_ecs/entity.cpp"
     "src/easy_ecs/system.cpp"
     
-)
+ "src/erslib/assert.cpp")
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${SOURCES})
 
 #----------------------------------------------------------------------------------------------------------------------
@@ -96,6 +96,13 @@ target_compile_definitions(erslib
     PUBLIC
         "$<$<NOT:$<BOOL:${BUILD_SHARED_LIBS}>>:ERSLIB_STATIC_DEFINE>"
 )
+
+if(IS_TOP_LEVEL)
+    target_compile_definitions(erslib
+        PRIVATE
+            ERS_ASSERT_INFO
+    )
+endif()
 
 target_include_directories(erslib
     PUBLIC
