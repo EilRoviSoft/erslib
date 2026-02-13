@@ -10,6 +10,7 @@
 #include <erslib/memory/pmr/holder.hpp>
 #include <erslib/type/general.hpp>
 
+
 struct Position {
     f64 x, y;
 
@@ -18,6 +19,7 @@ struct Position {
         y(y) {
     }
 };
+
 
 TEST_CASE("testing custom allocator", "[memory]") {
     std::array<std::byte, 1024> buffer;

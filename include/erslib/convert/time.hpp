@@ -7,6 +7,7 @@
 #include <erslib/error/result.hpp>
 #include <erslib/type/time.hpp>
 
+
 namespace ers {
     template<typename Clock>
     Result<timestamp_t> from_chars(std::string_view sv, std::string_view fmt) {
@@ -14,10 +15,10 @@ namespace ers {
         std::stringstream iss(static_cast<std::string>(sv));
 
         if (!std::chrono::from_stream(iss, (static_cast<std::string>(fmt) + '\0').c_str(), result)) {
-            return Unexpected(
+            return Unexpected<Error>(
                 Severity::Error,
                 "bad_time_cast",
-                std::format("Can't cast \"{}\" with \"{}\"", sv, fmt)
+                std::format(R"(Can't cast "{}" with "{}")", sv, fmt)
             );
         }
 

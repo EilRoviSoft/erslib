@@ -7,15 +7,18 @@
 #include <erslib/hashing/rapid.hpp>
 #include <erslib/memory/pmr/any-impl.hpp>
 
+
 constexpr size_t Size = 16;
 constexpr size_t Align = alignof(std::max_align_t);
 using Hasher = ers::RapidHash<std::string_view>;
+
 
 namespace ers::pmr {
     class TAny : protected internal::TAnyImpl<Size, Align, Hasher> {
     public:
         struct placeholder_t {};
 
+        
         // Default Constructor
 
         TAny() :
@@ -27,6 +30,7 @@ namespace ers::pmr {
             } {
         }
 
+        
         // Copy
 
         TAny(const TAny& other) :
@@ -48,6 +52,7 @@ namespace ers::pmr {
             return *this;
         }
 
+        
         // Move
 
         TAny(TAny&& other) noexcept :
@@ -69,6 +74,7 @@ namespace ers::pmr {
             return *this;
         }
 
+        
         // Value initializer
 
         template<typename T>
@@ -83,6 +89,7 @@ namespace ers::pmr {
             return *this;
         }
 
+        
         // Value in-place initializer
 
         template<typename T, typename... Args>
@@ -94,11 +101,13 @@ namespace ers::pmr {
             emplace_with_resource<T>(provided_mr, std::forward<Args>(args)...);
         }
 
+        
         // Destructor
 
         ~TAny() {
             _soft_reset();
         }
+
 
         // Modifiers
 
@@ -153,6 +162,7 @@ namespace ers::pmr {
 
             return ptr;
         }
+
 
         // Observers
 

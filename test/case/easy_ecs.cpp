@@ -11,6 +11,7 @@
 // ecs
 #include <easy_ecs/engine.hpp>
 
+
 struct Position {
     f64 x, y;
 
@@ -24,6 +25,7 @@ struct Position {
             && ers::util::equals(y, other.y);
     }
 };
+
 
 TEST_CASE("engine test", "[easy_ecs]") {
     /*ecs::Engine engine;

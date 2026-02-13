@@ -4,7 +4,6 @@
 #include <bit>
 #include <string_view>
 
-#include "base.hpp"
 
 namespace ers::internal {
     // To work properly, you should override only 1 per algo
@@ -23,6 +22,7 @@ namespace ers::internal {
         ) noexcept = delete("non-specialized definition");
     };
 }
+
 
 namespace ers {
     template<typename T, typename Policy>

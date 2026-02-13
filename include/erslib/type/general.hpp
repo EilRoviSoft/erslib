@@ -4,6 +4,7 @@
 #include <cmath>
 #include <cstdint>
 
+
 namespace ers::type {
     using u8 = uint8_t;
     using u16 = uint16_t;
@@ -18,6 +19,7 @@ namespace ers::type {
     using f32 = float_t;
     using f64 = double_t;
 }
+
 
 #ifndef REMOVE_ERS_GENERAL_TYPES
 using namespace ers::type;

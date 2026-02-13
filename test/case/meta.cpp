@@ -4,8 +4,10 @@
 // ers
 #include <erslib/meta/type_name.hpp>
 
+
 template<typename T>
 struct sample_t {};
+
 
 TEST_CASE("testing meta", "[meta]") {
     REQUIRE(ers::meta::type_name_v<int> == "int");

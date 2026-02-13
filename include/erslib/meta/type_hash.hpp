@@ -4,6 +4,7 @@
 #include <erslib/hashing/rapid.hpp>
 #include <erslib/meta/type_name.hpp>
 
+
 namespace ers::meta {
     template<typename T, typename Hasher = RapidHash<std::string_view>>
     struct type_hash {

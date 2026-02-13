@@ -6,6 +6,7 @@
 #include <iostream>
 #include <vector>
 
+
 // In case we have information about assertions
 
 #ifdef ERS_ASSERT_INFO

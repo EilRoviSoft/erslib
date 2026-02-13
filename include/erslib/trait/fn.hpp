@@ -6,6 +6,7 @@
 // ers
 #include <erslib/concept/callable.hpp>
 
+
 namespace ers {
     template<typename T>
     struct fn_traits;
@@ -30,6 +31,6 @@ namespace ers {
     struct fn_traits<R(T::*)(Args...) const> : fn_traits<R(*)(Args...)> {};
 
     template<typename T>
-        requires CallableConcept<T>
+        requires Callable<T>
     struct fn_traits<T> : fn_traits<decltype(&T::operator())> {};
 }

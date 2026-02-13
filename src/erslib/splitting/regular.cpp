@@ -1,9 +1,5 @@
 #include "erslib/splitting/regular.hpp"
 
-namespace ers::splitting {
-    template class TIterator<RegularIterator>;
-}
-
 ers::splitting::RegularIterator::RegularIterator(const Processor<RegularIterator>& parent, size_t offset) :
     TIterator(parent, offset) {
 }

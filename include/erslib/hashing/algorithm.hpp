@@ -1,6 +1,7 @@
 #pragma once
 
-// functions
+
+// Functions
 
 namespace ers::hashing {
     template<template<typename> typename HashEngine, typename... Args>

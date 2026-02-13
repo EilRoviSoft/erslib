@@ -1,5 +1,6 @@
 #pragma once
 
+
 namespace ers::pattern {
     template<typename T>
     class IBuilder {

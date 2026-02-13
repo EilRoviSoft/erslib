@@ -8,6 +8,7 @@
 // ers
 #include <erslib/error/include.hpp>
 
+
 bool equals(double l, double r) {
     return std::fabs(l - r) < std::numeric_limits<double>::epsilon();
 }
@@ -23,6 +24,7 @@ ers::Result<double> safe_divide(double l, double r) {
 
     return l / r;
 }
+
 
 TEST_CASE("division", "[error]") {
     SECTION("successful") {

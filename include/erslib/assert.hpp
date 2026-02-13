@@ -7,6 +7,7 @@
 // ers
 #include <erslib/util/string.hpp>
 
+
 namespace ers::internal {
 #ifdef ERS_ASSERT_INFO
 	void print_message(std::string_view text);
@@ -23,6 +24,7 @@ namespace ers::internal {
 		}
 	}
 }
+
 
 #define ERS_FMT_ASSERT(CONDITION, FMT, ...) \
 	ers::internal::custom_assert(CONDITION, FMT, __VA_ARGS__)

@@ -7,6 +7,7 @@
 #include <boost/unordered/unordered_map.hpp>
 #include <boost/unordered/unordered_set.hpp>
 
+
 // Uses buckets as implementation
 
 namespace ers {
@@ -16,9 +17,7 @@ namespace ers {
         typename Equal = std::equal_to<K>,
         typename Alloc = std::allocator<K>>
     using UnorderedSet = boost::unordered_set<K, Hash, Equal, Alloc>;
-}
 
-namespace ers {
     template<
         typename K,
         typename V,

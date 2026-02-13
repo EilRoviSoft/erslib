@@ -10,6 +10,7 @@
 #include <erslib/splitting/regular.hpp>
 #include <erslib/splitting/smart.hpp>
 
+
 struct data_t {
     std::string_view input;
     std::vector<std::string_view> expected;
@@ -36,6 +37,7 @@ std::vector<std::string_view> make_vector(TArgs&&... args) {
 
     return result;
 }
+
 
 TEST_CASE("regular", "[splitting]") {
     REQUIRE(process<ers::RegularSplitter>("hello world") == make_vector("hello", "world"));

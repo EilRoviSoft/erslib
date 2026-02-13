@@ -6,6 +6,7 @@
 // ers
 #include <erslib/type/general.hpp>
 
+
 namespace ers::internal {
     template<typename T, size_t Size, size_t Align>
     constexpr bool check_sbo() {

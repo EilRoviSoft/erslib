@@ -4,8 +4,9 @@
 #include <memory>
 #include <memory_resource>
 
-// erslib
+// ers
 #include <erslib/memory/pmr/deleter.hpp>
+
 
 namespace ers::pmr {
     template<typename T>

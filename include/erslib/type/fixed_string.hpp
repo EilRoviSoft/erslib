@@ -1,5 +1,6 @@
 #pragma once
 
+
 namespace ers {
     template<size_t N>
     struct fixed_string {

@@ -9,6 +9,7 @@
 #include <erslib/trait/string.hpp>
 #include <erslib/type/fixed_string.hpp>
 
+
 // Common string utils for hashing, comparing and allocation
 
 namespace ers::util {
@@ -53,6 +54,7 @@ namespace ers::util {
     };
 }
 
+
 // Implementation
 
 namespace ers::internal {
@@ -74,6 +76,7 @@ namespace ers::internal {
         return result;
 	}
 }
+
 
 // Concrete functions
 

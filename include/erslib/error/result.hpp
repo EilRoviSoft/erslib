@@ -10,6 +10,7 @@
 // ers
 #include <erslib/error/error.hpp>
 
+
 // Forward decl
 
 namespace ers {
@@ -19,6 +20,7 @@ namespace ers {
     template<typename T, typename E>
     class Result;
 }
+
 
 // Unexpected
 
@@ -91,6 +93,7 @@ namespace ers {
         return Unexpected<E>(std::forward<Args>(args)...);
     }
 }
+
 
 // Result
 
@@ -213,6 +216,7 @@ namespace ers {
         return Result<T, E>(Unexpected<E>(std::move(error)));
     }
 }
+
 
 // Result<void, ...>
 

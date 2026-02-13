@@ -6,6 +6,7 @@
 // export
 #include <erslib/export.hpp>
 
+
 namespace ers::splitting {
     extern template class TIterator<class RegularIterator>;
 
@@ -20,6 +21,7 @@ namespace ers::splitting {
         void _advance();
     };
 }
+
 
 namespace ers {
     using RegularSplitter = splitting::Processor<splitting::RegularIterator>;

@@ -3,6 +3,7 @@
 // std
 #include <bitset>
 
+
 namespace ers::util {
     template<typename T>
     concept BitIndex = std::unsigned_integral<T> || std::is_enum_v<T>;

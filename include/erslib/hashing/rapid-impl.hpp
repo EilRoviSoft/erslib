@@ -32,6 +32,7 @@
 // std
 #include <cstdint>
 
+
 /*
  *  Unrolled macro.
  *  Improves large input speed, but increases code size and worsens small input speed.
@@ -46,6 +47,7 @@
 # error "cannot define RAPIDHASH_COMPACT and RAPIDHASH_UNROLLED simultaneously."
 #endif
 
+
 /*
  *  Protection macro, alters behaviour of rapid_mum multiplication function.
  *
@@ -58,6 +60,7 @@
 # error "cannot define RAPIDHASH_PROTECTED and RAPIDHASH_FAST simultaneously."
 #endif
 
+
 /*
  *  Likely and unlikely macros.
  */
@@ -68,6 +71,7 @@
 # define _likely_(x) (x)
 # define _unlikely_(x) (x)
 #endif
+
 
 /*
  *  Endianness macros.
@@ -82,6 +86,7 @@
 #   define RAPIDHASH_LITTLE_ENDIAN
 # endif
 #endif
+
 
 namespace ers::internal {
     /*
@@ -463,6 +468,7 @@ namespace ers::internal {
         return rapid_mix(a ^ secret[7], b ^ secret[1] ^ i);
     }
 
+
     /*
      *  rapidhash seeded hash function.
      *
@@ -474,23 +480,10 @@ namespace ers::internal {
      *
      *  Returns a 64-bit hash.
      */
-    constexpr uint64_t rapidhash_with_seed(const std::byte* key, size_t len, uint64_t seed) noexcept {
+    constexpr uint64_t rapidhash(const std::byte* key, size_t len, uint64_t seed) noexcept {
         return rapidhash_internal(key, len, seed, rapid_secret);
     }
 
-    /*
-     *  rapidhash general purpose hash function.
-     *
-     *  @param key     Buffer to be hashed.
-     *  @param len     @key length, in bytes.
-     *
-     *  Calls rapidhash_withSeed using provided parameters and the default seed.
-     *
-     *  Returns a 64-bit hash.
-     */
-    constexpr uint64_t rapidhash(const std::byte* key, size_t len) noexcept {
-        return rapidhash_with_seed(key, len, 0);
-    }
 
     /*
      *  rapidhashMicro seeded hash function.
@@ -507,23 +500,10 @@ namespace ers::internal {
      *
      *  Returns a 64-bit hash.
      */
-    constexpr uint64_t rapidhash_micro_with_seed(const std::byte* key, size_t len, uint64_t seed) noexcept {
+    constexpr uint64_t rapidhash_micro(const std::byte* key, size_t len, uint64_t seed) noexcept {
         return rapidhashMicro_internal(key, len, seed, rapid_secret);
     }
 
-    /*
-     *  rapidhashMicro hash function.
-     *
-     *  @param key     Buffer to be hashed.
-     *  @param len     @key length, in bytes.
-     *
-     *  Calls rapidhash_withSeed using provided parameters and the default seed.
-     *
-     *  Returns a 64-bit hash.
-     */
-    constexpr uint64_t rapidhash_micro(const std::byte* key, size_t len) noexcept {
-        return rapidhash_micro_with_seed(key, len, 0);
-    }
 
     /*
      *  rapidhashNano seeded hash function.
@@ -536,25 +516,7 @@ namespace ers::internal {
      *
      *  Returns a 64-bit hash.
      */
-    constexpr uint64_t rapidhash_nano_with_seed(const std::byte* key, size_t len, uint64_t seed) noexcept {
+    constexpr uint64_t rapidhash_nano(const std::byte* key, size_t len, uint64_t seed) noexcept {
         return rapidhashNano_internal(key, len, seed, rapid_secret);
-    }
-
-    /*
-     *  rapidhashNano hash function.
-     *
-     *  Designed for Mobile and embedded applications, where keeping a small code size is a top priority.
-     *  Clang-18+ compiles it to less than 100 instructions without stack usage, both on x86-64 and aarch64.
-     *  The fastest for sizes up to 48 bytes, but may be considerably slower for larger inputs.
-     *
-     *  @param key     Buffer to be hashed.
-     *  @param len     @key length, in bytes.
-     *
-     *  Calls rapidhash_withSeed using provided parameters and the default seed.
-     *
-     *  Returns a 64-bit hash.
-     */
-    constexpr uint64_t rapidhash_nano(const std::byte* key, size_t len) noexcept {
-        return rapidhash_nano_with_seed(key, len, 0);
     }
 }

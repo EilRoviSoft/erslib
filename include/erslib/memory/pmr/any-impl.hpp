@@ -9,12 +9,14 @@
 #include <erslib/concept/sbo.hpp>
 #include <erslib/meta/type_hash.hpp>
 
+
 // Forward declaration
 
 namespace ers::internal {
     template<size_t Size, size_t Align, typename Hasher>
     struct TAnyImpl;
 }
+
 
 // Details
 
@@ -91,6 +93,7 @@ namespace ers::internal {
         }
     };
 }
+
 
 // Declaration
 
@@ -173,6 +176,7 @@ namespace ers::internal {
         }
     };
 }
+
 
 // Implementation
 

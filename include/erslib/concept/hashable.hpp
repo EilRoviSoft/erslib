@@ -3,6 +3,7 @@
 // ers
 #include <erslib/hashing/base.hpp>
 
+
 namespace ers {
     template<typename T, typename HashTag>
     concept Hashable = requires(const T& value, size_t seed) {

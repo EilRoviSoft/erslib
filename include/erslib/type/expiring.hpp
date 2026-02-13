@@ -3,7 +3,6 @@
 // std
 #include <chrono>
 
-// expiring_t
 
 namespace ers {
     template<typename T, typename Clock = std::chrono::system_clock>

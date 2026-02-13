@@ -19,8 +19,10 @@
 #include <erslib/type/timed_object.hpp>
 #include <erslib/util/string.hpp>
 
+
 using namespace std::chrono_literals;
 constexpr ers::duration_t lifetime = 20ms;
+
 
 std::mt19937_64& gen() {
     static std::mt19937_64 instance(Catch::getSeed());
@@ -46,6 +48,7 @@ protected:
     }
 };
 
+
 using Map = ers::thread_safe::Map<
     std::string,
     AutoRng,
@@ -56,6 +59,7 @@ using Map = ers::thread_safe::Map<
         ers::util::string_equal
     >
 >;
+
 
 TEST_CASE("testing thread_safe map", "[ts_map]") {
     Map c;

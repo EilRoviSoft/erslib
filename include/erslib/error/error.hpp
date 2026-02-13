@@ -12,6 +12,7 @@
 // export
 #include <erslib/export.hpp>
 
+
 // Severity
 
 namespace ers {
@@ -41,6 +42,7 @@ constexpr std::string_view ers::to_sv<ers::Severity>(const Severity& what) {
             return "UNKNOWN";
     }
 }
+
 
 // Error
 

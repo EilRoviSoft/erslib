@@ -10,8 +10,10 @@
 // ers
 #include <erslib/concept/container.hpp>
 
+
 namespace ers::thread_safe {
     template<typename K, typename V, typename Container>
+        requires HashMapConcept<Container>
     class Map {
     public:
         using container_type = Container;
@@ -19,8 +21,6 @@ namespace ers::thread_safe {
 
         using iterator = container_type::iterator;
         using const_iterator = container_type::const_iterator;
-
-        static_assert(HashMapConcept<container_type>, "Container must satisfy HashMap concept");
 
         Map() = default;
 
@@ -41,7 +41,8 @@ namespace ers::thread_safe {
             return *this;
         }
 
-        // capacity
+
+        // Capacity
 
         bool empty() const {
             std::shared_lock lock(this->m_mutex);
@@ -53,7 +54,8 @@ namespace ers::thread_safe {
             return m_data.size();
         }
 
-        // io
+
+        // I/O
 
         template<typename T>
         bool set(const T& k, V v = V()) {
@@ -73,7 +75,8 @@ namespace ers::thread_safe {
             return it->second;
         }
 
-        // lookup
+
+        // Lookup
 
         template<typename T>
         const V& operator[](const T& k) const {

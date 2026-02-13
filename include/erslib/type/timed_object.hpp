@@ -11,6 +11,7 @@
 #include <erslib/error/include.hpp>
 #include <erslib/type/expiring.hpp>
 
+
 namespace ers {
     template<typename T, typename Clock = std::chrono::system_clock>
     class ITimedObject {

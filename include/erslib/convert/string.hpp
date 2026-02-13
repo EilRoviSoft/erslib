@@ -3,6 +3,7 @@
 // std
 #include <string>
 
+
 namespace ers {
     template<typename T>
     constexpr std::string_view to_sv(const T& what) = delete("default specialization");
@@ -10,6 +11,7 @@ namespace ers {
     template<typename T>
     std::string to_string(const T& what) = delete("default specialization");
 }
+
 
 namespace ers {
     template<typename T>
