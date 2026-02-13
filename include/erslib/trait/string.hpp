@@ -64,15 +64,15 @@ namespace ers {
         }
     };
 
-    template<size_t TSize>
-    struct string_traits<const char[TSize]> {
+    template<size_t Size>
+    struct string_traits<const char(&)[Size]> {
         static constexpr bool is_comptime = true;
 
-        static constexpr size_t size(const char (&arg)[TSize]) {
-            return std::strlen(arg);
+        static constexpr size_t size(const char (&)[Size]) {
+            return Size;
         }
 
-        static void append(std::string& dest, const char (&source)[TSize]) {
+        static void append(std::string& dest, const char (&source)[Size]) {
             dest += source;
         }
     };

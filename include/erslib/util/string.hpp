@@ -7,6 +7,7 @@
 // ers
 #include <erslib/concept/string.hpp>
 #include <erslib/trait/string.hpp>
+#include <erslib/type/fixed_string.hpp>
 
 // Common string utils for hashing, comparing and allocation
 
@@ -55,25 +56,20 @@ namespace ers::util {
 // Implementation
 
 namespace ers::internal {
-	template<typename... Strings>
-	auto make_literals_array(Strings&&... strs) {
-        constexpr size_t size = (string_traits<Strings>::size(strs) + ...);
-        std::array<char, size> result;
+	template<fixed_string... Args>
+	constexpr auto make_literals_array() {
+        constexpr size_t size = (Args.size() + ...);
+        std::array<char, size> result = {};
 
         size_t ptr = 0;
 
-        auto insert = [&result]<typename T>(const size_t offset, T&& s) {
-            if constexpr (std::is_same_v<T, char>) {
-                result[offset] = s;
-            } else {
-                for (size_t i = 0; i < string_traits<T>::size(s); i++)
-                    result[i + offset] = s[i];
-            }
-
-            return string_traits<T>::size();
+        auto append = [&](const auto& s) {
+            for (size_t i = 0; i < s.size(); i++)
+                result[ptr + i] = s.value[i];
+            ptr += s.size();
         };
 
-        ((ptr += insert(ptr, strs)), ...);
+        (append(Args), ...);
 
         return result;
 	}
@@ -82,16 +78,16 @@ namespace ers::internal {
 // Concrete functions
 
 namespace ers::util {
-    template<char... Chars>
+    template<char... Args>
     constexpr std::string_view concat_chars() {
-        static constexpr std::array<char, sizeof...(Chars)> arr = { Chars... };
+        static constexpr std::array<char, sizeof...(Args)> arr = { Args... };
         return std::string_view { arr, arr.size() };
     }
 
-    template<typename... Strings>
-	constexpr std::string_view concat_literals(Strings&&... strs) {
-        static constexpr auto arr = internal::make_literals_array(std::forward<Strings>(strs)...);
-        return std::string_view { arr, arr.size() };
+    template<fixed_string... Args>
+	constexpr std::string_view concat_literals() {
+        static constexpr auto arr = internal::make_literals_array<Args...>();
+        return std::string_view { arr.data(), arr.size() };
     }
 
     template<typename... Args>

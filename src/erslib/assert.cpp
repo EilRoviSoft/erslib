@@ -49,9 +49,8 @@ namespace ers::internal {
 	void print_message(std::string_view text) {
 		auto& tool = AssertTool::instance();
 		
-		if (!tool.is_initialized) {
-			tool.init(std::ref(std::cerr), std::fstream("log.txt"));
-		}
+		if (!tool.is_initialized)
+			tool.init(std::cerr, std::fstream("log.txt"));
 
 		for (const auto& it : tool.enabled)
 			*it << text << '\n' << std::flush;

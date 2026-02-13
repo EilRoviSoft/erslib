@@ -69,6 +69,8 @@ generate_export_header(erslib EXPORT_FILE_NAME include/erslib/${EXPORT_FILE_NAME
 set(SOURCES
     "include/erslib/export.hpp"
 
+    "src/erslib/assert.cpp"
+
     "src/erslib/error/error.cpp"
 
     "src/erslib/splitting/regular.cpp"
@@ -76,9 +78,8 @@ set(SOURCES
 
     "src/easy_ecs/engine.cpp"
     "src/easy_ecs/entity.cpp"
-    "src/easy_ecs/system.cpp"
-    
- "src/erslib/assert.cpp")
+    "src/easy_ecs/system.cpp"    
+)
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${SOURCES})
 
 #----------------------------------------------------------------------------------------------------------------------

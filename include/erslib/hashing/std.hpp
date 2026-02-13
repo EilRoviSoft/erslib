@@ -6,11 +6,11 @@
 // algos usage
 
 namespace ers::hashing {
-    struct std_policy {};
+    struct stdhash_policy {};
 }
 
 template<>
-struct ers::internal::backend<ers::hashing::std_policy> {
+struct ers::internal::backend<ers::hashing::stdhash_policy> {
     template<typename T>
     static constexpr size_t process_value(
         const T& value,
@@ -22,5 +22,5 @@ struct ers::internal::backend<ers::hashing::std_policy> {
 
 namespace ers {
     template<typename T>
-    using Hash = THashBase<T, hashing::std_policy>;
+    using Hash = THashBase<T, hashing::stdhash_policy>;
 }

@@ -15,7 +15,8 @@
 				"CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
 			},
 			"environment": {
-				"CXX_FLAGS": "/std:c++latest"
+				"CXX_FLAGS": "/std:c++latest",
+				"CMAKE_CXX_STANDARD": "26"
 			},
 			"architecture": {
 				"value": "x64",
@@ -50,8 +51,7 @@
 			"hidden": true,
 			"cacheVariables": {
 				"CMAKE_CXX_COMPILER": "clang-cl.exe",
-				"CMAKE_C_COMPILER": "clang-cl.exe",
-				"CMAKE_CXX_STANDARD_REQUIRED": "ON"
+				"CMAKE_C_COMPILER": "clang-cl.exe"
 			}
 		}
 	]

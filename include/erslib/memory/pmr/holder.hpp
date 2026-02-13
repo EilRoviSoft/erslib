@@ -23,7 +23,7 @@ namespace ers::pmr {
             throw;
         }
 
-        return Holder<T>(p, deleter<T>(alloc));
+        return Holder<T>(p, deleter<T>(mr));
     }
 
     template<typename T, typename Derived, typename... Args>
@@ -39,6 +39,6 @@ namespace ers::pmr {
             throw;
         }
 
-        return Holder<T>(static_cast<T*>(p), deleter<T>(alloc));
+        return Holder<T>(static_cast<T*>(p), deleter<T>(mr));
     }
 }

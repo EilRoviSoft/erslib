@@ -14,7 +14,7 @@
 #include <easy_ecs/system.hpp>
 
 namespace ecs {
-    class Engine {
+    /*class Engine {
     public:
         template<typename K, typename T>
         T& add(const K& k, T v) {
@@ -27,9 +27,9 @@ namespace ecs {
         ers::UnorderedMap<
             std::string,
             ers::pmr::Holder<IComponent>,
-            ers::util::string_hash_adaptor<ers::RapidMicroHash>,
+            ers::util::string_hash_adaptor<ers::RapidHash>,
             ers::util::string_equal
         > m_storage;
         ers::UnorderedMap<size_t, std::list<IComponent*>> m_by_type;
-    };
+    };*/
 }

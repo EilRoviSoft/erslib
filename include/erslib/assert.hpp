@@ -11,11 +11,11 @@ namespace ers::internal {
 #ifdef ERS_ASSERT_INFO
 	void print_message(std::string_view text);
 #else
-	inline void print_message(std::string_view text) {}
+	inline void print_message([[maybe_unused]] std::string_view text) {}
 #endif
 
 	template<typename... Args>
-	void assert(bool condition, std::string_view fmt, Args&&... args) {
+	void custom_assert(bool condition, std::string_view fmt, Args&&... args) {
 		if (condition) {
 			std::string text = std::format(fmt, std::forward<Args>(args)...);
 			print_message(text);
@@ -25,10 +25,10 @@ namespace ers::internal {
 }
 
 #define ERS_FMT_ASSERT(CONDITION, FMT, ...) \
-	ers::internal::assert(CONDITION, FMT, __VA_ARGS__)
+	ers::internal::custom_assert(CONDITION, FMT, __VA_ARGS__)
 
 #define ERS_MSR_ASSERT(CONDITION, MESSAGE) \
-	ers::internal::assert(CONDITION, ers::util::concat_literals(#CONDITION, " is violated. {}"))
+	ers::internal::custom_assert(CONDITION, ers::util::concat_literals<#CONDITION, " is violated. {}">())
 
 #define ERS_ASSERT(CONDITION) \
-	ers::internal::assert(CONDITION, ers::util::concat_literals(#CONDITION, " is violated."))
+	ers::internal::custom_assert(CONDITION, ers::util::concat_literals<#CONDITION, " is violated.">())

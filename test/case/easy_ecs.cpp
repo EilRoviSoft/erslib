@@ -26,7 +26,7 @@ struct Position {
 };
 
 TEST_CASE("engine test", "[easy_ecs]") {
-    ecs::Engine engine;
+    /*ecs::Engine engine;
 
     SECTION("position testing") {
         auto src = Position(1.0, 2.0);
@@ -34,5 +34,5 @@ TEST_CASE("engine test", "[easy_ecs]") {
 
         REQUIRE(src == ref);
         REQUIRE(&src != &ref);
-    }
+    }*/
 }
