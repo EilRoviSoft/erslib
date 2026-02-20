@@ -72,20 +72,20 @@ TEST_CASE("testing thread_safe map", "[ts_map]") {
     for (auto it : vals)
         c.set(it);
 
-    SECTION("intervaled output") {
-        auto print = [&c, &vals](size_t i) mutable {
-            //std::print("\niteration {}:\n", i);
-            for (auto it : vals) {
-                size_t v = *c[it].get();
-                //std::print("{:3}: {}\n", it, v);
-            }
-        };
+    //SECTION("intervaled output") {
+    //    auto print = [&c, &vals](size_t i) mutable {
+    //        //std::print("\niteration {}:\n", i);
+    //        for (auto it : vals) {
+    //            size_t v = *c[it].get();
+    //            //std::print("{:3}: {}\n", it, v);
+    //        }
+    //    };
 
-        for (auto [i, d] : intervals | std::views::enumerate) {
-            print(i);
-            //std::print("waiting for {}\n", d);
-            std::this_thread::sleep_for(d);
-        }
-        print(intervals.size());
-    }
+    //    for (auto [i, d] : intervals | std::views::enumerate) {
+    //        print(i);
+    //        //std::print("waiting for {}\n", d);
+    //        std::this_thread::sleep_for(d);
+    //    }
+    //    print(intervals.size());
+    //}
 }
