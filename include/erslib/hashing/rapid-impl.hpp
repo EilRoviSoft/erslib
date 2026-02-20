@@ -181,14 +181,20 @@ namespace ers::internal {
      */
 #ifdef RAPIDHASH_LITTLE_ENDIAN
     constexpr uint64_t rapid_read64(const std::byte* p) noexcept {
-        uint64_t v;
-        memcpy(&v, p, sizeof(uint64_t));
-        return v;
+        return static_cast<uint64_t>(std::to_integer<uint8_t>(p[0]))
+            | static_cast<uint64_t>(std::to_integer<uint8_t>(p[1])) << 8
+            | static_cast<uint64_t>(std::to_integer<uint8_t>(p[2])) << 16
+            | static_cast<uint64_t>(std::to_integer<uint8_t>(p[3])) << 24
+            | static_cast<uint64_t>(std::to_integer<uint8_t>(p[4])) << 32
+            | static_cast<uint64_t>(std::to_integer<uint8_t>(p[5])) << 40
+            | static_cast<uint64_t>(std::to_integer<uint8_t>(p[6])) << 48
+            | static_cast<uint64_t>(std::to_integer<uint8_t>(p[7])) << 56;
     }
     constexpr uint64_t rapid_read32(const std::byte* p) noexcept {
-        uint32_t v;
-        memcpy(&v, p, sizeof(uint32_t));
-        return v;
+        return static_cast<uint32_t>(std::to_integer<uint8_t>(p[0]))
+            | static_cast<uint32_t>(std::to_integer<uint8_t>(p[1])) << 8
+            | static_cast<uint32_t>(std::to_integer<uint8_t>(p[2])) << 16
+            | static_cast<uint32_t>(std::to_integer<uint8_t>(p[3])) << 24;
     }
 #elif defined(__GNUC__) || defined(__INTEL_COMPILER) || defined(__clang__)
     constexpr uint64_t rapid_read64(const std::byte* p) noexcept {
@@ -216,13 +222,22 @@ namespace ers::internal {
     constexpr uint64_t rapid_read64(const std::byte* p) noexcept {
         uint64_t v;
         memcpy(&v, p, 8);
-        return (((v >> 56) & 0xff) | ((v >> 40) & 0xff00) | ((v >> 24) & 0xff0000) | ((v >> 8) & 0xff000000) | ((v << 8) & 0xff00000000) | ((v << 24) &
-            0xff0000000000) | ((v << 40) & 0xff000000000000) | ((v << 56) & 0xff00000000000000));
+        return (((v >> 56) & 0xff)
+            | ((v >> 40) & 0xff00)
+            | ((v >> 24) & 0xff0000)
+            | ((v >> 8) & 0xff000000)
+            | ((v << 8) & 0xff00000000)
+            | ((v << 24) & 0xff0000000000)
+            | ((v << 40) & 0xff000000000000)
+            | ((v << 56) & 0xff00000000000000));
     }
     constexpr uint64_t rapid_read32(const std::byte* p) noexcept {
         uint32_t v;
         memcpy(&v, p, 4);
-        return (((v >> 24) & 0xff) | ((v >> 8) & 0xff00) | ((v << 8) & 0xff0000) | ((v << 24) & 0xff000000));
+        return (((v >> 24) & 0xff)
+            | ((v >> 8) & 0xff00)
+            | ((v << 8) & 0xff0000)
+            | ((v << 24) & 0xff000000));
     }
 #endif
 
@@ -236,13 +251,15 @@ namespace ers::internal {
      *
      *  Returns a 64-bit hash.
      */
-    constexpr uint64_t rapidhash_internal(const std::byte* p, size_t len, uint64_t seed, const uint64_t* secret) noexcept {
+    constexpr uint64_t rapidhash(const std::byte* p, size_t len, uint64_t seed, const uint64_t* secret) noexcept {
         seed ^= rapid_mix(seed ^ secret[2], secret[1]);
         uint64_t a = 0, b = 0;
         size_t i = len;
+
         if (_likely_(len <= 16)) {
             if (len >= 4) {
                 seed ^= len;
+
                 if (len >= 8) {
                     const std::byte* plast = p + len - 8;
                     a = rapid_read64(p);
@@ -262,6 +279,7 @@ namespace ers::internal {
                 uint64_t see1 = seed, see2 = seed;
                 uint64_t see3 = seed, see4 = seed;
                 uint64_t see5 = seed, see6 = seed;
+
 #ifdef RAPIDHASH_COMPACT
                 do {
                     seed = rapid_mix(rapid_read64(p) ^ secret[0], rapid_read64(p + 8) ^ seed);
@@ -305,6 +323,7 @@ namespace ers::internal {
                     i -= 112;
                 }
 #endif
+
                 seed ^= see1;
                 see2 ^= see3;
                 see4 ^= see5;
@@ -312,6 +331,7 @@ namespace ers::internal {
                 see2 ^= see4;
                 seed ^= see2;
             }
+
             if (i > 16) {
                 seed = rapid_mix(rapid_read64(p) ^ secret[2], rapid_read64(p + 8) ^ seed);
                 if (i > 32) {
@@ -330,9 +350,11 @@ namespace ers::internal {
                     }
                 }
             }
+
             a = rapid_read64(p + i - 16) ^ i;
             b = rapid_read64(p + i - 8);
         }
+
         a ^= secret[1];
         b ^= seed;
         rapid_mum(&a, &b);
@@ -349,10 +371,11 @@ namespace ers::internal {
      *
      *  Returns a 64-bit hash.
      */
-    constexpr uint64_t rapidhashMicro_internal(const std::byte* p, size_t len, uint64_t seed, const uint64_t* secret) noexcept {
+    constexpr uint64_t rapidhash_micro(const std::byte* p, size_t len, uint64_t seed, const uint64_t* secret) noexcept {
         seed ^= rapid_mix(seed ^ secret[2], secret[1]);
         uint64_t a = 0, b = 0;
         size_t i = len;
+
         if (_likely_(len <= 16)) {
             if (len >= 4) {
                 seed ^= len;
@@ -374,6 +397,7 @@ namespace ers::internal {
             if (i > 80) {
                 uint64_t see1 = seed, see2 = seed;
                 uint64_t see3 = seed, see4 = seed;
+
                 do {
                     seed = rapid_mix(rapid_read64(p) ^ secret[0], rapid_read64(p + 8) ^ seed);
                     see1 = rapid_mix(rapid_read64(p + 16) ^ secret[1], rapid_read64(p + 24) ^ see1);
@@ -383,11 +407,13 @@ namespace ers::internal {
                     p += 80;
                     i -= 80;
                 } while (i > 80);
+
                 seed ^= see1;
                 see2 ^= see3;
                 seed ^= see4;
                 seed ^= see2;
             }
+
             if (i > 16) {
                 seed = rapid_mix(rapid_read64(p) ^ secret[2], rapid_read64(p + 8) ^ seed);
                 if (i > 32) {
@@ -400,9 +426,11 @@ namespace ers::internal {
                     }
                 }
             }
+
             a = rapid_read64(p + i - 16) ^ i;
             b = rapid_read64(p + i - 8);
         }
+
         a ^= secret[1];
         b ^= seed;
         rapid_mum(&a, &b);
@@ -419,7 +447,7 @@ namespace ers::internal {
     *
     *  Returns a 64-bit hash.
     */
-    constexpr uint64_t rapidhashNano_internal(const std::byte* p, size_t len, uint64_t seed, const uint64_t* secret) noexcept {
+    constexpr uint64_t rapidhash_nano(const std::byte* p, size_t len, uint64_t seed, const uint64_t* secret) noexcept {
         seed ^= rapid_mix(seed ^ secret[2], secret[1]);
         uint64_t a = 0, b = 0;
         size_t i = len;
@@ -443,6 +471,7 @@ namespace ers::internal {
         } else {
             if (i > 48) {
                 uint64_t see1 = seed, see2 = seed;
+
                 do {
                     seed = rapid_mix(rapid_read64(p) ^ secret[0], rapid_read64(p + 8) ^ seed);
                     see1 = rapid_mix(rapid_read64(p + 16) ^ secret[1], rapid_read64(p + 24) ^ see1);
@@ -450,6 +479,7 @@ namespace ers::internal {
                     p += 48;
                     i -= 48;
                 } while (i > 48);
+
                 seed ^= see1;
                 seed ^= see2;
             }
@@ -459,64 +489,14 @@ namespace ers::internal {
                     seed = rapid_mix(rapid_read64(p + 16) ^ secret[2], rapid_read64(p + 24) ^ seed);
                 }
             }
+
             a = rapid_read64(p + i - 16) ^ i;
             b = rapid_read64(p + i - 8);
         }
+
         a ^= secret[1];
         b ^= seed;
         rapid_mum(&a, &b);
         return rapid_mix(a ^ secret[7], b ^ secret[1] ^ i);
-    }
-
-
-    /*
-     *  rapidhash seeded hash function.
-     *
-     *  @param key     Buffer to be hashed.
-     *  @param len     @key length, in bytes.
-     *  @param seed    64-bit seed used to alter the hash result predictably.
-     *
-     *  Calls rapidhash_internal using provided parameters and default secrets.
-     *
-     *  Returns a 64-bit hash.
-     */
-    constexpr uint64_t rapidhash(const std::byte* key, size_t len, uint64_t seed) noexcept {
-        return rapidhash_internal(key, len, seed, rapid_secret);
-    }
-
-
-    /*
-     *  rapidhashMicro seeded hash function.
-     *
-     *  Designed for HPC and server applications, where cache misses make a noticeable performance detriment.
-     *  Clang-18+ compiles it to ~140 instructions without stack usage, both on x86-64 and aarch64.
-     *  Faster for sizes up to 512 bytes, just 15%-20% slower for inputs above 1kb.
-     *
-     *  @param key     Buffer to be hashed.
-     *  @param len     @key length, in bytes.
-     *  @param seed    64-bit seed used to alter the hash result predictably.
-     *
-     *  Calls rapidhash_internal using provided parameters and default secrets.
-     *
-     *  Returns a 64-bit hash.
-     */
-    constexpr uint64_t rapidhash_micro(const std::byte* key, size_t len, uint64_t seed) noexcept {
-        return rapidhashMicro_internal(key, len, seed, rapid_secret);
-    }
-
-
-    /*
-     *  rapidhashNano seeded hash function.
-     *
-     *  @param key     Buffer to be hashed.
-     *  @param len     @key length, in bytes.
-     *  @param seed    64-bit seed used to alter the hash result predictably.
-     *
-     *  Calls rapidhash_internal using provided parameters and default secrets.
-     *
-     *  Returns a 64-bit hash.
-     */
-    constexpr uint64_t rapidhash_nano(const std::byte* key, size_t len, uint64_t seed) noexcept {
-        return rapidhashNano_internal(key, len, seed, rapid_secret);
     }
 }

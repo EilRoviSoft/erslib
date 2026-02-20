@@ -1,5 +1,14 @@
 #include "erslib/splitting/regular.hpp"
 
+// Forward declaration
+
+namespace ers::splitting {
+    template class TIterator<RegularIterator>;
+}
+
+
+// Implementation
+
 ers::splitting::RegularIterator::RegularIterator(const Processor<RegularIterator>& parent, size_t offset) :
     TIterator(parent, offset) {
 }

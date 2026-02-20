@@ -6,9 +6,10 @@
 
 // ers
 #include <erslib/util/array.hpp>
+#include <erslib/hashing/rapid.hpp>
 
 
-namespace ers::meta::_impl {
+namespace ers::internal {
     template<typename T>
     constexpr auto type_name_array() {
 #ifdef __clang__
@@ -42,12 +43,24 @@ namespace ers::meta::_impl {
     };
 }
 
+
 namespace ers::meta {
     template<typename T>
     struct type_name {
-        static constexpr auto value = std::string_view(_impl::type_name_holder<T>::value);
+        static constexpr auto value = std::string_view(internal::type_name_holder<T>::value);
     };
 
     template<typename T>
     constexpr std::string_view type_name_v = type_name<T>::value;
+}
+
+
+namespace ers::meta {
+    template<typename T, typename Hasher = RapidHash<decltype(internal::type_name_holder<T>::value)>>
+    struct type_hash {
+        static constexpr auto value = Hasher {}(internal::type_name_holder<T>::value);
+    };
+
+    template<typename T, typename Hasher = RapidHash<decltype(internal::type_name_holder<T>::value)>>
+    constexpr auto type_hash_v = type_hash<T, Hasher>::value;
 }

@@ -2,7 +2,7 @@
 #include <catch2/catch_test_macros.hpp>
 
 // ers
-#include <erslib/meta/type_name.hpp>
+#include <erslib/meta/type_info.hpp>
 
 
 template<typename T>

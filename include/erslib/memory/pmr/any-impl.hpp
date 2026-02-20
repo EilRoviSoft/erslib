@@ -7,13 +7,13 @@
 // ers
 #include <erslib/assert.hpp>
 #include <erslib/concept/sbo.hpp>
-#include <erslib/meta/type_hash.hpp>
+#include <erslib/meta/type_info.hpp>
 
 
 // Forward declaration
 
 namespace ers::internal {
-    template<size_t Size, size_t Align, typename Hasher>
+    template<size_t Size, size_t Align>
     struct TAnyImpl;
 }
 
@@ -35,9 +35,9 @@ namespace ers::internal {
         void* heap;
     };
 
-    template<size_t Size, size_t Align, typename Hasher>
+    template<size_t Size, size_t Align>
     struct TAnyVtable {
-        using target_type = TAnyImpl<Size, Align, Hasher>;
+        using target_type = TAnyImpl<Size, Align>;
 
         void (*destroy)(target_type& obj);
         void (*dealloc)(target_type& obj);
@@ -98,12 +98,12 @@ namespace ers::internal {
 // Declaration
 
 namespace ers::internal {
-    template<size_t Size, size_t Align, typename Hasher>
+    template<size_t Size, size_t Align>
     struct TAnyImpl {
         // Aliases
 
         using storage_type = TAnyStorage<Size, Align>;
-        using vtable_type = TAnyVtable<Size, Align, Hasher>;
+        using vtable_type = TAnyVtable<Size, Align>;
 
         // Members
 
@@ -181,65 +181,69 @@ namespace ers::internal {
 // Implementation
 
 namespace ers::internal {
-    template<size_t Size, size_t Align, typename Hasher>
+    template<size_t Size, size_t Align>
     template<typename T>
-    T* TAnyVtable<Size, Align, Hasher>::impl_alloc(target_type& obj) {
+    T* TAnyVtable<Size, Align>::impl_alloc(target_type& obj) {
+        T* result;
+        
         if constexpr (!is_sbo_applicable_v<T, Size, Align>) {
             obj.storage.heap = obj.mr->allocate(sizeof(T), alignof(T));
             obj.policy = SboPolicy::Dynamic;
-            return obj.storage.heap;
+            result = static_cast<T*>(obj.storage.heap);
         } else {
             obj.policy = SboPolicy::Embedded;
-            return obj.storage.buffer;
+            result = static_cast<T*>(obj.storage.buffer);
         }
+
+        return result;
     }
 
-    template<size_t Size, size_t Align, typename Hasher>
+    template<size_t Size, size_t Align>
     template<typename T>
-    void TAnyVtable<Size, Align, Hasher>::impl_destroy(target_type& obj) {
+    void TAnyVtable<Size, Align>::impl_destroy(target_type& obj) {
         if constexpr (std::is_trivially_destructible_v<T>)
             return;
 
         if constexpr (is_sbo_applicable_v<T, Size, Align>) {
-            ERS_ASSERT(obj.m_policy == SboPolicy::Embedded);
-            std::destroy_at(reinterpret_cast<T*>(obj.m_storage.buffer));
+            ERS_ASSERT(obj.policy == SboPolicy::Embedded);
+            std::destroy_at(reinterpret_cast<T*>(obj.storage.buffer));
         } else {
-            ERS_ASSERT(obj.m_policy == SboPolicy::Dynamic);
-            std::destroy_at(static_cast<T*>(obj.m_storage.heap));
+            ERS_ASSERT(obj.policy == SboPolicy::Dynamic);
+            std::destroy_at(static_cast<T*>(obj.storage.heap));
         }
     }
 
-    template<size_t Size, size_t Align, typename Hasher>
+    template<size_t Size, size_t Align>
     template<typename T>
-    void TAnyVtable<Size, Align, Hasher>::impl_dealloc(target_type& obj) {
+    void TAnyVtable<Size, Align>::impl_dealloc(target_type& obj) {
         if constexpr (!is_sbo_applicable_v<T, Size, Align>)
             obj.mr->deallocate(obj.storage.heap, sizeof(T), alignof(T));
     }
 
-    template<size_t Size, size_t Align, typename Hasher>
+    template<size_t Size, size_t Align>
     template<typename T>
-    void TAnyVtable<Size, Align, Hasher>::impl_trivial_copy(target_type& dst, const void* src) {
+    void TAnyVtable<Size, Align>::impl_trivial_copy(target_type& dst, const void* src) {
         dst.template prepare_to_assign<T>();
         std::memcpy(dst.template data_as<T>(), static_cast<const T*>(src), sizeof(T));
     }
 
-    template<size_t Size, size_t Align, typename Hasher>
+    template<size_t Size, size_t Align>
     template<typename T>
-    void TAnyVtable<Size, Align, Hasher>::impl_copy(target_type& dst, const void* src) {
+    void TAnyVtable<Size, Align>::impl_copy(target_type& dst, const void* src) {
         dst.template prepare_to_assign<T>();
         std::construct_at(dst.template data_as<T>(), *static_cast<const T*>(src));
     }
 
-    template<size_t Size, size_t Align, typename Hasher>
+    template<size_t Size, size_t Align>
     template<typename T>
-    void TAnyVtable<Size, Align, Hasher>::impl_move(target_type& dst, void* src) {
+    void TAnyVtable<Size, Align>::impl_move(target_type& dst, void* src) {
         dst.template prepare_to_assign<T>();
         std::construct_at(dst.template data_as<T>(), std::move(*static_cast<T*>(src)));
     }
 
-    template<size_t Size, size_t Align, typename Hasher>
+    template<size_t Size, size_t Align>
     template<typename T>
-    void TAnyVtable<Size, Align, Hasher>::impl_change_resource(target_type& obj, std::pmr::memory_resource* mr) {
+    void TAnyVtable<Size, Align>::impl_change_resource(target_type& obj, std::pmr::memory_resource* mr) {
         if (*mr == *obj.mr)
             return;
 
@@ -255,14 +259,14 @@ namespace ers::internal {
             if constexpr (std::is_trivially_copyable_v<T>)
                 std::memcpy(new_heap, old_heap, sizeof(T));
             else
-                std::construct_at(new_heap, std::move(*static_cast<T*>(old_heap)));
+                std::construct_at(static_cast<T*>(new_heap), std::move(*static_cast<T*>(old_heap)));
 
             if constexpr (!std::is_trivially_destructible_v<T>)
                 std::destroy_at(static_cast<T*>(old_heap));
 
             old_mr->deallocate(old_heap, sizeof(T), alignof(T));
 
-            obj.storage = new_heap;
+            obj.storage.heap = new_heap;
         }
 
         obj.mr = mr;

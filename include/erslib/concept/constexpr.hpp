@@ -9,9 +9,12 @@ namespace ers::internal {
 
 namespace ers {
     template<typename F>
-    consteval bool is_consteval() {
+    consteval bool is_constexpr_friendly() {
         return requires {
             typename internal::consteval_helper<(F{}(), 1)>;
         };
     }
+
+    template<typename F>
+    static constexpr bool is_constexpr_friendly_v = is_constexpr_friendly<F>();
 }

@@ -55,29 +55,6 @@ namespace ers::util {
 }
 
 
-// Implementation
-
-namespace ers::internal {
-	template<fixed_string... Args>
-	constexpr auto make_literals_array() {
-        constexpr size_t size = (Args.size() + ...);
-        std::array<char, size> result = {};
-
-        size_t ptr = 0;
-
-        auto append = [&](const auto& s) {
-            for (size_t i = 0; i < s.size(); i++)
-                result[ptr + i] = s.value[i];
-            ptr += s.size();
-        };
-
-        (append(Args), ...);
-
-        return result;
-	}
-}
-
-
 // Concrete functions
 
 namespace ers::util {
@@ -88,9 +65,20 @@ namespace ers::util {
     }
 
     template<fixed_string... Args>
-	constexpr std::string_view concat_literals() {
-        static constexpr auto arr = internal::make_literals_array<Args...>();
-        return std::string_view { arr.data(), arr.size() };
+	constexpr auto concat_literals() {
+        fixed_string<(Args.size() + ...)> result;
+
+        size_t ptr = 0;
+
+        auto append = [&](const auto& s) {
+            for (size_t i = 0; i < s.size(); i++)
+                result.value[ptr + i] = s.value[i];
+            ptr += s.size();
+        };
+
+        (append(Args), ...);
+
+        return result;
     }
 
     template<typename... Args>

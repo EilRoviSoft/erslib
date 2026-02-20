@@ -62,4 +62,9 @@ if(NOT IS_TOP_LEVEL)
     win_copy_deps_to_target_dir(erslib_test erslib::erslib)
 endif()
 
+target_compile_definitions(erslib
+    PRIVATE
+        ERS_ASSERT_INFO
+)
+
 add_test(NAME erslib_test COMMAND erslib_test)

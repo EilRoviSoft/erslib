@@ -1,5 +1,14 @@
 #include "erslib/splitting/smart.hpp"
 
+// Forward declaration
+
+namespace ers::splitting {
+    template class TIterator<SmartIterator>;
+}
+
+
+// Implementation
+
 ers::splitting::SmartIterator::SmartIterator(const Processor<SmartIterator>& parent, std::size_t offset) :
     TIterator(parent, offset) {
 }

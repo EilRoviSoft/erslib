@@ -4,40 +4,38 @@
 #include <memory>
 
 // ers
-#include <erslib/hashing/rapid.hpp>
 #include <erslib/memory/pmr/any-impl.hpp>
 
 
 constexpr size_t Size = 16;
 constexpr size_t Align = alignof(std::max_align_t);
-using Hasher = ers::RapidHash<std::string_view>;
 
 
 namespace ers::pmr {
-    class TAny : protected internal::TAnyImpl<Size, Align, Hasher> {
+    class TAny : protected internal::TAnyImpl<Size, Align> {
     public:
         struct placeholder_t {};
 
-        
+
         // Default Constructor
 
         TAny() :
             TAnyImpl {
                 .mr     = nullptr,
                 .vtable = nullptr,
-                .type   = meta::type_hash_v<placeholder_t, Hasher>,
+                .type   = meta::type_hash_v<placeholder_t>,
                 .policy = SboPolicy::Empty
             } {
         }
 
-        
+
         // Copy
 
         TAny(const TAny& other) :
             TAnyImpl {
                 .mr     = other.mr,
                 .vtable = other.vtable,
-                .type   = meta::type_hash_v<placeholder_t, Hasher>,
+                .type   = meta::type_hash_v<placeholder_t>
             } {
             vtable->copy(*this, other.data());
         }
@@ -52,14 +50,14 @@ namespace ers::pmr {
             return *this;
         }
 
-        
+
         // Move
 
         TAny(TAny&& other) noexcept :
             TAnyImpl {
                 .mr     = other.mr,
                 .vtable = other.vtable,
-                .type   = meta::type_hash_v<placeholder_t, Hasher>,
+                .type   = meta::type_hash_v<placeholder_t>
             } {
             vtable->move(*this, other.data());
         }
@@ -74,34 +72,46 @@ namespace ers::pmr {
             return *this;
         }
 
-        
+
         // Value initializer
 
         template<typename T>
             requires (!std::is_same_v<T, TAny>)
-        TAny(T&& v, std::pmr::memory_resource* provided_mr = std::pmr::get_default_resource()) {
+        TAny(T&& v, std::pmr::memory_resource* provided_mr = std::pmr::get_default_resource()) :
+            TAnyImpl {
+                .policy = SboPolicy::Empty
+            } {
             emplace_with_resource<T>(provided_mr, std::forward<T>(v));
         }
         template<typename T>
             requires (!std::is_same_v<T, TAny>)
         TAny& operator=(T&& v) {
+            policy = SboPolicy::Empty;
+
             emplace<T>(std::forward<T>(v));
+
             return *this;
         }
 
-        
+
         // Value in-place initializer
 
         template<typename T, typename... Args>
-        explicit TAny(std::in_place_type_t<T>, Args&&... args) {
+        explicit TAny(std::in_place_type_t<T>, Args&&... args) :
+            TAnyImpl {
+                .policy = SboPolicy::Empty
+            } {
             emplace<T>(std::forward<Args>(args)...);
         }
         template<typename T, typename... Args>
-        explicit TAny(std::in_place_type_t<T>, std::pmr::memory_resource* provided_mr, Args&&... args) {
+        explicit TAny(std::in_place_type_t<T>, std::pmr::memory_resource* provided_mr, Args&&... args) :
+            TAnyImpl {
+                .policy = SboPolicy::Empty
+            } {
             emplace_with_resource<T>(provided_mr, std::forward<Args>(args)...);
         }
 
-        
+
         // Destructor
 
         ~TAny() {
@@ -121,14 +131,14 @@ namespace ers::pmr {
 
                 mr = nullptr;
                 vtable = nullptr;
-                type = meta::type_hash_v<placeholder_t, Hasher>;
+                type = meta::type_hash_v<placeholder_t>;
                 policy = SboPolicy::Empty;
             }
         }
 
         template<typename T, typename... Args>
             requires std::is_constructible_v<std::decay_t<T>, Args...>
-                && std::is_copy_constructible_v<std::decay_t<T>>
+            && std::is_copy_constructible_v<std::decay_t<T>>
         auto emplace(Args&&... args) {
             return emplace_with_resource<T>(
                 mr ? mr : std::pmr::get_default_resource(),
@@ -138,7 +148,7 @@ namespace ers::pmr {
 
         template<typename T, typename... Args>
             requires std::is_constructible_v<std::decay_t<T>, Args...>
-                && std::is_copy_constructible_v<std::decay_t<T>>
+            && std::is_copy_constructible_v<std::decay_t<T>>
         auto emplace_with_resource(std::pmr::memory_resource* provided_mr, Args&&... args) {
             using U = std::decay_t<T>;
 
@@ -153,8 +163,8 @@ namespace ers::pmr {
                     _soft_reset();
 
                 mr = provided_mr;
-                vtable = vtable_type::get<U>();
-                type = meta::type_hash_v<U, Hasher>;
+                vtable = &vtable_type::get<U>();
+                type = meta::type_hash_v<U>;
 
                 ptr = vtable_type::impl_alloc<U>(*this);
                 std::construct_at(ptr, std::forward<Args>(args)...);
@@ -174,7 +184,7 @@ namespace ers::pmr {
         template<typename T>
         [[nodiscard]]
         constexpr bool same_as() const {
-            return type == meta::type_hash_v<T, Hasher>();
+            return type == meta::type_hash_v<T>;
         }
 
     private:

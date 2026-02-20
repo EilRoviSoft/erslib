@@ -13,14 +13,15 @@
 
 namespace ers::hashing {
     struct rapidhash_policy {};
-}
 
-template<>
-struct ers::internal::backend<ers::hashing::rapidhash_policy> {
-    static constexpr size_t process(const std::byte* data, size_t size, size_t seed) noexcept {
-        return rapidhash_micro(data, size, seed);
-    }
-};
+
+    template<>
+    struct backend<rapidhash_policy> {
+        static constexpr size_t process_raw_bytes(std::span<const std::byte> what, size_t seed) noexcept {
+            return internal::rapidhash_micro(what.data(), what.size(), seed, internal::rapid_secret);
+        }
+    };
+}
 
 
 // Declaration

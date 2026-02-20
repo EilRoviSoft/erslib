@@ -26,22 +26,24 @@ namespace ers {
 }
 
 template<>
-constexpr std::string_view ers::to_sv<ers::Severity>(const Severity& what) {
-    switch (what) {
-        case Severity::Debug:
-            return "DEBUG";
-        case Severity::Info:
-            return "INFO";
-        case Severity::Warning:
-            return "WARNING";
-        case Severity::Error:
-            return "ERROR";
-        case Severity::Crit:
-            return "CRIT";
-        default:
-            return "UNKNOWN";
+struct ers::to_sv<ers::Severity> {
+    constexpr std::string_view operator()(const Severity& what) const noexcept {
+        switch (what) {
+            case Severity::Debug:
+                return "DEBUG";
+            case Severity::Info:
+                return "INFO";
+            case Severity::Warning:
+                return "WARNING";
+            case Severity::Error:
+                return "ERROR";
+            case Severity::Crit:
+                return "CRIT";
+            default:
+                return "UNKNOWN";
+        }
     }
-}
+};
 
 
 // Error
@@ -77,4 +79,6 @@ namespace ers {
 }
 
 template<>
-std::string ers::to_string<ers::Error>(const Error& what);
+struct ers::to_str<ers::Error> {
+    std::string operator()(const Error& what) const;
+};

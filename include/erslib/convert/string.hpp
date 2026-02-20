@@ -4,14 +4,22 @@
 #include <string>
 
 
+// Definition
+
 namespace ers {
     template<typename T>
-    constexpr std::string_view to_sv(const T& what) = delete("default specialization");
+    struct to_sv {
+        constexpr std::string_view operator()(const T& what) const noexcept = delete("default specialization");
+    };
 
     template<typename T>
-    std::string to_string(const T& what) = delete("default specialization");
+    struct to_str {
+        std::string operator()(const T& what) const = delete("default specialization");
+    };
 }
 
+
+// Implementation for std conversions
 
 namespace ers {
     template<typename T>
@@ -19,9 +27,10 @@ namespace ers {
         { std::to_string(t) } -> std::convertible_to<std::string>;
     };
 
-    template<typename T>
-        requires HasStdToString<T>
-    std::string to_string(const T& what) {
-        return std::to_string(what);
-    }
+    template<HasStdToString T>
+    struct to_str<T> {
+        std::string operator()(const T& what) const {
+            return std::to_string(what);
+        }
+    };
 }
