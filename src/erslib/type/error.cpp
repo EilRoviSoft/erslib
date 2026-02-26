@@ -1,4 +1,4 @@
-#include <erslib/error/error.hpp>
+#include <erslib/type/error.hpp>
 
 
 ers::Error::Error(Severity severity, std::string code, std::string message, timestamp_t timestamp, const std::source_location& location) :

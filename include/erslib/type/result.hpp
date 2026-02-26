@@ -8,7 +8,8 @@
 #include <boost/optional.hpp>
 
 // ers
-#include <erslib/error/error.hpp>
+#include <erslib/type/error.hpp>
+#include <erslib/type/ref.hpp>
 
 
 // Forward decl
@@ -28,6 +29,7 @@ namespace ers {
     template<typename E>
     class Unexpected {
         using error_type = E;
+
 
     public:
         constexpr explicit Unexpected(const error_type& error)
@@ -59,6 +61,7 @@ namespace ers {
         constexpr void swap(Unexpected& other) noexcept {
             std::swap(_error, other._error);
         }
+
 
     private:
         error_type _error;
@@ -100,28 +103,27 @@ namespace ers {
 namespace ers {
     template<typename T, typename E = Error>
     class [[nodiscard]] Result {
-        using value_type = T;
-        using error_type = E;
-
     public:
+        // Constructors
+
         constexpr Result()
             requires std::is_default_constructible_v<T> :
             m_variant(T {}) {
         }
 
-        constexpr Result(const value_type& value) :
+        constexpr Result(const T& value) :
             m_variant(value) {
         }
 
-        constexpr Result(value_type&& value) noexcept :
+        constexpr Result(T&& value) noexcept :
             m_variant(std::move(value)) {
         }
 
-        constexpr Result(const Unexpected<error_type>& unexpected) :
+        constexpr Result(const Unexpected<E>& unexpected) :
             m_variant(std::in_place_index<1>, unexpected.error()) {
         }
 
-        constexpr Result(Unexpected<error_type>&& unexpected) :
+        constexpr Result(Unexpected<E>&& unexpected) :
             m_variant(std::in_place_index<1>, std::move(unexpected).error()) {
         }
 
@@ -131,48 +133,138 @@ namespace ers {
         constexpr Result& operator=(const Result&) = default;
         constexpr Result& operator=(Result&&) = default;
 
-        constexpr Result& operator=(const value_type& value) {
+        constexpr Result& operator=(const T& value) {
             m_variant = value;
             return *this;
         }
-        constexpr Result& operator=(value_type&& value) {
+        constexpr Result& operator=(T&& value) {
             m_variant = std::move(value);
             return *this;
         }
 
-        constexpr Result& operator=(const Unexpected<error_type>& unexpected) {
+        constexpr Result& operator=(const Unexpected<E>& unexpected) {
             m_variant = unexpected.error();
             return *this;
         }
-        constexpr Result& operator=(Unexpected<error_type>&& unexpected) {
+        constexpr Result& operator=(Unexpected<E>&& unexpected) {
             m_variant = std::move(unexpected).error();
             return *this;
         }
 
-        [[nodiscard]] constexpr bool has_value() const noexcept { return std::holds_alternative<value_type>(m_variant); }
-        [[nodiscard]] constexpr bool has_error() const noexcept { return std::holds_alternative<error_type>(m_variant); }
+
+        // Observers
+
+        [[nodiscard]] constexpr bool has_value() const noexcept { return std::holds_alternative<T>(m_variant); }
+        [[nodiscard]] constexpr bool has_error() const noexcept { return std::holds_alternative<E>(m_variant); }
 
         [[nodiscard]] constexpr explicit operator bool() const noexcept { return has_value(); }
 
-        constexpr value_type& value() & { return std::get<value_type>(m_variant); }
-        constexpr const value_type& value() const & { return std::get<value_type>(m_variant); }
-        constexpr value_type&& value() && { return std::move(std::get<value_type>(m_variant)); }
-        constexpr const value_type& value() const && { return std::move(std::get<value_type>(m_variant)); }
 
-        constexpr value_type& operator*() & { return value(); }
-        constexpr const value_type& operator*() const & { return value(); }
-        constexpr value_type&& operator*() && { return std::move(value()); }
-        constexpr const value_type& operator*() const && { return std::move(value()); }
+        // Accessors
 
-        constexpr value_type* operator->() { return value(); }
-        constexpr const value_type* operator->() const { return value(); }
+        constexpr T& value() & { return std::get<0>(m_variant); }
+        constexpr const T& value() const & { return std::get<0>(m_variant); }
+        constexpr T&& value() && { return std::move(std::get<0>(m_variant)); }
+        constexpr const T& value() const && { return std::move(std::get<0>(m_variant)); }
 
-        constexpr const error_type& error() & { return std::get<error_type>(m_variant); }
-        constexpr const error_type& error() const & { return std::get<error_type>(m_variant); }
+        constexpr T& operator*() & { return value(); }
+        constexpr const T& operator*() const & { return value(); }
+        constexpr T&& operator*() && { return std::move(value()); }
+        constexpr const T& operator*() const && { return std::move(value()); }
+
+        constexpr T* operator->() { return value(); }
+        constexpr const T* operator->() const { return value(); }
+
+        constexpr const E& error() { return std::get<E>(m_variant); }
+        constexpr const E& error() const { return std::get<E>(m_variant); }
+
 
     protected:
-        std::variant<value_type, error_type> m_variant;
+        std::variant<T, E> m_variant;
     };
+
+    template<typename T, typename E>
+    class [[nodiscard]] Result<T&, E> {
+    public:
+        // Constructors
+
+        constexpr Result()
+            requires std::is_default_constructible_v<T> :
+            m_variant(T {}) {
+        }
+
+        constexpr Result(const T& value) :
+            m_variant(value) {
+        }
+
+        constexpr Result(T&& value) noexcept :
+            m_variant(std::move(value)) {
+        }
+
+        constexpr Result(const Unexpected<E>& unexpected) :
+            m_variant(std::in_place_index<1>, unexpected.error()) {
+        }
+
+        constexpr Result(Unexpected<E>&& unexpected) :
+            m_variant(std::in_place_index<1>, std::move(unexpected).error()) {
+        }
+
+        constexpr Result(const Result&) = default;
+        constexpr Result(Result&&) = default;
+
+        constexpr Result& operator=(const Result&) = default;
+        constexpr Result& operator=(Result&&) = default;
+
+        constexpr Result& operator=(const T& value) {
+            m_variant = value;
+            return *this;
+        }
+        constexpr Result& operator=(T&& value) {
+            m_variant = std::move(value);
+            return *this;
+        }
+
+        constexpr Result& operator=(const Unexpected<E>& unexpected) {
+            m_variant = unexpected.error();
+            return *this;
+        }
+        constexpr Result& operator=(Unexpected<E>&& unexpected) {
+            m_variant = std::move(unexpected).error();
+            return *this;
+        }
+
+
+        // Observers
+
+        [[nodiscard]] constexpr bool has_value() const noexcept { return std::holds_alternative<ref<T>>(m_variant); }
+        [[nodiscard]] constexpr bool has_error() const noexcept { return std::holds_alternative<E>(m_variant); }
+
+        [[nodiscard]] constexpr explicit operator bool() const noexcept { return has_value(); }
+
+
+        // Accessors
+
+        constexpr T& value() & { return *std::get<0>(m_variant); }
+        constexpr const T& value() const & { return *std::get<0>(m_variant); }
+        constexpr T&& value() && { return std::move(*std::get<0>(m_variant)); }
+        constexpr const T& value() const && { return std::move(*std::get<0>(m_variant)); }
+
+        constexpr T& operator*() & { return value(); }
+        constexpr const T& operator*() const & { return value(); }
+        constexpr T&& operator*() && { return std::move(value()); }
+        constexpr const T& operator*() const && { return std::move(value()); }
+
+        constexpr T* operator->() { return value(); }
+        constexpr const T* operator->() const { return value(); }
+
+        constexpr const E& error() { return std::get<1>(m_variant); }
+        constexpr const E& error() const { return std::get<1>(m_variant); }
+
+
+    protected:
+        std::variant<ref<T>, E> m_variant;
+    };
+
 
     template<typename T>
     Result(T) -> Result<T>;
@@ -222,12 +314,14 @@ namespace ers {
 
 namespace ers {
     struct ok_t {};
+
     constexpr ok_t ok;
 
     template<typename E>
     class [[nodiscard]] Result<void, E> {
         using value_type = void;
         using error_type = E;
+
 
     public:
         constexpr Result(const ok_t) noexcept :
@@ -253,6 +347,7 @@ namespace ers {
 
         constexpr error_type& error() { return *m_error; }
         constexpr const error_type& error() const { return *m_error; }
+
 
     protected:
         boost::optional<error_type> m_error;

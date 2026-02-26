@@ -280,7 +280,7 @@ namespace ecs {
 
     private:
         base_type::value_type _value() const {
-            return { this->m_it->first, this->m_it->second... };
+            return ers::util::prepend(this->m_it->first, this->m_it->second);
         }
     };
 

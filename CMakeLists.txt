@@ -77,7 +77,7 @@ set(SOURCES
 
     "src/erslib/assert.cpp"
 
-    "src/erslib/error/error.cpp"
+    "src/erslib/type/error.cpp"
 
     "src/erslib/splitting/regular.cpp"
     "src/erslib/splitting/smart.cpp"
