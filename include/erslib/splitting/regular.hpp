@@ -13,9 +13,11 @@ namespace ers::splitting {
     class ERSLIB_EXPORT RegularIterator : public TIterator<RegularIterator> {
         friend class TIterator;
 
+
     public:
         RegularIterator() = default;
         explicit RegularIterator(const Processor<RegularIterator>& parent, size_t offset);
+
 
     private:
         void _advance();

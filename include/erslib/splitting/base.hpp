@@ -11,7 +11,7 @@ namespace ers::splitting {
     class TIterator;
 
     template<typename T>
-    class Processor : std::ranges::view_interface<Processor<T>> {
+    class Processor : public std::ranges::view_interface<Processor<T>> {
         friend class TIterator<T>;
         friend T;
 
@@ -20,27 +20,34 @@ namespace ers::splitting {
         using iterator = T;
 
 
+    public:
+        // Constructor
+
         explicit Processor(std::string_view content, std::string_view delims = " ") :
-            m_content(content),
+            m_storage(content),
             m_delims(delims.begin(), delims.end()) {
         }
 
+
+        // Iterators
 
         iterator begin() const {
             return iterator(*this, 0);
         }
         iterator end() const {
-            return iterator(*this, m_content.size());
+            return iterator(*this, m_storage.size());
         }
 
 
+        // Observers
+
         std::string_view base() const {
-            return m_content;
+            return m_storage;
         }
 
 
     protected:
-        std::string_view m_content;
+        std::string_view m_storage;
         std::unordered_set<char> m_delims;
     };
 
@@ -55,36 +62,39 @@ namespace ers::splitting {
         using difference_type = std::ptrdiff_t;
 
 
+    public:
         // Constructors
 
         TIterator() = default;
         explicit TIterator(const parent_type& parent, size_t offset) :
             m_parent(&parent),
             m_offset(offset) {
-            interface()->_advance();
+            _interface()._advance();
         }
 
 
         // Accessors
 
         value_type operator*() const {
-            if (!m_parent || m_offset >= m_parent->m_content.size())
+            if (!m_parent || m_offset >= m_parent->m_storage.size())
                 return {};
-            return m_parent->m_content.substr(m_offset, m_length);
+            return m_parent->m_storage.substr(m_offset, m_length);
         }
 
+
+        // Modifiers
 
         T& operator++() {
-            if (m_parent && m_offset < m_parent->m_content.size()) {
+            if (m_parent && m_offset < m_parent->m_storage.size()) {
                 m_offset += m_length;
-                interface()->_advance();
+                _interface()._advance();
             }
 
-            return *interface();
+            return _interface();
         }
         T operator++(int) {
-            auto temp = *interface();
-            ++*interface();
+            auto temp = _interface();
+            ++_interface();
             return temp;
         }
 
@@ -103,7 +113,7 @@ namespace ers::splitting {
 
 
     private:
-        T* interface() { return static_cast<T*>(this); }
-        const T* interface() const { return static_cast<const T*>(this); }
+        T& _interface() { return static_cast<T&>(*this); }
+        const T& _interface() const { return static_cast<const T&>(*this); }
     };
 }

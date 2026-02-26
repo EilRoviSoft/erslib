@@ -14,15 +14,15 @@ ers::splitting::RegularIterator::RegularIterator(const Processor<RegularIterator
 }
 
 void ers::splitting::RegularIterator::_advance() {
-    if (!m_parent || m_offset >= m_parent->m_content.size()) {
+    if (!m_parent || m_offset >= m_parent->m_storage.size()) {
         m_length = 0;
         return;
     }
 
-    if (m_parent->m_delims.contains(m_parent->m_content[m_offset]))
+    if (m_parent->m_delims.contains(m_parent->m_storage[m_offset]))
         m_offset++;
 
     m_length = 0;
-    while (m_offset + m_length < m_parent->m_content.size() && !m_parent->m_delims.contains(m_parent->m_content[m_offset + m_length]))
+    while (m_offset + m_length < m_parent->m_storage.size() && !m_parent->m_delims.contains(m_parent->m_storage[m_offset + m_length]))
         m_length++;
 }

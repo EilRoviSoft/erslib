@@ -1,5 +1,6 @@
 // std
 #include <iostream>
+#include <print>
 
 // catch2
 #include <catch2/catch_test_macros.hpp>
@@ -41,7 +42,7 @@ TEST_CASE("registry test", "[easy_ecs]") {
 
     SECTION("group instancing") {
         r.add_group<Position, Velocity>();
-        
+
         {
             size_t entity_id = r.add_entity("player");
             r.add_component<Position>(entity_id);
@@ -53,5 +54,16 @@ TEST_CASE("registry test", "[easy_ecs]") {
             r.add_component<Position>(entity_id, 2.0, 0.0);
             r.add_component<Velocity>(entity_id);
         }
+
+
+        /*for (auto [p, v] : r.view_group<Position, Velocity>()) {
+            std::println("p {}:{}\tv {}:{}",
+                p.x, p.y, v.x, v.y);
+        }
+
+        for (auto [id, p, v] : r.view_group_with_entity_id<Position, Velocity>()) {
+            std::println("id {}\tp {}:{}\tv {}:{}",
+                id, p.x, p.y, v.x, v.y);
+        }*/
     }
 }

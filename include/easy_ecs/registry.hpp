@@ -1,9 +1,9 @@
 #pragma once
 
 // std
-#include <exception>
 #include <format>
 #include <ranges>
+#include <stdexcept>
 
 // ers
 #include <erslib/hashing/algorithm.hpp>
@@ -30,17 +30,21 @@ namespace ecs {
             Entity& entity = m_entities.at(id);
 
             Object component(std::in_place_type<T>, std::forward<Args>(args)...);
-            
+
             size_t type_hash = component.type();
             size_t key = ers::hashing::combine<ers::RapidHash>(entity.name, type_hash);
-            
+
             auto [it, inserted] = m_components.try_emplace(key, std::move(component));
             if (!inserted)
-                throw std::runtime_error(std::format("Component {} (hash: {}) for entity {} already exist",
-                    ers::meta::type_name_v<T>, ers::meta::type_hash_v<T>, id));
+                throw std::runtime_error(
+                    std::format(
+                        "Component {} (hash: {}) for entity {} already exist",
+                        ers::meta::type_name_v<T>, ers::meta::type_hash_v<T>, id
+                    )
+                );
 
             entity.linked_components[type_hash] = &it->second;
-            
+
             // Rn it's guaranteed that entity with new component isn't registered by groups
             // 'cause components are unique per entity.
 
@@ -49,10 +53,10 @@ namespace ecs {
 
             return key;
         }
-        
+
         template<typename... Ts>
         size_t add_group() {
-            size_t key = TGroup<Ts...>::get_id();
+            size_t key = Group<Ts...>::get_id();
             m_groups.emplace(key, make_group<Ts...>());
             return key;
         }
@@ -61,8 +65,12 @@ namespace ecs {
         // Observers
 
         template<typename... Ts>
-        TGroup<Ts...>& view_group(size_t id) {
-            return dynamic_cast<TGroup<Ts...>&>(m_groups.at(id));
+        GroupView<Ts...> view_group() {
+            return { _get_group<Ts...>() };
+        }
+        template<typename... Ts>
+        GroupWithEntityIdView<Ts...> view_group_with_entity_id() {
+            return { _get_group<Ts...>() };
         }
 
 
@@ -70,5 +78,15 @@ namespace ecs {
         TrivialMap<Entity> m_entities;
         TrivialMap<Object> m_components;
         TrivialMap<GroupPtr> m_groups;
+
+
+    private:
+        template<typename... Ts>
+        auto& _get_group() {
+            using concrete_group = Group<Ts...>;
+            size_t id = concrete_group::get_id();
+            auto& group = *m_groups.at(id).get();
+            return dynamic_cast<concrete_group&>(group);
+        }
     };
 }

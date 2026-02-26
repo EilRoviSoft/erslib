@@ -3,6 +3,7 @@
 // std
 #include <memory>
 #include <ranges>
+#include <type_traits>
 
 // frozen
 #include <frozen/unordered_set.h>
@@ -20,8 +21,12 @@
 // Forward declaration
 
 namespace ecs {
-    template<typename... Ts>
-    class GroupIterator;
+    template<typename T, typename R, typename... Ts>
+    class TGroupIterator;
+
+
+    template<typename T, typename... Ts>
+    class TGroupView;
 }
 
 
@@ -56,21 +61,24 @@ namespace ecs {
     };
 
 
-    template<typename... Types>
-    class TGroup final : public IGroup, std::ranges::view_interface<TGroup<Types...>> {
-        friend GroupIterator<Types...>;
+    template<typename... Ts>
+    class Group final : public IGroup {
+        template<typename, typename...>
+        friend class TGroupView;
 
-        static constexpr size_t size = sizeof...(Types);
-        static constexpr frozen::unordered_set<size_t, size> types = { ers::meta::type_hash_v<Types>... };
+
+        static constexpr size_t size = sizeof...(Ts);
+        static constexpr frozen::unordered_set<size_t, size> types = { ers::meta::type_hash_v<Ts>... };
+
 
     public:
-        using container_type = TrivialMap<std::tuple<Types*...>>;
-        using iterator = GroupIterator<Types...>;
+        using storage_type = TrivialMap<std::tuple<Ts*...>>;
 
 
+    public:
         // Constructors
 
-        TGroup() = default;
+        Group() = default;
 
 
         // Checkers
@@ -91,33 +99,28 @@ namespace ecs {
         }
 
         bool has(size_t id) const override {
-            return m_content.contains(id);
+            return m_storage.contains(id);
         }
 
 
         // Modifiers
 
         void add(Entity& entity) override {
-            m_content.emplace(entity.id(), std::make_tuple<Types*...>(
-                &entity.linked_components.at(ers::meta::type_hash_v<Types>)->template get<Types>()...));
+            m_storage.emplace(
+                entity.id(),
+                std::make_tuple<Ts*...>(&entity.linked_components.at(ers::meta::type_hash_v<Ts>)->template get<Ts>()...)
+            );
         }
 
 
         // Observers
 
-        static size_t get_id() { return ers::hashing::combine<ers::DirectHash>(ers::meta::type_hash_v<Types>...); }
+        static size_t get_id() { return ers::hashing::combine<ers::DirectHash>(ers::meta::type_hash_v<Ts>...); }
         size_t id() const override { return get_id(); }
 
 
-        iterator begin() const {
-            return iterator(*this, m_content.begin());
-        }
-        iterator end() const {
-            return iterator(*this, m_content.end());
-        }
-
     protected:
-        container_type m_content;
+        storage_type m_storage;
     };
 
 
@@ -126,7 +129,7 @@ namespace ecs {
 
     template<typename... Ts>
     GroupPtr make_group() {
-        return std::make_unique<TGroup<Ts...>>();
+        return std::make_unique<Group<Ts...>>();
     }
 }
 
@@ -134,22 +137,60 @@ namespace ecs {
 // View
 
 namespace ecs {
-    template<typename... Ts>
-    class GroupIterator {
+    template<typename T, typename... Ts>
+    class TGroupView : public std::ranges::view_interface<TGroupView<T, Ts...>> {
+        using iterator = T;
+        friend iterator;
+
+
+    public:
+        TGroupView(Group<Ts...>& parent) :
+            m_parent(parent) {
+        }
+
+
+        auto begin() const {
+            return iterator(*this, m_parent.m_storage.begin());
+        }
+        auto end() const {
+            return iterator(*this, m_parent.m_storage.end());
+        }
+
+
+        const Group<Ts...>::storage_type& base() const {
+            return m_parent.m_storage;
+        }
+
+
+    protected:
+        const Group<Ts...>& m_parent;
+    };
+
+
+    template<typename T, typename R, typename... Ts>
+    class TGroupIterator {
+    protected:
+        using internal_iterator = Group<Ts...>::storage_type::const_iterator;
+
+
     public:
         using iterator_concept = std::forward_iterator_tag;
         using iterator_category = std::forward_iterator_tag;
 
-        using parent_type = TGroup<Ts...>;
+        using parent_type = TGroupView<T, Ts...>;
+        using value_type = std::conditional_t<
+            std::is_void_v<R>,
+            std::tuple<Ts&...>,
+            std::tuple<R, Ts&...>
+        >;
         using difference_type = std::ptrdiff_t;
 
-        using internal_iterator = parent_type::container_type::iterator;
 
-
+    public:
         // Constructors
 
-        GroupIterator() = default;
-        explicit GroupIterator(const parent_type& parent, const internal_iterator& it) :
+        TGroupIterator() = default;
+        explicit TGroupIterator(const parent_type& parent, internal_iterator it) :
             m_parent(&parent),
             m_it(it) {
         }
@@ -157,31 +198,93 @@ namespace ecs {
 
         // Accessors
 
-        std::tuple<Ts&...> operator*() const {
-            ERS_ASSERT(!m_parent || m_it == m_parent->m_content.end());
-            return ers::util::pointers_to_references(m_it->second);
+        value_type operator*() const {
+            ERS_ASSERT(!m_parent || m_it == m_parent->base().end());
+            return _interface()._value();
         }
 
 
-        GroupIterator& operator++() {
+        // Modifiers
+
+        T& operator++() {
             ++m_it;
-            return *this;
+            return _interface();
         }
-        GroupIterator operator++(int) {
-            auto temp = *this;
-            ++*this;
+        T operator++(int) {
+            auto temp = _interface();
+            ++_interface();
             return temp;
         }
 
 
         // Comparing
 
-        bool operator==(const GroupIterator& other) const {
-            return m_it == other.m_it;
+        bool operator==(const TGroupIterator& other) const {
+            return m_parent == other.m_parent && m_it == other.m_it;
         }
+
 
     protected:
         const parent_type* m_parent = nullptr;
         internal_iterator m_it;
+
+
+    private:
+        T& _interface() { return static_cast<T&>(*this); }
+        const T& _interface() const { return static_cast<const T&>(*this); }
     };
+}
+
+
+// Iterators implementation
+
+namespace ecs {
+    template<typename... Ts>
+    class GroupIterator : public TGroupIterator<GroupIterator<Ts...>, void, Ts...> {
+        using base_type = TGroupIterator<GroupIterator, void, Ts...>;
+        friend base_type;
+
+
+    public:
+        GroupIterator() = default;
+        explicit GroupIterator(const base_type::parent_type& parent, base_type::internal_iterator it) :
+            base_type(parent, it) {
+        }
+
+
+    private:
+        base_type::value_type _value() const {
+            return ers::util::pointers_to_references(this->m_it->second);
+        }
+    };
+
+
+    template<typename... Ts>
+    using GroupView = TGroupView<GroupIterator<Ts...>, Ts...>;
+}
+
+
+namespace ecs {
+    template<typename... Ts>
+    class GroupWithEntityIdIterator : public TGroupIterator<GroupWithEntityIdIterator<Ts...>, size_t, Ts...> {
+        using base_type = TGroupIterator<GroupWithEntityIdIterator, size_t, Ts...>;
+        friend base_type;
+
+
+    public:
+        GroupWithEntityIdIterator() = default;
+        explicit GroupWithEntityIdIterator(const base_type::parent_type& parent, base_type::internal_iterator it) :
+            base_type(parent, it) {
+        }
+
+
+    private:
+        base_type::value_type _value() const {
+            return { this->m_it->first, this->m_it->second... };
+        }
+    };
+
+
+    template<typename... Ts>
+    using GroupWithEntityIdView = TGroupView<GroupWithEntityIdIterator<Ts...>, Ts...>;
 }
