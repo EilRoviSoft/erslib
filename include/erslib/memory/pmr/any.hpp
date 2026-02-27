@@ -56,9 +56,6 @@ namespace ers::internal {
         static void impl_dealloc(target_type& obj);
 
         template<typename T>
-        static void impl_trivial_copy(target_type& dst, const void* src);
-
-        template<typename T>
         static void impl_copy(target_type& dst, const void* src);
 
         template<typename T>
@@ -74,14 +71,8 @@ namespace ers::internal {
             result.destroy = &impl_destroy<T>;
             result.dealloc = &impl_dealloc<T>;
 
-            if constexpr (std::is_trivially_copyable_v<T>) {
-                result.copy = &impl_trivial_copy<T>;
-                result.move = &impl_trivial_copy<T>;
-            }
-            else {
-                result.copy = &impl_copy<T>;
-                result.move = &impl_move<T>;
-            }
+            result.copy = &impl_copy<T>;
+            result.move = &impl_move<T>;
 
             result.change_resource = &impl_change_resource<T>;
 
@@ -276,15 +267,24 @@ namespace ers::internal {
         // Observers
 
         [[nodiscard]]
-        constexpr bool has_value() const {
-            return m_policy == SboPolicy::Empty;
-        }
+        constexpr bool has_value() const { return m_policy == SboPolicy::Empty; }
 
         template<typename T>
         [[nodiscard]]
-        constexpr bool same_as() const {
-            return m_type == meta::type_hash_v<T>;
-        }
+        constexpr bool same_as() const { return m_type == meta::type_hash_v<T>; }
+
+        [[nodiscard]]
+        constexpr size_t type() const { return m_type; }
+
+
+        // Accessors
+
+        template<typename T>
+        [[nodiscard]]
+        T& get() { return *_data_as<T>(); }
+        template<typename T>
+        [[nodiscard]]
+        const T& get() const { return *_data_as<T>(); }
 
     protected:
         std::pmr::memory_resource* m_mr;
@@ -312,7 +312,9 @@ namespace ers::internal {
                 m_vtable->destroy(*this);
 
             m_vtable->dealloc(*this);
+
             vtable_type::template impl_alloc<T>(*this);
+            m_type = ers::meta::type_hash_v<T>;
         }
 
 
@@ -321,31 +323,32 @@ namespace ers::internal {
         [[nodiscard]]
         void* _data() {
             switch (m_policy) {
-                case SboPolicy::Dynamic:
-                    return m_storage.heap;
+            case SboPolicy::Dynamic:
+                return m_storage.heap;
 
-                case SboPolicy::Embedded:
-                    return m_storage.buffer;
+            case SboPolicy::Embedded:
+                return m_storage.buffer;
 
-                default:
-                    return nullptr;
+            default:
+                return nullptr;
             }
         }
         [[nodiscard]]
         const void* _data() const {
             switch (m_policy) {
-                case SboPolicy::Dynamic:
-                    return m_storage.heap;
+            case SboPolicy::Dynamic:
+                return m_storage.heap;
 
-                case SboPolicy::Embedded:
-                    return m_storage.buffer;
+            case SboPolicy::Embedded:
+                return m_storage.buffer;
 
-                default:
-                    return nullptr;
+            default:
+                return nullptr;
             }
         }
 
         template<typename T>
+        [[nodiscard]]
         T* _data_as() {
             if constexpr (is_sbo_applicable_v<T, Size, Align>)
                 return reinterpret_cast<T*>(m_storage.buffer);
@@ -353,6 +356,7 @@ namespace ers::internal {
                 return static_cast<T*>(m_storage.heap);
         }
         template<typename T>
+        [[nodiscard]]
         const T* _data_as() const {
             if constexpr (is_sbo_applicable_v<T, Size, Align>)
                 return reinterpret_cast<const T*>(m_storage.buffer);
@@ -375,10 +379,9 @@ namespace ers::internal {
             obj.m_storage.heap = obj.m_mr->allocate(sizeof(T), alignof(T));
             obj.m_policy = SboPolicy::Dynamic;
             result = static_cast<T*>(obj.m_storage.heap);
-        }
-        else {
+        } else {
             obj.m_policy = SboPolicy::Embedded;
-            result = static_cast<T*>(obj.m_storage.buffer);
+            result = reinterpret_cast<T*>(obj.m_storage.buffer);
         }
 
         return result;
@@ -393,8 +396,7 @@ namespace ers::internal {
         if constexpr (is_sbo_applicable_v<T, Size, Align>) {
             ERS_ASSERT(obj.m_policy == SboPolicy::Embedded);
             std::destroy_at(reinterpret_cast<T*>(obj.m_storage.buffer));
-        }
-        else {
+        } else {
             ERS_ASSERT(obj.m_policy == SboPolicy::Dynamic);
             std::destroy_at(static_cast<T*>(obj.m_storage.heap));
         }
@@ -409,23 +411,24 @@ namespace ers::internal {
 
     template<size_t Size, size_t Align>
     template<typename T>
-    void TAnyVtable<Size, Align>::impl_trivial_copy(target_type& dst, const void* src) {
-        dst.template _prepare_to_assign<T>();
-        std::memcpy(dst.template _data_as<T>(), static_cast<const T*>(src), sizeof(T));
-    }
-
-    template<size_t Size, size_t Align>
-    template<typename T>
     void TAnyVtable<Size, Align>::impl_copy(target_type& dst, const void* src) {
         dst.template _prepare_to_assign<T>();
-        std::construct_at(dst.template _data_as<T>(), *static_cast<const T*>(src));
+
+        if constexpr (std::is_trivially_copyable_v<T>)
+            std::memcpy(dst.template _data_as<T>(), static_cast<const T*>(src), sizeof(T));
+        else
+            std::construct_at(dst.template _data_as<T>(), *static_cast<const T*>(src));
     }
 
     template<size_t Size, size_t Align>
     template<typename T>
     void TAnyVtable<Size, Align>::impl_move(target_type& dst, void* src) {
         dst.template _prepare_to_assign<T>();
-        std::construct_at(dst.template _data_as<T>(), std::move(*static_cast<T*>(src)));
+
+        if constexpr (std::is_trivially_move_constructible_v<T> && std::is_trivially_destructible_v<T>)
+            std::memcpy(dst.template _data_as<T>(), static_cast<const T*>(src), sizeof(T));
+        else
+            std::construct_at(dst.template _data_as<T>(), std::move(*static_cast<T*>(src)));
     }
 
     template<size_t Size, size_t Align>

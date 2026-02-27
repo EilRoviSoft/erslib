@@ -6,7 +6,7 @@
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 
 // ers
-#include <erslib/error/include.hpp>
+#include <erslib/type/result.hpp>
 
 
 bool equals(double l, double r) {

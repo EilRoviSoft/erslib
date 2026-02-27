@@ -1,8 +1,10 @@
 {
-    "dependencies": [
-        "boost-optional",
-        "boost-thread",
-        "boost-unordered",
-        "catch2"
-    ]
+  "dependencies": [
+    "abseil",
+    "boost-optional",
+    "boost-thread",
+    "boost-unordered",
+    "catch2",
+    "frozen"
+  ]
 }

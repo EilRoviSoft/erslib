@@ -117,6 +117,6 @@ struct ers::THashBase<T, Policy> {
 
     constexpr size_t operator()(T what, size_t seed = 0) const noexcept
         requires (!hashing::is_backend_handles_raw_bytes_v<Policy>) {
-        return hashing::backend<Policy>::process_raw_bytes(what, seed);
+        return hashing::backend<Policy>::process_value(what, seed);
     }
 };

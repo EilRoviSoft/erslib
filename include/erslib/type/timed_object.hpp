@@ -8,7 +8,7 @@
 #include <boost/thread/shared_mutex.hpp>
 
 // ers
-#include <erslib/error/include.hpp>
+#include <erslib/type/result.hpp>
 #include <erslib/type/expiring.hpp>
 
 
@@ -18,12 +18,17 @@ namespace ers {
     public:
         using value_type = expiring_t<T, Clock>;
 
+
+        // Constructors
+
         explicit ITimedObject(Clock::duration lifetime) :
             m_expiring(T(), {}, lifetime) {
         }
+
         ITimedObject(Clock::duration lifetime, T value, Clock::time_point created_at = Clock::now()) :
             m_expiring(value, lifetime, created_at) {
         }
+
 
         ITimedObject(const ITimedObject& other) :
             m_expiring(other.m_expiring) {
@@ -33,6 +38,7 @@ namespace ers {
             return *this;
         }
 
+
         ITimedObject(ITimedObject&& other) noexcept :
             m_expiring(std::move(other.m_expiring)) {
         }
@@ -41,9 +47,16 @@ namespace ers {
             return *this;
         }
 
+
+        // Destructors
+
         virtual ~ITimedObject() = default;
 
-        [[nodiscard]] Result<T> get() const {
+
+        // Observers
+
+        [[nodiscard]]
+        Result<T> get() const {
             boost::upgrade_lock read_lock(_mutex);
 
             if (m_expiring.is_expired()) {
@@ -58,10 +71,12 @@ namespace ers {
             return m_expiring.value;
         }
 
+
     protected:
         mutable value_type m_expiring;
 
         virtual Status load() const = 0;
+
 
     private:
         mutable boost::upgrade_mutex _mutex;

@@ -6,5 +6,5 @@
 
 
 TEST_CASE("testing TAny", "[any]") {
-    ers::pmr::Any example(std::in_place_type_t<std::string>(), "hello world!");
+    ers::pmr::Any example(std::in_place_type<std::string>, "hello world!");
 }
