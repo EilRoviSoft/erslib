@@ -6,13 +6,12 @@
 #include <mutex>
 
 // ers
-#include <erslib/assert.hpp>
 #include <erslib/type/result.hpp>
 
 
 // Forward declaration
 
-namespace ers {
+namespace ers::thread_safe {
     template<typename T>
     class Accessor;
 }
@@ -20,27 +19,27 @@ namespace ers {
 
 // Control block
 
-namespace ers {
+namespace ers::thread_safe {
     template<typename T>
-    struct control_block_t {
+    struct resource_data_t {
         std::atomic<std::shared_ptr<T>> value;
         std::mutex mutex;
     };
 
     template<typename T>
-    using control_block_ptr = std::shared_ptr<control_block_t<T>>;
+    using resource_data_ptr = std::shared_ptr<resource_data_t<T>>;
 
 
     template<typename T>
-    control_block_ptr<T> make_control_block() {
-        return std::make_shared<control_block_t<T>>();
+    resource_data_ptr<T> make_resource_data() {
+        return std::make_shared<resource_data_t<T>>();
     }
 }
 
 
 // Resource
 
-namespace ers {
+namespace ers::thread_safe {
     template<typename T>
     class IResource {
         friend class Accessor<T>;
@@ -50,7 +49,7 @@ namespace ers {
         // Constructor
 
         IResource() :
-            m_cb(make_control_block<T>()) {
+            m_cb(make_resource_data<T>()) {
         }
 
 
@@ -84,7 +83,7 @@ namespace ers {
 
 
     protected:
-        control_block_ptr<T> m_cb;
+        resource_data_ptr<T> m_cb;
 
 
         [[nodiscard]]
@@ -109,7 +108,7 @@ namespace ers {
 
 // Accessor
 
-namespace ers {
+namespace ers::thread_safe {
     template<typename T>
     class Accessor {
     public:
@@ -117,7 +116,7 @@ namespace ers {
 
         Accessor() = default;
 
-        Accessor(control_block_ptr<T> cb, std::shared_ptr<T> ptr) :
+        Accessor(resource_data_ptr<T> cb, std::shared_ptr<T> ptr) :
             m_cb(std::move(cb)),
             m_ptr(std::move(ptr)) {
         }
@@ -146,7 +145,7 @@ namespace ers {
 
 
     protected:
-        control_block_ptr<T> m_cb;
+        resource_data_ptr<T> m_cb;
         std::shared_ptr<T> m_ptr;
     };
 }
