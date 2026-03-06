@@ -12,12 +12,14 @@
 
 
 namespace ers::thread_safe {
-    template<typename K, typename V, typename Container>
+    template<typename Container>
         requires HashMapConcept<Container>
     class Map {
     public:
         using container_type = Container;
-        using pair_type = std::pair<K, V>;
+        using key_type = typename Container::key_type;
+        using mapped_type = typename Container::mapped_type;
+        using value_type = typename Container::value_type;
 
         using iterator = container_type::iterator;
         using const_iterator = container_type::const_iterator;
@@ -58,14 +60,14 @@ namespace ers::thread_safe {
         // I/O
 
         template<typename T>
-        bool set(const T& k, V v = V()) {
+        bool set(const T& k, mapped_type v = mapped_type()) {
             std::unique_lock lock(this->m_mutex);
 
             auto [_, flag] = this->m_data.emplace(k, std::move(v));
             return flag;
         }
         template<typename T>
-        boost::optional<const V&> get(const T& k) const {
+        boost::optional<const mapped_type&> get(const T& k) const {
             std::shared_lock lock(this->m_mutex);
 
             auto it = this->m_data.find(k);
@@ -79,7 +81,7 @@ namespace ers::thread_safe {
         // Lookup
 
         template<typename T>
-        const V& operator[](const T& k) const {
+        const mapped_type& operator[](const T& k) const {
             return *this->get(k);
         }
 

@@ -11,31 +11,27 @@
 #include <erslib/splitting/smart.hpp>
 
 
-struct data_t {
-    std::string_view input;
-    std::vector<std::string_view> expected;
-};
+namespace {
+    template<typename TSplit>
+    std::vector<std::string_view> process(std::string_view input) {
+        std::vector<std::string_view> result;
 
-template<typename TSplit>
-std::vector<std::string_view> process(std::string_view input) {
-    std::vector<std::string_view> result;
+        for (auto it : TSplit(input))
+            result.emplace_back(it);
 
-    for (auto it : TSplit(input))
-        result.emplace_back(it);
+        return result;
+    }
 
-    return result;
 
-    //return TSplit(input) | std::ranges::to<std::vector>();
-}
+    template<typename... TArgs>
+    std::vector<std::string_view> make_vector(TArgs&&... args) {
+        std::vector<std::string_view> result;
 
-template<typename... TArgs>
-std::vector<std::string_view> make_vector(TArgs&&... args) {
-    std::vector<std::string_view> result;
+        result.reserve(sizeof...(args));
+        (result.emplace_back(std::forward<TArgs>(args)), ...);
 
-    result.reserve(sizeof...(args));
-    (result.emplace_back(std::forward<TArgs>(args)), ...);
-
-    return result;
+        return result;
+    }
 }
 
 

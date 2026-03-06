@@ -20,45 +20,45 @@
 #include <erslib/util/string.hpp>
 
 
-using namespace std::chrono_literals;
-constexpr ers::duration_t lifetime = 20ms;
+namespace {
+    using namespace std::chrono_literals;
+    constexpr ers::duration_t lifetime = 20ms;
 
 
-std::mt19937_64& gen() {
-    static std::mt19937_64 instance(Catch::getSeed());
-    return instance;
-}
-
-template<typename T>
-T random(T min, T max) {
-    std::uniform_int_distribution distribution(min, max);
-    return distribution(gen());
-}
-
-class AutoRng : public ers::ITimedObject<size_t> {
-public:
-    AutoRng() :
-        ITimedObject(lifetime) {
+    std::mt19937_64& gen() {
+        static std::mt19937_64 instance(Catch::getSeed());
+        return instance;
     }
 
-protected:
-    [[nodiscard]] ers::Status load() const override {
-        *m_expiring ^= random<size_t>(0, 10);
-        return ers::ok;
+    template<typename T>
+    T random(T min, T max) {
+        std::uniform_int_distribution distribution(min, max);
+        return distribution(gen());
     }
-};
 
 
-using Map = ers::thread_safe::Map<
-    std::string,
-    AutoRng,
-    ers::UnorderedMap<
+    class AutoRng : public ers::ITimedObject<size_t> {
+    public:
+        AutoRng() :
+            ITimedObject(lifetime) {
+        }
+
+
+    protected:
+        [[nodiscard]] ers::Status load() const override {
+            *m_expiring ^= random<size_t>(0, 10);
+            return ers::ok;
+        }
+    };
+
+
+    using Map = ers::thread_safe::Map<ers::UnorderedMap<
         std::string,
         AutoRng,
         ers::util::string_hash_adaptor<ers::RapidHash>,
         ers::util::string_equal
-    >
->;
+    >>;
+}
 
 
 TEST_CASE("testing thread_safe map", "[ts_map]") {

@@ -13,23 +13,25 @@
 #include <easy_ecs/registry.hpp>
 
 
-struct Position {
-    f64 x = 0.0, y = 0.0;
+namespace {
+    struct Position {
+        f64 x = 0.0, y = 0.0;
 
-    constexpr bool operator==(const Position& other) const {
-        return ers::util::equals(x, other.x)
-            && ers::util::equals(y, other.y);
-    }
-};
+        constexpr bool operator==(const Position& other) const {
+            return ers::util::equals(x, other.x)
+                && ers::util::equals(y, other.y);
+        }
+    };
 
-struct Velocity {
-    f64 x = 0.0, y = 0.0;
+    struct Velocity {
+        f64 x = 0.0, y = 0.0;
 
-    constexpr bool operator==(const Position& other) const {
-        return ers::util::equals(x, other.x)
-            && ers::util::equals(y, other.y);
-    }
-};
+        constexpr bool operator==(const Position& other) const {
+            return ers::util::equals(x, other.x)
+                && ers::util::equals(y, other.y);
+        }
+    };
+}
 
 
 TEST_CASE("registry test", "[easy_ecs]") {

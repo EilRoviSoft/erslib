@@ -5,8 +5,10 @@
 #include <erslib/meta/type_info.hpp>
 
 
-template<typename T>
-struct sample_t {};
+namespace {
+    template<typename T>
+    struct sample_t {};
+}
 
 
 TEST_CASE("testing meta", "[meta]") {

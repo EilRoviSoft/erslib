@@ -11,14 +11,16 @@
 #include <erslib/type/general.hpp>
 
 
-struct Position {
-    f64 x, y;
+namespace {
+    struct Position {
+        f64 x, y;
 
-    Position(f64 x, f64 y) :
-        x(x),
-        y(y) {
-    }
-};
+        Position(f64 x, f64 y) :
+            x(x),
+            y(y) {
+        }
+    };
+}
 
 
 TEST_CASE("testing custom allocator", "[memory]") {
