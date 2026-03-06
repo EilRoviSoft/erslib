@@ -88,7 +88,6 @@ namespace ers::thread_safe {
 
         [[nodiscard]]
         virtual Result<T&&> load() const = 0;
-        virtual Status unload() const = 0;
     };
 
 
