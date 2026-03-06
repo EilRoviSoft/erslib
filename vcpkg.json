@@ -2,6 +2,7 @@
   "dependencies": [
     "abseil",
     "boost-optional",
+    "boost-smart-ptr",
     "boost-thread",
     "boost-unordered",
     "catch2",

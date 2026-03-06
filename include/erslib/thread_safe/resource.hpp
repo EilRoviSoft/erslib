@@ -2,10 +2,10 @@
 
 // std
 #include <atomic>
-#include <memory>
 #include <mutex>
 
 // ers
+#include <erslib/memory/shared_ptr.hpp>
 #include <erslib/type/result.hpp>
 
 
@@ -14,12 +14,12 @@
 namespace ers::thread_safe {
     template<typename T>
     struct resource_data_t {
-        std::atomic<std::shared_ptr<T>> value;
+        atomic_shared_ptr<T> value;
         std::mutex mutex;
     };
 
     template<typename T>
-    using resource_data_ptr = std::shared_ptr<resource_data_t<T>>;
+    using resource_data_ptr = shared_ptr<resource_data_t<T>>;
 
 
     template<typename T>
@@ -39,7 +39,7 @@ namespace ers::thread_safe {
 
         Accessor() = default;
 
-        Accessor(resource_data_ptr<T> cb, std::shared_ptr<T> ptr) :
+        Accessor(resource_data_ptr<T> cb, shared_ptr<T> ptr) :
             m_cb(std::move(cb)),
             m_ptr(std::move(ptr)) {
         }
@@ -52,7 +52,7 @@ namespace ers::thread_safe {
                 return;
 
             if (m_ptr.use_count() == 2) {
-                std::shared_ptr<T> expected = m_ptr;
+                shared_ptr<T> expected = m_ptr;
                 m_cb->value.compare_exchange_strong(expected, nullptr, std::memory_order_seq_cst);
             }
         }
@@ -69,7 +69,7 @@ namespace ers::thread_safe {
 
     protected:
         resource_data_ptr<T> m_cb;
-        std::shared_ptr<T> m_ptr;
+        shared_ptr<T> m_ptr;
     };
 }
 
