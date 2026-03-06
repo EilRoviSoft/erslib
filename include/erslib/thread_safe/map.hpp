@@ -17,9 +17,9 @@ namespace ers::thread_safe {
     class Map {
     public:
         using container_type = Container;
-        using key_type = typename Container::key_type;
-        using mapped_type = typename Container::mapped_type;
-        using value_type = typename Container::value_type;
+        using key_type = container_type::key_type;
+        using mapped_type = container_type::mapped_type;
+        using value_type = container_type::value_type;
 
         using iterator = container_type::iterator;
         using const_iterator = container_type::const_iterator;
@@ -27,7 +27,8 @@ namespace ers::thread_safe {
         Map() = default;
 
         Map(const Map& another) :
-            m_data(another.m_data) {}
+            m_data(another.m_data) {
+        }
         Map& operator=(const Map& another) {
             std::unique_lock lock(this->m_mutex);
             this->m_data = another.m_data;
