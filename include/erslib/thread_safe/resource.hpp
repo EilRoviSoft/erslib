@@ -83,6 +83,7 @@ namespace ers::thread_safe {
 
 
     public:
+        using value_type = T;
         using accessor_type = Accessor<T>;
 
 

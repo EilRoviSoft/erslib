@@ -55,11 +55,13 @@ namespace ers::thread_safe {
 
         // Capacity
 
+        [[nodiscard]]
         bool empty() const {
             std::shared_lock lock(this->m_mutex);
             return m_data.empty();
         }
 
+        [[nodiscard]]
         size_t size() const {
             std::shared_lock lock(this->m_mutex);
             return m_data.size();
@@ -76,6 +78,7 @@ namespace ers::thread_safe {
             return flag;
         }
         template<typename T>
+        [[nodiscard]]
         boost::optional<const mapped_type&> get(const T& k) const {
             std::shared_lock lock(this->m_mutex);
 
@@ -90,10 +93,12 @@ namespace ers::thread_safe {
         // Lookup
 
         template<typename T>
+        [[nodiscard]]
         const mapped_type& operator[](const T& k) const {
             return *this->get(k);
         }
 
+        [[nodiscard]]
         const container_type& wrapped_data() const {
             return this->m_data;
         }
