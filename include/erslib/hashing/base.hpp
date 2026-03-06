@@ -9,6 +9,8 @@
 // ers
 #include <erslib/concept/constexpr.hpp>
 
+#include "base.hpp"
+
 
 // Definition
 
@@ -70,6 +72,22 @@ struct ers::THashBase<const char[N], Policy> {
 
     constexpr size_t operator()(type what, size_t seed = 0) const noexcept {
         return THashBase<std::array<const char, N>, Policy> {}(std::bit_cast<const char(&)[N]>(what), seed);
+    }
+};
+
+template<typename Policy>
+struct ers::THashBase<const char*, Policy> {
+    using type = const char*;
+
+    size_t operator()(type what, size_t seed = 0) const noexcept
+        requires (hashing::is_backend_handles_raw_bytes_v<Policy>) {
+        const auto bytes = reinterpret_cast<const std::byte*>(what);
+        return hashing::backend<Policy>::process_raw_bytes({ bytes, std::strlen(what) }, seed);
+    }
+
+    size_t operator()(type what, size_t seed = 0) const noexcept
+        requires (!hashing::is_backend_handles_raw_bytes_v<Policy>) {
+        return hashing::backend<Policy>::process_raw_bytes(what, seed);
     }
 };
 
