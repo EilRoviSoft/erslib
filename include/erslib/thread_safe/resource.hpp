@@ -101,6 +101,7 @@ namespace ers::thread_safe {
 
         // Observers
 
+        [[nodiscard]]
         Result<accessor_type> get() const {
             auto ptr = m_cb->value.load(std::memory_order_acquire);
 
@@ -114,7 +115,7 @@ namespace ers::thread_safe {
                     if (!r)
                         return Unexpected(r.error());
 
-                    ptr = r.value();
+                    ptr = std::make_shared<T>(std::move(r.value()));
                     m_cb->value.store(ptr, std::memory_order_release);
                 }
             }
