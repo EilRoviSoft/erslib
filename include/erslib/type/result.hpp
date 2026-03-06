@@ -98,12 +98,16 @@ namespace ers {
 }
 
 
-// Result
+// Result<T>
 
 namespace ers {
     template<typename T, typename E = Error>
     class [[nodiscard]] Result {
     public:
+        static_assert(!std::is_rvalue_reference_v<T>,
+            "Result<T&&> is not allowed. Use Result<T> instead.");
+
+
         // Constructors
 
         constexpr Result()
@@ -165,24 +169,29 @@ namespace ers {
         constexpr T& value() & { return std::get<0>(m_variant); }
         constexpr const T& value() const & { return std::get<0>(m_variant); }
         constexpr T&& value() && { return std::move(std::get<0>(m_variant)); }
-        constexpr const T& value() const && { return std::move(std::get<0>(m_variant)); }
+        constexpr const T&& value() const && { return std::move(std::get<0>(m_variant)); }
 
         constexpr T& operator*() & { return value(); }
         constexpr const T& operator*() const & { return value(); }
         constexpr T&& operator*() && { return std::move(value()); }
-        constexpr const T& operator*() const && { return std::move(value()); }
+        constexpr const T&& operator*() const && { return std::move(value()); }
 
-        constexpr T* operator->() { return value(); }
-        constexpr const T* operator->() const { return value(); }
+        constexpr T* operator->() { return &value(); }
+        constexpr const T* operator->() const { return &value(); }
 
-        constexpr const E& error() { return std::get<E>(m_variant); }
-        constexpr const E& error() const { return std::get<E>(m_variant); }
+        constexpr const E& error() { return std::get<1>(m_variant); }
+        constexpr const E& error() const { return std::get<1>(m_variant); }
 
 
     protected:
         std::variant<T, E> m_variant;
     };
+}
 
+
+// Result<T&>
+
+namespace ers {
     template<typename T, typename E>
     class [[nodiscard]] Result<T&, E> {
     public:
@@ -247,15 +256,15 @@ namespace ers {
         constexpr T& value() & { return *std::get<0>(m_variant); }
         constexpr const T& value() const & { return *std::get<0>(m_variant); }
         constexpr T&& value() && { return std::move(*std::get<0>(m_variant)); }
-        constexpr const T& value() const && { return std::move(*std::get<0>(m_variant)); }
+        constexpr const T&& value() const && { return std::move(*std::get<0>(m_variant)); }
 
         constexpr T& operator*() & { return value(); }
         constexpr const T& operator*() const & { return value(); }
         constexpr T&& operator*() && { return std::move(value()); }
-        constexpr const T& operator*() const && { return std::move(value()); }
+        constexpr const T&& operator*() const && { return std::move(value()); }
 
-        constexpr T* operator->() { return value(); }
-        constexpr const T* operator->() const { return value(); }
+        constexpr T* operator->() { return &value(); }
+        constexpr const T* operator->() const { return &value(); }
 
         constexpr const E& error() { return std::get<1>(m_variant); }
         constexpr const E& error() const { return std::get<1>(m_variant); }
@@ -264,8 +273,12 @@ namespace ers {
     protected:
         std::variant<ref<T>, E> m_variant;
     };
+}
 
 
+// Template deduction
+
+namespace ers {
     template<typename T>
     Result(T) -> Result<T>;
 
