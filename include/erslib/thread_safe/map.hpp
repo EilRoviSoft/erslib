@@ -24,6 +24,9 @@ namespace ers::thread_safe {
         using iterator = container_type::iterator;
         using const_iterator = container_type::const_iterator;
 
+
+        // Constructor
+
         Map() = default;
 
         Map(const Map& another) :
@@ -43,6 +46,11 @@ namespace ers::thread_safe {
             this->m_data = std::move(another.m_data);
             return *this;
         }
+
+
+        // Destructor
+
+        ~Map() = default;
 
 
         // Capacity
