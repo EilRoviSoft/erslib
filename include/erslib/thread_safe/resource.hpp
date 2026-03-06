@@ -9,14 +9,6 @@
 #include <erslib/type/result.hpp>
 
 
-// Forward declaration
-
-namespace ers::thread_safe {
-    template<typename T>
-    class Accessor;
-}
-
-
 // Control block
 
 namespace ers::thread_safe {
@@ -34,74 +26,6 @@ namespace ers::thread_safe {
     resource_data_ptr<T> make_resource_data() {
         return std::make_shared<resource_data_t<T>>();
     }
-}
-
-
-// Resource
-
-namespace ers::thread_safe {
-    template<typename T>
-    class IResource {
-        friend class Accessor<T>;
-
-
-    public:
-        // Constructor
-
-        IResource() :
-            m_cb(make_resource_data<T>()) {
-        }
-
-
-        // Destructor
-
-        virtual ~IResource() = default;
-
-
-        // Observers
-
-        Result<Accessor<T>> get() const {
-            auto ptr = m_cb->value.load(std::memory_order_acquire);
-
-            if (!ptr) {
-                std::lock_guard lock(m_cb->mutex);
-
-                ptr = m_cb->value.load();
-
-                if (!ptr) {
-                    auto r = load();
-                    if (!r)
-                        return Unexpected(r.error());
-
-                    ptr = r.value();
-                    m_cb->value.store(ptr, std::memory_order_release);
-                }
-            }
-
-            return Accessor<T>(m_cb, std::move(ptr));
-        }
-
-
-    protected:
-        resource_data_ptr<T> m_cb;
-
-
-        [[nodiscard]]
-        virtual Result<T&&> load() const = 0;
-    };
-
-
-    template<typename T>
-    class IResourceFromDisk : public IResource<T> {
-    public:
-        explicit IResourceFromDisk(std::string_view path) :
-            m_path(path) {
-        }
-
-
-    protected:
-        std::string m_path;
-    };
 }
 
 
@@ -146,5 +70,76 @@ namespace ers::thread_safe {
     protected:
         resource_data_ptr<T> m_cb;
         std::shared_ptr<T> m_ptr;
+    };
+}
+
+
+// Resource
+
+namespace ers::thread_safe {
+    template<typename T>
+    class IResource {
+        friend class Accessor<T>;
+
+
+    public:
+        using accessor_type = Accessor<T>;
+
+
+        // Constructor
+
+        IResource() :
+            m_cb(make_resource_data<T>()) {
+        }
+
+
+        // Destructor
+
+        virtual ~IResource() = default;
+
+
+        // Observers
+
+        Result<accessor_type> get() const {
+            auto ptr = m_cb->value.load(std::memory_order_acquire);
+
+            if (!ptr) {
+                std::lock_guard lock(m_cb->mutex);
+
+                ptr = m_cb->value.load();
+
+                if (!ptr) {
+                    auto r = load();
+                    if (!r)
+                        return Unexpected(r.error());
+
+                    ptr = r.value();
+                    m_cb->value.store(ptr, std::memory_order_release);
+                }
+            }
+
+            return accessor_type(m_cb, std::move(ptr));
+        }
+
+
+    protected:
+        resource_data_ptr<T> m_cb;
+
+
+        [[nodiscard]]
+        virtual Result<T&&> load() const = 0;
+    };
+
+
+    template<typename T>
+    class IResourceFromDisk : public IResource<T> {
+    public:
+        explicit IResourceFromDisk(std::string_view path) :
+            m_path(path) {
+        }
+
+
+    protected:
+        std::string m_path;
     };
 }
