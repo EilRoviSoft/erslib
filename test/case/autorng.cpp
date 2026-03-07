@@ -3,16 +3,17 @@
 #include <chrono>
 #include <print>
 #include <random>
-#include <ranges>
 #include <string>
 #include <thread>
+
+// boost
+#include <boost/unordered/unordered_flat_map.hpp>
 
 // catch2
 #include <catch2/catch_get_random_seed.hpp>
 #include <catch2/catch_test_macros.hpp>
 
 // ers
-#include <erslib/container/unordered_table.hpp>
 #include <erslib/hashing/rapid.hpp>
 #include <erslib/thread_safe/map.hpp>
 #include <erslib/type/time.hpp>
@@ -52,7 +53,7 @@ namespace {
     };
 
 
-    using Map = ers::thread_safe::Map<ers::UnorderedMap<
+    using Map = ers::thread_safe::Map<boost::unordered_flat_map<
         std::string,
         AutoRng,
         ers::util::string_hash_adaptor<ers::RapidHash>,
