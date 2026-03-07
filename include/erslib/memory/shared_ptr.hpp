@@ -21,4 +21,9 @@ namespace ers {
 
 namespace ers {
     using boost::make_shared;
+
+    using boost::static_pointer_cast;
+    using boost::dynamic_pointer_cast;
+    using boost::const_pointer_cast;
+    using boost::reinterpret_pointer_cast;
 }
