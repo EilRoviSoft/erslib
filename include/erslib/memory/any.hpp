@@ -13,7 +13,7 @@
 
 // Forward declaration
 
-namespace ers::internal {
+namespace ers {
     template<size_t Size, size_t Align>
     class TAny;
 }
@@ -159,7 +159,7 @@ namespace ers::internal {
 
 // Implementation
 
-namespace ers::pmr {
+namespace ers {
     template<size_t Size, size_t Align>
     class TAny {
         using storage_type = internal::TAnyStorage<Size, Align>;
@@ -454,6 +454,6 @@ namespace ers::pmr {
 
 // General use-case
 
-namespace ers::pmr {
+namespace ers {
     using Any = TAny<32, alignof(std::max_align_t)>;
 }

@@ -1,11 +1,10 @@
 #pragma once
 
 // std
-#include <iostream>
 #include <memory_resource>
 
 
-namespace ers::pmr {
+namespace ers {
     template<class T>
     struct deleter {
         std::pmr::memory_resource* mr;

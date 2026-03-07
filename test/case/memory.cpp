@@ -7,7 +7,7 @@
 #include <catch2/catch_test_macros.hpp>
 
 // ers
-#include <erslib/memory/pmr/holder.hpp>
+#include <erslib/memory/holder.hpp>
 #include <erslib/type/general.hpp>
 
 
@@ -28,13 +28,13 @@ TEST_CASE("testing custom allocator", "[memory]") {
     std::pmr::monotonic_buffer_resource pool(buffer.data(), sizeof(buffer));
 
     SECTION("general access") {
-        auto n = ers::pmr::make_holder<int>(&pool, 42);
+        auto n = ers::make_holder<int>(&pool, 42);
         REQUIRE(n);
         REQUIRE(*n == 42);
     }
 
     SECTION("ecs") {
-        auto position = ers::pmr::make_holder<Position>(&pool, 1.0, 2.0);
+        auto position = ers::make_holder<Position>(&pool, 1.0, 2.0);
         REQUIRE(position);
     }
 }
