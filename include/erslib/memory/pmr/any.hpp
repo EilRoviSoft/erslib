@@ -455,5 +455,5 @@ namespace ers::pmr {
 // General use-case
 
 namespace ers::pmr {
-    using Any = internal::TAny<32, alignof(std::max_align_t)>;
+    using Any = TAny<32, alignof(std::max_align_t)>;
 }
