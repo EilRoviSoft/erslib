@@ -44,8 +44,6 @@ add_library(erslib::erslib ALIAS erslib)
 # erslib dependencies
 #----------------------------------------------------------------------------------------------------------------------
 
-find_package(absl CONFIG REQUIRED)
-
 find_package(frozen CONFIG REQUIRED)
 
 find_package(boost_optional CONFIG REQUIRED)
@@ -56,7 +54,6 @@ find_package(boost_unordered CONFIG REQUIRED)
 target_link_libraries(erslib
     PUBLIC
         Boost::optional Boost::smart_ptr Boost::thread Boost::unordered
-        absl::flat_hash_map absl::flat_hash_set
         frozen::frozen-headers
 )
 

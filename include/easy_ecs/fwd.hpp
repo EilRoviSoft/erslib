@@ -1,7 +1,10 @@
 #pragma once
 
+// boost
+#include <boost/unordered/unordered_flat_map.hpp>
+#include <boost/unordered/unordered_flat_set.hpp>
+
 // ers
-#include <erslib/container/unordered_table.hpp>
 #include <erslib/hashing/direct.hpp>
 #include <erslib/memory/pmr/any.hpp>
 
@@ -12,7 +15,7 @@ namespace ecs {
         typename Hasher = ers::RapidHash<K>,
         typename EqualTo = std::equal_to<K>,
         typename Alloc = std::allocator<K>>
-    using HashSet = ers::UnorderedSet<K, Hasher, EqualTo, Alloc>;
+    using HashSet = boost::unordered_flat_set<K, Hasher, EqualTo, Alloc>;
 
     template<
         typename K,
@@ -20,7 +23,7 @@ namespace ecs {
         typename Hasher = ers::RapidHash<K>,
         typename EqualTo = std::equal_to<K>,
         typename Alloc = std::allocator<std::pair<K, V>>>
-    using HashMap = ers::UnorderedMap<K, V, Hasher, EqualTo, Alloc>;
+    using HashMap = boost::unordered_flat_map<K, V, Hasher, EqualTo, Alloc>;
 
 
     using TrivialSet = HashSet<size_t, ers::DirectHash<size_t>>;
