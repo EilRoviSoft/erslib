@@ -47,22 +47,90 @@ namespace ers::internal {
         void (*change_resource)(target_type& obj, std::pmr::memory_resource* mr);
 
         template<typename T>
-        static T* impl_alloc(target_type& obj);
+        static T* impl_alloc(target_type& obj) {
+            T* result;
+
+            if constexpr (!is_sbo_applicable_v<T, Size, Align>) {
+                obj.m_storage.heap = obj.m_mr->allocate(sizeof(T), alignof(T));
+                obj.m_policy = SboPolicy::Dynamic;
+                result = static_cast<T*>(obj.m_storage.heap);
+            } else {
+                obj.m_policy = SboPolicy::Embedded;
+                result = reinterpret_cast<T*>(obj.m_storage.buffer);
+            }
+
+            return result;
+        }
 
         template<typename T>
-        static void impl_destroy(target_type& obj);
+        static void impl_destroy(target_type& obj) {
+            if constexpr (std::is_trivially_destructible_v<T>)
+                return;
+
+            if constexpr (is_sbo_applicable_v<T, Size, Align>) {
+                ERS_ASSERT(obj.m_policy == SboPolicy::Embedded);
+                std::destroy_at(reinterpret_cast<T*>(obj.m_storage.buffer));
+            } else {
+                ERS_ASSERT(obj.m_policy == SboPolicy::Dynamic);
+                std::destroy_at(static_cast<T*>(obj.m_storage.heap));
+            }
+        }
 
         template<typename T>
-        static void impl_dealloc(target_type& obj);
+        static void impl_dealloc(target_type& obj) {
+            if constexpr (!is_sbo_applicable_v<T, Size, Align>)
+                obj.m_mr->deallocate(obj.m_storage.heap, sizeof(T), alignof(T));
+        }
 
         template<typename T>
-        static void impl_copy(target_type& dst, const void* src);
+        static void impl_copy(target_type& dst, const void* src) {
+            dst.template _prepare_to_assign<T>();
+
+            if constexpr (std::is_trivially_copyable_v<T>)
+                std::memcpy(dst.template _data_as<T>(), static_cast<const T*>(src), sizeof(T));
+            else
+                std::construct_at(dst.template _data_as<T>(), *static_cast<const T*>(src));
+        }
 
         template<typename T>
-        static void impl_move(target_type& dst, void* src);
+        static void impl_move(target_type& dst, void* src) {
+            dst.template _prepare_to_assign<T>();
+
+            if constexpr (std::is_trivially_move_constructible_v<T> && std::is_trivially_destructible_v<T>)
+                std::memcpy(dst.template _data_as<T>(), static_cast<const T*>(src), sizeof(T));
+            else
+                std::construct_at(dst.template _data_as<T>(), std::move(*static_cast<T*>(src)));
+        }
 
         template<typename T>
-        static void impl_change_resource(target_type& obj, std::pmr::memory_resource* mr);
+        static void impl_change_resource(target_type& obj, std::pmr::memory_resource* mr) {
+            if (*mr == *obj.m_mr)
+                return;
+
+            // We should move heap's storage in case it is allocated.
+            // But otherwise we can skip it entirely.
+
+            if constexpr (!is_sbo_applicable_v<T, Size, Align>) {
+                auto old_mr = obj.m_mr;
+
+                void* old_heap = obj.m_storage.heap;
+                void* new_heap = obj.m_mr->allocate(sizeof(T), alignof(T));
+
+                if constexpr (std::is_trivially_copyable_v<T>)
+                    std::memcpy(new_heap, old_heap, sizeof(T));
+                else
+                    std::construct_at(static_cast<T*>(new_heap), std::move(*static_cast<T*>(old_heap)));
+
+                if constexpr (!std::is_trivially_destructible_v<T>)
+                    std::destroy_at(static_cast<T*>(old_heap));
+
+                old_mr->deallocate(old_heap, sizeof(T), alignof(T));
+
+                obj.m_storage.heap = new_heap;
+            }
+
+            obj.m_mr = mr;
+        }
 
         template<typename T>
         static constexpr auto make() {
@@ -364,103 +432,6 @@ namespace ers::internal {
                 return static_cast<const T*>(m_storage.heap);
         }
     };
-}
-
-
-// Implementation
-
-namespace ers::internal {
-    template<size_t Size, size_t Align>
-    template<typename T>
-    T* TAnyVtable<Size, Align>::impl_alloc(target_type& obj) {
-        T* result;
-
-        if constexpr (!is_sbo_applicable_v<T, Size, Align>) {
-            obj.m_storage.heap = obj.m_mr->allocate(sizeof(T), alignof(T));
-            obj.m_policy = SboPolicy::Dynamic;
-            result = static_cast<T*>(obj.m_storage.heap);
-        } else {
-            obj.m_policy = SboPolicy::Embedded;
-            result = reinterpret_cast<T*>(obj.m_storage.buffer);
-        }
-
-        return result;
-    }
-
-    template<size_t Size, size_t Align>
-    template<typename T>
-    void TAnyVtable<Size, Align>::impl_destroy(target_type& obj) {
-        if constexpr (std::is_trivially_destructible_v<T>)
-            return;
-
-        if constexpr (is_sbo_applicable_v<T, Size, Align>) {
-            ERS_ASSERT(obj.m_policy == SboPolicy::Embedded);
-            std::destroy_at(reinterpret_cast<T*>(obj.m_storage.buffer));
-        } else {
-            ERS_ASSERT(obj.m_policy == SboPolicy::Dynamic);
-            std::destroy_at(static_cast<T*>(obj.m_storage.heap));
-        }
-    }
-
-    template<size_t Size, size_t Align>
-    template<typename T>
-    void TAnyVtable<Size, Align>::impl_dealloc(target_type& obj) {
-        if constexpr (!is_sbo_applicable_v<T, Size, Align>)
-            obj.m_mr->deallocate(obj.m_storage.heap, sizeof(T), alignof(T));
-    }
-
-    template<size_t Size, size_t Align>
-    template<typename T>
-    void TAnyVtable<Size, Align>::impl_copy(target_type& dst, const void* src) {
-        dst.template _prepare_to_assign<T>();
-
-        if constexpr (std::is_trivially_copyable_v<T>)
-            std::memcpy(dst.template _data_as<T>(), static_cast<const T*>(src), sizeof(T));
-        else
-            std::construct_at(dst.template _data_as<T>(), *static_cast<const T*>(src));
-    }
-
-    template<size_t Size, size_t Align>
-    template<typename T>
-    void TAnyVtable<Size, Align>::impl_move(target_type& dst, void* src) {
-        dst.template _prepare_to_assign<T>();
-
-        if constexpr (std::is_trivially_move_constructible_v<T> && std::is_trivially_destructible_v<T>)
-            std::memcpy(dst.template _data_as<T>(), static_cast<const T*>(src), sizeof(T));
-        else
-            std::construct_at(dst.template _data_as<T>(), std::move(*static_cast<T*>(src)));
-    }
-
-    template<size_t Size, size_t Align>
-    template<typename T>
-    void TAnyVtable<Size, Align>::impl_change_resource(target_type& obj, std::pmr::memory_resource* mr) {
-        if (*mr == *obj.m_mr)
-            return;
-
-        // We should move heap's storage in case it is allocated.
-        // But otherwise we can skip it entirely.
-
-        if constexpr (!is_sbo_applicable_v<T, Size, Align>) {
-            auto old_mr = obj.m_mr;
-
-            void* old_heap = obj.m_storage.heap;
-            void* new_heap = obj.m_mr->allocate(sizeof(T), alignof(T));
-
-            if constexpr (std::is_trivially_copyable_v<T>)
-                std::memcpy(new_heap, old_heap, sizeof(T));
-            else
-                std::construct_at(static_cast<T*>(new_heap), std::move(*static_cast<T*>(old_heap)));
-
-            if constexpr (!std::is_trivially_destructible_v<T>)
-                std::destroy_at(static_cast<T*>(old_heap));
-
-            old_mr->deallocate(old_heap, sizeof(T), alignof(T));
-
-            obj.m_storage.heap = new_heap;
-        }
-
-        obj.m_mr = mr;
-    }
 }
 
 
