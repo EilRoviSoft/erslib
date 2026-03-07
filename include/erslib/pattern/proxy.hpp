@@ -3,21 +3,21 @@
 
 namespace ers::pattern {
     template<typename T>
-    class IProxy {
+    class TProxy {
     public:
-        IProxy(T& value) :
+        TProxy(T& value) :
             _value(&value) {
         }
 
-        IProxy(const IProxy& another) {
+        TProxy(const TProxy& another) {
             this->_value = another._value;
         }
-        IProxy& operator=(const IProxy& another) = default;
+        TProxy& operator=(const TProxy& another) = default;
 
-        IProxy(IProxy&& another) noexcept {
+        TProxy(TProxy&& another) noexcept {
             this->_value = another._value;
         }
-        IProxy& operator=(IProxy&& another) noexcept {
+        TProxy& operator=(TProxy&& another) noexcept {
             this->_value = another._value;
             return *this;
         }
