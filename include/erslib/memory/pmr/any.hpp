@@ -36,6 +36,7 @@ namespace ers::internal {
         void* heap;
     };
 
+
     template<size_t Size, size_t Align>
     struct TAnyVtable {
         using target_type = TAny<Size, Align>;
@@ -158,13 +159,14 @@ namespace ers::internal {
 
 // Implementation
 
-namespace ers::internal {
+namespace ers::pmr {
     template<size_t Size, size_t Align>
     class TAny {
-        using storage_type = TAnyStorage<Size, Align>;
-        using vtable_type = TAnyVtable<Size, Align>;
+        using storage_type = internal::TAnyStorage<Size, Align>;
+        using vtable_type = internal::TAnyVtable<Size, Align>;
 
         friend vtable_type;
+
 
     public:
         struct placeholder_t {};
@@ -354,12 +356,27 @@ namespace ers::internal {
         [[nodiscard]]
         const T& get() const { return *_data_as<T>(); }
 
+
+        // Helper functions
+
+        template<typename T, typename... Args>
+        static TAny make(Args&&... args) {
+            return TAny(std::in_place_type<T>, std::forward<Args>(args)...);
+        }
+
+        template<typename T, typename... Args>
+        static TAny make_with_resource(std::pmr::memory_resource* provided_mr, Args&&... args) {
+            return TAny(std::in_place_type<T>, provided_mr, std::forward<Args>(args)...);
+        }
+
+
     protected:
         std::pmr::memory_resource* m_mr;
         const vtable_type* m_vtable;
         size_t m_type;
         SboPolicy m_policy;
         storage_type m_storage;
+
 
     private:
         // Modifiers
@@ -391,27 +408,27 @@ namespace ers::internal {
         [[nodiscard]]
         void* _data() {
             switch (m_policy) {
-            case SboPolicy::Dynamic:
-                return m_storage.heap;
+                case SboPolicy::Dynamic:
+                    return m_storage.heap;
 
-            case SboPolicy::Embedded:
-                return m_storage.buffer;
+                case SboPolicy::Embedded:
+                    return m_storage.buffer;
 
-            default:
-                return nullptr;
+                default:
+                    return nullptr;
             }
         }
         [[nodiscard]]
         const void* _data() const {
             switch (m_policy) {
-            case SboPolicy::Dynamic:
-                return m_storage.heap;
+                case SboPolicy::Dynamic:
+                    return m_storage.heap;
 
-            case SboPolicy::Embedded:
-                return m_storage.buffer;
+                case SboPolicy::Embedded:
+                    return m_storage.buffer;
 
-            default:
-                return nullptr;
+                default:
+                    return nullptr;
             }
         }
 
