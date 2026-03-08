@@ -299,7 +299,7 @@ namespace ers {
         template<typename T, typename... Args>
             requires std::is_constructible_v<std::decay_t<T>, Args...>
             && std::is_copy_constructible_v<std::decay_t<T>>
-        auto emplace(Args&&... args) {
+        std::decay_t<T>* emplace(Args&&... args) {
             return emplace_with_resource<T>(
                 m_mr ? m_mr : std::pmr::get_default_resource(),
                 std::forward<Args>(args)...
@@ -309,7 +309,7 @@ namespace ers {
         template<typename T, typename... Args>
             requires std::is_constructible_v<std::decay_t<T>, Args...>
             && std::is_copy_constructible_v<std::decay_t<T>>
-        auto emplace_with_resource(std::pmr::memory_resource* provided_mr, Args&&... args) {
+        std::decay_t<T>* emplace_with_resource(std::pmr::memory_resource* provided_mr, Args&&... args) {
             using U = std::decay_t<T>;
 
             U* ptr;
