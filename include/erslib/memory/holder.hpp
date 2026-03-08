@@ -5,10 +5,10 @@
 #include <memory_resource>
 
 // ers
-#include <erslib/memory/pmr/deleter.hpp>
+#include <erslib/memory/deleter.hpp>
 
 
-namespace ers::pmr {
+namespace ers {
     template<typename T>
     using Holder = std::unique_ptr<T, deleter<T>>;
 

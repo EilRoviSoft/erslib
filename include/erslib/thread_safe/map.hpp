@@ -12,20 +12,26 @@
 
 
 namespace ers::thread_safe {
-    template<typename K, typename V, typename Container>
+    template<typename Container>
         requires HashMapConcept<Container>
     class Map {
     public:
         using container_type = Container;
-        using pair_type = std::pair<K, V>;
+        using key_type = container_type::key_type;
+        using mapped_type = container_type::mapped_type;
+        using value_type = container_type::value_type;
 
         using iterator = container_type::iterator;
         using const_iterator = container_type::const_iterator;
 
+
+        // Constructor
+
         Map() = default;
 
         Map(const Map& another) :
-            m_data(another.m_data) {}
+            m_data(another.m_data) {
+        }
         Map& operator=(const Map& another) {
             std::unique_lock lock(this->m_mutex);
             this->m_data = another.m_data;
@@ -42,13 +48,20 @@ namespace ers::thread_safe {
         }
 
 
+        // Destructor
+
+        ~Map() = default;
+
+
         // Capacity
 
+        [[nodiscard]]
         bool empty() const {
             std::shared_lock lock(this->m_mutex);
             return m_data.empty();
         }
 
+        [[nodiscard]]
         size_t size() const {
             std::shared_lock lock(this->m_mutex);
             return m_data.size();
@@ -58,14 +71,15 @@ namespace ers::thread_safe {
         // I/O
 
         template<typename T>
-        bool set(const T& k, V v = V()) {
+        bool set(const T& k, mapped_type v = mapped_type()) {
             std::unique_lock lock(this->m_mutex);
 
             auto [_, flag] = this->m_data.emplace(k, std::move(v));
             return flag;
         }
         template<typename T>
-        boost::optional<const V&> get(const T& k) const {
+        [[nodiscard]]
+        boost::optional<const mapped_type&> get(const T& k) const {
             std::shared_lock lock(this->m_mutex);
 
             auto it = this->m_data.find(k);
@@ -79,10 +93,12 @@ namespace ers::thread_safe {
         // Lookup
 
         template<typename T>
-        const V& operator[](const T& k) const {
+        [[nodiscard]]
+        const mapped_type& operator[](const T& k) const {
             return *this->get(k);
         }
 
+        [[nodiscard]]
         const container_type& wrapped_data() const {
             return this->m_data;
         }

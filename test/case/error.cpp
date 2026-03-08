@@ -9,20 +9,22 @@
 #include <erslib/type/result.hpp>
 
 
-bool equals(double l, double r) {
-    return std::fabs(l - r) < std::numeric_limits<double>::epsilon();
-}
-
-ers::Result<double> safe_divide(double l, double r) {
-    if (equals(r, 0.0)) {
-        return ers::Unexpected<ers::Error>(
-            ers::Severity::Crit,
-            "math_error",
-            std::format("Division by zero: {} / {}", l, r)
-        );
+namespace {
+    bool equals(double l, double r) {
+        return std::fabs(l - r) < std::numeric_limits<double>::epsilon();
     }
 
-    return l / r;
+    ers::Result<double> safe_divide(double l, double r) {
+        if (equals(r, 0.0)) {
+            return ers::Unexpected<ers::Error>(
+                ers::Severity::Crit,
+                "math_error",
+                std::format("Division by zero: {} / {}", l, r)
+            );
+        }
+
+        return l / r;
+    }
 }
 
 

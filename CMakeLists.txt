@@ -44,18 +44,16 @@ add_library(erslib::erslib ALIAS erslib)
 # erslib dependencies
 #----------------------------------------------------------------------------------------------------------------------
 
-find_package(absl CONFIG REQUIRED)
-
 find_package(frozen CONFIG REQUIRED)
 
 find_package(boost_optional CONFIG REQUIRED)
+find_package(boost_smart_ptr REQUIRED CONFIG)
 find_package(boost_thread CONFIG REQUIRED)
 find_package(boost_unordered CONFIG REQUIRED)
 
 target_link_libraries(erslib
     PUBLIC
-        Boost::optional Boost::thread Boost::unordered
-        absl::flat_hash_map absl::flat_hash_set
+        Boost::optional Boost::smart_ptr Boost::thread Boost::unordered
         frozen::frozen-headers
 )
 
@@ -80,11 +78,7 @@ set(SOURCES
     "src/erslib/type/error.cpp"
 
     "src/erslib/splitting/regular.cpp"
-    "src/erslib/splitting/smart.cpp"
-
-    "src/easy_ecs/engine.cpp"
-    "src/easy_ecs/entity.cpp"
-    "src/easy_ecs/system.cpp"    
+    "src/erslib/splitting/smart.cpp" 
 )
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${SOURCES})
 

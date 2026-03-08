@@ -3,16 +3,17 @@
 #include <chrono>
 #include <print>
 #include <random>
-#include <ranges>
 #include <string>
 #include <thread>
+
+// boost
+#include <boost/unordered/unordered_flat_map.hpp>
 
 // catch2
 #include <catch2/catch_get_random_seed.hpp>
 #include <catch2/catch_test_macros.hpp>
 
 // ers
-#include <erslib/container/unordered_table.hpp>
 #include <erslib/hashing/rapid.hpp>
 #include <erslib/thread_safe/map.hpp>
 #include <erslib/type/time.hpp>
@@ -20,45 +21,45 @@
 #include <erslib/util/string.hpp>
 
 
-using namespace std::chrono_literals;
-constexpr ers::duration_t lifetime = 20ms;
+namespace {
+    using namespace std::chrono_literals;
+    constexpr ers::duration_t lifetime = 20ms;
 
 
-std::mt19937_64& gen() {
-    static std::mt19937_64 instance(Catch::getSeed());
-    return instance;
-}
-
-template<typename T>
-T random(T min, T max) {
-    std::uniform_int_distribution distribution(min, max);
-    return distribution(gen());
-}
-
-class AutoRng : public ers::ITimedObject<size_t> {
-public:
-    AutoRng() :
-        ITimedObject(lifetime) {
+    std::mt19937_64& gen() {
+        static std::mt19937_64 instance(Catch::getSeed());
+        return instance;
     }
 
-protected:
-    [[nodiscard]] ers::Status load() const override {
-        *m_expiring ^= random<size_t>(0, 10);
-        return ers::ok;
+    template<typename T>
+    T random(T min, T max) {
+        std::uniform_int_distribution distribution(min, max);
+        return distribution(gen());
     }
-};
 
 
-using Map = ers::thread_safe::Map<
-    std::string,
-    AutoRng,
-    ers::UnorderedMap<
+    class AutoRng : public ers::ITimedObject<size_t> {
+    public:
+        AutoRng() :
+            ITimedObject(lifetime) {
+        }
+
+
+    protected:
+        [[nodiscard]] ers::Status load() const override {
+            *m_expiring ^= random<size_t>(0, 10);
+            return ers::ok;
+        }
+    };
+
+
+    using Map = ers::thread_safe::Map<boost::unordered_flat_map<
         std::string,
         AutoRng,
         ers::util::string_hash_adaptor<ers::RapidHash>,
         ers::util::string_equal
-    >
->;
+    >>;
+}
 
 
 TEST_CASE("testing thread_safe map", "[ts_map]") {
