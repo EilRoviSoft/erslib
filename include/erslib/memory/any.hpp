@@ -135,17 +135,20 @@ namespace ers::internal {
 
         template<typename T>
         static constexpr auto make() {
-            TAnyVtable result;
+            TAnyVtable vtable;
 
-            result.destroy = &impl_destroy<T>;
-            result.dealloc = &impl_dealloc<T>;
+            vtable.destroy = &impl_destroy<T>;
+            vtable.dealloc = &impl_dealloc<T>;
 
-            result.copy = &impl_copy<T>;
-            result.move = &impl_move<T>;
+            if constexpr (std::is_copy_constructible_v<T>)
+                vtable.copy = &impl_copy<T>;
+            else
+                vtable.copy = nullptr;
+            vtable.move = &impl_move<T>;
 
-            result.change_resource = &impl_change_resource<T>;
+            vtable.change_resource = &impl_change_resource<T>;
 
-            return result;
+            return vtable;
         }
 
         template<typename T>
@@ -186,19 +189,21 @@ namespace ers {
         // Copy
 
         TAny(const TAny& other) :
-            m_mr(other.m_mr),
-            m_vtable(other.m_vtable),
             m_type(meta::type_hash_v<placeholder_t>),
             m_policy(SboPolicy::Empty),
             m_storage { .heap = nullptr } {
-            m_vtable->copy(*this, other._data());
-        }
-        TAny& operator=(const TAny& other) {
-            _soft_reset();
+            if (!other.m_vtable->copy)
+                throw std::runtime_error("bad ers::TAny cast");
 
             m_mr = other.m_mr;
             m_vtable = other.m_vtable;
-            m_type = other.m_type;
+
+            m_vtable->copy(*this, other._data());
+        }
+        TAny& operator=(const TAny& other) {
+            m_mr = other.m_mr;
+            m_vtable = other.m_vtable;
+
             m_vtable->copy(*this, other._data());
 
             return *this;
@@ -214,14 +219,14 @@ namespace ers {
             m_policy(SboPolicy::Empty),
             m_storage { .heap = nullptr } {
             m_vtable->move(*this, other._data());
+            other._soft_reset();
         }
         TAny& operator=(TAny&& other) noexcept {
-            _soft_reset();
-
             m_mr = other.m_mr;
             m_vtable = other.m_vtable;
-            m_type = other.m_type;
+
             m_vtable->move(*this, other._data());
+            other._soft_reset();
 
             return *this;
         }
@@ -298,7 +303,6 @@ namespace ers {
 
         template<typename T, typename... Args>
             requires std::is_constructible_v<std::decay_t<T>, Args...>
-            && std::is_copy_constructible_v<std::decay_t<T>>
         std::decay_t<T>* emplace(Args&&... args) {
             return emplace_with_resource<T>(
                 m_mr ? m_mr : std::pmr::get_default_resource(),
@@ -308,7 +312,6 @@ namespace ers {
 
         template<typename T, typename... Args>
             requires std::is_constructible_v<std::decay_t<T>, Args...>
-            && std::is_copy_constructible_v<std::decay_t<T>>
         std::decay_t<T>* emplace_with_resource(std::pmr::memory_resource* provided_mr, Args&&... args) {
             using U = std::decay_t<T>;
 
@@ -337,7 +340,7 @@ namespace ers {
         // Observers
 
         [[nodiscard]]
-        constexpr bool has_value() const { return m_policy == SboPolicy::Empty; }
+        constexpr bool has_value() const { return m_policy != SboPolicy::Empty; }
 
         template<typename T>
         [[nodiscard]]
@@ -345,6 +348,10 @@ namespace ers {
 
         [[nodiscard]]
         constexpr size_t type() const { return m_type; }
+
+        bool is_copyable() const {
+            return m_vtable->copy;
+        }
 
 
         // Accessors
