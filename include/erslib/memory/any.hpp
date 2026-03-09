@@ -219,14 +219,12 @@ namespace ers {
             m_policy(SboPolicy::Empty),
             m_storage { .heap = nullptr } {
             m_vtable->move(*this, other._data());
-            other._soft_reset();
         }
         TAny& operator=(TAny&& other) noexcept {
             m_mr = other.m_mr;
             m_vtable = other.m_vtable;
 
             m_vtable->move(*this, other._data());
-            other._soft_reset();
 
             return *this;
         }
