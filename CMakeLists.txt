@@ -91,7 +91,7 @@ include(CMakePackageConfigHelpers)
 target_sources(erslib
     PRIVATE
         ${SOURCES}
-)
+ "src/contrib/json.cpp")
 
 target_compile_definitions(erslib
     PUBLIC
