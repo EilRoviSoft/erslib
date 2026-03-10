@@ -71,6 +71,8 @@ endif()
 generate_export_header(erslib EXPORT_FILE_NAME include/erslib/${EXPORT_FILE_NAME})
 
 set(SOURCES
+    # erslib
+
     "include/erslib/export.hpp"
 
     "src/erslib/assert.cpp"
@@ -78,7 +80,12 @@ set(SOURCES
     "src/erslib/type/error.cpp"
 
     "src/erslib/splitting/regular.cpp"
-    "src/erslib/splitting/smart.cpp" 
+    "src/erslib/splitting/smart.cpp"
+
+
+    # contrib
+
+    "src/contrib/json.cpp"
 )
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${SOURCES})
 
@@ -91,7 +98,7 @@ include(CMakePackageConfigHelpers)
 target_sources(erslib
     PRIVATE
         ${SOURCES}
- "src/contrib/json.cpp")
+)
 
 target_compile_definitions(erslib
     PUBLIC

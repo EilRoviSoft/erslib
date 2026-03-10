@@ -6,7 +6,7 @@
 #include <string>
 
 // ers
-#include <erslib/convert/string.hpp>
+#include <erslib/convert/impl/to_str.hpp>
 #include <erslib/type/time.hpp>
 
 // export

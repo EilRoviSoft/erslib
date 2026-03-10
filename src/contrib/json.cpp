@@ -12,7 +12,6 @@
 #include <limits>
 #include <stdexcept>
 #include <string>
-#include <system_error>
 
 namespace fs = std::filesystem;
 using namespace contrib::internal;
@@ -134,7 +133,7 @@ namespace {
 
     template<class T>
     [[nodiscard]] constexpr int log_10_ceil(T num) noexcept {
-        return num < 10 ? 1 : 1 + _log_10_ceil(num / 10);
+        return num < 10 ? 1 : 1 + log_10_ceil(num / 10);
     }
 
     [[nodiscard]] std::string pretty_error(std::size_t cursor, std::string_view chars) {
@@ -1067,8 +1066,7 @@ namespace contrib::internal {
     void serialize_json_recursion_minimized(
         const Node& node,
         std::string& chars,
-        size_t indent_level,
-        bool skip_first_indent
+        size_t indent_level
     ) {
         using namespace std::string_literals;
 
@@ -1095,7 +1093,7 @@ namespace contrib::internal {
 
                 // Value
 
-                serialize_json_recursion_minimized(it->second, chars, indent_level + 1, true);
+                serialize_json_recursion_minimized(it->second, chars, indent_level + 1);
 
                 // Comma
 

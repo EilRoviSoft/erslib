@@ -89,12 +89,6 @@ namespace ers {
     constexpr Unexpected<E> make_unexpected(Args&&... args) {
         return Unexpected<E>(std::forward<Args>(args)...);
     }
-
-    template<typename... Args>
-    constexpr auto make_unexpected_from(Args&&... args) {
-        using E = std::remove_cvref_t<decltype(E(std::forward<Args>(args)...))>;
-        return Unexpected<E>(std::forward<Args>(args)...);
-    }
 }
 
 

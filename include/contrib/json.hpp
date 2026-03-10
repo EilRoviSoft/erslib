@@ -575,8 +575,7 @@ namespace contrib::internal {
     void serialize_json_recursion_minimized(
         const Node& node,
         std::string& chars,
-        size_t indent_level = 0,
-        bool skip_first_indent = false
+        size_t indent_level = 0
     );
     void serialize_json_recursion_pretty(
         const Node& node,
@@ -595,7 +594,7 @@ namespace contrib::internal {
         if constexpr (Prettify)
             return serialize_json_recursion_pretty(node, chars, indent_level, skip_first_indent);
         else
-            return serialize_json_recursion_minimized(node, chars, indent_level, skip_first_indent);
+            return serialize_json_recursion_minimized(node, chars, indent_level);
     }
 }
 

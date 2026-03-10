@@ -4,7 +4,7 @@
 #include <sstream>
 
 // ers
-#include <erslib/error/result.hpp>
+#include <erslib/type/result.hpp>
 #include <erslib/type/time.hpp>
 
 
