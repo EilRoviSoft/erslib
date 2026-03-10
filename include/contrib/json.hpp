@@ -22,6 +22,8 @@
 #include <variant>
 #include <vector>
 
+#include "erslib/type/exception.hpp"
+
 // ____________________ DEVELOPER DOCS ____________________
 
 // Reasonably simple (if we discount reflection) parser / serializer, doesn't use any intrinsics or compiler-specific
@@ -346,9 +348,20 @@ namespace contrib::internal {
             const auto& object = as_object();
             const auto it = object.find(key);
 
-            if (it != object.end())
-                return it->second.as<T>();
-            return std::forward<T>(else_value);
+            if (it == object.end())
+                return std::forward<T>(else_value);
+            return it->second.as<T>();
+        }
+
+        // same thing as 'contains(key) ? json.at(key).get<T>()'
+        template<class T>
+        [[nodiscard]] const T& value_or_throw(std::string_view key) const {
+            const auto& object = as_object();
+            const auto it = object.find(key);
+
+            if (it == object.end() || !it->second.is<T>())
+                throw ers::make_exception("Json doesn't have key '{}'", key);
+            return it->second.as<T>();
         }
 
         // -- Array methods ---
