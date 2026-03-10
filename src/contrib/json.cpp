@@ -14,9 +14,6 @@
 #include <string>
 #include <system_error>
 
-// ers
-#include <erslib/type/exception.hpp>
-
 namespace fs = std::filesystem;
 using namespace contrib::internal;
 

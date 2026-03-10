@@ -14,7 +14,6 @@
 
 // std
 #include <initializer_list>
-#include <map>
 #include <string>
 #include <string_view>
 #include <type_traits>
@@ -22,7 +21,13 @@
 #include <variant>
 #include <vector>
 
-#include "erslib/type/exception.hpp"
+// boost
+#include <boost/unordered/unordered_flat_map.hpp>
+
+// ers
+#include <erslib/hashing/rapid.hpp>
+#include <erslib/type/exception.hpp>
+#include <erslib/util/string.hpp>
 
 // ____________________ DEVELOPER DOCS ____________________
 
@@ -48,19 +53,23 @@ namespace contrib::internal {
     // ===================================
 
     template<class T>
-    using _object_type_impl = std::map<std::string, T, std::less<>>;
-    // 'std::less<>' makes map transparent, which means we can use 'find()' for 'std::string_view' keys
+    using object_type_impl = boost::unordered_flat_map<
+        std::string, T,
+        ers::util::string_hash_adaptor<ers::RapidHash>,
+        ers::util::string_equal
+    >;
     template<class T>
-    using _array_type_impl = std::vector<T>;
-    using _string_type_impl = std::string;
-    using _integral_type_impl = int64_t;
-    using _floating_type_impl = double;
-    using _bool_type_impl = bool;
+    using array_type_impl = std::vector<T>;
+    using string_type_impl = std::string;
+    using integral_type_impl = int64_t;
+    using floating_type_impl = double;
+    using bool_type_impl = bool;
 
-    struct _null_type_impl {
-        [[nodiscard]] bool operator==(const _null_type_impl&) const noexcept {
+    struct null_type_impl {
+        // so we can check 'Null == Null'
+        [[nodiscard]] bool operator==(const null_type_impl&) const noexcept {
             return true;
-        } // so we can check 'Null == Null'
+        }
     };
 
     // ===================
@@ -125,14 +134,14 @@ namespace contrib::internal {
 #define utl_json_map(f, ...)                                                                                           \
     utl_json_eval(utl_json_map_1(f, __VA_ARGS__, ()()(), ()()(), ()()(), 0)) static_assert(true)
 
-    struct _dummy_type {};
+    struct dummy_type {};
 
     // 'possible_value_type<T>::value' evaluates to:
     //    - 'T::value_type' if 'T' has 'value_type'
-    //    - '_dummy_type' otherwise
+    //    - 'dummy_type' otherwise
     template<class T, class = void>
     struct possible_value_type {
-        using type = _dummy_type;
+        using type = dummy_type;
     };
 
     template<class T>
@@ -142,10 +151,10 @@ namespace contrib::internal {
 
     // 'possible_mapped_type<T>::value' evaluates to:
     //    - 'T::mapped_type' if 'T' has 'mapped_type'
-    //    - '_dummy_type' otherwise
+    //    - 'dummy_type' otherwise
     template<class T, class = void>
     struct possible_mapped_type {
-        using type = _dummy_type;
+        using type = dummy_type;
     };
 
     template<class T>
@@ -155,7 +164,7 @@ namespace contrib::internal {
 
     // these type trait are a key to checking properties of 'T::value_type' & 'T::mapped_type' for a 'T' which may or may
     // not have them (which is exactly the case with recursive trait that we're going to use later to deduce convertibility
-    // to recursive JSON). '_dummy_type' here is necessary to end the recursion of 'std::disjunction'
+    // to recursive JSON). 'dummy_type' here is necessary to end the recursion of 'std::disjunction'
 
 #define utl_json_type_trait_conjunction(trait_name_, ...)                                                              \
     template <class T>                                                                                                 \
@@ -182,8 +191,8 @@ namespace contrib::internal {
     utl_json_type_trait_conjunction(is_object_like, _has_begin<T>, _has_end<T>, _has_key_type<T>, _has_mapped_type<T>);
     utl_json_type_trait_conjunction(is_array_like, _has_begin<T>, _has_end<T>, _has_input_it<T>);
     utl_json_type_trait_conjunction(is_string_like, std::is_convertible<T, std::string_view>);
-    utl_json_type_trait_conjunction(is_bool_like, std::is_same<T, _bool_type_impl>);
-    utl_json_type_trait_conjunction(is_null_like, std::is_same<T, _null_type_impl>);
+    utl_json_type_trait_conjunction(is_bool_like, std::is_same<T, bool_type_impl>);
+    utl_json_type_trait_conjunction(is_null_like, std::is_same<T, null_type_impl>);
 
     utl_json_type_trait_disjunction(
         _is_directly_json_convertible,
@@ -202,9 +211,9 @@ namespace contrib::internal {
         std::conjunction<is_array_like<T>, is_json_convertible<typename possible_value_type<T>::type>>,
         // ... or it's an object of convertible elements
         std::conjunction<is_object_like<T>, is_json_convertible<typename possible_mapped_type<T>::type>>>,
-        // end recursion by short-circuiting conjunction with 'false' once we arrive to '_dummy_type',
+        // end recursion by short-circuiting conjunction with 'false' once we arrive to 'dummy_type',
         // arriving here means the type isn't convertible to JSON
-        std::negation<std::is_same<T, _dummy_type>>);
+        std::negation<std::is_same<T, dummy_type>>);
 
 #undef utl_json_type_trait_conjunction
 #undef utl_json_type_trait_disjunction
@@ -217,7 +226,7 @@ namespace contrib::internal {
     constexpr bool _always_false_v = false;
 
     // Note:
-    // It is critical that '_object_type_impl' can be instantiated with incomplete type 'T'.
+    // It is critical that 'object_type_impl' can be instantiated with incomplete type 'T'.
     // This allows us to declare recursive classes like this:
     //
     //    'struct Recursive { std::map<std::string, Recursive> data; }'
@@ -248,13 +257,13 @@ namespace contrib::internal {
 
     class Node {
     public:
-        using object_type = _object_type_impl<Node>;
-        using array_type = _array_type_impl<Node>;
-        using string_type = _string_type_impl;
-        using integral_type = _integral_type_impl;
-        using floating_type = _floating_type_impl;
-        using bool_type = _bool_type_impl;
-        using null_type = _null_type_impl;
+        using object_type = object_type_impl<Node>;
+        using array_type = array_type_impl<Node>;
+        using string_type = string_type_impl;
+        using integral_type = integral_type_impl;
+        using floating_type = floating_type_impl;
+        using bool_type = bool_type_impl;
+        using null_type = null_type_impl;
 
 
     private:
@@ -266,7 +275,8 @@ namespace contrib::internal {
             string_type,
             integral_type,
             floating_type,
-            bool_type>;
+            bool_type
+        >;
 
         variant_type _data {};
 
