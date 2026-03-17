@@ -47,6 +47,7 @@ set(SOURCES
     "case/autorng.cpp"
     # "case/easy_ecs.cpp"
     "case/error.cpp"
+    "case/json.cpp"
     "case/memory.cpp"
     "case/meta.cpp"
     "case/splitting.cpp"

@@ -82,106 +82,31 @@ namespace contrib::internal {
     // --- Type trait ---
     // -------------------
 
-#define utl_json_define_trait(trait_name_, ...)                                                                        \
+#define UTL_JSON_DEFINE_TRAIT(TRAIN_NAME, ...)                                                                         \
     template <class T, class = void>                                                                                   \
-    struct trait_name_ : std::false_type {};                                                                           \
+    struct TRAIN_NAME : std::false_type {};                                                                            \
                                                                                                                        \
     template <class T>                                                                                                 \
-    struct trait_name_<T, std::void_t<decltype(__VA_ARGS__)>> : std::true_type {};                                     \
+    struct TRAIN_NAME<T, std::void_t<decltype(__VA_ARGS__)>> : std::true_type {};                                      \
                                                                                                                        \
     template <class T>                                                                                                 \
-    constexpr bool trait_name_##_v = trait_name_<T>::value
+    constexpr bool TRAIN_NAME##_v = TRAIN_NAME<T>::value
 
-    utl_json_define_trait(_has_begin, std::declval<std::decay_t<T>>().begin());
-    utl_json_define_trait(_has_end, std::declval<std::decay_t<T>>().end());
-    utl_json_define_trait(_has_input_it, std::next(std::declval<T>().begin()));
+    UTL_JSON_DEFINE_TRAIT(_has_begin, std::declval<std::decay_t<T>>().begin());
+    UTL_JSON_DEFINE_TRAIT(_has_end, std::declval<std::decay_t<T>>().end());
+    UTL_JSON_DEFINE_TRAIT(_has_input_it, std::next(std::declval<T>().begin()));
 
-    utl_json_define_trait(_has_key_type, std::declval<typename std::decay_t<T>::key_type>());
-    utl_json_define_trait(_has_mapped_type, std::declval<typename std::decay_t<T>::mapped_type>());
+    UTL_JSON_DEFINE_TRAIT(_has_key_type, std::declval<typename std::decay_t<T>::key_type>());
+    UTL_JSON_DEFINE_TRAIT(_has_mapped_type, std::declval<typename std::decay_t<T>::mapped_type>());
 
-#undef utl_json_define_trait
+#undef UTL_JSON_DEFINE_TRAIT
 
-    // --- Map-macro ---
-    // -----------------
-
-    // This is an implementation of a classic map-macro that applies some function macro
-    // to all elements of __VA_ARGS__, it looks much uglier than usual because we have to prefix
-    // everything with verbose 'utl_json_', but that's the price of avoiding name collisions.
-    //
-    // Created by William Swanson in 2012 and declared as public domain.
-    //
-    // Macro supports up to 365 arguments. We will need it for structure reflection.
-
-#define utl_json_eval_0(...) __VA_ARGS__
-#define utl_json_eval_1(...) utl_json_eval_0(utl_json_eval_0(utl_json_eval_0(__VA_ARGS__)))
-#define utl_json_eval_2(...) utl_json_eval_1(utl_json_eval_1(utl_json_eval_1(__VA_ARGS__)))
-#define utl_json_eval_3(...) utl_json_eval_2(utl_json_eval_2(utl_json_eval_2(__VA_ARGS__)))
-#define utl_json_eval_4(...) utl_json_eval_3(utl_json_eval_3(utl_json_eval_3(__VA_ARGS__)))
-#define utl_json_eval(...) utl_json_eval_4(utl_json_eval_4(utl_json_eval_4(__VA_ARGS__)))
-
-#define utl_json_map_end(...)
-#define utl_json_map_out
-#define utl_json_map_comma ,
-
-#define utl_json_map_get_end_2() 0, utl_json_map_end
-#define utl_json_map_get_end_1(...) utl_json_map_get_end_2
-#define utl_json_map_get_end(...) utl_json_map_get_end_1
-#define utl_json_map_next_0(test, next, ...) next utl_json_map_out
-#define utl_json_map_next_1(test, next) utl_json_map_next_0(test, next, 0)
-#define utl_json_map_next(test, next) utl_json_map_next_1(utl_json_map_get_end test, next)
-
-#define utl_json_map_0(f, x, peek, ...) f(x) utl_json_map_next(peek, utl_json_map_1)(f, peek, __VA_ARGS__)
-#define utl_json_map_1(f, x, peek, ...) f(x) utl_json_map_next(peek, utl_json_map_0)(f, peek, __VA_ARGS__)
-
-    // Resulting macro, applies the function macro 'f' to each of the remaining parameters
-#define utl_json_map(f, ...)                                                                                           \
-    utl_json_eval(utl_json_map_1(f, __VA_ARGS__, ()()(), ()()(), ()()(), 0)) static_assert(true)
-
-    struct dummy_type {};
-
-    // 'possible_value_type<T>::value' evaluates to:
-    //    - 'T::value_type' if 'T' has 'value_type'
-    //    - 'dummy_type' otherwise
-    template<class T, class = void>
-    struct possible_value_type {
-        using type = dummy_type;
-    };
-
-    template<class T>
-    struct possible_value_type<T, std::void_t<decltype(std::declval<typename std::decay_t<T>::value_type>())>> {
-        using type = typename T::value_type;
-    };
-
-    // 'possible_mapped_type<T>::value' evaluates to:
-    //    - 'T::mapped_type' if 'T' has 'mapped_type'
-    //    - 'dummy_type' otherwise
-    template<class T, class = void>
-    struct possible_mapped_type {
-        using type = dummy_type;
-    };
-
-    template<class T>
-    struct possible_mapped_type<T, std::void_t<decltype(std::declval<typename std::decay_t<T>::mapped_type>())>> {
-        using type = typename T::mapped_type;
-    };
-
-    // these type trait are a key to checking properties of 'T::value_type' & 'T::mapped_type' for a 'T' which may or may
-    // not have them (which is exactly the case with recursive trait that we're going to use later to deduce convertibility
-    // to recursive JSON). 'dummy_type' here is necessary to end the recursion of 'std::disjunction'
-
-#define utl_json_type_trait_conjunction(trait_name_, ...)                                                              \
+#define UTL_JSON_TYPE_TRAIT_CONJUNCTION(TRAIN_NAME, ...)                                                               \
     template <class T>                                                                                                 \
-    struct trait_name_ : std::conjunction<__VA_ARGS__> {};                                                             \
+    struct TRAIN_NAME : std::conjunction<__VA_ARGS__> {};                                                              \
                                                                                                                        \
     template <class T>                                                                                                 \
-    constexpr bool trait_name_##_v = trait_name_<T>::value
-
-#define utl_json_type_trait_disjunction(trait_name_, ...)                                                              \
-    template <class T>                                                                                                 \
-    struct trait_name_ : std::disjunction<__VA_ARGS__> {};                                                             \
-                                                                                                                       \
-    template <class T>                                                                                                 \
-    constexpr bool trait_name_##_v = trait_name_<T>::value
+    constexpr bool TRAIN_NAME##_v = TRAIN_NAME<T>::value
 
     // Note:
     // The reason we use 'struct trait_name : std::conjunction<...>' instead of 'using trait_name = std::conjunction<...>'
@@ -191,35 +116,13 @@ namespace contrib::internal {
     // necessary convertibility trait. This allows us to make a trait which fully deduces whether some
     // complex datatype can be converted to a JSON recursively.
 
-    utl_json_type_trait_conjunction(is_object_like, _has_begin<T>, _has_end<T>, _has_key_type<T>, _has_mapped_type<T>);
-    utl_json_type_trait_conjunction(is_array_like, _has_begin<T>, _has_end<T>, _has_input_it<T>);
-    utl_json_type_trait_conjunction(is_string_like, std::is_convertible<T, std::string_view>);
-    utl_json_type_trait_conjunction(is_bool_like, std::is_same<T, bool_type_impl>);
-    utl_json_type_trait_conjunction(is_null_like, std::is_same<T, null_type_impl>);
+    UTL_JSON_TYPE_TRAIT_CONJUNCTION(is_object_like, _has_begin<T>, _has_end<T>, _has_key_type<T>, _has_mapped_type<T>);
+    UTL_JSON_TYPE_TRAIT_CONJUNCTION(is_array_like, _has_begin<T>, _has_end<T>, _has_input_it<T>);
+    UTL_JSON_TYPE_TRAIT_CONJUNCTION(is_string_like, std::is_convertible<T, std::string_view>);
+    UTL_JSON_TYPE_TRAIT_CONJUNCTION(is_bool_like, std::is_same<T, bool_type_impl>);
+    UTL_JSON_TYPE_TRAIT_CONJUNCTION(is_null_like, std::is_same<T, null_type_impl>);
 
-    utl_json_type_trait_disjunction(
-        _is_directly_json_convertible,
-        is_string_like<T>,
-        is_bool_like<T>,
-        std::is_integral<T>,
-        std::is_floating_point<T>,
-        is_null_like<T>);
-
-    utl_json_type_trait_conjunction(
-        is_json_convertible,
-        std::disjunction<
-        // either the type itself is convertible
-        _is_directly_json_convertible<T>,
-        // ... or it's an array of convertible elements
-        std::conjunction<is_array_like<T>, is_json_convertible<typename possible_value_type<T>::type>>,
-        // ... or it's an object of convertible elements
-        std::conjunction<is_object_like<T>, is_json_convertible<typename possible_mapped_type<T>::type>>>,
-        // end recursion by short-circuiting conjunction with 'false' once we arrive to 'dummy_type',
-        // arriving here means the type isn't convertible to JSON
-        std::negation<std::is_same<T, dummy_type>>);
-
-#undef utl_json_type_trait_conjunction
-#undef utl_json_type_trait_disjunction
+#undef UTL_JSON_TYPE_TRAIT_CONJUNCTION
 
     // Workaround for 'static_assert(false)' making program ill-formed even
     // when placed inside an 'if constexpr' branch that never compiles.
