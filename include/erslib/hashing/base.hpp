@@ -9,8 +9,6 @@
 // ers
 #include <erslib/concept/constexpr.hpp>
 
-#include "base.hpp"
-
 
 // Definition
 

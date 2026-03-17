@@ -4,11 +4,9 @@
 #include <mutex>
 #include <shared_mutex>
 
-// boost
-#include <boost/optional.hpp>
-
 // ers
 #include <erslib/concept/container.hpp>
+#include <erslib/type/optional.hpp>
 
 
 namespace ers::thread_safe {
@@ -79,13 +77,13 @@ namespace ers::thread_safe {
         }
         template<typename T>
         [[nodiscard]]
-        boost::optional<const mapped_type&> get(const T& k) const {
+        ers::optional<const mapped_type&> get(const T& k) const {
             std::shared_lock lock(this->m_mutex);
 
             auto it = this->m_data.find(k);
 
             if (it == this->m_data.end())
-                return boost::none;
+                return nullopt;
             return it->second;
         }
 

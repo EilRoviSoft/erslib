@@ -6,9 +6,11 @@ project(erslib
     LANGUAGES CXX
 )
 
+
 #----------------------------------------------------------------------------------------------------------------------
 # general settings and options
 #----------------------------------------------------------------------------------------------------------------------
+
 
 include(cmake/utils.cmake)
 include(GNUInstallDirs)
@@ -40,26 +42,53 @@ endif()
 add_library(erslib)
 add_library(erslib::erslib ALIAS erslib)
 
+
 #----------------------------------------------------------------------------------------------------------------------
 # erslib dependencies
 #----------------------------------------------------------------------------------------------------------------------
 
-find_package(frozen CONFIG REQUIRED)
+
+set(DEPENDENCIES)
+
 
 find_package(boost_optional CONFIG REQUIRED)
+if(boost_optional_FOUND)
+    target_compile_definitions(erslib PUBLIC _HAS_BOOST_OPTIONAL)
+    list(APPEND DEPENDENCIES Boost::optional)
+endif()
+
+
 find_package(boost_smart_ptr REQUIRED CONFIG)
+if(boost_smart_ptr_FOUND)
+    target_compile_definitions(erslib PUBLIC _HAS_BOOST_SMART_PTR)
+    list(APPEND DEPENDENCIES Boost::smart_ptr)
+endif()
+
+
 find_package(boost_thread CONFIG REQUIRED)
+if(boost_thread_FOUND)
+    target_compile_definitions(erslib PUBLIC _HAS_BOOST_THREAD)
+    list(APPEND DEPENDENCIES Boost::thread)
+endif()
+
+
 find_package(boost_unordered CONFIG REQUIRED)
+if(boost_unordered_FOUND)
+    target_compile_definitions(erslib PUBLIC _HAS_BOOST_UNORDERED)
+    list(APPEND DEPENDENCIES Boost::unordered)
+endif()
+
 
 target_link_libraries(erslib
     PUBLIC
-        Boost::optional Boost::smart_ptr Boost::thread Boost::unordered
-        frozen::frozen-headers
+        ${DEPENDENCIES}
 )
+
 
 #----------------------------------------------------------------------------------------------------------------------
 # erslib sources
 #----------------------------------------------------------------------------------------------------------------------
+
 
 include(GenerateExportHeader)
 set(EXPORT_FILE_NAME "export_shared.hpp")
@@ -89,9 +118,11 @@ set(SOURCES
 )
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${SOURCES})
 
+
 #----------------------------------------------------------------------------------------------------------------------
 # erslib target
 #----------------------------------------------------------------------------------------------------------------------
+
 
 include(CMakePackageConfigHelpers)
 
@@ -173,9 +204,11 @@ if(ERSLIB_INSTALL AND NOT CMAKE_SKIP_INSTALL_RULES)
     )
 endif()
 
+
 #----------------------------------------------------------------------------------------------------------------------
 # other targets
 #----------------------------------------------------------------------------------------------------------------------
+
 
 if(ERSLIB_BUILD_TESTS)
     enable_testing()

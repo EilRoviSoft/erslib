@@ -5,6 +5,7 @@
 #include <memory_resource>
 
 // ers
+#include <erslib/concept/util.hpp>
 #include <erslib/memory/deleter.hpp>
 
 
@@ -12,6 +13,13 @@ namespace ers {
     template<typename T>
     using Holder = std::unique_ptr<T, deleter<T>>;
 
+
+    template<typename T, typename... Args>
+        requires (sizeof...(Args) == 0 || !ers::ConvertibleToIn<std::pmr::memory_resource*, 0, Args...>)
+    Holder<T> make_holder(Args&&... args) {
+        return std::make_unique<T>(std::forward<Args>(args)...);
+    }
+    
     template<typename T, typename... Args>
     Holder<T> make_holder(std::pmr::memory_resource* mr, Args&&... args) {
         std::pmr::polymorphic_allocator<T> alloc(mr);
@@ -26,6 +34,7 @@ namespace ers {
 
         return Holder<T>(p, deleter<T>(mr));
     }
+
 
     template<typename T, typename Derived, typename... Args>
         requires std::derived_from<Derived, T>

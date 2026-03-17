@@ -12,6 +12,13 @@
 #include <erslib/type/expiring.hpp>
 
 
+#ifndef _HAS_BOOST_THREAD
+
+#error "Using ITimedObject requires boost/thread because of upgrade_mutex/lock"
+
+#endif
+
+
 namespace ers {
     template<typename T, typename Clock = std::chrono::system_clock>
     class ITimedObject {

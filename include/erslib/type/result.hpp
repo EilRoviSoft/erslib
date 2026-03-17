@@ -4,11 +4,9 @@
 #include <concepts>
 #include <variant>
 
-// boost
-#include <boost/optional.hpp>
-
 // ers
 #include <erslib/type/error.hpp>
+#include <erslib/type/optional.hpp>
 #include <erslib/type/ref.hpp>
 
 
@@ -332,7 +330,7 @@ namespace ers {
 
     public:
         constexpr Result(const ok_t) noexcept :
-            m_error(boost::none) {
+            m_error(nullopt) {
         }
 
         constexpr Result(const Unexpected<error_type>& unexpected) :
@@ -344,7 +342,7 @@ namespace ers {
 
         template<typename T>
         constexpr Result(Result<T, E>&& other) :
-            m_error(other.has_error() ? other.error() : boost::none) {
+            m_error(other.has_error() ? other.error() : nullopt) {
         }
 
         [[nodiscard]] constexpr bool has_value() const noexcept { return !m_error.has_value(); }
@@ -357,7 +355,7 @@ namespace ers {
 
 
     protected:
-        boost::optional<error_type> m_error;
+        ers::optional<error_type> m_error;
     };
 
     using Status = Result<void>;
