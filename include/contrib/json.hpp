@@ -29,6 +29,9 @@
 #include <erslib/type/exception.hpp>
 #include <erslib/util/string.hpp>
 
+// export
+#include <erslib/export.hpp>
+
 // ____________________ DEVELOPER DOCS ____________________
 
 // Reasonably simple (if we discount reflection) parser / serializer, doesn't use any intrinsics or compiler-specific
@@ -223,7 +226,7 @@ namespace contrib::internal {
     // 'static_assert(_always_false_v<T)' on the other hand doesn't,
     // which means we can use it to mark branches that should never compile.
     template<class>
-    constexpr bool _always_false_v = false;
+    constexpr bool always_false_v = false;
 
     // Note:
     // It is critical that 'object_type_impl' can be instantiated with incomplete type 'T'.
@@ -255,7 +258,7 @@ namespace contrib::internal {
         None = 0, Object = 1, Array = 2, String = 3, Integral = 4, Floating = 5, BOOL = 6
     };
 
-    class Node {
+    class ERSLIB_EXPORT Node {
     public:
         using object_type = object_type_impl<Node>;
         using array_type = array_type_impl<Node>;
@@ -421,7 +424,7 @@ namespace contrib::internal {
             } else if constexpr (std::is_integral_v<T>) {
                 _data.emplace<integral_type>(value);
             } else {
-                static_assert(_always_false_v<T>, "Method is a non-exhaustive visitor of std::variant<>.");
+                static_assert(always_false_v<T>, "Method is a non-exhaustive visitor of std::variant<>.");
             }
 
             return *this;
@@ -492,7 +495,7 @@ namespace contrib::internal {
         template<class T>
         [[nodiscard]] T to_struct() const {
             static_assert(
-                _always_false_v<T>,
+                always_false_v<T>,
                 "Provided type doesn't have a defined JSON reflection. Use 'UTL_JSON_REFLECT' macro to define one.");
             // compile-time protection against calling 'to_struct()' on types that don't have reflection,
             // we can also provide a proper error message here
@@ -528,7 +531,7 @@ namespace contrib::internal {
     // this recursion limit applies only to parsing from text, conversions from
     // structs & containers are a separate thing and don't really need it as much
 
-    struct parser {
+    struct ERSLIB_EXPORT parser {
         std::string_view chars;
         std::size_t recursion_limit;
         std::size_t recursion_depth = 0;
@@ -572,12 +575,12 @@ namespace contrib::internal {
     // --- JSON Serializing impl. ---
     // ==============================
 
-    void serialize_json_recursion_minimized(
+    void ERSLIB_EXPORT serialize_json_recursion_minimized(
         const Node& node,
         std::string& chars,
         size_t indent_level = 0
     );
-    void serialize_json_recursion_pretty(
+    void ERSLIB_EXPORT serialize_json_recursion_pretty(
         const Node& node,
         std::string& chars,
         size_t indent_level = 0,
@@ -585,7 +588,7 @@ namespace contrib::internal {
     );
 
     template<bool Prettify>
-    void serialize_json_recursion(
+    void ERSLIB_EXPORT serialize_json_recursion(
         const Node& node,
         std::string& chars,
         std::size_t indent_level = 0,
@@ -609,18 +612,18 @@ namespace contrib {
     // ===============================
 
     [[nodiscard]]
-    Json from_string(
+    Json ERSLIB_EXPORT from_string(
         const std::string& chars,
         std::size_t recursion_limit = internal::default_recursion_limit
     );
     [[nodiscard]]
-    Json from_file(
+    Json ERSLIB_EXPORT from_file(
         const std::string& filepath,
         std::size_t recursion_limit = internal::default_recursion_limit
     );
 
     namespace literals {
         [[nodiscard]]
-        Json operator""_json(const char* cstr, std::size_t size);
+        Json ERSLIB_EXPORT operator""_json(const char* cstr, std::size_t size);
     } // namespace literals
 }
