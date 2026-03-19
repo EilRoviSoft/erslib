@@ -95,3 +95,11 @@ namespace ers::convert {
         }
     };
 }
+
+
+// Concept
+
+namespace ers::convert {
+    template<typename T>
+    concept FromStringConvertible = internal::FromStringHasConstexprValue<T> || internal::FromStringHasRuntimeValue<T>;
+}

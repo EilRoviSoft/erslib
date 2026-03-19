@@ -73,3 +73,11 @@ namespace ers::convert {
         }
     };
 }
+
+
+// Concept
+
+namespace ers::convert {
+    template<typename T>
+    concept ToStringConvertible = internal::ToStringHasConstexprValue<T> || internal::ToStringHasRuntimeValue<T>;
+}
