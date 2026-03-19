@@ -1,10 +1,10 @@
 #include <erslib/type/error.hpp>
 
 
-ers::Error::Error(Severity severity, std::string code, std::string message, timestamp_t timestamp, const std::source_location& location) :
+ers::Error::Error(Severity severity, std::string_view code, std::string_view message, timestamp_t timestamp, const std::source_location& location) :
     m_severity(severity),
-    m_code(std::move(code)),
-    m_message(std::move(message)),
+    m_code(code),
+    m_message(message),
     m_timestamp(timestamp),
     m_location(location) {
 }
@@ -20,14 +20,10 @@ std::string ers::Error::to_string() const {
     return std::format(
         "[{:%Y-%m-%dT%H:%M:%S}] [{}] {}: {}\n\tat {}:{}",
         std::chrono::floor<std::chrono::seconds>(m_timestamp),
-        to_sv<Severity> {}(m_severity),
+        convert::to_sv<Severity>(m_severity),
         m_code,
         m_message,
         m_location.file_name(),
         m_location.line()
     );
-}
-
-std::string ers::to_str<ers::Error>::operator()(const Error& what) const {
-    return what.to_string();
 }

@@ -74,11 +74,6 @@ namespace ers {
     }
 
     template<typename E>
-    constexpr bool operator!=(const Unexpected<E>& lhs, const Unexpected<E>& rhs) {
-        return !(lhs == rhs);
-    }
-
-    template<typename E>
     constexpr Unexpected<std::decay_t<E>> make_unexpected(E&& error) {
         return Unexpected<std::decay_t<E>>(std::forward<E>(error));
     }

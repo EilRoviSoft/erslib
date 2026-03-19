@@ -36,8 +36,8 @@ namespace ers {
 // Utility
 
 template<size_t N>
-struct ers::to_sv<ers::fixed_string<N>> {
-    constexpr std::string_view operator()(const fixed_string<N>& what) const noexcept {
+struct ers::convert::to_string_backend<ers::fixed_string<N>> {
+    constexpr std::string_view constexpr_value(const fixed_string<N>& what) const noexcept {
         return what.to_sv();
     }
 };

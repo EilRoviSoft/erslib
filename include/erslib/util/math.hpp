@@ -11,4 +11,10 @@ namespace ers::util {
     bool equals(T lhs, T rhs) {
         return std::fabs(lhs - rhs) < std::numeric_limits<T>::epsilon();
     }
+
+
+    template<typename T>
+    constexpr int log10_ceil(T x) {
+        return x < 10 ? 1 : 1 + log10_ceil(x / 10);
+    }
 }

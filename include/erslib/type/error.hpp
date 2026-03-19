@@ -2,6 +2,7 @@
 
 // std
 #include <chrono>
+#include <format>
 #include <source_location>
 #include <string>
 
@@ -26,8 +27,8 @@ namespace ers {
 }
 
 template<>
-struct ers::to_sv<ers::Severity> {
-    constexpr std::string_view operator()(const Severity& what) const noexcept {
+struct ers::convert::to_string_backend<ers::Severity> {
+    constexpr std::string_view constexpr_value(const Severity& what) const noexcept {
         switch (what) {
             case Severity::Debug:
                 return "DEBUG";
@@ -53,18 +54,27 @@ namespace ers {
     public:
         Error(
             Severity severity,
-            std::string code,
-            std::string message,
+            std::string_view code,
+            std::string_view message,
             timestamp_t timestamp = std::chrono::system_clock::now(),
             const std::source_location& location = std::source_location::current()
         );
+
+        template<typename... Args>
+        Error(Severity severity, std::string_view code, std::string_view fmt, Args&&... args) :
+            Error(severity, code, std::format(fmt, std::forward<Args>(args)...)) {
+        }
+
+
         virtual ~Error();
+
 
         Severity severity() const noexcept;
         std::string_view code() const noexcept;
         timestamp_t timestamp() const noexcept;
         std::string_view message() const noexcept;
         const std::source_location& location() const noexcept;
+
 
         // TODO: make fmt string static
         virtual std::string to_string() const;
@@ -77,8 +87,3 @@ namespace ers {
         std::source_location m_location;
     };
 }
-
-template<>
-struct ers::to_str<ers::Error> {
-    std::string operator()(const Error& what) const;
-};
