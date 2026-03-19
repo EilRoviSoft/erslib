@@ -62,7 +62,7 @@ namespace ers {
 
         template<typename... Args>
         Error(Severity severity, std::string_view code, std::string_view fmt, Args&&... args) :
-            Error(severity, code, std::format(fmt, std::forward<Args>(args)...)) {
+            Error(severity, code, std::vformat(fmt, std::make_format_args(args...))) {
         }
 
 

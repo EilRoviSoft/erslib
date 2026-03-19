@@ -287,26 +287,6 @@ namespace ers {
 
         return lhs.error() == rhs.error();
     }
-
-    template<typename T, typename E>
-    constexpr Result<T, E> make_result(const T& value) {
-        return Result<T, E>(value);
-    }
-
-    template<typename T, typename E>
-    constexpr Result<T, E> make_result(T&& value) {
-        return Result<T, E>(std::move(value));
-    }
-
-    template<typename T, typename E>
-    constexpr Result<T, E> make_result_from_error(const E& error) {
-        return Result<T, E>(Unexpected<E>(error));
-    }
-
-    template<typename T, typename E>
-    constexpr Result<T, E> make_result_from_error(E&& error) {
-        return Result<T, E>(Unexpected<E>(std::move(error)));
-    }
 }
 
 

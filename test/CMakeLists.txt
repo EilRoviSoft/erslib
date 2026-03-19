@@ -45,6 +45,7 @@ find_package(Catch2 CONFIG REQUIRED)
 set(SOURCES
     "case/any.cpp"
     "case/autorng.cpp"
+    "case/convert.cpp"
     # "case/easy_ecs.cpp"
     "case/error.cpp"
     "case/json.cpp"

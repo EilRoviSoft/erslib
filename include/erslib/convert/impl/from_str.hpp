@@ -38,11 +38,13 @@ namespace ers::internal {
 
 namespace ers::convert {
     template<internal::FromStringHasConstexprValue T>
+    [[nodiscard]]
     constexpr optional<T> from_str_constexpr(std::string_view source) noexcept {
         return from_string_backend<T> {}.constexpr_value(source);
     }
 
     template<typename T>
+    [[nodiscard]]
     Result<T> from_str(std::string_view source) {
         from_string_backend<T> backend;
 
@@ -81,7 +83,7 @@ namespace ers::convert {
         Result<T> runtime_value(std::string_view source) const {
             T result;
 
-            if (!std::from_chars(source.begin(), source.end(), result)) {
+            if (std::from_chars(source.data(), source.data() + source.size(), result).ec != std::errc {}) {
                 return Unexpected<Error>(
                     Severity::Error,
                     "conversion_error",
