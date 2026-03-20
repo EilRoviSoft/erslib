@@ -49,9 +49,9 @@ struct ers::convert::to_string_backend<ers::fixed_string<N>> {
 
 template<size_t N, typename Policy>
 struct ers::THashBase<ers::fixed_string<N>, Policy> {
-    using type = fixed_string<N>;
+    using type = const fixed_string<N>&;
 
     constexpr size_t operator()(type what, size_t seed = 0) const noexcept {
-        return THashBase<std::array<const char, N>, Policy> {}(what.value, seed);
+        return THashBase<const char[N], Policy> {}(what.value, seed);
     }
 };

@@ -45,6 +45,28 @@ namespace ers {
 // Specializations
 
 template<size_t N, typename Policy>
+struct ers::THashBase<const std::array<const char, N>, Policy> {
+    using type = const std::array<const char, N>&;
+
+    constexpr size_t operator()(type what, size_t seed = 0) const noexcept
+        requires (hashing::is_backend_handles_raw_bytes_v<Policy>) {
+        std::array<std::byte, what.size()> bytes = {};
+
+
+        for (size_t i = 0; i < what.size(); i++)
+            bytes[i] = static_cast<std::byte>(what[i]);
+
+
+        return hashing::backend<Policy>::process_raw_bytes({ bytes.data(), what.size() }, seed);
+    }
+
+    constexpr size_t operator()(type what, size_t seed = 0) const noexcept
+        requires (!hashing::is_backend_handles_raw_bytes_v<Policy>) {
+        return hashing::backend<Policy>::process_raw_bytes(what, seed);
+    }
+};
+
+template<size_t N, typename Policy>
 struct ers::THashBase<const std::array<char, N>, Policy> {
     using type = const std::array<char, N>&;
 
@@ -66,12 +88,13 @@ struct ers::THashBase<const std::array<char, N>, Policy> {
     }
 };
 
+
 template<size_t N, typename Policy>
 struct ers::THashBase<const char[N], Policy> {
     using type = const char(&)[N];
 
     constexpr size_t operator()(type what, size_t seed = 0) const noexcept {
-        return THashBase<std::array<const char, N>, Policy> {}(std::bit_cast<const char(&)[N]>(what), seed);
+        return THashBase<std::array<const char, N>, Policy> {}(std::bit_cast<std::array<const char, N>>(what), seed);
     }
 };
 
