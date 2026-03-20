@@ -2,6 +2,7 @@
 
 // ers
 #include <erslib/convert/string.hpp>
+#include <erslib/hashing/base.hpp>
 
 
 // Definition
@@ -42,5 +43,15 @@ template<size_t N>
 struct ers::convert::to_string_backend<ers::fixed_string<N>> {
     constexpr std::string_view constexpr_value(const fixed_string<N>& what) const noexcept {
         return what.to_sv();
+    }
+};
+
+
+template<size_t N, typename Policy>
+struct ers::THashBase<ers::fixed_string<N>, Policy> {
+    using type = fixed_string<N>;
+
+    constexpr size_t operator()(type what, size_t seed = 0) const noexcept {
+        return THashBase<std::array<const char, N>, Policy> {}(what.value, seed);
     }
 };
