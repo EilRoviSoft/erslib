@@ -49,31 +49,31 @@ namespace {
         std::size_t count;
 
         // 1-byte ASCII (codepoints U+0000 to U+007F)
-        
+
         if (cp <= 0x007F) {
             buffer[0] = static_cast<char>(cp);
             count = 1;
         }
-        
+
         // 2-byte unicode (codepoints U+0080 to U+07FF)
-        
+
         else if (cp <= 0x07FF) {
             buffer[0] = static_cast<char>(((cp >> 6) & 0x1F) | 0xC0);
             buffer[1] = static_cast<char>(((cp >> 0) & 0x3F) | 0x80);
             count = 2;
         }
-        
+
         // 3-byte unicode (codepoints U+0800 to U+FFFF)
-        
+
         else if (cp <= 0xFFFF) {
             buffer[0] = static_cast<char>(((cp >> 12) & 0x0F) | 0xE0);
             buffer[1] = static_cast<char>(((cp >> 6) & 0x3F) | 0x80);
             buffer[2] = static_cast<char>(((cp >> 0) & 0x3F) | 0x80);
             count = 3;
         }
-        
+
         // 4-byte unicode (codepoints U+010000 to U+10FFFF)
-        
+
         else if (cp <= 0x10FFFF) {
             buffer[0] = static_cast<char>(((cp >> 18) & 0x07) | 0xF0);
             buffer[1] = static_cast<char>(((cp >> 12) & 0x3F) | 0x80);
@@ -81,7 +81,7 @@ namespace {
             buffer[3] = static_cast<char>(((cp >> 0) & 0x3F) | 0x80);
             count = 4;
         }
-        
+
         // invalid codepoint
 
         else
@@ -116,7 +116,7 @@ namespace {
 
         std::ifstream file(path, std::ios::ate); // open file and immediately seek to the end
         if (!file.good())
-            throw ers::make_exception("Could not open file {}.", path);
+            throw ers::make_exception<std::system_error>("Could not open file {}.", path);
 
         auto file_size = file.tellg();      // returns cursor pos, which is the end of file
         file.seekg(std::ios::beg);          // seek to the beginning
@@ -138,12 +138,12 @@ namespace {
 
     [[nodiscard]] std::string pretty_error(std::size_t cursor, std::string_view chars) {
         // Special case for empty buffers
-        
+
         if (chars.empty())
             return "";
 
         // "Normalize" cursor if it's at the end of the buffer
-        
+
         if (cursor >= chars.size())
             cursor = chars.size() - 1;
 
@@ -158,7 +158,7 @@ namespace {
         }
 
         // Get contents of the current line
-        
+
         constexpr std::size_t max_left_width = 24;
         constexpr std::size_t max_right_width = 24;
 
@@ -173,7 +173,7 @@ namespace {
             if (chars[line_end + 1] == '\n' || line_end - cursor >= max_right_width)
                 break;
         }
-        
+
         const std::string_view line_contents(chars.data() + line_start, line_end - line_start + 1);
 
         // Format output
@@ -263,7 +263,7 @@ namespace contrib::internal {
         const auto& object = as_object();
         const auto it = object.find(key);
         if (it == object.end())
-            throw ers::make_exception("Accessing non-existent key '{}' in JSON object.", key);
+            throw ers::make_exception<std::logic_error>("Accessing non-existent key '{}' in JSON object.", key);
         return it->second;
     }
 
@@ -271,7 +271,7 @@ namespace contrib::internal {
         auto& object = as_object();
         const auto it = object.find(key);
         if (it == object.end())
-            throw ers::make_exception("Accessing non-existent key '{}' in JSON object.", key);
+            throw ers::make_exception<std::logic_error>("Accessing non-existent key '{}' in JSON object.", key);
         return it->second;
     }
 
@@ -425,7 +425,7 @@ namespace {
 
         // default-initialized chars get initialized to '\0',
         // ('\0' == 0) is mandated by the standard, which is why we can use it inside an 'if' condition
-        
+
         res[to_u8('"')] = '"';
         res[to_u8('\\')] = '\\';
         // res['/']  = '/'; escaping forward slash in JSON is allowed, but redundant
@@ -531,7 +531,7 @@ namespace contrib::internal {
         if (c == 'n')
             return parse_null(cursor);
 
-        throw ers::make_exception<std::runtime_error>("Json node selector encountered expected marker symbol '{}' at pos {} "
+        throw ers::make_exception("Json node selector encountered expected marker symbol '{}' at pos {} "
             "(should be one of '0123456789{[\"tfn')." + pretty_error(cursor, chars), chars[cursor], cursor);
 
         // Note: using a lookup table instead of an 'if' chain doesn't seem to offer any performance benefits here
@@ -546,7 +546,7 @@ namespace contrib::internal {
         std::tie(cursor, key) = parse_string(cursor);
 
         // Handle stuff in between
-        
+
         cursor = skip_nonsignificant_whitespace(cursor);
         if (chars[cursor] != ':') {
             throw ers::make_exception("JSON object node encountered unexpected symbol {} after the pair key at pos (should be ':')."
@@ -608,11 +608,11 @@ namespace contrib::internal {
 
     std::pair<std::size_t, Object> parser::parse_object(std::size_t cursor) {
         // move past the opening brace '{'
-        
+
         ++cursor;
 
         // Empty object that will accumulate child nodes as we parse them
-        
+
         Object object_value;
 
         // Handle 1st pair
@@ -660,7 +660,8 @@ namespace contrib::internal {
             }
         }
 
-        throw ers::make_exception("JSON object node reached the end of buffer while parsing object contents." + pretty_error(cursor, chars));
+        throw ers::make_exception("JSON object node reached the end of buffer while parsing object contents."
+            + pretty_error(cursor, chars));
     }
 
     std::size_t parser::parse_array_element(std::size_t cursor, Array& parent) {
@@ -837,7 +838,7 @@ namespace contrib::internal {
         // Doing 'string_value += c' for every char is ~50-60% slower than appending whole string at once,
         // which is why we 'buffer' appends by keeping track of 'segment_start' and 'cursor', and appending
         // whole chunks of the buffer to 'string_value' when we encounter an escape sequence or end of the string.
-        
+
         for (std::size_t segment_start = cursor; cursor < chars.size(); ++cursor) {
             const char c = chars[cursor];
 
@@ -848,7 +849,7 @@ namespace contrib::internal {
 
                 // move past the closing quote '\"'
                 ++cursor;
-                
+
                 return { cursor, std::move(string_value) };
             }
 
@@ -874,9 +875,9 @@ namespace contrib::internal {
                 if (const char replacement_char = lookup_parsed_escaped_chars[to_u8(escaped_char)]) {
                     string_value += replacement_char;
                 }
-                
+
                 // 6/12-character escape sequences (escaped unicode HEX codepoints)
-                
+
                 else if (escaped_char == 'u') {
                     // moves past first 'uXXX' symbols, last symbol will be covered by the loop '++cursor',
                     // in case of paired hexes moves past the second hex too
@@ -1107,7 +1108,7 @@ namespace contrib::internal {
 
             chars += '}';
         }
-        
+
         // JSON Array
 
         else if (auto* array_ptr = node.get_if<Array>()) {
@@ -1126,9 +1127,9 @@ namespace contrib::internal {
                 //Node
 
                 serialize_json_recursion_minimized(*it, chars, indent_level + 1);
-                
+
                 // Comma
-                
+
                 if (++it != array_value.cend()) {
                     // prevents trailing comma
                     chars += ',';
@@ -1140,7 +1141,7 @@ namespace contrib::internal {
         }
 
         // String
-        
+
         else if (auto* string_ptr = node.get_if<String>()) {
             const auto& string_value = *string_ptr;
 
@@ -1152,7 +1153,7 @@ namespace contrib::internal {
             // Since appending individual characters is ~twice as slow as appending the whole string, we use a
             // "buffered" way of appending, appending whole segments up to the currently escaped char.
             // Strings with no escaped chars get appended in a single call.
-            
+
             std::size_t segment_start = 0;
             for (std::size_t i = 0; i < string_value.size(); ++i) {
                 if (const char escaped_char_replacement = lookup_serialized_escaped_chars[to_u8(string_value[i])]) {
@@ -1171,7 +1172,7 @@ namespace contrib::internal {
         }
 
         // Integral
-        
+
         else if (auto* integral_ptr = node.get_if<Integral>()) {
             const auto& integral_value = *integral_ptr;
 
@@ -1191,7 +1192,7 @@ namespace contrib::internal {
         }
 
         // Floating
-        
+
         else if (auto* floating_ptr = node.get_if<Floating>()) {
             const auto& floating_value = *floating_ptr;
 
@@ -1225,14 +1226,14 @@ namespace contrib::internal {
         }
 
         // Bool
-        
+
         else if (auto* bool_ptr = node.get_if<Bool>()) {
             const auto& bool_value = *bool_ptr;
             chars += (bool_value ? "true" : "false");
         }
 
         // Null
-        
+
         else if (node.is<Null>()) {
             chars += "null";
         }
@@ -1294,7 +1295,7 @@ namespace contrib::internal {
             chars.append(indent_size, ' ');
             chars += '}';
         }
-        
+
         // JSON Array
 
         else if (auto* array_ptr = node.get_if<Array>()) {
@@ -1312,11 +1313,11 @@ namespace contrib::internal {
 
             for (auto it = array_value.cbegin();;) {
                 // Node
-                
+
                 serialize_json_recursion_pretty(*it, chars, indent_level + 1);
-                
+
                 // Comma
-                
+
                 if (++it != array_value.cend()) {
                     // prevents trailing comma
 
@@ -1332,7 +1333,7 @@ namespace contrib::internal {
         }
 
         // String
-        
+
         else if (auto* string_ptr = node.get_if<String>()) {
             const auto& string_value = *string_ptr;
 
@@ -1363,7 +1364,7 @@ namespace contrib::internal {
         }
 
         // Integral
-        
+
         else if (auto* integral_ptr = node.get_if<Integral>()) {
             const auto& integral_value = *integral_ptr;
 
@@ -1383,7 +1384,7 @@ namespace contrib::internal {
         }
 
         // Floating
-        
+
         else if (auto* floating_ptr = node.get_if<Floating>()) {
             const auto& floating_value = *floating_ptr;
 
@@ -1406,7 +1407,7 @@ namespace contrib::internal {
 
             // Save NaN/Inf cases as strings, since JSON spec doesn't include IEEE 754.
             // (!) May result in non-homogenous arrays like [1.0, "inf" , 3.0, 4.0, "nan"]
-            
+
             if (std::isfinite(floating_value)) {
                 chars.append(buffer.data(), number_end_ptr - buffer.data());
             } else {
@@ -1417,14 +1418,14 @@ namespace contrib::internal {
         }
 
         // Bool
-        
+
         else if (auto* bool_ptr = node.get_if<Bool>()) {
             const auto& bool_value = *bool_ptr;
             chars += bool_value ? "true" : "false";
         }
 
         // Null
-        
+
         else if (node.is<Null>()) {
             chars += "null";
         }
@@ -1451,7 +1452,7 @@ namespace contrib {
 
         for (auto cursor = end_cursor; cursor < chars.size(); ++cursor)
             if (!lookup_whitespace_chars[to_u8(chars[cursor])]) {
-                throw ers::make_exception("Invalid trailing symbols encountered after the root JSON node at pos {}."
+                throw ers::make_exception<std::system_error>("Invalid trailing symbols encountered after the root JSON node at pos {}."
                     + pretty_error(cursor, chars), cursor);
             }
 
