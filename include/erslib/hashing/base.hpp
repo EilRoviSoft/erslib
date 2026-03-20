@@ -94,7 +94,7 @@ struct ers::THashBase<const char[N], Policy> {
     using type = const char(&)[N];
 
     constexpr size_t operator()(type what, size_t seed = 0) const noexcept {
-        return THashBase<std::array<const char, N>, Policy> {}(std::bit_cast<std::array<const char, N>>(what), seed);
+        return THashBase<const std::array<const char, N>, Policy> {}(std::bit_cast<std::array<const char, N>>(what), seed);
     }
 };
 
