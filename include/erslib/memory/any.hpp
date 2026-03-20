@@ -41,11 +41,13 @@ namespace ers::internal {
     struct TAnyVtable {
         using target_type = TAny<Size, Align>;
 
+
         void (*destroy)(target_type& obj);
         void (*dealloc)(target_type& obj);
         void (*copy)(target_type& dst, const void* src);
         void (*move)(target_type& dst, void* src);
         void (*change_resource)(target_type& obj, std::pmr::memory_resource* mr);
+
 
         template<typename T>
         static T* impl_alloc(target_type& obj) {
@@ -313,6 +315,7 @@ namespace ers {
         std::decay_t<T>* emplace_with_resource(std::pmr::memory_resource* provided_mr, Args&&... args) {
             using U = std::decay_t<T>;
 
+
             U* ptr;
             if (m_policy != SboPolicy::Empty && same_as<U>() && *m_mr == *provided_mr) {
                 ptr = _data_as<U>();
@@ -330,6 +333,7 @@ namespace ers {
                 ptr = vtable_type::template impl_alloc<U>(*this);
                 std::construct_at(ptr, std::forward<Args>(args)...);
             }
+
 
             return ptr;
         }
@@ -402,6 +406,7 @@ namespace ers {
                 m_vtable->destroy(*this);
 
             m_vtable->dealloc(*this);
+
 
             vtable_type::template impl_alloc<T>(*this);
             m_type = ers::meta::type_hash_v<T>;

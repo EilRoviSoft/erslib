@@ -28,10 +28,13 @@ namespace ers::internal {
 #error Unsupported compiler
 #endif
 
+
         constexpr auto start = function.find(prefix) + prefix.size();
         constexpr auto end = function.rfind(suffix);
 
+
         static_assert(start < end);
+
 
         constexpr auto name = function.substr(start, end - start);
         return util::elems_as_array<std::string_view>(name, std::make_index_sequence<name.size()> {});

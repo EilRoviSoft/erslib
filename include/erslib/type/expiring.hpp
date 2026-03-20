@@ -11,11 +11,13 @@ namespace ers {
         Clock::time_point updated_at;
         Clock::duration lifetime;
 
+
         expiring_t(T value, Clock::time_point created_at, Clock::duration lifetime) :
             value(std::move(value)),
             updated_at(created_at),
             lifetime(lifetime) {
         }
+
 
         void update(T v, Clock::time_point update_time = Clock::now()) {
             value = std::move(v);
@@ -25,6 +27,7 @@ namespace ers {
         bool is_expired(Clock::time_point time = Clock::now()) const {
             return time >= updated_at + lifetime;
         }
+
 
         constexpr T& operator*() & { return value; }
         constexpr const T& operator*() const & { return value; }

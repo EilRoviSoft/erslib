@@ -11,6 +11,7 @@ namespace ers {
     struct fixed_string {
         char value[N];
 
+
         constexpr fixed_string() {
             for (size_t i = 0; i < N; i++)
                 value[i] = 0;
@@ -21,7 +22,9 @@ namespace ers {
                 value[i] = str[i];
         }
 
+
         constexpr size_t size() const { return N - 1; }
+
 
         constexpr std::string_view to_sv() const noexcept {
             return { value, size() };

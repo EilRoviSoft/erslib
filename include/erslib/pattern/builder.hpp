@@ -7,9 +7,11 @@ namespace ers::pattern {
     public:
         virtual ~IBuilder() = default;
 
+
         [[nodiscard]] virtual bool check() const noexcept {
             return true;
         }
+
 
         virtual T build() && = 0;
     };

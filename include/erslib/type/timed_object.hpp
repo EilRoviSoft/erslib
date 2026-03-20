@@ -66,6 +66,7 @@ namespace ers {
         Result<T> get() const {
             boost::upgrade_lock read_lock(_mutex);
 
+
             if (m_expiring.is_expired()) {
                 boost::upgrade_to_unique_lock write_lock(read_lock);
 
@@ -74,6 +75,7 @@ namespace ers {
                     return Unexpected(s.error());
                 }
             }
+
 
             return m_expiring.value;
         }

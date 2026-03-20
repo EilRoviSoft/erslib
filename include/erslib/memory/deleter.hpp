@@ -17,6 +17,7 @@ namespace ers {
         void operator()(T* ptr) {
             if (!ptr)
                 return;
+
             std::destroy_at(ptr);
             mr->deallocate(ptr, 1);
         }

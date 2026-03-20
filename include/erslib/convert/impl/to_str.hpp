@@ -77,7 +77,7 @@ namespace ers::convert {
 
 // Concept
 
-namespace ers::convert {
+namespace ers {
     template<typename T>
     concept ToStringConvertible = internal::ToStringHasConstexprValue<T> || internal::ToStringHasRuntimeValue<T>;
 }

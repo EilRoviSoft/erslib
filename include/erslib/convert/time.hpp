@@ -14,6 +14,7 @@ namespace ers {
         typename Clock::time_point result;
         std::stringstream iss(static_cast<std::string>(sv));
 
+
         if (!std::chrono::from_stream(iss, (static_cast<std::string>(fmt) + '\0').c_str(), result)) {
             return Unexpected<Error>(
                 Severity::Error,
@@ -21,6 +22,7 @@ namespace ers {
                 std::format(R"(Can't cast "{}" with "{}")", sv, fmt)
             );
         }
+
 
         return result;
     }

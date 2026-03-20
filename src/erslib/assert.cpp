@@ -28,7 +28,8 @@ namespace ers::internal {
 		void init(Args&&... args) {
 			enabled.reserve(sizeof...(Args));
 
-			auto iteration = [&]<typename T>(T&& what) {
+
+            auto iteration = [&]<typename T>(T&& what) {
 				if constexpr (std::is_reference_v<T>) {
 					enabled.emplace_back(&what);
 				} else {
@@ -40,7 +41,8 @@ namespace ers::internal {
 
 			(iteration(args), ...);
 
-			is_initialized = true;
+
+            is_initialized = true;
 		}
 
 	protected:
@@ -49,8 +51,9 @@ namespace ers::internal {
 
 	void print_message(std::string_view text) {
 		auto& tool = AssertTool::instance();
-		
-		if (!tool.is_initialized)
+
+
+        if (!tool.is_initialized)
 			tool.init(std::cerr, std::fstream("log.txt"));
 
 		for (const auto& it : tool.enabled)

@@ -77,13 +77,16 @@ namespace ers::thread_safe {
         }
         template<typename T>
         [[nodiscard]]
-        ers::optional<const mapped_type&> get(const T& k) const {
+        optional<const mapped_type&> get(const T& k) const {
             std::shared_lock lock(this->m_mutex);
+
 
             auto it = this->m_data.find(k);
 
             if (it == this->m_data.end())
                 return nullopt;
+
+
             return it->second;
         }
 

@@ -330,7 +330,7 @@ namespace ers {
 
 
     protected:
-        ers::optional<error_type> m_error;
+        optional<error_type> m_error;
     };
 
     using Status = Result<void>;

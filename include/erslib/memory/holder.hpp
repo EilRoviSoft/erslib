@@ -24,6 +24,7 @@ namespace ers {
     Holder<T> make_holder(std::pmr::memory_resource* mr, Args&&... args) {
         std::pmr::polymorphic_allocator<T> alloc(mr);
 
+
         T* p = alloc.allocate(1);
         try {
             alloc.construct(p, std::forward<Args>(args)...);
@@ -31,6 +32,7 @@ namespace ers {
             alloc.deallocate(p, 1);
             throw;
         }
+
 
         return Holder<T>(p, deleter<T>(mr));
     }
@@ -41,6 +43,7 @@ namespace ers {
     Holder<T> make_polymorphic_holder(std::pmr::memory_resource* mr, Args&&... args) {
         std::pmr::polymorphic_allocator<Derived> alloc(mr);
 
+
         Derived* p = alloc.allocate(1);
         try {
             alloc.construct(p, std::forward<Args>(args)...);
@@ -48,6 +51,7 @@ namespace ers {
             alloc.deallocate(p, 1);
             throw;
         }
+
 
         return Holder<T>(static_cast<T*>(p), deleter<T>(mr));
     }

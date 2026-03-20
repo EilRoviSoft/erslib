@@ -52,8 +52,10 @@ struct ers::THashBase<const std::array<char, N>, Policy> {
         requires (hashing::is_backend_handles_raw_bytes_v<Policy>) {
         std::array<std::byte, what.size()> bytes = {};
 
+
         for (size_t i = 0; i < what.size(); i++)
             bytes[i] = static_cast<std::byte>(what[i]);
+
 
         return hashing::backend<Policy>::process_raw_bytes({ bytes.data(), what.size() }, seed);
     }

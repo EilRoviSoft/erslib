@@ -116,7 +116,7 @@ namespace {
 
         std::ifstream file(path, std::ios::ate); // open file and immediately seek to the end
         if (!file.good())
-            throw ers::make_exception<std::system_error>("Could not open file {}.", path);
+            throw ers::make_exception("Could not open file {}.", path);
 
         auto file_size = file.tellg();      // returns cursor pos, which is the end of file
         file.seekg(std::ios::beg);          // seek to the beginning
@@ -1452,7 +1452,7 @@ namespace contrib {
 
         for (auto cursor = end_cursor; cursor < chars.size(); ++cursor)
             if (!lookup_whitespace_chars[to_u8(chars[cursor])]) {
-                throw ers::make_exception<std::system_error>("Invalid trailing symbols encountered after the root JSON node at pos {}."
+                throw ers::make_exception("Invalid trailing symbols encountered after the root JSON node at pos {}."
                     + pretty_error(cursor, chars), cursor);
             }
 

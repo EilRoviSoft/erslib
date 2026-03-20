@@ -19,8 +19,10 @@ void ers::splitting::SmartIterator::_advance() {
         return;
     }
 
+
     while (m_parent->m_delims.contains(m_parent->m_storage[m_offset]))
         m_offset++;
+
 
     m_length = 0;
     if (m_parent->m_storage[m_offset] == '"') {

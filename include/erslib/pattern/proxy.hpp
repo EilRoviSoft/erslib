@@ -5,14 +5,22 @@ namespace ers::pattern {
     template<typename T>
     class TProxy {
     public:
+        // Constructor
+
         TProxy(T& value) :
             _value(&value) {
         }
+
+
+        // Copy constructor
 
         TProxy(const TProxy& another) {
             this->_value = another._value;
         }
         TProxy& operator=(const TProxy& another) = default;
+
+
+        // Move constructor
 
         TProxy(TProxy&& another) noexcept {
             this->_value = another._value;
@@ -22,6 +30,9 @@ namespace ers::pattern {
             return *this;
         }
 
+
+        // Accessors
+
         T& operator*() { return *this->get(); }
         T* operator->() { return this->get(); }
 
@@ -30,6 +41,7 @@ namespace ers::pattern {
 
         T* get() { return this->_value; }
         const T* get() const { return this->_value; }
+
 
     private:
         T* _value;

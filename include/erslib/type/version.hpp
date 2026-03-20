@@ -25,6 +25,7 @@ struct ers::convert::from_string_backend<ers::version_t> {
     Result<version_t> runtime_value(std::string_view source) const {
         version_t result;
 
+
         auto dot1 = source.find('.');
         if (dot1 == std::string_view::npos) {
             return Unexpected<Error>(
@@ -45,6 +46,7 @@ struct ers::convert::from_string_backend<ers::version_t> {
             );
         }
 
+
         if (auto r = from_str<size_t>(source.substr(0, dot1)); !r)
             return Unexpected(r.error());
         else
@@ -59,6 +61,7 @@ struct ers::convert::from_string_backend<ers::version_t> {
             return Unexpected(r.error());
         else
             result.patch = *r;
+
 
         return result;
     }
