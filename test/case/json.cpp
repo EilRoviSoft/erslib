@@ -6,7 +6,7 @@
 
 
 TEST_CASE("assignment", "[json]") {
-    contrib::Json obj;
+    utl::Json obj;
 
     obj["hello"] = "world";
 }

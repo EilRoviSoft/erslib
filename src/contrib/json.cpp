@@ -14,7 +14,7 @@
 #include <string>
 
 namespace fs = std::filesystem;
-using namespace contrib::internal;
+using namespace utl::internal;
 
 
 // ===================
@@ -206,7 +206,7 @@ namespace {
 
     void serialize_json_to_buffer(std::string& chars, const Node& node, Format format) {
         if (format == Format::Pretty)
-            contrib::internal::serialize_json_recursion<true>(node, chars);
+            utl::internal::serialize_json_recursion<true>(node, chars);
         else
             serialize_json_recursion<false>(node, chars);
     }
@@ -216,7 +216,7 @@ namespace {
 // --- Node class ---
 // ==================
 
-namespace contrib::internal {
+namespace utl::internal {
     // -- Getters --
     // -------------
 
@@ -477,7 +477,7 @@ namespace {
 // --- JSON Parsing impl. ---
 // ==========================
 
-namespace contrib::internal {
+namespace utl::internal {
     parser::parser(std::string_view chars, std::size_t recursion_limit) :
         chars(chars),
         recursion_limit(recursion_limit) {
@@ -1032,7 +1032,7 @@ namespace contrib::internal {
 // --- JSON Serializing impl. ---
 // ==============================
 
-namespace contrib::internal {
+namespace utl::internal {
     // First indent should be skipped when printing after a key
     //
     // Example:
@@ -1436,7 +1436,7 @@ namespace contrib::internal {
 // --- JSON Parsing public API ---
 // ===============================
 
-namespace contrib {
+namespace utl {
     Node from_string(const std::string& chars, std::size_t recursion_limit) {
         parser parser(chars, recursion_limit);
 

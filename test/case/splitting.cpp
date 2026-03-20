@@ -4,7 +4,6 @@
 
 // catch2
 #include <catch2/catch_test_macros.hpp>
-#include <catch2/generators/catch_generators.hpp>
 
 // ers
 #include <erslib/splitting/regular.hpp>

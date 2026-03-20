@@ -50,7 +50,7 @@
 
 // ____________________ IMPLEMENTATION ____________________
 
-namespace contrib::internal {
+namespace utl::internal {
     // ===================================
     // --- JSON type conversion trait ---
     // ===================================
@@ -504,12 +504,12 @@ namespace contrib::internal {
     }
 }
 
-namespace contrib {
+namespace utl {
     using JsonType = internal::NodeType;
     using Json = internal::Node;
 }
 
-namespace contrib {
+namespace utl {
     // ===============================
     // --- JSON Parsing public API ---
     // ===============================
