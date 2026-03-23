@@ -12,7 +12,7 @@
 
 // Generic implementations
 
-namespace ers::util {
+namespace ers::adaptor {
     template<auto Member, typename Fn>
     struct projected_unary_op {
         using is_transparent = void;
@@ -74,7 +74,7 @@ namespace ers::util {
 
 // Specialized implementations
 
-namespace ers::util {
+namespace ers::adaptor {
     template<auto Member, typename Policy>
     using projected_hash = projected_unary_op<Member, transparent_hash_for_t<member_type_t<Member>, Policy>>;
 
