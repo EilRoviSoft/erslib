@@ -25,8 +25,7 @@
 #include <boost/unordered/unordered_flat_map.hpp>
 
 // ers
-#include <erslib/adaptor/transparent/base.hpp>
-#include <erslib/adaptor/transparent/string.hpp>
+#include <erslib/adaptor/transparent.hpp>
 #include <erslib/hashing/rapid.hpp>
 #include <erslib/type/exception.hpp>
 #include <erslib/util/string.hpp>

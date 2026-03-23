@@ -14,8 +14,7 @@
 #include <catch2/catch_test_macros.hpp>
 
 // ers
-#include <erslib/adaptor/transparent/base.hpp>
-#include <erslib/adaptor/transparent/string.hpp>
+#include <erslib/adaptor/transparent.hpp>
 #include <erslib/hashing/rapid.hpp>
 #include <erslib/thread_safe/map.hpp>
 #include <erslib/type/time.hpp>
