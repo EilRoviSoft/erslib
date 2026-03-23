@@ -56,7 +56,7 @@ namespace {
     using Map = ers::thread_safe::Map<boost::unordered_flat_map<
         std::string,
         AutoRng,
-        ers::util::string_hash_adaptor<ers::RapidHash>,
+        ers::util::string_hash_adaptor<ers::hashing::rapid_policy>,
         ers::util::string_equal
     >>;
 }

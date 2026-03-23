@@ -13,18 +13,18 @@
 // Common string utils for hashing, comparing and allocation
 
 namespace ers::util {
-    template<template<typename> typename HashEngine>
+    template<typename Policy>
     struct string_hash_adaptor {
         using is_transparent = void;
 
         constexpr size_t operator()(const std::string_view sv) const {
-            return HashEngine<std::string_view> {}(sv);
+            return ers::THashBase<std::string_view, Policy> {}(sv);
         }
         constexpr size_t operator()(const std::string& str) const {
-            return HashEngine<std::string> {}(str);
+            return ers::THashBase<std::string, Policy> {}(str);
         }
         constexpr size_t operator()(const char* cstr) const {
-            return HashEngine<const char*> {}(cstr);
+            return ers::THashBase<const char*, Policy> {}(cstr);
         }
     };
 

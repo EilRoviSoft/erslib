@@ -58,7 +58,7 @@ namespace utl::internal {
     template<class T>
     using object_type_impl = boost::unordered_flat_map<
         std::string, T,
-        ers::util::string_hash_adaptor<ers::RapidHash>,
+        ers::util::string_hash_adaptor<ers::hashing::rapid_policy>,
         ers::util::string_equal
     >;
     template<class T>

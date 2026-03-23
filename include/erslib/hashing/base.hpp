@@ -9,6 +9,8 @@
 // ers
 #include <erslib/concept/constexpr.hpp>
 
+#include "base.hpp"
+
 
 // Definition
 
@@ -42,7 +44,7 @@ namespace ers {
 }
 
 
-// Specializations
+// Specializations for strings
 
 template<size_t N, typename Policy>
 struct ers::THashBase<const std::array<const char, N>, Policy> {
@@ -147,6 +149,8 @@ struct ers::THashBase<std::string, Policy> {
 };
 
 
+// Specializations for numeric types (including enums)
+
 template<std::integral T, typename Policy>
 struct ers::THashBase<T, Policy> {
     constexpr size_t operator()(T what, size_t seed = 0) const noexcept
@@ -159,5 +163,14 @@ struct ers::THashBase<T, Policy> {
     constexpr size_t operator()(T what, size_t seed = 0) const noexcept
         requires (!hashing::is_backend_handles_raw_bytes_v<Policy>) {
         return hashing::backend<Policy>::process_value(what, seed);
+    }
+};
+
+
+template<typename T, typename Policy>
+    requires (std::is_enum_v<T> || std::is_scoped_enum_v<T>)
+struct ers::THashBase<T, Policy> {
+    constexpr size_t operator()(T what, size_t seed) const noexcept {
+        return ers::THashBase<std::underlying_type_t<T>, Policy> {}(std::to_underlying(what), seed);
     }
 };
