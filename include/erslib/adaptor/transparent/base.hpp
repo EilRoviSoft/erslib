@@ -5,6 +5,7 @@
 #include <type_traits>
 
 // ers
+#include <erslib/hashing/base.hpp>
 #include <erslib/trait/member.hpp>
 
 
@@ -123,12 +124,12 @@ namespace ers::adaptor {
     template<typename T, typename Fn, auto Member = nullptr>
     using unary_op = internal::op_base<1, T, Fn, Member>;
 
-    template<typename T, typename Fn, auto Member = nullptr>
-    using binary_op = internal::op_base<2, T, Fn, Member>;
-
-
     template<auto Member, typename Fn>
     using member_unary_op = unary_op<std::remove_cv_t<member_class_t<Member>>, Fn, Member>;
+
+
+    template<typename T, typename Fn, auto Member = nullptr>
+    using binary_op = internal::op_base<2, T, Fn, Member>;
 
     template<auto Member, typename Fn>
     using member_binary_op = binary_op<std::remove_cv_t<member_class_t<Member>>, Fn, Member>;
@@ -137,7 +138,17 @@ namespace ers::adaptor {
 
 // Specialized implementations
 
-namespace ers::adaptor {
+namespace ers {
+    template<typename T, typename Policy>
+    using hash_adaptor = adaptor::unary_op<T, THashBase<T, Policy>>;
+
+    template<auto Member, typename Policy>
+    using member_hash_adaptor = adaptor::member_unary_op<Member, THashBase<std::remove_cv_t<member_class_t<Member>>, Policy>>;
+
+
     template<typename T>
-    using equal = binary_op<T, std::equal_to<>>;
+    using equal_adaptor = adaptor::binary_op<T, std::equal_to<>>;
+
+    template<auto Member>
+    using member_equal_adaptor = adaptor::member_binary_op<Member, std::equal_to<>>;
 }
