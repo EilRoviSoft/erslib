@@ -13,10 +13,15 @@
 
 namespace ers::internal {
     template<auto Member>
-    concept MemberOrNull = std::same_as<decltype(Member), std::nullptr_t> || std::is_member_object_pointer_v<decltype(Member)>;
+    concept MemberOrNull = std::same_as<decltype(Member), std::nullptr_t> || std::is_member_pointer_v<decltype(Member)>;
 
     template<auto Member>
     static constexpr bool has_member_v = !std::same_as<decltype(Member), std::nullptr_t>;
+
+    template<auto Member, typename T>
+    using projected_t = std::remove_cvref_t<
+        std::invoke_result_t<decltype(Member), T>
+    >;
 
 
     template<typename T>
@@ -126,18 +131,19 @@ namespace ers::internal {
 
         using primary_type = std::remove_cvref_t<T>;
         using secondary_types = std::tuple<std::remove_cvref_t<Ts>...>;
+        using projected_type = std::remove_cvref_t<std::invoke_result_t<decltype(Member), const primary_type&>>;
 
 
-        static_assert(owner_matches<T, Member>(), "T must match the class owning Member");
+        static_assert(owner_matches<primary_type, Member>(), "T must match the class owning Member");
 
 
         using THashBase<std::remove_cvref_t<Ts>, Policy>::operator()...;
 
         constexpr size_t operator()(
-            T&& v, size_t seed = 0
-        ) const noexcept(noexcept(invoke_projected<THashBase<std::remove_cvref_t<T>, Policy>, Member>(std::forward<T>(v), seed))
-        ) requires (ProjectedInvocable<THashBase<std::remove_cvref_t<T>, Policy>, Member, T, size_t>) {
-            return invoke_projected<THashBase<std::remove_cvref_t<T>, Policy>, Member>(std::forward<T>(v), seed);
+            const primary_type& v, size_t seed = 0
+        ) const noexcept(noexcept(invoke_projected<THashBase<projected_type, Policy>, Member>(v, seed))
+        ) requires (ProjectedInvocable<THashBase<projected_type, Policy>, Member, const primary_type&, size_t>) {
+            return invoke_projected<THashBase<projected_type, Policy>, Member>(v, seed);
         }
     };
 
