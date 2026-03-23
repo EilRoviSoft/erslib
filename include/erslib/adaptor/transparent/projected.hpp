@@ -6,6 +6,7 @@
 #include <type_traits>
 
 // ers
+#include <erslib/adaptor/transparent/base.hpp>
 #include <erslib/trait/member.hpp>
 #include <erslib/trait/transparent.hpp>
 
@@ -14,9 +15,8 @@
 
 namespace ers::adaptor {
     template<auto Member, typename Fn>
-    struct projected_unary_op {
+    struct unary_op<std::remove_cv_t<member_class_t<Member>>, Fn, Member> {
         using is_transparent = void;
-
         using object_type = std::remove_cv_t<member_class_t<Member>>;
 
 
@@ -28,7 +28,7 @@ namespace ers::adaptor {
         }
 
         template<typename T>
-        std::size_t operator()(
+        auto operator()(
             const T& v
         ) const noexcept(noexcept(Fn {}(v))
         ) requires (!std::same_as<std::remove_cvref_t<T>, object_type>) {
@@ -37,9 +37,8 @@ namespace ers::adaptor {
     };
 
     template<auto Member, typename Fn>
-    struct projected_binary_op {
+    struct binary_op<std::remove_cv_t<member_class_t<Member>>, Fn, Member> {
         using is_transparent = void;
-
         using object_type = std::remove_cv_t<member_class_t<Member>>;
 
 
@@ -52,7 +51,7 @@ namespace ers::adaptor {
         }
 
         template<typename T>
-        std::size_t operator()(
+        auto operator()(
             const object_type& l,
             const T& r
         ) const noexcept(noexcept(Fn {}(l, r))
@@ -61,7 +60,7 @@ namespace ers::adaptor {
         }
 
         template<typename T>
-        std::size_t operator()(
+        auto operator()(
             const T& l,
             const object_type& r
         ) const noexcept(noexcept(Fn {}(l, r))
@@ -72,12 +71,21 @@ namespace ers::adaptor {
 }
 
 
+namespace ers::adaptor {
+    template<auto Member, typename Fn>
+    using projected_unary_op = unary_op<std::remove_cv_t<member_class_t<Member>>, Fn, Member>;
+
+    template<auto Member, typename Fn>
+    using projected_binary_op = binary_op<std::remove_cv_t<member_class_t<Member>>, Fn, Member>;
+}
+
+
 // Specialized implementations
 
 namespace ers::adaptor {
     template<auto Member, typename Policy>
     using projected_hash = projected_unary_op<Member, transparent_hash_for_t<member_type_t<Member>, Policy>>;
 
-    template<auto Member, typename Equal>
+    template<auto Member>
     using projected_equal = projected_binary_op<Member, std::equal_to<>>;
 }
