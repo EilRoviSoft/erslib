@@ -25,6 +25,8 @@
 #include <boost/unordered/unordered_flat_map.hpp>
 
 // ers
+#include <erslib/adaptor/transparent/base.hpp>
+#include <erslib/adaptor/transparent/string.hpp>
 #include <erslib/hashing/rapid.hpp>
 #include <erslib/type/exception.hpp>
 #include <erslib/util/string.hpp>
@@ -58,8 +60,8 @@ namespace utl::internal {
     template<class T>
     using object_type_impl = boost::unordered_flat_map<
         std::string, T,
-        ers::util::string_hash_adaptor<ers::hashing::rapid_policy>,
-        ers::util::string_equal
+        ers::adaptor::string_hash<ers::hashing::rapid_policy>,
+        ers::adaptor::equal<std::string>
     >;
     template<class T>
     using array_type_impl = std::vector<T>;
