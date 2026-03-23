@@ -59,11 +59,13 @@ namespace ers::meta {
 
 
 namespace ers::meta {
-    template<typename T, typename Hasher = RapidHash<decltype(internal::type_name_holder<T>::value)>>
+    template<typename T, typename Policy = hashing::rapid_policy>
     struct type_hash {
-        static constexpr auto value = Hasher {}(internal::type_name_holder<T>::value);
+        using name_type = std::remove_cvref_t<decltype(internal::type_name_holder<T>::value)>;
+
+        static constexpr auto value = THashBase<name_type, Policy> {}(internal::type_name_holder<T>::value);
     };
 
-    template<typename T, typename Hasher = RapidHash<decltype(internal::type_name_holder<T>::value)>>
-    constexpr auto type_hash_v = type_hash<T, Hasher>::value;
+    template<typename T, typename Policy = hashing::rapid_policy>
+    constexpr auto type_hash_v = type_hash<T, Policy>::value;
 }

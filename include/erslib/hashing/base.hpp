@@ -6,11 +6,6 @@
 #include <span>
 #include <string>
 
-// ers
-#include <erslib/concept/constexpr.hpp>
-
-#include "base.hpp"
-
 
 // Definition
 
@@ -18,23 +13,10 @@ namespace ers::hashing {
     template<typename Policy>
     struct backend {};
 
-
     template<typename Policy>
-    constexpr bool is_backend_handles_raw_bytes() {
-        return requires(std::span<const std::byte> what, size_t seed) { backend<Policy>::process_raw_bytes(what, seed); };
-    }
-
-    template<typename Policy>
-    static constexpr bool is_backend_handles_raw_bytes_v = is_backend_handles_raw_bytes<Policy>();
-
-
-    template<typename Policy>
-    constexpr bool is_constexpr_raw_hash() {
-        return ers::is_constexpr_friendly_v<typename backend<Policy>::process_raw_bytes>;
-    }
-
-    template<typename Policy>
-    static constexpr bool is_constexpr_raw_hash_v = is_constexpr_raw_hash<Policy>();
+    concept RawBytesBackend = requires(std::span<const std::byte> what, size_t seed) {
+        { backend<Policy>::process_raw_bytes(what, seed) } -> std::same_as<size_t>;
+    };
 }
 
 
@@ -46,12 +28,14 @@ namespace ers {
 
 // Specializations for strings
 
-template<size_t N, typename Policy>
-struct ers::THashBase<const std::array<const char, N>, Policy> {
-    using type = const std::array<const char, N>&;
+template<typename Char, size_t N, typename Policy>
+    requires std::same_as<std::remove_cvref_t<Char>, char>
+struct ers::THashBase<std::array<Char, N>, Policy> {
+    using type = std::array<Char, N>;
 
-    constexpr size_t operator()(type what, size_t seed = 0) const noexcept
-        requires (hashing::is_backend_handles_raw_bytes_v<Policy>) {
+    constexpr size_t operator()(
+        const type& what, size_t seed = 0
+    ) const noexcept requires (hashing::RawBytesBackend<Policy>) {
         std::array<std::byte, what.size()> bytes = {};
 
 
@@ -62,40 +46,19 @@ struct ers::THashBase<const std::array<const char, N>, Policy> {
         return hashing::backend<Policy>::process_raw_bytes({ bytes.data(), what.size() }, seed);
     }
 
-    constexpr size_t operator()(type what, size_t seed = 0) const noexcept
-        requires (!hashing::is_backend_handles_raw_bytes_v<Policy>) {
-        return hashing::backend<Policy>::process_raw_bytes(what, seed);
-    }
-};
-
-template<size_t N, typename Policy>
-struct ers::THashBase<const std::array<char, N>, Policy> {
-    using type = const std::array<char, N>&;
-
-    constexpr size_t operator()(type what, size_t seed = 0) const noexcept
-        requires (hashing::is_backend_handles_raw_bytes_v<Policy>) {
-        std::array<std::byte, what.size()> bytes = {};
-
-
-        for (size_t i = 0; i < what.size(); i++)
-            bytes[i] = static_cast<std::byte>(what[i]);
-
-
-        return hashing::backend<Policy>::process_raw_bytes({ bytes.data(), what.size() }, seed);
-    }
-
-    constexpr size_t operator()(type what, size_t seed = 0) const noexcept
-        requires (!hashing::is_backend_handles_raw_bytes_v<Policy>) {
-        return hashing::backend<Policy>::process_raw_bytes(what, seed);
+    constexpr size_t operator()(
+        const type& what, size_t seed = 0
+    ) const noexcept requires (!hashing::RawBytesBackend<Policy>) {
+        return hashing::backend<Policy>::process_value(what, seed);
     }
 };
 
 
 template<size_t N, typename Policy>
 struct ers::THashBase<const char[N], Policy> {
-    using type = const char(&)[N];
+    using type = const char[N];
 
-    constexpr size_t operator()(type what, size_t seed = 0) const noexcept {
+    constexpr size_t operator()(const type& what, size_t seed = 0) const noexcept {
         return THashBase<const std::array<const char, N>, Policy> {}(std::bit_cast<std::array<const char, N>>(what), seed);
     }
 };
@@ -104,15 +67,17 @@ template<typename Policy>
 struct ers::THashBase<const char*, Policy> {
     using type = const char*;
 
-    size_t operator()(type what, size_t seed = 0) const noexcept
-        requires (hashing::is_backend_handles_raw_bytes_v<Policy>) {
+    size_t operator()(
+        type what, size_t seed = 0
+    ) const noexcept requires (hashing::RawBytesBackend<Policy>) {
         const auto bytes = reinterpret_cast<const std::byte*>(what);
         return hashing::backend<Policy>::process_raw_bytes({ bytes, std::strlen(what) }, seed);
     }
 
-    size_t operator()(type what, size_t seed = 0) const noexcept
-        requires (!hashing::is_backend_handles_raw_bytes_v<Policy>) {
-        return hashing::backend<Policy>::process_raw_bytes(what, seed);
+    size_t operator()(
+        type what, size_t seed = 0
+    ) const noexcept requires (!hashing::RawBytesBackend<Policy>) {
+        return hashing::backend<Policy>::process_value(what, seed);
     }
 };
 
@@ -120,31 +85,35 @@ template<typename Policy>
 struct ers::THashBase<std::string_view, Policy> {
     using type = std::string_view;
 
-    size_t operator()(type what, size_t seed = 0) const noexcept
-        requires (hashing::is_backend_handles_raw_bytes_v<Policy>) {
+    size_t operator()(
+        type what, size_t seed = 0
+    ) const noexcept requires (hashing::RawBytesBackend<Policy>) {
         const auto bytes = reinterpret_cast<const std::byte*>(what.data());
         return hashing::backend<Policy>::process_raw_bytes({ bytes, what.size() }, seed);
     }
 
-    size_t operator()(type what, size_t seed = 0) const noexcept
-        requires (!hashing::is_backend_handles_raw_bytes_v<Policy>) {
-        return hashing::backend<Policy>::process_raw_bytes(what, seed);
+    size_t operator()(
+        type what, size_t seed = 0
+    ) const noexcept requires (!hashing::RawBytesBackend<Policy>) {
+        return hashing::backend<Policy>::process_value(what, seed);
     }
 };
 
 template<typename Policy>
 struct ers::THashBase<std::string, Policy> {
-    using type = const std::string&;
+    using type = std::string;
 
-    size_t operator()(type what, size_t seed = 0) const
-        requires (hashing::is_backend_handles_raw_bytes_v<Policy>) {
+    size_t operator()(
+        const type& what, size_t seed = 0
+    ) const requires (hashing::RawBytesBackend<Policy>) {
         const auto bytes = reinterpret_cast<const std::byte*>(what.data());
         return hashing::backend<Policy>::process_raw_bytes({ bytes, what.size() }, seed);
     }
 
-    size_t operator()(type what, size_t seed = 0) const
-        requires (!hashing::is_backend_handles_raw_bytes_v<Policy>) {
-        return hashing::backend<Policy>::process_raw_bytes(what, seed);
+    size_t operator()(
+        const type& what, size_t seed = 0
+    ) const requires (!hashing::RawBytesBackend<Policy>) {
+        return hashing::backend<Policy>::process_value(what, seed);
     }
 };
 
@@ -153,15 +122,17 @@ struct ers::THashBase<std::string, Policy> {
 
 template<std::integral T, typename Policy>
 struct ers::THashBase<T, Policy> {
-    constexpr size_t operator()(T what, size_t seed = 0) const noexcept
-        requires (hashing::is_backend_handles_raw_bytes_v<Policy>) {
+    constexpr size_t operator()(
+        T what, size_t seed = 0
+    ) const noexcept requires (hashing::RawBytesBackend<Policy>) {
         constexpr size_t size = sizeof(T);
         const auto bytes = std::bit_cast<std::array<std::byte, size>>(what);
         return hashing::backend<Policy>::process_raw_bytes({ bytes.data(), size }, seed);
     }
 
-    constexpr size_t operator()(T what, size_t seed = 0) const noexcept
-        requires (!hashing::is_backend_handles_raw_bytes_v<Policy>) {
+    constexpr size_t operator()(
+        T what, size_t seed = 0
+    ) const noexcept requires (!hashing::RawBytesBackend<Policy>) {
         return hashing::backend<Policy>::process_value(what, seed);
     }
 };

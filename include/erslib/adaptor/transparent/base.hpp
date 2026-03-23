@@ -12,10 +12,6 @@
 // Helpers
 
 namespace ers::internal {
-    template<typename T>
-    using raw_t = std::remove_cvref_t<T>;
-
-
     template<auto Member>
     concept MemberOrNull = std::same_as<decltype(Member), std::nullptr_t> || std::is_member_object_pointer_v<decltype(Member)>;
 
@@ -25,7 +21,7 @@ namespace ers::internal {
 
     template<typename T>
     constexpr decltype(auto) enum_arg(T&& v) noexcept {
-        if constexpr (std::is_enum_v<raw_t<T>>) {
+        if constexpr (std::is_enum_v<std::remove_cvref_t<T>>) {
             return std::to_underlying(v);
         } else {
             return std::forward<T>(v);
@@ -33,21 +29,21 @@ namespace ers::internal {
     }
 
 
-    template<auto Member, typename U>
+    template<auto Member, typename T>
     consteval bool project_is_nothrow() {
-        if constexpr (has_member_v<Member> && std::invocable<decltype(Member), U&&>) {
-            return noexcept(std::invoke(Member, std::declval<U&&>()));
+        if constexpr (has_member_v<Member> && std::invocable<decltype(Member), T&&>) {
+            return noexcept(std::invoke(Member, std::declval<T&&>()));
         } else {
             return true;
         }
     }
 
-    template<auto Member, typename U>
-    constexpr decltype(auto) project(U&& u) noexcept(project_is_nothrow<Member, U>()) {
-        if constexpr (has_member_v<Member> && std::invocable<decltype(Member), U&&>) {
-            return std::invoke(Member, std::forward<U>(u));
+    template<auto Member, typename T>
+    constexpr decltype(auto) project(T&& u) noexcept(project_is_nothrow<Member, T>()) {
+        if constexpr (has_member_v<Member> && std::invocable<decltype(Member), T&&>) {
+            return std::invoke(Member, std::forward<T>(u));
         } else {
-            return std::forward<U>(u);
+            return std::forward<T>(u);
         }
     }
 
@@ -55,7 +51,7 @@ namespace ers::internal {
     template<typename T, auto Member>
     consteval bool owner_matches() {
         if constexpr (has_member_v<Member>) {
-            return std::same_as<std::remove_cv_t<T>, std::remove_cv_t<member_class_t<Member>>>;
+            return std::same_as<std::remove_cvref_t<T>, std::remove_cvref_t<member_class_t<Member>>>;
         } else {
             return true;
         }
@@ -98,14 +94,15 @@ namespace ers::internal {
     }
 
 
-    template<std::size_t Arity, typename T, typename Fn, auto Member>
+    template<size_t Arity, typename T, typename Fn, auto Member>
         requires MemberOrNull<Member>
     struct op_base {
         using is_transparent = void;
-        using type = std::remove_cv_t<T>;
-        using object_type = type;
+        using type = std::remove_cvref_t<T>;
+
 
         static_assert(owner_matches<T, Member>(), "T must match the class owning Member");
+
 
         template<typename... Args>
         constexpr decltype(auto) operator()(
@@ -117,35 +114,73 @@ namespace ers::internal {
     };
 }
 
+namespace ers::internal {
+    template<typename Policy, auto Member, typename... Ts>
+    struct hash_base;
+
+
+    template<typename Policy, auto Member, typename T, typename... Ts>
+        requires (Member != nullptr)
+    struct hash_base<Policy, Member, T, Ts...> : THashBase<std::remove_cvref_t<Ts>, Policy>... {
+        using is_transparent = void;
+
+        using primary_type = std::remove_cvref_t<T>;
+        using secondary_types = std::tuple<std::remove_cvref_t<Ts>...>;
+
+
+        static_assert(owner_matches<T, Member>(), "T must match the class owning Member");
+
+
+        using THashBase<std::remove_cvref_t<Ts>, Policy>::operator()...;
+
+        constexpr size_t operator()(
+            T&& v, size_t seed = 0
+        ) const noexcept(noexcept(invoke_projected<THashBase<std::remove_cvref_t<T>, Policy>, Member>(std::forward<T>(v), seed))
+        ) requires (ProjectedInvocable<THashBase<std::remove_cvref_t<T>, Policy>, Member, T, size_t>) {
+            return invoke_projected<THashBase<std::remove_cvref_t<T>, Policy>, Member>(std::forward<T>(v), seed);
+        }
+    };
+
+    template<typename Policy, typename... Ts>
+    struct hash_base<Policy, nullptr, Ts...> : THashBase<std::remove_cvref_t<Ts>, Policy>... {
+        using is_transparent = void;
+        using types = std::tuple<std::remove_cvref_t<Ts>...>;
+
+
+        using THashBase<std::remove_cvref_t<Ts>, Policy>::operator()...;
+    };
+}
+
 
 // Generic implementations
 
 namespace ers::adaptor {
-    template<typename T, typename Fn, auto Member = nullptr>
-    using unary_op = internal::op_base<1, T, Fn, Member>;
+    template<typename T, typename Fn>
+    using unary_op = internal::op_base<1, T, Fn, nullptr>;
 
     template<auto Member, typename Fn>
-    using member_unary_op = unary_op<std::remove_cv_t<member_class_t<Member>>, Fn, Member>;
+    using member_unary_op = internal::op_base<1, std::remove_cvref_t<member_class_t<Member>>, Fn, Member>;
 
 
-    template<typename T, typename Fn, auto Member = nullptr>
-    using binary_op = internal::op_base<2, T, Fn, Member>;
+    template<typename T, typename Fn>
+    using binary_op = internal::op_base<2, T, Fn, nullptr>;
 
     template<auto Member, typename Fn>
-    using member_binary_op = binary_op<std::remove_cv_t<member_class_t<Member>>, Fn, Member>;
+    using member_binary_op = internal::op_base<2, std::remove_cvref_t<member_class_t<Member>>, Fn, Member>;
 }
 
 
 // Specialized implementations
 
 namespace ers {
-    template<typename T, typename Policy>
-    using hash_adaptor = adaptor::unary_op<T, THashBase<T, Policy>>;
+    template<typename Policy, typename... Ts>
+    using hash_adaptor = internal::hash_base<Policy, nullptr, Ts...>;
 
-    template<auto Member, typename Policy>
-    using member_hash_adaptor = adaptor::member_unary_op<Member, THashBase<std::remove_cv_t<member_class_t<Member>>, Policy>>;
+    template<typename Policy, auto Member, typename... Ts>
+    using member_hash_adaptor = internal::hash_base<Policy, Member, std::remove_cvref_t<member_class_t<Member>>, Ts...>;
+}
 
-
+namespace ers {
     template<typename T>
     using equal_adaptor = adaptor::binary_op<T, std::equal_to<>>;
 
