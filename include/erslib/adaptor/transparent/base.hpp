@@ -4,67 +4,134 @@
 #include <concepts>
 #include <type_traits>
 
+// ers
+#include <erslib/trait/member.hpp>
 
-// Forward declaration
 
-namespace ers::adaptor {
-    template<typename T, typename Fn, auto Member = nullptr>
-    struct unary_op;
+// Helpers
 
-    template<typename T, typename Fn, auto Member = nullptr>
-    struct binary_op;
+namespace ers::internal {
+    template<typename T>
+    using raw_t = std::remove_cvref_t<T>;
+
+
+    template<auto Member>
+    concept MemberOrNull = std::same_as<decltype(Member), std::nullptr_t> || std::is_member_object_pointer_v<decltype(Member)>;
+
+    template<auto Member>
+    static constexpr bool has_member_v = !std::same_as<decltype(Member), std::nullptr_t>;
+
+
+    template<typename T>
+    constexpr decltype(auto) enum_arg(T&& v) noexcept {
+        if constexpr (std::is_enum_v<raw_t<T>>) {
+            return std::to_underlying(v);
+        } else {
+            return std::forward<T>(v);
+        }
+    }
+
+
+    template<auto Member, typename U>
+    consteval bool project_is_nothrow() {
+        if constexpr (has_member_v<Member> && std::invocable<decltype(Member), U&&>) {
+            return noexcept(std::invoke(Member, std::declval<U&&>()));
+        } else {
+            return true;
+        }
+    }
+
+    template<auto Member, typename U>
+    constexpr decltype(auto) project(U&& u) noexcept(project_is_nothrow<Member, U>()) {
+        if constexpr (has_member_v<Member> && std::invocable<decltype(Member), U&&>) {
+            return std::invoke(Member, std::forward<U>(u));
+        } else {
+            return std::forward<U>(u);
+        }
+    }
+
+
+    template<typename T, auto Member>
+    consteval bool owner_matches() {
+        if constexpr (has_member_v<Member>) {
+            return std::same_as<std::remove_cv_t<T>, std::remove_cv_t<member_class_t<Member>>>;
+        } else {
+            return true;
+        }
+    }
+
+
+    template<typename Fn, auto Member, typename... Args>
+    concept DirectlyProjectedInvocable = requires(Args&&... args) {
+        std::invoke(Fn {}, project<Member>(std::forward<Args>(args))...);
+    };
+
+    template<typename Fn, auto Member, typename... Args>
+    concept EnumProjectedInvocable = requires(Args&&... args) {
+        std::invoke(Fn {}, enum_arg(project<Member>(std::forward<Args>(args)))...);
+    };
+
+    template<typename Fn, auto Member, typename... Args>
+    concept ProjectedInvocable = DirectlyProjectedInvocable<Fn, Member, Args...> || EnumProjectedInvocable<Fn, Member, Args...>;
+
+
+    template<typename Fn, auto Member, typename... Args>
+    consteval bool invoke_is_nothrow() {
+        if constexpr (DirectlyProjectedInvocable<Fn, Member, Args...>) {
+            return noexcept(std::invoke(Fn {}, project<Member>(std::declval<Args>())...));
+        } else {
+            return noexcept(std::invoke(Fn {}, enum_arg(project<Member>(std::declval<Args>()))...));
+        }
+    }
+
+    template<typename Fn, auto Member, typename... Args>
+    constexpr decltype(auto) invoke_projected(
+        Args&&... args
+    ) noexcept(invoke_is_nothrow<Fn, Member, Args...>()
+    ) requires ProjectedInvocable<Fn, Member, Args...> {
+        if constexpr (DirectlyProjectedInvocable<Fn, Member, Args...>) {
+            return std::invoke(Fn {}, project<Member>(std::forward<Args>(args))...);
+        } else {
+            return std::invoke(Fn {}, enum_arg(project<Member>(std::forward<Args>(args)))...);
+        }
+    }
+
+
+    template<std::size_t Arity, typename T, typename Fn, auto Member>
+        requires MemberOrNull<Member>
+    struct op_base {
+        using is_transparent = void;
+        using type = std::remove_cv_t<T>;
+        using object_type = type;
+
+        static_assert(owner_matches<T, Member>(), "T must match the class owning Member");
+
+        template<typename... Args>
+        constexpr decltype(auto) operator()(
+            Args&&... args
+        ) const noexcept(noexcept(invoke_projected<Fn, Member>(std::forward<Args>(args)...))
+        ) requires (sizeof...(Args) == Arity && ProjectedInvocable<Fn, Member, Args...>) {
+            return invoke_projected<Fn, Member>(std::forward<Args>(args)...);
+        }
+    };
 }
-
 
 
 // Generic implementations
 
 namespace ers::adaptor {
-    template<typename T, typename Fn>
-    struct unary_op<T, Fn, nullptr> {
-        using is_transparent = void;
-        using type = T;
+    template<typename T, typename Fn, auto Member = nullptr>
+    using unary_op = internal::op_base<1, T, Fn, Member>;
+
+    template<typename T, typename Fn, auto Member = nullptr>
+    using binary_op = internal::op_base<2, T, Fn, Member>;
 
 
-        auto operator()(const type& v) const noexcept(noexcept(Fn {}(v))) {
-            return Fn {}(v);
-        }
+    template<auto Member, typename Fn>
+    using member_unary_op = unary_op<std::remove_cv_t<member_class_t<Member>>, Fn, Member>;
 
-        template<typename U>
-        auto operator()(
-            const U& v
-        ) const noexcept(noexcept(Fn {}(v))
-        ) requires (!std::same_as<std::remove_cvref_t<T>, std::remove_cvref_t<U>>) {
-            return Fn {}(v);
-        }
-    };
-
-    template<typename T, typename Fn>
-    struct binary_op<T, Fn, nullptr> {
-        using is_transparent = void;
-        using type = T;
-
-
-        auto operator()(const T& l, const T& r) const noexcept(noexcept(Fn {}(l, r))) {
-            return Fn {}(l, r);
-        }
-
-        template<typename U>
-        auto operator()(
-            const T& l, const U& r
-        ) const noexcept(noexcept(Fn {}(l, r))
-        ) requires (!std::same_as<std::remove_cvref_t<T>, std::remove_cvref_t<U>>) {
-            return Fn {}(l, r);
-        }
-
-        template<typename U>
-        auto operator()(
-            const U& l, const T& r
-        ) const noexcept(noexcept(Fn {}(l, r))
-        ) requires (!std::same_as<std::remove_cvref_t<T>, std::remove_cvref_t<U>>) {
-            return Fn {}(l, r);
-        }
-    };
+    template<auto Member, typename Fn>
+    using member_binary_op = binary_op<std::remove_cv_t<member_class_t<Member>>, Fn, Member>;
 }
 
 
