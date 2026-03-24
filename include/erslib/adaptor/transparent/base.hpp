@@ -124,12 +124,12 @@ namespace ers::internal {
     struct hash_base;
 
 
-    template<typename Policy, auto Member, typename... Ts>
+    template<typename Policy, auto Member, typename T, typename... Ts>
         requires (Member != nullptr)
-    struct hash_base<Policy, Member, member_class_t<Member>, Ts...> : THashBase<std::remove_cvref_t<Ts>, Policy>... {
+    struct hash_base<Policy, Member, T, Ts...> : THashBase<std::remove_cvref_t<Ts>, Policy>... {
         using is_transparent = void;
 
-        using primary_type = std::remove_cvref_t<member_class_t<Member>>;
+        using primary_type = std::remove_cvref_t<T>;
         using secondary_types = std::tuple<std::remove_cvref_t<Ts>...>;
         using projected_type = std::remove_cvref_t<std::invoke_result_t<decltype(Member), const primary_type&>>;
 

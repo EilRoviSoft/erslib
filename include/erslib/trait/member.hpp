@@ -9,7 +9,7 @@ namespace ers {
     struct member_ptr_traits {};
 
     template<typename Class, typename Member>
-    struct member_ptr_traits<Class Member::*> {
+    struct member_ptr_traits<Member Class::*> {
         using class_type = Class;
         using member_type = Member;
     };
