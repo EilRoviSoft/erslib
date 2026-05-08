@@ -50,8 +50,13 @@ struct ers::convert::to_string_backend<ers::Severity> {
 // Error
 
 namespace ers {
+    class Exception;
+
+
     class ERSLIB_EXPORT Error {
     public:
+        // Ctors
+
         Error(
             Severity severity,
             std::string_view code,
@@ -66,8 +71,29 @@ namespace ers {
         }
 
 
+        // Copy ctors
+
+        Error(const Error& other) = default;
+        Error& operator=(const Error& other) = default;
+
+
+        // Move ctors
+
+        Error(Error&& other) noexcept;
+        Error& operator=(Error&& other) noexcept;
+
+
+        // Dtor
+
         virtual ~Error();
 
+
+        // Conversion
+
+        explicit operator Exception() const;
+
+
+        // Observers
 
         Severity severity() const noexcept;
         std::string_view code() const noexcept;

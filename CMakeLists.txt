@@ -115,7 +115,7 @@ set(SOURCES
     # contrib
 
     "src/contrib/json.cpp"
-)
+ "src/erslib/type/exception.cpp")
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${SOURCES})
 
 

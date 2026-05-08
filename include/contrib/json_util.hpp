@@ -54,7 +54,7 @@ namespace ers::util {
         }
 
         template<typename T>
-        void require_and_write(std::string_view name, T& out, std::function<T(std::string_view)> writer) {
+        void require_and_write(std::string_view name, T& out, std::function<Result<T>(std::string_view)> writer) {
             const auto& object = m_json.as_object();
 
             if (auto r = _check<T>(object, name); r) {

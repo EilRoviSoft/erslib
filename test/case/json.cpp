@@ -20,13 +20,13 @@ TEST_CASE("require_field", "[json]") {
     obj["float"] = 3.14;
     obj["str"] = "hello world";
 
+    SECTION("Require") {
+        ers::util::Schema schema(obj);
 
-    std::string text;
+        schema.require<utl::Json::integral_type>("int");
+        schema.require<utl::Json::floating_type>("float");
+        schema.require<utl::Json::string_type>("str");
 
-
-    auto s = ers::util::Schema(obj)
-        .require<int64_t>("int")
-        .require<double_t>("float")
-        .require_and_write("str", text)
-        .finalize();
+        REQUIRE(schema.finalize());
+    }
 }
