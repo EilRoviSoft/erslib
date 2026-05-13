@@ -1,6 +1,7 @@
 #pragma once
 
 // std
+#include <iostream>
 #include <functional>
 #include <list>
 
@@ -8,7 +9,6 @@
 #include <contrib/json.hpp>
 
 // ers
-#include <erslib/type/optional.hpp>
 #include <erslib/type/result.hpp>
 
 
@@ -34,7 +34,7 @@ namespace ers::util {
             const auto& object = m_json.as_object();
 
             if (auto r = _check<T>(object, name); r) {
-                m_assignments.emplace_back([&out, value = r->second] {
+                m_assignments.emplace_back([&out, value = (*r)->second] {
                     out = value.template as<T>();
                 });
             }
@@ -46,7 +46,7 @@ namespace ers::util {
             const auto& object = m_json.as_object();
 
             if (auto r = _check<T>(object, name); r) {
-                m_assignments.emplace_back([&out, value = r->second] {
+                m_assignments.emplace_back([&out, value = (*r)->second] {
                     out = value.template as<T>();
                 });
             } else
@@ -57,9 +57,12 @@ namespace ers::util {
         void require_and_write(std::string_view name, T& out, std::function<Result<T>(std::string_view)> writer) {
             const auto& object = m_json.as_object();
 
-            if (auto r = _check<T>(object, name); r) {
-                m_assignments.emplace_back([&out, writer = std::move(writer), value = r->second] {
-                    out = writer(value.template as<T>());
+            if (auto r = _check<utl::Json::string_type>(object, name); r) {
+                m_assignments.emplace_back([&out, writer = std::move(writer), value = (*r)->second] {
+                    if (auto r = writer(value.template as<utl::Json::string_type>()); r)
+                        out = *r;
+                    else
+                        throw ers::Exception(r.error());
                 });
             } else
                 m_error = std::move(r.error());
@@ -85,7 +88,7 @@ namespace ers::util {
 
     private:
         template<typename T>
-        static Result<utl::Json::object_type::iterator> _check(utl::Json::object_type object, std::string_view name) {
+        static Result<utl::Json::object_type::const_iterator> _check(const utl::Json::object_type& object, std::string_view name) {
             auto it = object.find(name);
 
             if (it == object.end()) {

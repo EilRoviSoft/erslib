@@ -13,7 +13,7 @@ namespace ers {
         size_t patch;
 
 
-        constexpr bool operator==(const version_t& other) const noexcept = default;
+        constexpr auto operator<=>(const version_t& other) const noexcept = default;
     };
 }
 

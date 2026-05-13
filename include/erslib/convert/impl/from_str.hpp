@@ -49,7 +49,9 @@ namespace ers::convert {
         from_string_backend<T> backend;
 
         if constexpr (internal::FromStringHasConstexprValue<T>) {
-            auto r = backend.constexpr_value(source);
+            return backend.constexpr_value(source);
+        } else if constexpr (internal::FromStringHasRuntimeValue<T>) {
+            auto r = backend.runtime_value(source);
             if (!r) {
                 return Unexpected<Error>(
                     Severity::Error,
@@ -60,8 +62,6 @@ namespace ers::convert {
             }
 
             return *r;
-        } else if constexpr (internal::FromStringHasRuntimeValue<T>) {
-            return backend.runtime_value(source);
         } else {
             throw std::runtime_error("Non-specialized implementation");
         }
@@ -88,8 +88,7 @@ namespace ers::convert {
                     Severity::Error,
                     "conversion_error",
                     "Can't convert string \"{}\" to type [T = {}]",
-                    source,
-                    meta::type_name_v<T>
+                    source, meta::type_name_v<T>
                 );
             }
 
