@@ -52,7 +52,7 @@ set(SOURCES
     "case/memory.cpp"
     "case/meta.cpp"
     "case/splitting.cpp"
-    
+    "case/string.cpp"
 )
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${SOURCES})
 

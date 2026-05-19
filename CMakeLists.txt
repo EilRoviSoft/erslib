@@ -113,6 +113,7 @@ set(SOURCES
     "src/erslib/splitting/smart.cpp"
 
     "src/erslib/util/file.cpp"
+    "src/erslib/util/string.cpp"    
 
 
     # contrib

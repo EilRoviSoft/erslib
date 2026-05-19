@@ -29,6 +29,9 @@ namespace ers {
         const char* what() const override;
 
 
+        const Error& to_error() const;
+
+
     private:
         mutable bool _needs_initialization = true;
         mutable std::string _what;

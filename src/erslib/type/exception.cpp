@@ -20,6 +20,10 @@ const char* ers::Exception::what() const {
     return _what.c_str();
 }
 
+const ers::Error& ers::Exception::to_error() const {
+    return static_cast<const Error&>(*this);
+}
+
 
 void ers::Exception::_init() const {
     if (_needs_initialization) {

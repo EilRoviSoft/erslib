@@ -8,6 +8,9 @@
 #include <erslib/trait/string.hpp>
 #include <erslib/type/fixed_string.hpp>
 
+// export
+#include <erslib/export.hpp>
+
 
 namespace ers::util {
     template<char... Args>
@@ -84,4 +87,9 @@ namespace ers::util {
     bool ends_with_seq(const S& s, Args&&... args) {
         return internal::string_parts_compare(s, string_traits<S>::size(s) - (string_traits<Args>::size(args) + ...), std::forward<Args>(args)...);
     }
+}
+
+
+namespace ers::util {
+    std::string ERSLIB_EXPORT replace(std::string_view where, std::string_view from, std::string_view to, size_t estimated_replacements = 4);
 }
