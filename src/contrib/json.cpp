@@ -104,7 +104,7 @@ namespace {
         return str;
     }
 
-    [[nodiscard]] std::string read_file_to_string(const std::string& path) {
+    [[nodiscard]] std::string read_file_to_string(const fs::path& path) {
         using namespace std::string_literals;
 
         // This seems the to be the fastest way of reading a text file
@@ -114,9 +114,9 @@ namespace {
         // And attached benchmarks:
         // https://github.com/Sqeaky/CppFileToStringExperiments
 
-        std::ifstream file(path, std::ios::ate); // open file and immediately seek to the end
+        std::fstream file(path, std::ios::in | std::ios::ate); // open file and immediately seek to the end
         if (!file.good())
-            throw ers::make_exception("Could not open file {}.", path);
+            throw ers::make_exception("Could not open file {}.", path.generic_string());
 
         auto file_size = file.tellg();      // returns cursor pos, which is the end of file
         file.seekg(std::ios::beg);          // seek to the beginning
@@ -1471,7 +1471,7 @@ namespace utl {
         // not, NOT having 'std::move()' on the other hand is very much a performance issue
     }
 
-    Node from_file(const std::string& filepath, std::size_t recursion_limit) {
+    Node from_file(const fs::path& filepath, std::size_t recursion_limit) {
         const std::string chars = read_file_to_string(filepath);
         return from_string(chars, recursion_limit);
     }

@@ -13,6 +13,7 @@
 // _______________________ INCLUDES _______________________
 
 // std
+#include <filesystem>
 #include <initializer_list>
 #include <string>
 #include <string_view>
@@ -50,6 +51,10 @@
 // between JSON and other types seamlessly, which is exactly what we do here, it even accounts for reflection.
 
 // ____________________ IMPLEMENTATION ____________________
+
+
+namespace fs = std::filesystem;
+
 
 namespace utl::internal {
     // ===================================
@@ -520,7 +525,7 @@ namespace utl {
     );
     [[nodiscard]]
     Json ERSLIB_EXPORT from_file(
-        const std::string& filepath,
+        const fs::path& filepath,
         std::size_t recursion_limit = internal::default_recursion_limit
     );
 
