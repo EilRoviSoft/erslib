@@ -29,7 +29,6 @@
 #include <erslib/adaptor/transparent/string.hpp>
 #include <erslib/hashing/rapid.hpp>
 #include <erslib/type/exception.hpp>
-#include <erslib/util/string.hpp>
 
 // export
 #include <erslib/export.hpp>
@@ -62,9 +61,11 @@ namespace utl::internal {
     // ===================================
 
     template<class T>
-    using object_type_impl = boost::unordered_flat_map<std::string, T,
+    using object_type_impl = boost::unordered_flat_map<
+        std::string, T,
         ers::string_hash_adaptor<ers::hashing::rapid_policy>,
-        ers::equal_adaptor<std::string>>;
+        ers::equal_adaptor<std::string>
+    >;
     template<class T>
     using array_type_impl = std::vector<T>;
     using string_type_impl = std::string;
@@ -86,15 +87,15 @@ namespace utl::internal {
     // --- Type trait ---
     // -------------------
 
-#define UTL_JSON_DEFINE_TRAIT(TRAIN_NAME, ...)                                                                         \
-    template <class T, class = void>                                                                                   \
-    struct TRAIN_NAME : std::false_type {};                                                                            \
+#define UTL_JSON_DEFINE_TRAIT(TRAIT_NAME, ...)                                                                         \
+    template<class T, class = void>                                                                                    \
+    struct TRAIT_NAME : std::false_type {};                                                                            \
                                                                                                                        \
-    template <class T>                                                                                                 \
-    struct TRAIN_NAME<T, std::void_t<decltype(__VA_ARGS__)>> : std::true_type {};                                      \
+    template<class T>                                                                                                  \
+    struct TRAIT_NAME<T, std::void_t<decltype(__VA_ARGS__)>> : std::true_type {};                                      \
                                                                                                                        \
-    template <class T>                                                                                                 \
-    constexpr bool TRAIN_NAME##_v = TRAIN_NAME<T>::value
+    template<class T>                                                                                                  \
+    constexpr bool TRAIT_NAME##_v = TRAIT_NAME<T>::value
 
     UTL_JSON_DEFINE_TRAIT(_has_begin, std::declval<std::decay_t<T>>().begin());
     UTL_JSON_DEFINE_TRAIT(_has_end, std::declval<std::decay_t<T>>().end());
@@ -105,12 +106,12 @@ namespace utl::internal {
 
 #undef UTL_JSON_DEFINE_TRAIT
 
-#define UTL_JSON_TYPE_TRAIT_CONJUNCTION(TRAIN_NAME, ...)                                                               \
-    template <class T>                                                                                                 \
-    struct TRAIN_NAME : std::conjunction<__VA_ARGS__> {};                                                              \
+#define UTL_JSON_TYPE_TRAIT_CONJUNCTION(TRAIT_NAME, ...)                                                               \
+    template<class T>                                                                                                  \
+    struct TRAIT_NAME : std::conjunction<__VA_ARGS__> {};                                                              \
                                                                                                                        \
-    template <class T>                                                                                                 \
-    constexpr bool TRAIN_NAME##_v = TRAIN_NAME<T>::value
+    template<class T>                                                                                                  \
+    constexpr bool TRAIT_NAME##_v = TRAIT_NAME<T>::value
 
     // Note:
     // The reason we use 'struct trait_name : std::conjunction<...>' instead of 'using trait_name = std::conjunction<...>'
@@ -120,11 +121,39 @@ namespace utl::internal {
     // necessary convertibility trait. This allows us to make a trait which fully deduces whether some
     // complex datatype can be converted to a JSON recursively.
 
-    UTL_JSON_TYPE_TRAIT_CONJUNCTION(is_object_like, _has_begin<T>, _has_end<T>, _has_key_type<T>, _has_mapped_type<T>);
-    UTL_JSON_TYPE_TRAIT_CONJUNCTION(is_array_like, _has_begin<T>, _has_end<T>, _has_input_it<T>);
-    UTL_JSON_TYPE_TRAIT_CONJUNCTION(is_string_like, std::is_convertible<T, std::string_view>);
+    UTL_JSON_TYPE_TRAIT_CONJUNCTION(is_object_like,
+        _has_begin<T>,
+        _has_end<T>,
+        _has_key_type<T>,
+        _has_mapped_type<T>
+    );
+    UTL_JSON_TYPE_TRAIT_CONJUNCTION(is_array_like,
+        _has_begin<T>,
+        _has_end<T>,
+        _has_input_it<T>,
+        std::negation<std::is_convertible<T, std::string>>,
+        std::negation<std::is_same<std::decay_t<T>, std::string_view>>
+    );
+    UTL_JSON_TYPE_TRAIT_CONJUNCTION(is_string_like,
+        std::disjunction<std::is_convertible<T, std::string>, std::is_same<std::decay_t<T>, std::string_view>>
+    );
+    UTL_JSON_TYPE_TRAIT_CONJUNCTION(is_integral_like,
+        std::is_integral<T>,
+        std::negation<std::is_same<T, bool>>
+    );
+    UTL_JSON_TYPE_TRAIT_CONJUNCTION(is_floating_like, std::is_floating_point<T>);
     UTL_JSON_TYPE_TRAIT_CONJUNCTION(is_bool_like, std::is_same<T, bool_type_impl>);
     UTL_JSON_TYPE_TRAIT_CONJUNCTION(is_null_like, std::is_same<T, null_type_impl>);
+
+
+    UTL_JSON_TYPE_TRAIT_CONJUNCTION(is_json_convertible,
+        is_object_like<T>,
+        is_array_like<T>,
+        is_string_like<T>,
+        is_integral_like<T>,
+        is_floating_like<T>,
+        is_bool_like<T>,
+        is_null_like<T>);
 
 #undef UTL_JSON_TYPE_TRAIT_CONJUNCTION
 
@@ -175,8 +204,6 @@ namespace utl::internal {
         using bool_type = bool_type_impl;
         using null_type = null_type_impl;
 
-
-    private:
         // 'null_type' should go first to ensure default-initialization creates 'null' nodes
         using variant_type = std::variant<
             null_type,
@@ -188,6 +215,8 @@ namespace utl::internal {
             bool_type
         >;
 
+
+    private:
         variant_type _data {};
 
 
@@ -326,9 +355,9 @@ namespace utl::internal {
                 _data.emplace<bool_type>(value);
             } else if constexpr (is_null_like_v<T>) {
                 _data.emplace<null_type>(value);
-            } else if constexpr (std::is_floating_point_v<T>) {
+            } else if constexpr (is_floating_like_v<T>) {
                 _data.emplace<floating_type>(value);
-            } else if constexpr (std::is_integral_v<T>) {
+            } else if constexpr (is_integral_like_v<T>) {
                 _data.emplace<integral_type>(value);
             } else {
                 static_assert(always_false_v<T>, "Method is a non-exhaustive visitor of std::variant<>.");
@@ -421,7 +450,9 @@ namespace utl::internal {
         [[nodiscard]] NodeType type() const;
     };
 
+
     // Public typedefs
+
     using Object = Node::object_type;
     using Array = Node::array_type;
     using String = Node::string_type;
@@ -533,4 +564,27 @@ namespace utl {
         [[nodiscard]]
         Json ERSLIB_EXPORT operator""_json(const char* cstr, std::size_t size);
     } // namespace literals
+}
+
+
+namespace utl::internal {
+    template<class T>
+    struct json_conversion;
+
+#define UTL_JSON_TYPE_TRAIT_CONVERSION(NAME)                                                                           \
+    template <class T>                                                                                                 \
+        requires is_##NAME##_like_v<T>                                                                                 \
+    struct json_conversion<T> {                                                                                        \
+        using original_type = Node::NAME##_type;                                                                     \
+    }
+
+    UTL_JSON_TYPE_TRAIT_CONVERSION(object);
+    UTL_JSON_TYPE_TRAIT_CONVERSION(array);
+    UTL_JSON_TYPE_TRAIT_CONVERSION(string);
+    UTL_JSON_TYPE_TRAIT_CONVERSION(integral);
+    UTL_JSON_TYPE_TRAIT_CONVERSION(floating);
+    UTL_JSON_TYPE_TRAIT_CONVERSION(bool);
+    UTL_JSON_TYPE_TRAIT_CONVERSION(null);
+
+#undef UTL_JSON_TYPE_TRAIT_CONVERSION
 }

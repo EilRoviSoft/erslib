@@ -1,9 +1,9 @@
 // catch2
 #include <catch2/catch_test_macros.hpp>
 
-// contrib
+// ers
 #include <contrib/json.hpp>
-#include <contrib/json_util.hpp>
+#include <erslib/io/json_schema.hpp>
 
 
 using integral = utl::Json::integral_type;
@@ -27,7 +27,7 @@ TEST_CASE("require_field", "[json]") {
 
 
     SECTION("Require") {
-        ers::util::Schema schema(obj);
+        ers::JsonSchema schema(obj);
 
         schema.require<integral>("int");
         schema.require<floating>("float");
@@ -37,7 +37,7 @@ TEST_CASE("require_field", "[json]") {
     }
 
     SECTION("Require and Write") {
-        ers::util::Schema schema(obj);
+        ers::JsonSchema schema(obj);
 
         integral i;
         floating f;

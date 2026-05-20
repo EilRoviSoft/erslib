@@ -13,9 +13,12 @@ namespace ers {
 
     template<typename R, typename... Args>
     struct fn_traits<R(*)(Args...)> {
+        static constexpr size_t arity = sizeof...(Args);
+
+
         using return_type = R;
         using args_tuple = std::tuple<Args...>;
-        static constexpr std::size_t arity = sizeof...(Args);
+
 
         template<size_t TIndex>
         using arg_type = std::tuple_element_t<TIndex, args_tuple>;
