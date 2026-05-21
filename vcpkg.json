@@ -4,6 +4,7 @@
     "boost-smart-ptr",
     "boost-thread",
     "boost-unordered",
-    "catch2"
+    "catch2",
+    "cpptrace"
   ]
 }

@@ -8,7 +8,7 @@
 // ers
 #include <erslib/assert.hpp>
 #include <erslib/concept/sbo.hpp>
-#include <erslib/meta/type_info.hpp>
+#include <erslib/meta/type_hash.hpp>
 
 
 // Forward declaration

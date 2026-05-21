@@ -6,8 +6,8 @@ ers::Exception::Exception(
     std::string_view code,
     std::string_view message,
     timestamp_t timestamp,
-    const std::source_location& location
-) : Error(severity, code, message, timestamp, location) {
+    cpptrace::stacktrace stacktrace
+) : Error(severity, code, message, timestamp, std::move(stacktrace)) {
 }
 
 ers::Exception::Exception(Error error) :

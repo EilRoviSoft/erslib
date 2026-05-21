@@ -2,6 +2,7 @@
 
 // std
 #include <charconv>
+#include <stdexcept>
 #include <string>
 
 

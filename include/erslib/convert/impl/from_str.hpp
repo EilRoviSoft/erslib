@@ -5,9 +5,12 @@
 #include <string>
 
 // ers
-#include <erslib/meta/type_info.hpp>
+#include <erslib/meta/type_name.hpp>
 #include <erslib/type/optional.hpp>
 #include <erslib/type/result.hpp>
+
+
+static_assert(requires { typename ers::meta::type_name<int>; }, "type_info.hpp not included");
 
 
 // From string definitions

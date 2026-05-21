@@ -5,7 +5,7 @@
 #include <format>
 
 // ers
-#include <erslib/meta/type_info.hpp>
+#include <erslib/meta/type_name.hpp>
 #include <erslib/type/error.hpp>
 
 // export
@@ -20,7 +20,7 @@ namespace ers {
             std::string_view code,
             std::string_view message,
             timestamp_t timestamp = std::chrono::system_clock::now(),
-            const std::source_location& location = std::source_location::current()
+            cpptrace::stacktrace stacktrace = cpptrace::generate_trace()
         );
 
         Exception(Error error);

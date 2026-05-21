@@ -27,8 +27,11 @@
 
 // ers
 #include <erslib/adaptor/transparent/string.hpp>
+#include <erslib/convert/impl/to_str.hpp>
 #include <erslib/hashing/rapid.hpp>
+#include <erslib/meta/type_literal.hpp>
 #include <erslib/type/exception.hpp>
+#include <erslib/util/string.hpp>
 
 // export
 #include <erslib/export.hpp>
@@ -191,7 +194,7 @@ namespace utl::internal {
     enum class Format : uint8_t { Pretty, Minimized };
 
     enum class NodeType : uint8_t {
-        None = 0, Object = 1, Array = 2, String = 3, Integral = 4, Floating = 5, BOOL = 6
+        None = 0, Object = 1, Array = 2, String = 3, Integral = 4, Floating = 5, Bool = 6
     };
 
     class ERSLIB_EXPORT Node {
@@ -567,6 +570,8 @@ namespace utl {
 }
 
 
+// Utility for external use
+
 namespace utl::internal {
     template<class T>
     struct json_conversion;
@@ -588,3 +593,49 @@ namespace utl::internal {
 
 #undef UTL_JSON_TYPE_TRAIT_CONVERSION
 }
+
+
+#define UTL_JSON_NODE_TYPE_LITERAL(ENUMERATOR, TYPE)                                                                   \
+    util::concat_literals<                                                                                             \
+        "'" #ENUMERATOR "' aka '",                                                                                     \
+        meta::type_literal_v<TYPE>,                                                                                    \
+        "'"                                                                                                            \
+    >().to_sv()
+
+#define UTL_IDENTITY(...) __VA_ARGS__
+
+template<>
+struct ers::convert::to_string_backend<utl::internal::NodeType> {
+    constexpr std::string_view constexpr_value(const utl::internal::NodeType& value) const noexcept {
+        using enum utl::internal::NodeType;
+
+        switch (value) {
+            case None:
+                return UTL_JSON_NODE_TYPE_LITERAL(None, utl::internal::null_type_impl);
+
+            case Object:
+                return UTL_JSON_NODE_TYPE_LITERAL(Object, UTL_IDENTITY(boost::unordered_flat_map<std::string, utl::internal::Node>));
+
+            case Array:
+                return UTL_JSON_NODE_TYPE_LITERAL(Array, std::vector<utl::internal::Node>);
+
+            case String:
+                return UTL_JSON_NODE_TYPE_LITERAL(String, std::string);
+
+            case Integral:
+                return UTL_JSON_NODE_TYPE_LITERAL(Integral, int64_t);
+
+            case Floating:
+                return UTL_JSON_NODE_TYPE_LITERAL(Floating, double);
+
+            case Bool:
+                return UTL_JSON_NODE_TYPE_LITERAL(Bool, bool);
+
+            default:
+                return "Unknown";
+        }
+    }
+};
+
+#undef UTL_IDENTITY
+#undef UTL_JSON_NODE_TYPE_LITERAL

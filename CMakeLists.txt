@@ -51,6 +51,13 @@ add_library(erslib::erslib ALIAS erslib)
 set(DEPENDENCIES)
 
 
+find_package(cpptrace CONFIG REQUIRED)
+if(cpptrace_FOUND)
+    target_compile_definitions(erslib PUBLIC _HAS_CPPTRACE)
+    list(APPEND DEPENDENCIES cpptrace::cpptrace)
+endif()
+
+
 find_package(boost_optional CONFIG REQUIRED)
 if(boost_optional_FOUND)
     target_compile_definitions(erslib PUBLIC _HAS_BOOST_OPTIONAL)

@@ -3,8 +3,10 @@
 // std
 #include <chrono>
 #include <format>
-#include <source_location>
 #include <string>
+
+// cpptrace
+#include <cpptrace/cpptrace.hpp>
 
 // ers
 #include <erslib/convert/impl/to_str.hpp>
@@ -28,8 +30,8 @@ namespace ers {
 
 template<>
 struct ers::convert::to_string_backend<ers::Severity> {
-    constexpr std::string_view constexpr_value(const Severity& what) const noexcept {
-        switch (what) {
+    constexpr std::string_view constexpr_value(const Severity& value) const noexcept {
+        switch (value) {
             case Severity::Debug:
                 return "DEBUG";
             case Severity::Info:
@@ -62,7 +64,7 @@ namespace ers {
             std::string_view code,
             std::string_view message,
             timestamp_t timestamp = std::chrono::system_clock::now(),
-            const std::source_location& location = std::source_location::current()
+            cpptrace::stacktrace stacktrace = cpptrace::generate_trace()
         );
 
         template<typename... Args>
@@ -99,7 +101,7 @@ namespace ers {
         std::string_view code() const noexcept;
         timestamp_t timestamp() const noexcept;
         std::string_view message() const noexcept;
-        const std::source_location& location() const noexcept;
+        const cpptrace::stacktrace& stacktrace() const noexcept;
 
 
         // TODO: make fmt string static
@@ -110,6 +112,6 @@ namespace ers {
         std::string m_code;
         std::string m_message;
         timestamp_t m_timestamp;
-        std::source_location m_location;
+        cpptrace::stacktrace m_stacktrace;
     };
 }
