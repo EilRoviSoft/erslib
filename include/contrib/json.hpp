@@ -575,7 +575,7 @@ namespace utl::internal {
     template <class T>                                                                                                 \
         requires is_##NAME##_like_v<T>                                                                                 \
     struct json_conversion<T> {                                                                                        \
-        using original_type = Node::NAME##_type;                                                                     \
+        using original_type = Node::NAME##_type;                                                                       \
     }
 
     UTL_JSON_TYPE_TRAIT_CONVERSION(object);
