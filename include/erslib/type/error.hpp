@@ -67,11 +67,6 @@ namespace ers {
             cpptrace::stacktrace stacktrace = cpptrace::generate_trace()
         );
 
-        template<typename... Args>
-        Error(Severity severity, std::string_view code, std::string_view fmt, Args&&... args) :
-            Error(severity, code, std::vformat(fmt, std::make_format_args(args...))) {
-        }
-
 
         // Copy ctors
 
@@ -107,6 +102,7 @@ namespace ers {
         // TODO: make fmt string static
         virtual std::string to_string() const;
 
+
     protected:
         Severity m_severity;
         std::string m_code;
@@ -114,4 +110,10 @@ namespace ers {
         timestamp_t m_timestamp;
         cpptrace::stacktrace m_stacktrace;
     };
+
+
+    template<typename... Args>
+    Error make_error(Severity severity, std::string_view code, std::string_view fmt, Args&&... args) {
+        return Error(severity, code, std::vformat(fmt, std::make_format_args(args...)));
+    }
 }

@@ -1,7 +1,6 @@
 #pragma once
 
 // std
-#include <concepts>
 #include <variant>
 
 // ers
@@ -13,86 +12,19 @@
 // Forward decl
 
 namespace ers {
-    template<typename E>
-    class Unexpected;
-
-    template<typename T, typename E>
+    template<typename T>
     class Result;
-}
-
-
-// Unexpected
-
-namespace ers {
-    template<typename E>
-    class Unexpected {
-    public:
-        using error_type = E;
-
-
-        constexpr explicit Unexpected(const error_type& error)
-            requires std::copy_constructible<error_type> :
-            _error(error) {
-        }
-        constexpr explicit Unexpected(error_type&& error)
-            requires std::move_constructible<error_type> :
-            _error(std::move(error)) {
-        }
-
-        template<typename... TArgs>
-            requires std::constructible_from<error_type, TArgs...>
-        constexpr explicit Unexpected(TArgs&&... args) :
-            _error(std::forward<TArgs>(args)...) {
-        }
-
-        constexpr Unexpected(const Unexpected&) = default;
-        constexpr Unexpected(Unexpected&&) = default;
-
-        constexpr Unexpected& operator=(const Unexpected&) = default;
-        constexpr Unexpected& operator=(Unexpected&&) = default;
-
-        constexpr const error_type& error() const & noexcept { return _error; }
-        constexpr error_type& error() & noexcept { return _error; }
-        constexpr const error_type&& error() const && noexcept { return std::move(_error); }
-        constexpr error_type&& error() && noexcept { return std::move(_error); }
-
-        constexpr void swap(Unexpected& other) noexcept {
-            std::swap(_error, other._error);
-        }
-
-
-    private:
-        error_type _error;
-    };
-
-    template<typename E>
-    Unexpected(E) -> Unexpected<E>;
-
-    template<typename E>
-    constexpr bool operator==(const Unexpected<E>& lhs, const Unexpected<E>& rhs) {
-        return lhs.error() == rhs.error();
-    }
-
-    template<typename E>
-    constexpr Unexpected<std::decay_t<E>> make_unexpected(E&& error) {
-        return Unexpected<std::decay_t<E>>(std::forward<E>(error));
-    }
-
-    template<typename E, typename... Args>
-    constexpr Unexpected<E> make_unexpected(Args&&... args) {
-        return Unexpected<E>(std::forward<Args>(args)...);
-    }
 }
 
 
 // Result<T>
 
 namespace ers {
-    template<typename T, typename E = Error>
+    template<typename T>
     class [[nodiscard]] Result {
     public:
         using value_type = T;
-        using error_type = E;
+        using error_type = Error;
 
 
         static_assert(!std::is_rvalue_reference_v<value_type>,
@@ -114,12 +46,12 @@ namespace ers {
             m_variant(std::move(value)) {
         }
 
-        constexpr Result(const Unexpected<error_type>& unexpected) :
-            m_variant(std::in_place_index<1>, unexpected.error()) {
+        constexpr Result(const error_type& error) :
+            m_variant(std::in_place_index<1>, error) {
         }
 
-        constexpr Result(Unexpected<error_type>&& unexpected) :
-            m_variant(std::in_place_index<1>, std::move(unexpected).error()) {
+        constexpr Result(error_type&& error) :
+            m_variant(std::in_place_index<1>, std::move(error)) {
         }
 
         constexpr Result(const Result&) = default;
@@ -137,12 +69,12 @@ namespace ers {
             return *this;
         }
 
-        constexpr Result& operator=(const Unexpected<error_type>& unexpected) {
-            m_variant = unexpected.error();
+        constexpr Result& operator=(const error_type& error) {
+            m_variant = error;
             return *this;
         }
-        constexpr Result& operator=(Unexpected<error_type>&& unexpected) {
-            m_variant = std::move(unexpected).error();
+        constexpr Result& operator=(error_type&& error) {
+            m_variant = std::move(error);
             return *this;
         }
 
@@ -183,11 +115,11 @@ namespace ers {
 // Result<T&>
 
 namespace ers {
-    template<typename T, typename E>
-    class [[nodiscard]] Result<T&, E> {
+    template<typename T>
+    class [[nodiscard]] Result<T&> {
     public:
         using value_type = T;
-        using error_type = E;
+        using error_type = Error;
 
 
         // Constructors
@@ -205,12 +137,12 @@ namespace ers {
             m_variant(std::move(value)) {
         }
 
-        constexpr Result(const Unexpected<error_type>& unexpected) :
-            m_variant(std::in_place_index<1>, unexpected.error()) {
+        constexpr Result(const error_type& error) :
+            m_variant(std::in_place_index<1>, error) {
         }
 
-        constexpr Result(Unexpected<error_type>&& unexpected) :
-            m_variant(std::in_place_index<1>, std::move(unexpected).error()) {
+        constexpr Result(error_type&& error) :
+            m_variant(std::in_place_index<1>, std::move(error)) {
         }
 
         constexpr Result(const Result&) = default;
@@ -218,6 +150,7 @@ namespace ers {
 
         constexpr Result& operator=(const Result&) = default;
         constexpr Result& operator=(Result&&) = default;
+
 
         constexpr Result& operator=(const value_type& value) {
             m_variant = value;
@@ -228,12 +161,12 @@ namespace ers {
             return *this;
         }
 
-        constexpr Result& operator=(const Unexpected<error_type>& unexpected) {
-            m_variant = unexpected.error();
+        constexpr Result& operator=(const error_type& error) {
+            m_variant = error;
             return *this;
         }
-        constexpr Result& operator=(Unexpected<error_type>&& unexpected) {
-            m_variant = std::move(unexpected).error();
+        constexpr Result& operator=(error_type&& error) {
+            m_variant = std::move(error);
             return *this;
         }
 
@@ -277,16 +210,13 @@ namespace ers {
     template<typename T>
     Result(T) -> Result<T>;
 
-    template<typename E>
-    Result(Unexpected<E>) -> Result<std::monostate, E>;
-
-    template<typename T, typename E>
-    constexpr void swap(Result<T, E>& lhs, Result<T, E>& rhs) noexcept(noexcept(lhs.swap(rhs))) {
+    template<typename T>
+    constexpr void swap(Result<T>& lhs, Result<T>& rhs) noexcept(noexcept(lhs.swap(rhs))) {
         lhs.swap(rhs);
     }
 
     template<typename T, typename E>
-    constexpr bool operator==(const Result<T, E>& lhs, const Result<T, E>& rhs) {
+    constexpr bool operator==(const Result<T>& lhs, const Result<T>& rhs) {
         if (lhs.has_value() != rhs.has_value())
             return false;
 
@@ -305,27 +235,27 @@ namespace ers {
 
     constexpr ok_t ok;
 
-    template<typename E>
-    class [[nodiscard]] Result<void, E> {
+    template<>
+    class [[nodiscard]] Result<void> {
     public:
         using value_type = void;
-        using error_type = E;
+        using error_type = Error;
 
 
-        constexpr Result(const ok_t) noexcept :
+        Result(const ok_t) noexcept :
             m_error(nullopt) {
         }
 
-        constexpr Result(const Unexpected<error_type>& unexpected) :
-            m_error(unexpected.error()) {
+        Result(const error_type& error) :
+            m_error(error) {
         }
-        constexpr Result(Unexpected<error_type>&& unexpected) :
-            m_error(std::move(unexpected.error())) {
+        Result(error_type&& error) :
+            m_error(std::move(error)) {
         }
 
         template<typename T>
         constexpr Result(Result&& other) noexcept :
-            m_error(other.has_error() ? other.error() : nullopt) {
+            m_error(other.has_error() ? optional<error_type>(other.error()) : nullopt) {
         }
 
         [[nodiscard]] constexpr bool has_value() const noexcept { return !m_error.has_value(); }

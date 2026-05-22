@@ -56,7 +56,7 @@ namespace ers::convert {
         } else if constexpr (internal::FromStringHasRuntimeValue<T>) {
             auto r = backend.runtime_value(source);
             if (!r) {
-                return Unexpected<Error>(
+                return make_error(
                     Severity::Error,
                     "parse_error",
                     "Can't convert string \"{}\" to type [T = {}]",
@@ -87,7 +87,7 @@ namespace ers::convert {
             T result;
 
             if (std::from_chars(source.data(), source.data() + source.size(), result).ec != std::errc {}) {
-                return Unexpected<Error>(
+                return make_error(
                     Severity::Error,
                     "conversion_error",
                     "Can't convert string \"{}\" to type [T = {}]",

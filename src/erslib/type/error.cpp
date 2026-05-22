@@ -52,6 +52,6 @@ std::string ers::Error::to_string() const {
         convert::to_sv<Severity>(m_severity),
         m_code,
         m_message,
-        m_stacktrace.frames.back().to_string()
+        m_stacktrace.frames[1].to_string()
     );
 }

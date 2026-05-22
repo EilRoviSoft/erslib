@@ -8,8 +8,8 @@ namespace ers {
     template<typename T>
     struct is_result : std::false_type {};
 
-    template<typename T, typename E>
-    struct is_result<Result<T, E>> : std::true_type {};
+    template<typename T>
+    struct is_result<Result<T>> : std::true_type {};
 
     template<typename T>
     static constexpr bool is_result_v = is_result<T>::value;

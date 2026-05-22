@@ -28,7 +28,7 @@ struct ers::convert::from_string_backend<ers::version_t> {
 
         auto dot1 = source.find('.');
         if (dot1 == std::string_view::npos) {
-            return Unexpected<Error>(
+            return make_error(
                 Severity::Error,
                 "parse_error",
                 "Can't convert string \"{}\" to type [T = version_t]",
@@ -38,7 +38,7 @@ struct ers::convert::from_string_backend<ers::version_t> {
 
         auto dot2 = source.find('.', dot1 + 1);
         if (dot2 == std::string_view::npos) {
-            return Unexpected<Error>(
+            return make_error(
                 Severity::Error,
                 "parse_error",
                 "Can't convert string \"{}\" to type [T = version_t]",
@@ -48,17 +48,17 @@ struct ers::convert::from_string_backend<ers::version_t> {
 
 
         if (auto r = from_str<size_t>(source.substr(0, dot1)); !r)
-            return Unexpected(r.error());
+            return r.error();
         else
             result.major = *r;
 
         if (auto r = from_str<size_t>(source.substr(dot1 + 1, dot2 - dot1 - 1)); !r)
-            return Unexpected(r.error());
+            return r.error();
         else
             result.minor = *r;
 
         if (auto r = from_str<size_t>(source.substr(dot2 + 1)); !r)
-            return Unexpected(r.error());
+            return r.error();
         else
             result.patch = *r;
 

@@ -87,7 +87,7 @@ namespace ers {
         [[nodiscard]]
         Status finalize() const {
             if (m_error)
-                return Unexpected(*m_error);
+                return *m_error;
 
             for (const auto& assign : m_assignments)
                 assign();
@@ -108,7 +108,7 @@ namespace ers {
             auto it = object.find(name);
 
             if (it == object.end()) {
-                return Unexpected<Error>(
+                return make_error(
                     Severity::Warning,
                     "parse_error",
                     "Json doesn't have field with name \"{}\"",
@@ -117,7 +117,7 @@ namespace ers {
             }
 
             if (!it->second.is<T>()) {
-                return Unexpected<Error>(
+                return make_error(
                     Severity::Warning,
                     "parse_error",
                     "Field with name \"{}\" has mismatched type \"{}\"",

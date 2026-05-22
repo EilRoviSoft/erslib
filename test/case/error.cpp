@@ -16,7 +16,7 @@ namespace {
 
     ers::Result<double> safe_divide(double l, double r) {
         if (equals(r, 0.0)) {
-            return ers::Unexpected<ers::Error>(
+            return ers::Error(
                 ers::Severity::Crit,
                 "math_error",
                 std::format("Division by zero: {} / {}", l, r)
