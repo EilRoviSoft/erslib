@@ -1,10 +1,6 @@
 #include "erslib/type/error.hpp"
 
 
-// ers
-#include <erslib/type/exception.hpp>
-
-
 ers::Error::Error(Severity severity, std::string_view code, std::string_view message, timestamp_t timestamp, cpptrace::stacktrace stacktrace) :
     m_severity(severity),
     m_code(code),
@@ -31,11 +27,6 @@ ers::Error& ers::Error::operator=(Error&& other) noexcept {
 }
 
 ers::Error::~Error() = default;
-
-
-ers::Error::operator Exception() const {
-    return { *this };
-}
 
 
 ers::Severity ers::Error::severity() const noexcept { return m_severity; }

@@ -52,9 +52,6 @@ struct ers::convert::to_string_backend<ers::Severity> {
 // Error
 
 namespace ers {
-    class Exception;
-
-
     class ERSLIB_EXPORT Error {
     public:
         // Ctors
@@ -83,11 +80,6 @@ namespace ers {
         // Dtor
 
         virtual ~Error();
-
-
-        // Conversion
-
-        explicit operator Exception() const;
 
 
         // Observers
