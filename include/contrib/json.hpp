@@ -296,13 +296,14 @@ namespace utl::internal {
 
         // same thing as 'contains(key) ? json.at(key).get<T>() : else_value' but without a second map lookup
         template<class T>
-        [[nodiscard]] const T& value_or(std::string_view key, T&& else_value) const {
+        [[nodiscard]] const T& value_or(std::string_view key, const T& else_value) const {
             const auto& object = as_object();
             const auto it = object.find(key);
 
             if (it == object.end())
-                return std::forward<T>(else_value);
-            return it->second.as<T>();
+                return else_value;
+
+            return it->second.template as<T>();
         }
 
         // same thing as 'contains(key) ? json.at(key).get<T>()'
