@@ -1,10 +1,18 @@
 {
-  "dependencies": [
-    "boost-optional",
-    "boost-smart-ptr",
-    "boost-thread",
-    "boost-unordered",
-    "catch2",
-    "cpptrace"
-  ]
+    "dependencies": [
+        "boost-container",
+        "boost-optional",
+        "boost-smart-ptr",
+        "boost-thread",
+        "boost-unordered",
+        "catch2",
+        "cpptrace",
+        "frozen",
+        "luajit",
+        "opengl",
+        "pkgconf",
+        "quill",
+        "sfml",
+        "sol2"
+    ]
 }

@@ -25,8 +25,10 @@ ers::Error& ers::Error::operator=(Error&& other) noexcept {
 
 ers::Error::~Error() = default;
 
-std::string ers::Error::to_string() const {
-    return std::format(
+std::string ers::Error::to_string(bool trim_service_information) const {
+    return trim_service_information
+    ? std::format("{}\n{}", m_message, m_stacktrace.frames[1].to_string())
+    : std::format(
         "[{:%Y-%m-%dT%H:%M:%S}] [{}] {}\n{}",
         std::chrono::floor<std::chrono::seconds>(m_timestamp),
         convert::to_sv<Severity>(m_severity),

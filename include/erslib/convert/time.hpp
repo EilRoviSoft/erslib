@@ -14,15 +14,8 @@ namespace ers {
         typename Clock::time_point result;
         std::stringstream iss(static_cast<std::string>(sv));
 
-
-        if (!std::chrono::from_stream(iss, (static_cast<std::string>(fmt) + '\0').c_str(), result)) {
-            return Unexpected<Error>(
-                Severity::Error,
-                "bad_time_cast",
-                std::format(R"(Can't cast "{}" with "{}")", sv, fmt)
-            );
-        }
-
+        if (!std::chrono::from_stream(iss, (static_cast<std::string>(fmt) + '\0').c_str(), result))
+            return make_error(Severity::Error, "Can't cast '{}' with '{}'", sv, fmt);
 
         return result;
     }

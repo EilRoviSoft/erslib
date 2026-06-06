@@ -1,5 +1,8 @@
 #pragma once
 
+// std
+#include <stdexcept>
+
 // ers
 #include <erslib/exception/internal.hpp>
 

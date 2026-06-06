@@ -90,8 +90,7 @@ namespace ers {
         const cpptrace::stacktrace& stacktrace() const noexcept { return m_stacktrace; }
 
 
-        // TODO: make fmt string static
-        virtual std::string to_string() const;
+        virtual std::string to_string(bool trim_service_information = false) const;
 
 
     protected:
@@ -103,7 +102,12 @@ namespace ers {
 
 
     template<typename... Args>
-    Error make_error(Severity severity, std::string_view fmt, Args&&... args) {
-        return Error(severity, std::vformat(fmt, std::make_format_args(args...)));
+        requires (sizeof...(Args) >= 1)
+    Error make_error(Severity severity, std::format_string<Args...> fmt, Args&&... args) {
+        return Error(severity, std::format(fmt, std::forward<Args>(args)...));
+    }
+
+    inline Error make_error(Severity severity, std::string_view message) {
+        return Error(severity, message);
     }
 }

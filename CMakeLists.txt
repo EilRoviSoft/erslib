@@ -48,47 +48,28 @@ add_library(erslib::erslib ALIAS erslib)
 #----------------------------------------------------------------------------------------------------------------------
 
 
-set(DEPENDENCIES)
+find_package(boost_container CONFIG REQUIRED)
+find_package(boost_thread CONFIG REQUIRED)
+find_package(boost_unordered CONFIG REQUIRED)
 
+find_package(SFML COMPONENTS Graphics Window Audio System CONFIG REQUIRED)
+
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(LuaJIT REQUIRED IMPORTED_TARGET luajit)
+
+find_package(sol2 CONFIG REQUIRED)
 
 find_package(cpptrace CONFIG REQUIRED)
-if(cpptrace_FOUND)
-    target_compile_definitions(erslib PUBLIC _HAS_CPPTRACE)
-    list(APPEND DEPENDENCIES cpptrace::cpptrace)
-endif()
-
-
-find_package(boost_optional CONFIG REQUIRED)
-if(boost_optional_FOUND)
-    target_compile_definitions(erslib PUBLIC _HAS_BOOST_OPTIONAL)
-    list(APPEND DEPENDENCIES Boost::optional)
-endif()
-
-
-find_package(boost_smart_ptr REQUIRED CONFIG)
-if(boost_smart_ptr_FOUND)
-    target_compile_definitions(erslib PUBLIC _HAS_BOOST_SMART_PTR)
-    list(APPEND DEPENDENCIES Boost::smart_ptr)
-endif()
-
-
-find_package(boost_thread CONFIG REQUIRED)
-if(boost_thread_FOUND)
-    target_compile_definitions(erslib PUBLIC _HAS_BOOST_THREAD)
-    list(APPEND DEPENDENCIES Boost::thread)
-endif()
-
-
-find_package(boost_unordered CONFIG REQUIRED)
-if(boost_unordered_FOUND)
-    target_compile_definitions(erslib PUBLIC _HAS_BOOST_UNORDERED)
-    list(APPEND DEPENDENCIES Boost::unordered)
-endif()
+find_package(quill CONFIG REQUIRED)
 
 
 target_link_libraries(erslib
     PUBLIC
-        ${DEPENDENCIES}
+        Boost::container Boost::thread Boost::unordered Boost::optional
+        cpptrace::cpptrace
+        SFML::Graphics SFML::Window SFML::Audio SFML::System
+        PkgConfig::LuaJIT sol2
+        quill::quill
 )
 
 
@@ -125,6 +106,26 @@ set(SOURCES
     # contrib
 
     "src/contrib/json.cpp"
+
+
+    # aengine
+
+    "src/aengine/core.cpp"
+
+    "src/aengine/core/dependency.cpp"
+    "src/aengine/core/dependency_graph.cpp"
+    "src/aengine/core/mod.cpp"
+    "src/aengine/core/proto.cpp"
+
+    "src/aengine/resource/texture.cpp"
+
+
+    # easy_ecs
+    
+    "src/easy_ecs/entity.cpp"
+    "src/easy_ecs/group.cpp"
+
+    "src/easy_ecs/util/component_initializer.cpp"
 )
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${SOURCES})
 

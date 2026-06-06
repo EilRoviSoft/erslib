@@ -78,7 +78,7 @@ namespace ers {
                     if (auto r = writer(value.template as<json_type>()); r)
                         out = *r;
                     else
-                        throw r.exception();
+                        throw conversion_error(r.error().to_string(true));
                 });
             } else
                 m_error = r.error();
