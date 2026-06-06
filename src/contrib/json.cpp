@@ -10,7 +10,6 @@
 #include <format>
 #include <fstream>
 #include <limits>
-#include <stdexcept>
 #include <string>
 
 namespace fs = std::filesystem;
@@ -115,8 +114,6 @@ namespace {
         // https://github.com/Sqeaky/CppFileToStringExperiments
 
         std::fstream file(path, std::ios::in | std::ios::ate); // open file and immediately seek to the end
-        if (!file.good())
-            throw ers::make_exception("Could not open file {}.", path.generic_string());
 
         auto file_size = file.tellg();      // returns cursor pos, which is the end of file
         file.seekg(std::ios::beg);          // seek to the beginning
@@ -263,7 +260,7 @@ namespace utl::internal {
         const auto& object = as_object();
         const auto it = object.find(key);
         if (it == object.end())
-            throw ers::make_exception<std::logic_error>("Accessing non-existent key '{}' in JSON object.", key);
+            throw ers::out_of_range_error("Accessing non-existent key '{}' in JSON object.", key);
         return it->second;
     }
 
@@ -271,7 +268,7 @@ namespace utl::internal {
         auto& object = as_object();
         const auto it = object.find(key);
         if (it == object.end())
-            throw ers::make_exception<std::logic_error>("Accessing non-existent key '{}' in JSON object.", key);
+            throw ers::out_of_range_error("Accessing non-existent key '{}' in JSON object.", key);
         return it->second;
     }
 
@@ -489,7 +486,7 @@ namespace utl::internal {
             ++cursor;
         }
 
-        throw ers::make_exception("JSON parser reached the end of buffer at pos {} while skipping insignificant whitespace segment. {}",
+        throw ers::parse_error("JSON parser reached the end of buffer at pos {} while skipping insignificant whitespace segment. {}",
             cursor, pretty_error(cursor, chars));
     }
 
@@ -518,7 +515,7 @@ namespace utl::internal {
                 case 1:
                     return { ptr, std::get<Floating>(number) };
                 default:
-                    throw ers::make_exception("Impossible switch-case route");
+                    std::unreachable();
             }
         }
 
@@ -531,7 +528,7 @@ namespace utl::internal {
         if (c == 'n')
             return parse_null(cursor);
 
-        throw ers::make_exception("Json node selector encountered expected marker symbol '{}' at pos {} (should be one of '0123456789{{[\"tfn'). {}",
+        throw ers::parse_error("Json node selector encountered expected marker symbol '{}' at pos {} (should be one of '0123456789{{[\"tfn'). {}",
             chars[cursor], cursor, pretty_error(cursor, chars));
 
         // Note: using a lookup table instead of an 'if' chain doesn't seem to offer any performance benefits here
@@ -549,7 +546,7 @@ namespace utl::internal {
 
         cursor = skip_nonsignificant_whitespace(cursor);
         if (chars[cursor] != ':') {
-            throw ers::make_exception("JSON object node encountered unexpected symbol {} after the pair key at pos (should be ':'). {}",
+            throw ers::parse_error("JSON object node encountered unexpected symbol {} after the pair key at pos (should be ':'). {}",
                 chars[cursor], cursor, pretty_error(cursor, chars));
         }
 
@@ -560,7 +557,7 @@ namespace utl::internal {
         // Parse pair value
 
         if (++recursion_depth > recursion_limit) {
-            throw ers::make_exception("JSON parser has exceeded maximum allowed recursion depth of {}. "
+            throw ers::parse_error("JSON parser has exceeded maximum allowed recursion depth of {}. "
                 "If stated depth wasn't caused by an invalid input, recursion limit can be increased with json::set_recursion_limit().",
                 recursion_limit);
         }
@@ -655,12 +652,12 @@ namespace utl::internal {
                 ++cursor;
                 return { cursor, std::move(object_value) };
             } else {
-                throw ers::make_exception("JSON array node could not find comma ',' or object ending symbol '}}' after the element at pos {}. {}",
+                throw ers::parse_error("JSON array node could not find comma ',' or object ending symbol '}}' after the element at pos {}. {}",
                     cursor, pretty_error(cursor, chars));
             }
         }
 
-        throw ers::make_exception("JSON object node reached the end of buffer while parsing object contents. {}",
+        throw ers::parse_error("JSON object node reached the end of buffer while parsing object contents. {}",
             pretty_error(cursor, chars));
     }
 
@@ -670,7 +667,7 @@ namespace utl::internal {
         // Parse pair key
 
         if (++recursion_depth > recursion_limit) {
-            throw ers::make_exception(
+            throw ers::parse_error(
                 "JSON parser has exceeded maximum allowed recursion depth of {}"
                 ". If stated depth wasn't caused by an invalid input, "
                 "recursion limit can be increased with json::set_recursion_limit().",
@@ -722,12 +719,12 @@ namespace utl::internal {
                 ++cursor;
                 return { cursor, std::move(array_value) };
             } else {
-                throw ers::make_exception("JSON array node could not find comma ',' or array ending symbol ']' after the element at pos {}. {}",
+                throw ers::parse_error("JSON array node could not find comma ',' or array ending symbol ']' after the element at pos {}. {}",
                     cursor, pretty_error(cursor, chars));
             }
         }
 
-        throw ers::make_exception("JSON array node reached the end of buffer while parsing object contents. {}",
+        throw ers::parse_error("JSON array node reached the end of buffer while parsing object contents. {}",
             pretty_error(cursor, chars));
     }
 
@@ -745,24 +742,24 @@ namespace utl::internal {
         // 1st surrogate contains high bits, 2nd surrogate contains low bits.
 
         const auto make_parsing_error = [&](std::string_view hex) {
-            return ers::make_exception("JSON string node could not parse unicode codepoint '{}' while parsing an escape sequence at pos {}. {}",
+            return ers::parse_error("JSON string node could not parse unicode codepoint '{}' while parsing an escape sequence at pos {}. {}",
                 hex, cursor, pretty_error(cursor, chars));
         };
 
         const auto make_surrogate_error = [&](std::string_view hex) {
-            return ers::make_exception("JSON string node encountered invalid unicode escape sequence in second half of "
+            return ers::parse_error("JSON string node encountered invalid unicode escape sequence in second half of "
                 "UTF-16 surrogate pair starting at '{}' while parsing an escape sequence at pos. {}",
                 hex, cursor, pretty_error(cursor, chars));
         };
 
         const auto make_end_of_buffer_error = [&]() {
-            return ers::make_exception("JSON string node reached the end of buffer while "
+            return ers::parse_error("JSON string node reached the end of buffer while "
                 "parsing a unicode escape sequence at pos {}. {}",
                 cursor, pretty_error(cursor, chars));
         };
 
         const auto make_end_of_buffer_error_for_pair = [&]() {
-            return ers::make_exception("JSON string node reached the end of buffer while "
+            return ers::parse_error("JSON string node reached the end of buffer while "
                 "parsing a unicode escape sequence surrogate pair at pos {}. {}",
                 cursor, pretty_error(cursor, chars));
         };
@@ -864,7 +861,7 @@ namespace utl::internal {
                 // can't buffer more than that since we have to insert special characters now
 
                 if (cursor >= chars.size()) {
-                    throw ers::make_exception("JSON string node reached the end of buffer while parsing an escape sequence at pos {}. {}",
+                    throw ers::parse_error("JSON string node reached the end of buffer while parsing an escape sequence at pos {}. {}",
                         cursor, pretty_error(cursor, chars));
                 }
 
@@ -884,7 +881,7 @@ namespace utl::internal {
 
                     cursor = parse_escaped_unicode_codepoint(cursor, string_value);
                 } else {
-                    throw ers::make_exception("JSON string node encountered unexpected character '{}' while parsing an escape sequence at pos {}. {}",
+                    throw ers::parse_error("JSON string node encountered unexpected character '{}' while parsing an escape sequence at pos {}. {}",
                         escaped_char, cursor, pretty_error(cursor, chars));
                 }
 
@@ -900,12 +897,12 @@ namespace utl::internal {
             // Reject unescaped control characters (codepoints U+0000 to U+001F)
 
             if (to_u8(c) <= 31) {
-                throw ers::make_exception("JSON string node encountered unescaped ASCII control character character \\{} at pos {}. {}",
+                throw ers::parse_error("JSON string node encountered unescaped ASCII control character character \\{} at pos {}. {}",
                     c, cursor, pretty_error(cursor, chars));
             }
         }
 
-        throw ers::make_exception("JSON string node reached the end of buffer while parsing string contents. {}",
+        throw ers::parse_error("JSON string node reached the end of buffer while parsing string contents. {}",
             pretty_error(cursor, chars));
     }
 
@@ -952,12 +949,12 @@ namespace utl::internal {
             // std::errc(0) is a valid enumeration value that represents success
             // even though it does not appear in the enumerator list (which starts at 1)
             if (result.ec == std::errc::invalid_argument) {
-                throw ers::make_exception("JSON floating node could not be parsed as a number at pos {}. {}",
+                throw ers::parse_error("JSON floating node could not be parsed as a number at pos {}. {}",
                     cursor, pretty_error(cursor, chars));
             }
 
             if (result.ec == std::errc::result_out_of_range) {
-                throw ers::make_exception("JSON number node parsed to floating larger than its possible binary representation at pos {}. {}",
+                throw ers::parse_error("JSON number node parsed to floating larger than its possible binary representation at pos {}. {}",
                     cursor, pretty_error(cursor, chars));
             }
         }
@@ -970,7 +967,7 @@ namespace utl::internal {
         constexpr std::size_t token_length = 4;
 
         if (cursor + token_length > chars.size()) {
-            throw ers::make_exception("JSON bool node reached the end of buffer while parsing 'true'. {}",
+            throw ers::parse_error("JSON bool node reached the end of buffer while parsing 'true'. {}",
                 pretty_error(cursor, chars));
         }
 
@@ -980,7 +977,7 @@ namespace utl::internal {
             && chars[cursor + 3] == 'e';
 
         if (!parsed_correctly) {
-            throw ers::make_exception("JSON bool node could not parse 'true' at pos {}. {}",
+            throw ers::parse_error("JSON bool node could not parse 'true' at pos {}. {}",
                 cursor, pretty_error(cursor, chars));
         }
 
@@ -992,7 +989,7 @@ namespace utl::internal {
         constexpr std::size_t token_length = 5;
 
         if (cursor + token_length > chars.size()) {
-            throw ers::make_exception("JSON bool node reached the end of buffer while parsing 'false'. {}",
+            throw ers::parse_error("JSON bool node reached the end of buffer while parsing 'false'. {}",
                 pretty_error(cursor, chars));
         }
 
@@ -1003,7 +1000,7 @@ namespace utl::internal {
             && chars[cursor + 4] == 'e';
 
         if (!parsed_correctly) {
-            throw ers::make_exception(
+            throw ers::parse_error(
                 "JSON bool node could not parse 'false' at pos {}. {}",
                 pretty_error(cursor, chars), cursor);
         }
@@ -1016,7 +1013,7 @@ namespace utl::internal {
         constexpr std::size_t token_length = 4;
 
         if (cursor + token_length > chars.size()) {
-            throw ers::make_exception("JSON null node reached the end of buffer while parsing 'null'. {}",
+            throw ers::parse_error("JSON null node reached the end of buffer while parsing 'null'. {}",
                 pretty_error(cursor, chars));
         }
 
@@ -1026,8 +1023,7 @@ namespace utl::internal {
             && chars[cursor + 3] == 'l';
 
         if (!parsed_correctly) {
-            throw ers::make_exception(
-                "JSON null node could not parse 'null' at pos {}. {}",
+            throw ers::parse_error("JSON null node could not parse 'null' at pos {}. {}",
                 pretty_error(cursor, chars), cursor);
         }
 
@@ -1191,7 +1187,7 @@ namespace utl::internal {
                 std::to_chars(buffer.data(), buffer.data() + buffer.size(), integral_value);
 
             if (error_code != std::errc {}) {
-                throw ers::make_exception("JSON serializing encountered std::to_chars() formatting error while serializing value ''.",
+                throw ers::parse_error("JSON serializing encountered std::to_chars() formatting error while serializing value ''.",
                     integral_value);
             }
 
@@ -1216,7 +1212,7 @@ namespace utl::internal {
                 std::to_chars(buffer.data(), buffer.data() + buffer.size(), floating_value);
 
             if (error_code != std::errc {}) {
-                throw ers::make_exception("JSON serializing encountered std::to_chars() formatting error while serializing value '{}'.",
+                throw ers::parse_error("JSON serializing encountered std::to_chars() formatting error while serializing value '{}'.",
                     floating_value);
             }
 
@@ -1383,7 +1379,7 @@ namespace utl::internal {
                 std::to_chars(buffer.data(), buffer.data() + buffer.size(), integral_value);
 
             if (error_code != std::errc {}) {
-                throw ers::make_exception("JSON serializing encountered std::to_chars() formatting error while serializing value '{}'.",
+                throw ers::parse_error("JSON serializing encountered std::to_chars() formatting error while serializing value '{}'.",
                     integral_value);
             }
 
@@ -1408,7 +1404,7 @@ namespace utl::internal {
                 std::to_chars(buffer.data(), buffer.data() + buffer.size(), floating_value);
 
             if (error_code != std::errc {}) {
-                throw ers::make_exception("JSON serializing encountered std::to_chars() formatting error while serializing value '{}'.",
+                throw ers::parse_error("JSON serializing encountered std::to_chars() formatting error while serializing value '{}'.",
                     floating_value);
             }
 
@@ -1459,7 +1455,7 @@ namespace utl {
 
         for (auto cursor = end_cursor; cursor < chars.size(); ++cursor)
             if (!lookup_whitespace_chars[to_u8(chars[cursor])]) {
-                throw ers::make_exception("Invalid trailing symbols encountered after the root JSON node at pos {}. {}",
+                throw ers::parse_error("Invalid trailing symbols encountered after the root JSON node at pos {}. {}",
                     pretty_error(cursor, chars), cursor);
             }
 

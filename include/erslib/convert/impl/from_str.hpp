@@ -107,6 +107,3 @@ namespace ers {
     template<typename T>
     concept FromStringConvertible = internal::FromStringHasConstexprValue<T> || internal::FromStringHasRuntimeValue<T>;
 }
-
-
-#define ERS_FROM_STR_RUNTIME_BACKEND(TYPE) ers::Result<TYPE> ers::convert::from_string_backend<TYPE>

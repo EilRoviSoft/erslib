@@ -7,6 +7,7 @@
 // ers
 #include <contrib/json.hpp>
 #include <erslib/concept/json.hpp>
+#include <erslib/meta/type_name.hpp>
 #include <erslib/trait/fn.hpp>
 #include <erslib/trait/result.hpp>
 #include <erslib/type/result.hpp>
@@ -109,8 +110,7 @@ namespace ers {
 
             if (it == object.end()) {
                 return make_error(
-                    Severity::Warning,
-                    "parse_error",
+                    Severity::Error,
                     "Json doesn't have field with name \"{}\"",
                     name
                 );
@@ -118,8 +118,7 @@ namespace ers {
 
             if (!it->second.is<T>()) {
                 return make_error(
-                    Severity::Warning,
-                    "parse_error",
+                    Severity::Error,
                     "Field with name \"{}\" has mismatched type \"{}\"",
                     name, meta::type_name_v<T>
                 );

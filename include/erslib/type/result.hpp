@@ -5,7 +5,6 @@
 
 // ers
 #include <erslib/type/error.hpp>
-#include <erslib/type/exception.hpp>
 #include <erslib/type/optional.hpp>
 #include <erslib/type/ref.hpp>
 
@@ -26,7 +25,6 @@ namespace ers {
     public:
         using value_type = T;
         using error_type = Error;
-        using exception_type = Exception;
 
 
         static_assert(!std::is_rvalue_reference_v<value_type>,
@@ -105,7 +103,6 @@ namespace ers {
         constexpr const value_type* operator->() const { return &value(); }
 
         constexpr const error_type& error() const { return std::get<1>(m_variant); }
-        constexpr exception_type exception() const { return std::get<1>(m_variant); }
 
 
     protected:
@@ -122,7 +119,6 @@ namespace ers {
     public:
         using value_type = T;
         using error_type = Error;
-        using exception_type = Exception;
 
 
         // Constructors
@@ -198,7 +194,6 @@ namespace ers {
         constexpr const value_type* operator->() const { return &value(); }
 
         constexpr const error_type& error() const { return std::get<1>(m_variant); }
-        constexpr exception_type exception() const { return std::get<1>(m_variant); }
 
 
     protected:
@@ -243,7 +238,6 @@ namespace ers {
     public:
         using value_type = void;
         using error_type = Error;
-        using exception_type = Exception;
 
 
         Result(const ok_t) noexcept :
@@ -268,7 +262,6 @@ namespace ers {
         [[nodiscard]] constexpr explicit operator bool() const noexcept { return has_value(); }
 
         constexpr const error_type& error() const { return *m_error; }
-        constexpr exception_type exception() const { return *m_error; }
 
 
     protected:

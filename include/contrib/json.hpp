@@ -26,15 +26,16 @@
 #include <boost/unordered/unordered_flat_map.hpp>
 
 // ers
+#include <erslib/exception.hpp>
 #include <erslib/adaptor/transparent/string.hpp>
 #include <erslib/convert/impl/to_str.hpp>
 #include <erslib/hashing/rapid.hpp>
 #include <erslib/meta/type_literal.hpp>
-#include <erslib/type/exception.hpp>
 #include <erslib/util/string.hpp>
 
 // export
 #include <erslib/export.hpp>
+
 
 // ____________________ DEVELOPER DOCS ____________________
 
@@ -313,7 +314,7 @@ namespace utl::internal {
             const auto it = object.find(key);
 
             if (it == object.end() || !it->second.is<T>())
-                throw ers::make_exception("Json doesn't have key '{}'", key);
+                throw ers::out_of_range_error("Json doesn't have key '{}'", key);
             return it->second.as<T>();
         }
 

@@ -2,6 +2,7 @@
 
 // std
 #include <chrono>
+#include <concepts>
 #include <format>
 #include <string>
 
@@ -58,7 +59,6 @@ namespace ers {
 
         Error(
             Severity severity,
-            std::string_view code,
             std::string_view message,
             timestamp_t timestamp = std::chrono::system_clock::now(),
             cpptrace::stacktrace stacktrace = cpptrace::generate_trace()
@@ -84,11 +84,10 @@ namespace ers {
 
         // Observers
 
-        Severity severity() const noexcept;
-        std::string_view code() const noexcept;
-        timestamp_t timestamp() const noexcept;
-        std::string_view message() const noexcept;
-        const cpptrace::stacktrace& stacktrace() const noexcept;
+        Severity severity() const noexcept { return m_severity; }
+        timestamp_t timestamp() const noexcept { return m_timestamp; }
+        std::string_view message() const noexcept { return m_message; }
+        const cpptrace::stacktrace& stacktrace() const noexcept { return m_stacktrace; }
 
 
         // TODO: make fmt string static
@@ -97,7 +96,6 @@ namespace ers {
 
     protected:
         Severity m_severity;
-        std::string m_code;
         std::string m_message;
         timestamp_t m_timestamp;
         cpptrace::stacktrace m_stacktrace;
@@ -105,7 +103,7 @@ namespace ers {
 
 
     template<typename... Args>
-    Error make_error(Severity severity, std::string_view code, std::string_view fmt, Args&&... args) {
-        return Error(severity, code, std::vformat(fmt, std::make_format_args(args...)));
+    Error make_error(Severity severity, std::string_view fmt, Args&&... args) {
+        return Error(severity, std::vformat(fmt, std::make_format_args(args...)));
     }
 }
