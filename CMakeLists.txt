@@ -26,50 +26,74 @@ set_if_undefined(ERSLIB_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/erslib"
     CACHE STRING "Install path for erslib package-related CMake files"
 )
 
-if(DEFINED ERSLIB_SHARED_LIBS)
-    set(BUILD_SHARED_LIBS ${ERSLIB_SHARED_LIBS})
-endif()
-
 if(NOT DEFINED CMAKE_BUILD_TYPE AND NOT DEFINED CMAKE_CONFIGURATION_TYPES)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
     set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif()
 
-if(IS_TOP_LEVEL AND DEFINED ENV{VCPKG_ROOT})
-    include($ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake)
+if(ERSLIB_SHARED_LIBS)
+    add_library(erslib SHARED)
+else()
+    add_library(erslib STATIC)
 endif()
 
-add_library(erslib)
 add_library(erslib::erslib ALIAS erslib)
+
+target_compile_features(erslib PUBLIC cxx_std_23)
 
 
 #----------------------------------------------------------------------------------------------------------------------
 # erslib dependencies
 #----------------------------------------------------------------------------------------------------------------------
 
+set(DEPENDENCIES "")
 
-find_package(boost_container CONFIG REQUIRED)
-find_package(boost_thread CONFIG REQUIRED)
-find_package(boost_unordered CONFIG REQUIRED)
 
-find_package(SFML COMPONENTS Graphics Window Audio System CONFIG REQUIRED)
+function(erslib_optional_package package_name target_name compile_definition)
+    find_package(${package_name} CONFIG QUIET)
 
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(LuaJIT REQUIRED IMPORTED_TARGET luajit)
+    if(TARGET ${target_name})
+        message(STATUS "erslib: found optional dependency ${package_name}")
+        target_compile_definitions(erslib PUBLIC ${compile_definition})
+        target_link_libraries(erslib PUBLIC ${target_name})
+    else()
+        message(STATUS "erslib: optional dependency ${package_name} not found")
+    endif()
+endfunction()
 
-find_package(sol2 CONFIG REQUIRED)
 
-find_package(cpptrace CONFIG REQUIRED)
-find_package(quill CONFIG REQUIRED)
+erslib_optional_package(boost_optional Boost::optional _HAS_BOOST_OPTIONAL)
+erslib_optional_package(boost_smart_ptr Boost::smart_ptr _HAS_BOOST_SMART_PTR)
+erslib_optional_package(boost_thread Boost::thread _HAS_BOOST_THREAD)
+erslib_optional_package(boost_unordered Boost::unordered _HAS_BOOST_UNORDERED)
+erslib_optional_package(boost_container Boost::container _HAS_BOOST_CONTAINER)
+erslib_optional_package(cpptrace cpptrace::cpptrace _HAS_CPPTRACE)
+erslib_optional_package(sol2 sol2::sol2 _HAS_SOL2)
+erslib_optional_package(SDL3 SDL3::SDL3 _HAS_SDL3)
+erslib_optional_package(quill quill::quill _HAS_QUILL)
+erslib_optional_package(RmlUi RmlUi::RmlUi _HAS_RMLUI)
+
+
+find_package(PkgConfig QUIET)
+
+if(PkgConfig_FOUND)
+    pkg_check_modules(LuaJIT QUIET IMPORTED_TARGET luajit)
+
+    if(TARGET PkgConfig::LuaJIT)
+        message(STATUS "erslib: found optional dependency LuaJIT")
+        target_compile_definitions(erslib PUBLIC _HAS_LUAJIT)
+        target_link_libraries(erslib PUBLIC PkgConfig::LuaJIT)
+    else()
+        message(STATUS "erslib: optional dependency LuaJIT not found")
+    endif()
+else()
+    message(STATUS "erslib: PkgConfig not found, skipping LuaJIT")
+endif()
 
 
 target_link_libraries(erslib
     PUBLIC
-        Boost::container Boost::thread Boost::unordered Boost::optional
-        cpptrace::cpptrace
-        SFML::Graphics SFML::Window SFML::Audio SFML::System
-        PkgConfig::LuaJIT sol2
-        quill::quill
+        ${DEPENDENCIES}
 )
 
 
@@ -195,10 +219,10 @@ if(ERSLIB_INSTALL AND NOT CMAKE_SKIP_INSTALL_RULES)
         DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/erslib"
     )
 
-    set(TARGETS_FILE "erslib-static-targets.cmake")
-
-    if(NOT BUILD_SHARED_LIBS)
-        set(targets_file "erslib-static-targets.cmake")
+    if(BUILD_SHARED_LIBS)
+        set(TARGETS_FILE "erslib-shared-targets.cmake")
+    else()
+        set(TARGETS_FILE "erslib-static-targets.cmake")
     endif()
 
     install(EXPORT erslib_export

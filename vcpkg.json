@@ -9,10 +9,16 @@
         "cpptrace",
         "frozen",
         "luajit",
-        "opengl",
         "pkgconf",
         "quill",
-        "sfml",
-        "sol2"
+        "rmlui",
+        "sol2",
+        "sdl3"
+    ],
+    "overrides": [
+        {
+            "name": "sol2",
+            "version": "3.5.0"
+        }
     ]
 }

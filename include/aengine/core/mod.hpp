@@ -104,7 +104,7 @@ namespace aengine {
 
     using ModContainer = HashSet<
         Mod,
-        ers::member_hash_adaptor<ers::hashing::rapid_policy, &Mod::name>,
+        ers::member_string_hash_adaptor<ers::hashing::rapid_policy, &Mod::name>,
         ers::member_equal_adaptor<&Mod::name>
     >;
 }

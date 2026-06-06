@@ -17,7 +17,7 @@ namespace ers {
     template<typename T, typename... Args>
         requires (sizeof...(Args) == 0 || !ers::ConvertibleToIn<std::pmr::memory_resource*, 0, Args...>)
     Holder<T> make_holder(Args&&... args) {
-        return std::make_unique<T>(std::forward<Args>(args)...);
+        return Holder<T>(new T(std::forward<Args>(args)...), deleter<T>{});
     }
     
     template<typename T, typename... Args>
