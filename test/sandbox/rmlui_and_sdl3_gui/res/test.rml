@@ -1,0 +1,17 @@
+<rml>
+<head>
+    <title>RmlUi SDL3 Sandbox</title>
+    <link type="text/rcss" href="test.rcss"/>
+</head>
+
+<body>
+    <div id="panel">
+        <h1>OpenColony RmlUi Sandbox</h1>
+        <p>If you see this, SDL3 + RmlUi works.</p>
+
+        <button id="button">Click me</button>
+
+        <p id="status">Button not clicked yet.</p>
+    </div>
+</body>
+</rml>
