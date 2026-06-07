@@ -1,8 +1,12 @@
 // std
 #include <cstdio>
+#include <filesystem>
 #include <print>
 #include <vector>
-#include <filesystem>
+
+// ers
+#include <erslib/pattern/basic.hpp>
+#include <erslib/type/optional.hpp>
 
 // sdl3
 #include <SDL3/SDL.h>
@@ -18,7 +22,7 @@ namespace fs = std::filesystem;
 // SDL3 lifetimes
 
 namespace {
-    class SdlLifetime {
+    class SdlLifetime : public ers::NonCopyable {
     public:
         explicit SdlLifetime(SDL_InitFlags flags) {
             _ok = SDL_Init(flags);
@@ -39,7 +43,7 @@ namespace {
     };
 
 
-    class SdlTextInputScope {
+    class SdlTextInputScope : public ers::NonCopyable {
     public:
         explicit SdlTextInputScope(SDL_Window& window) :
             _window(window) {
@@ -88,7 +92,7 @@ namespace {
 // RmlUi lifetimes
 
 namespace {
-    class RmlLifetime {
+    class RmlLifetime : public ers::NonCopyable {
     public:
         RmlLifetime(Rml::SystemInterface& system_interface, Rml::RenderInterface& render_interface) {
             Rml::SetSystemInterface(&system_interface);
@@ -105,9 +109,6 @@ namespace {
             Rml::SetSystemInterface(nullptr);
         }
 
-        RmlLifetime(const RmlLifetime&) = delete;
-        RmlLifetime& operator=(const RmlLifetime&) = delete;
-
         [[nodiscard]] bool ok() const noexcept {
             return _ok;
         }
@@ -118,7 +119,7 @@ namespace {
     };
 
 
-    class RmlContextHandle {
+    class RmlContextHandle : public ers::NonCopyable {
     public:
         RmlContextHandle(Rml::String name, Rml::Vector2i dimensions) :
             _name(std::move(name)) {
@@ -130,9 +131,6 @@ namespace {
                 Rml::RemoveContext(_name);
             }
         }
-
-        RmlContextHandle(const RmlContextHandle&) = delete;
-        RmlContextHandle& operator=(const RmlContextHandle&) = delete;
 
         [[nodiscard]] bool valid() const noexcept {
             return _context != nullptr;
@@ -438,16 +436,16 @@ namespace {
     class ButtonClickListener final : public Rml::EventListener {
     public:
         explicit ButtonClickListener(Rml::Element& status) :
-            _status(status) {
+            _status(&status) {
         }
 
         void ProcessEvent(Rml::Event&) override {
-            _status.SetInnerRML("Button clicked!");
+            _status->SetInnerRML("Button clicked!");
         }
 
 
     private:
-        Rml::Element& _status;
+        Rml::Element* _status;
     };
 
     class RmlEventListenerHandle {
@@ -588,7 +586,7 @@ int main(int, char**) {
     document.get().Show();
 
 
-    std::optional<RmlEventListenerHandle> click_listener;
+    ers::optional<RmlEventListenerHandle> click_listener;
 
     if (auto* button = document.get().GetElementById("button")) {
         if (auto* status = document.get().GetElementById("status")) {

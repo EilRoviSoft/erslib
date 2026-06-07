@@ -1,7 +1,7 @@
 #pragma once
 
 
-namespace erslib {
+namespace ers {
     struct NonCopyable { // NOLINT(cppcoreguidelines-special-member-functions)
         NonCopyable() = default;
 
