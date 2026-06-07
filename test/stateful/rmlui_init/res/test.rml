@@ -1,0 +1,14 @@
+<rml>
+	<head>
+		<style>
+			body {
+				font-family: "Lato";
+				font-size: 18px;
+			}
+		</style>
+	</head>
+
+	<body>
+		<p>Hello RmlUi</p>
+	</body>
+</rml>
