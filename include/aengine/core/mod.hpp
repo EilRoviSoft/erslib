@@ -4,14 +4,16 @@
 #include <filesystem>
 #include <string>
 
+// sol
+#include <sol/environment.hpp>
+#include <sol/state_view.hpp>
+
 // erslib
-#include <erslib/adaptor/transparent/base.hpp>
-#include <erslib/type/result.hpp>
 #include <erslib/type/version.hpp>
 
 // aengine
-#include <aengine/core/dependency.hpp>
 #include <aengine/fwd.hpp>
+#include <aengine/core/dependency.hpp>
 
 
 namespace fs = std::filesystem;
@@ -35,24 +37,22 @@ namespace aengine::internal {
     };
 
 
-    class ModContent {
-        struct phase_order {
-            bool operator()(std::string_view lhs, std::string_view rhs) const;
-        };
-        using phase_comparator = ers::adaptor::binary_op<std::string, phase_order>;
-
-
-    public:
-        const auto& packages() const { return m_packages; }
-        const auto& stages() const { return m_stages; }
-
-        void load(const fs::path& dir);
-
-
-    private:
-        StringMap<std::string> m_packages;
-        OrderedMap<std::string, std::string, phase_comparator> m_stages;
+    struct ModContent {
+        StringMap<std::string> packages;
+        StringMap<std::string> stages;
     };
+
+
+    struct ModRuntime {
+        sol::environment env;
+        sol::protected_function main;
+        StringMap<sol::object> modules_cache;
+    };
+
+
+    ERS_MAKE_EXCEPTION_TYPE_WITH_BASE(lua_error, std::runtime_error);
+    ERS_MAKE_EXCEPTION_TYPE_WITH_BASE(lua_package_error, lua_error);
+    ERS_MAKE_EXCEPTION_TYPE_WITH_BASE(lua_stage_error, lua_error);
 }
 
 
@@ -66,6 +66,7 @@ namespace aengine {
         using identity_type = internal::ModIdentity;
         using metadata_type = internal::ModMetadata;
         using content_type = internal::ModContent;
+        using runtime_type = internal::ModRuntime;
 
 
         // Constructor
@@ -76,10 +77,15 @@ namespace aengine {
         // Modifiers
 
         void load_info();
-        void load_content() const;
 
-        void drop_metadata() const;
-        void drop_content() const;
+        void drop_metadata() const { std::ignore = m_metadata.release(); }
+        
+        void load_content() const;
+        void drop_content() const { std::ignore = m_content.release(); }
+
+        void init_runtime(sol::state_view& lua) const;
+        void load_runtime(std::string_view stage_name) const;
+        void drop_runtime() const { std::ignore = m_runtime.release(); }
 
 
         // Accessors
@@ -88,17 +94,24 @@ namespace aengine {
         std::string_view title() const { return m_identity.title; }
         const ers::version_t& version() const { return m_identity.version; }
 
-
-        const identity_type& identity() const { return m_identity; }
         const metadata_type& metadata() const { return *m_metadata; }
+
         const content_type& content() const { return *m_content; }
+        
+        const runtime_type& runtime() const { return *m_runtime; }
 
 
     protected:
         fs::path m_dir;
+
         identity_type m_identity;
         mutable std::unique_ptr<metadata_type> m_metadata;
         mutable std::unique_ptr<content_type> m_content;
+        mutable std::unique_ptr<runtime_type> m_runtime;
+
+
+    private:
+        std::function<sol::object(std::string_view)> _make_require_fn() const;
     };
 
 

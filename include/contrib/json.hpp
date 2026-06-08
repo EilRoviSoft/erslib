@@ -31,6 +31,7 @@
 #include <erslib/convert/impl/to_str.hpp>
 #include <erslib/hashing/rapid.hpp>
 #include <erslib/meta/type_literal.hpp>
+#include <erslib/type/optional.hpp>
 #include <erslib/util/string.hpp>
 
 // export
@@ -292,6 +293,10 @@ namespace utl::internal {
         [[nodiscard]] Node& at(std::string_view key);
 
         [[nodiscard]] const Node& at(std::string_view key) const;
+
+        [[nodiscard]] ers::optional<const Node&> try_at(std::string_view key) const;
+
+        [[nodiscard]] const Node& at_or_dummy(std::string_view key) const;
 
         [[nodiscard]] bool contains(std::string_view key) const;
 
@@ -569,6 +574,9 @@ namespace utl {
         [[nodiscard]]
         Json ERSLIB_EXPORT operator""_json(const char* cstr, std::size_t size);
     } // namespace literals
+
+
+    ERS_MAKE_EXCEPTION_TYPE_WITH_BASE(json_field_error, std::runtime_error);
 }
 
 

@@ -10,7 +10,8 @@ namespace aengine {
         Unknown = 0,
         Settings,
         Data,
-        Scripts
+        Scripts,
+        Max
     };
 }
 

@@ -274,9 +274,25 @@ namespace utl::internal {
 
     const Node& Node::at(std::string_view key) const { return (*this)[key]; }
 
+    ers::optional<const Node&> Node::try_at(std::string_view key) const {
+        const auto& object = as_object();
+        const auto& it = object.find(key);
+
+        if (it == object.end())
+            return ers::nullopt;
+        return it->second;
+    }
+
+    const Node& Node::at_or_dummy(std::string_view key) const {
+        static Node dummy;
+        const auto& object = as_object();
+        const auto& it = object.find(key);
+        return it != object.end() ? it->second : dummy;
+    }
+
     bool Node::contains(std::string_view key) const {
         const auto& object = as_object();
-        const auto it = object.find(std::string(key));
+        const auto it = object.find(key);
         return it != object.end();
     }
 

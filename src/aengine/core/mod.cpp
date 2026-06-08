@@ -27,7 +27,6 @@ namespace {
             if (!obj.is_string()) {
                 return ers::make_error(
                     ers::Severity::Error,
-                    "json_type_error",
                     "Expected '{}' got '{}'.",
                     ers::meta::type_name_v<utl::Json::string_type>, ers::convert::to_str(obj.type())
                 );
@@ -42,54 +41,12 @@ namespace {
 
         return result;
     }
-}
 
 
-// ModContent::phase_order
-
-bool aengine::internal::ModContent::phase_order::operator()(std::string_view lhs, std::string_view rhs) const {
-    Phase p_lhs = *ers::convert::from_str_constexpr<Phase>(lhs);
-    Phase p_rhs = *ers::convert::from_str_constexpr<Phase>(rhs);
-
-    if (p_lhs != p_rhs)
-        return p_lhs < p_rhs;
-
-    auto extract = [](std::string_view sv, Phase phase) {
-        size_t off = ers::convert::from_string_backend<Phase>::conversion_table[static_cast<size_t>(phase) - 1].first.size() + 1;
-        auto r = ers::convert::from_str<size_t>(sv.substr(off));
-        return r ? *r : throw ers::conversion_error(r.error().to_string(true));
-    };
-
-    return extract(lhs, p_lhs) < extract(rhs, p_rhs);
-}
-
-
-// ModContent
-
-namespace {
     std::string path_to_package_name(const fs::path& path) {
         auto temp = path.generic_string();
         temp = temp.substr(0, temp.size() - path.extension().string().size());
         return ers::util::replace(temp, "/", ".");
-    }
-}
-
-
-void aengine::internal::ModContent::load(const fs::path& dir) {
-    for (const auto& it : fs::recursive_directory_iterator(dir)) {
-        auto stem = it.path().stem().generic_string();
-        auto extension = it.path().extension().generic_string();
-
-        if (extension != ".lua")
-            continue;
-
-        // If file isn't stage, it should be written as a package
-        // and be available later as include.
-
-        if (*ers::convert::from_str<Phase>(stem) != Phase::Unknown)
-            m_stages.emplace(stem, ers::util::read_file(it));
-        else
-            m_packages.emplace(path_to_package_name(fs::relative(it, dir)), ers::util::read_file(it));
     }
 }
 
@@ -142,14 +99,105 @@ void aengine::Mod::load_info() {
             m_identity.name, folder_name);
     }
 }
+
 void aengine::Mod::load_content() const {
-    m_content = std::make_unique<internal::ModContent>();
+    content_type content;
+
+    for (const auto& it : fs::recursive_directory_iterator(m_dir)) {
+        auto stem = it.path().stem().generic_string();
+        auto extension = it.path().extension().generic_string();
+
+        if (extension != ".lua")
+            continue;
+
+        // If file isn't stage, it should be written as a package
+        // and be available later as include.
+
+        if (*ers::convert::from_str<Phase>(stem) != Phase::Unknown)
+            content.stages.emplace(stem, ers::util::read_file(it));
+        else
+            content.packages.emplace(path_to_package_name(fs::relative(it, m_dir)), ers::util::read_file(it));
+    }
+
+    m_content = std::make_unique<content_type>(std::move(content));
+}
+
+void aengine::Mod::init_runtime(sol::state_view& lua) const {
+    runtime_type runtime;
+
+    {
+        sol::environment env(lua, sol::create, lua.globals());
+
+        env["__mod_name"] = name();
+
+        env["require"] = _make_require_fn();
+
+        static constexpr auto nil_fields = { "dofile", "loadfile", "load", "loadstring", "io", "os" };
+        for (const auto& it : nil_fields)
+            env[it] = sol::nil;
+
+        runtime.env = std::move(env);
+    }
+
+
+    m_runtime = std::make_unique<runtime_type>(std::move(runtime));
+}
+
+void aengine::Mod::load_runtime(std::string_view stage_name) const {
+    auto it = content().stages.find(stage_name);
+    if (it == content().stages.end())
+        throw internal::lua_stage_error("Stage {} is not found", stage_name);
+
+
+    sol::state_view lua(m_runtime->env.lua_state());
+    sol::load_result chunk = lua.load(it->second, std::format("{}:{}", name(), stage_name));
+
+    if (!chunk.valid() || !m_runtime->env.set_on(chunk)) {
+        sol::error e = chunk;
+        throw internal::lua_stage_error("Failed to compile stage '{}': {}",
+            stage_name, e.what());
+    }
+
+
+    chunk();
 }
 
 
-void aengine::Mod::drop_metadata() const {
-    std::ignore = m_metadata.release();
-}
-void aengine::Mod::drop_content() const {
-    std::ignore = m_content.release();
+std::function<sol::object(std::string_view)> aengine::Mod::_make_require_fn() const {
+    return [this](std::string_view package_name) -> sol::object {
+        auto& content = *m_content;
+        auto& runtime = *m_runtime;
+
+        if (auto cache_it = runtime.modules_cache.find(package_name); cache_it != runtime.modules_cache.end())
+            return cache_it->second;
+
+        auto package_it = content.packages.find(package_name);
+        if (package_it == content.packages.end()) {
+            throw internal::lua_package_error("Package {} is not found", package_name);
+        }
+
+
+        sol::state_view lua = runtime.env.lua_state();
+
+        runtime.modules_cache.emplace(package_name, sol::make_object(lua, true));
+
+
+        auto lr = lua.load(package_it->second);
+
+        if (!lr.valid()) {
+            sol::error e = lr;
+            throw internal::lua_package_error("Failed to compile package '{}': {}",
+                package_name, e.what());
+        }
+
+
+        auto result = lr(runtime.env);
+        sol::object module = result.return_count() > 0
+            ? result.get<sol::object>()
+            : sol::make_object(lua, true);
+
+        runtime.modules_cache[package_name] = module;
+
+        return module;
+    };
 }

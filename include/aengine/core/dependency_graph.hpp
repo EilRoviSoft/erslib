@@ -1,36 +1,28 @@
 #pragma once
 
-// erslib
-#include <erslib/type/result.hpp>
+// std
+#include <string_view>
+#include <vector>
+#include <span>
 
 // aengine
 #include <aengine/core/mod.hpp>
-#include <aengine/fwd.hpp>
+#include <aengine/enum/phase.hpp>
+
+#include "easy_ecs/util/component_initializer.hpp"
+#include "easy_ecs/util/component_initializer.hpp"
+
+
+namespace aengine::internal {
+    struct stage_info_t {
+        std::string mod;
+        Phase phase;
+        size_t index;
+    };
+}
 
 
 namespace aengine {
-    class DependencyGraph {
-        enum class VisitState {
-            NonVisited,
-            Visiting,
-            Visited
-        };
-
-
-    public:
-        // Modifiers of initial state
-
-        void add_initial_mod(std::string_view name);
-
-
-        // Executors
-
-        void resolve_order(const ModContainer& mods);
-
-
-    protected:
-        std::list<std::string> m_initial_mods;
-        std::list<std::string> m_execution_order;
-        StringMap<VisitState> m_states;
-    };
+    std::vector<std::string> resolve_mods_order(const ModContainer& mods, std::string_view initial_mod);
+    std::vector<internal::stage_info_t> resolve_stages_order(const ModContainer& mods, std::span<const std::string> mods_order);
 }
