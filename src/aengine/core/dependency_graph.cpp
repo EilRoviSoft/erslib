@@ -152,14 +152,14 @@ std::vector<aengine::internal::stage_info_t> aengine::resolve_stages_order(
 ) {
     static constexpr auto phases = { Phase::Settings, Phase::Data, Phase::Scripts };
 
-    using indexes_per_phase_t = std::array<OrderedSet<size_t>, static_cast<size_t>(Phase::Max)>;
+    using indexes_per_phase_t = std::array<OrderedSet<size_t>, static_cast<size_t>(Phase::Max) - 1>;
     StringMap<indexes_per_phase_t> indexes_per_mod;
     size_t stages_count = 0;
 
     for (const auto& mod : mods) {
         for (const auto& stage : mod.content().stages | std::views::keys) {
             auto [phase, index] = parse_phase_and_index(stage);
-            indexes_per_mod[mod.name()][static_cast<size_t>(phase)].emplace(index);
+            indexes_per_mod[mod.name()][static_cast<size_t>(phase) - 1].emplace(index);
             stages_count++;
         }
     }
@@ -170,7 +170,7 @@ std::vector<aengine::internal::stage_info_t> aengine::resolve_stages_order(
 
     for (const auto& phase : phases) {
         for (const auto& mod : mods_order) {
-            for (const auto& index : indexes_per_mod[mod][static_cast<size_t>(phase)]) {
+            for (const auto& index : indexes_per_mod[mod][static_cast<size_t>(phase) - 1]) {
                 stages_order.emplace_back(internal::stage_info_t {
                     .mod   = mod,
                     .phase = phase,

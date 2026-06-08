@@ -35,3 +35,23 @@ struct ers::convert::from_string_backend<aengine::Phase> {
         return Unknown;
     }
 };
+
+template<>
+struct ers::convert::to_string_backend<aengine::Phase> {
+    using enum aengine::Phase;
+
+    static constexpr auto conversion_table = std::to_array<std::pair<aengine::Phase, std::string_view>>({
+        { Settings, "settings" },
+        { Data, "data" },
+        { Scripts, "scripts" }
+    });
+
+    constexpr std::string_view constexpr_value(aengine::Phase source) const noexcept {
+        for (const auto& [k, v] : conversion_table) {
+            if (source == k)
+                return v;
+        }
+
+        return "unknown";
+    }
+};

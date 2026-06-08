@@ -119,10 +119,12 @@ set(SOURCES
 
     "src/erslib/assert.cpp"
 
-    "src/erslib/type/error.cpp"
+    "src/erslib/exception/internal.cpp"
 
     "src/erslib/splitting/regular.cpp"
     "src/erslib/splitting/smart.cpp"
+
+    "src/erslib/type/error.cpp"
 
     "src/erslib/util/file.cpp"
     "src/erslib/util/string.cpp"    
@@ -167,10 +169,12 @@ target_sources(erslib
         ${SOURCES}
 )
 
+
 target_compile_definitions(erslib
     PUBLIC
         "$<$<NOT:$<BOOL:${BUILD_SHARED_LIBS}>>:ERSLIB_STATIC_DEFINE>"
 )
+
 
 if(IS_TOP_LEVEL)
     target_compile_definitions(erslib
@@ -178,6 +182,24 @@ if(IS_TOP_LEVEL)
             ERS_ASSERT_INFO
     )
 endif()
+
+
+set(ERS_TRACE_VERBOSITY "1" CACHE STRING "Trace verbosity level for erslib (0 = off, 1 = basic, 2 = full)")
+
+target_compile_definitions(erslib
+    PUBLIC 
+        ERS_TRACE_VERBOSITY=${ERS_TRACE_VERBOSITY}
+)
+
+if(ERS_TRACE_VERBOSITY STREQUAL "2")
+    set(ERS_TRACE_MAX_DEPTH "0" CACHE STRING "Trace verbosity max depth")
+
+    target_compile_definitions(erslib
+        PUBLIC 
+            ERS_TRACE_MAX_DEPTH=${ERS_TRACE_MAX_DEPTH}
+    )
+endif()
+
 
 target_include_directories(erslib
     PUBLIC

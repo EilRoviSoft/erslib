@@ -48,6 +48,58 @@ namespace {
         temp = temp.substr(0, temp.size() - path.extension().string().size());
         return ers::util::replace(temp, "/", ".");
     }
+
+
+    auto extract_info(const fs::path& m_dir) {
+        aengine::internal::ModIdentity identity;
+        aengine::internal::ModMetadata metadata;
+
+
+        fs::path info_path = m_dir / "info.json";
+
+        if (!fs::exists(info_path)) {
+            throw ers::path_error("Mod directory '{}' without 'info.json' is specified",
+                info_path.string());
+        }
+
+        if (!fs::is_regular_file(info_path)) {
+            throw ers::path_error("Path '{}' doesn't lead to file",
+                info_path.string());
+        }
+
+
+        utl::Json json;
+
+        try {
+            json = utl::from_file(info_path.string());
+        } catch (const fs::filesystem_error& e) {
+            throw ers::path_error("Error during parsing json with path '{}' occured. Info: {}",
+                info_path.string(), e.what());
+        }
+
+
+        ers::JsonSchema schema(json);
+
+        schema.require_and_write("name", identity.name);
+        schema.require_and_write("title", identity.title);
+        schema.require_and_convert("version", identity.version, &ers::convert::from_str<ers::version_t>);
+        schema.require_and_write("author", metadata.author);
+        schema.write_if_exist("contact", metadata.contact);
+        schema.require_and_write("description", metadata.description);
+        schema.require_and_convert("dependencies", metadata.dependencies, &parse_dependencies);
+
+        if (auto s = schema.finalize(); !s)
+            throw ers::runtime_error(s.error().to_string());
+
+
+        if (auto folder_name = m_dir.stem().string(); folder_name != identity.name) {
+            throw ers::path_error("Mod name ('{}') should be the same as folder name ('{}').",
+                identity.name, folder_name);
+        }
+
+
+        return std::make_tuple(std::move(identity), std::move(metadata));
+    }
 }
 
 
@@ -58,49 +110,14 @@ aengine::Mod::Mod(fs::path dir) :
 }
 
 
-void aengine::Mod::load_info() {
-    fs::path path = m_dir / "info.json";
+void aengine::Mod::init_info() {
+    auto [identity, metadata] = extract_info(m_dir);
 
-    if (!fs::exists(path)) {
-        throw ers::path_error("Mod directory '{}' without 'info.json' is specified", path.string());
-    }
-
-    if (!fs::is_regular_file(path)) {
-        throw ers::path_error("Path '{}' doesn't lead to file", path.string());
-    }
-
-
-    utl::Json json;
-
-    try {
-        json = utl::from_file(path.string());
-    } catch (const fs::filesystem_error& e) {
-        throw ers::path_error("Error during parsing json with path '{}' occured. Info: {}", path.string(), e.what());
-    }
-
-
-    ers::JsonSchema schema(json);
-
-    schema.require_and_write("name", m_identity.name);
-    schema.require_and_write("title", m_identity.title);
-    schema.require_and_convert("version", m_identity.version, &ers::convert::from_str<ers::version_t>);
-    schema.require_and_write("author", m_metadata->author);
-    schema.write_if_exist("contact", m_metadata->contact);
-    schema.require_and_write("description", m_metadata->description);
-    schema.require_and_convert("dependencies", m_metadata->dependencies, &parse_dependencies);
-
-
-    if (auto s = schema.finalize(); !s)
-        throw ers::runtime_error(s.error().to_string());
-
-
-    if (auto folder_name = m_dir.stem().string(); folder_name != m_identity.name) {
-        throw ers::path_error("Mod name ('{}') should be the same as folder name ('{}').",
-            m_identity.name, folder_name);
-    }
+    m_identity = std::move(identity);
+    m_metadata = std::make_unique<internal::ModMetadata>(std::move(metadata));
 }
 
-void aengine::Mod::load_content() const {
+void aengine::Mod::init_content() const {
     content_type content;
 
     for (const auto& it : fs::recursive_directory_iterator(m_dir)) {
@@ -149,17 +166,30 @@ void aengine::Mod::load_runtime(std::string_view stage_name) const {
         throw internal::lua_stage_error("Stage {} is not found", stage_name);
 
 
-    sol::state_view lua(m_runtime->env.lua_state());
+    sol::state_view lua = m_runtime->env.lua_state();
     sol::load_result chunk = lua.load(it->second, std::format("{}:{}", name(), stage_name));
 
-    if (!chunk.valid() || !m_runtime->env.set_on(chunk)) {
+    if (!chunk.valid()) {
         sol::error e = chunk;
         throw internal::lua_stage_error("Failed to compile stage '{}': {}",
             stage_name, e.what());
     }
 
+    sol::protected_function fn = chunk;
 
-    chunk();
+    if (!m_runtime->env.set_on(fn)) {
+        throw internal::lua_stage_error("Failed to set environment for stage '{}'",
+            stage_name);
+    }
+
+
+    sol::protected_function_result result = fn();
+
+    if (!result.valid()) {
+        sol::error e = result;
+        throw internal::lua_stage_error("Failed to execute stage '{}': {}",
+            stage_name, e.what());
+    }
 }
 
 

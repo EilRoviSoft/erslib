@@ -5,6 +5,10 @@ aengine::Core::Core(fs::path cwd) :
     m_cwd(std::move(cwd)) {
 }
 
+aengine::Core::~Core() {
+    m_mods.clear();
+}
+
 
 aengine::Context::Context(Core& value) :
     TProxy(value) {

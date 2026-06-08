@@ -44,15 +44,15 @@ namespace aengine::internal {
 
 
     struct ModRuntime {
-        sol::environment env;
-        sol::protected_function main;
         StringMap<sol::object> modules_cache;
+        sol::protected_function main;
+        sol::environment env;
     };
 
 
     ERS_MAKE_EXCEPTION_TYPE_WITH_BASE(lua_error, std::runtime_error);
-    ERS_MAKE_EXCEPTION_TYPE_WITH_BASE(lua_package_error, lua_error);
-    ERS_MAKE_EXCEPTION_TYPE_WITH_BASE(lua_stage_error, lua_error);
+    ERS_MAKE_EXCEPTION_TYPE_WITH_ERS_BASE(lua_package_error, lua_error);
+    ERS_MAKE_EXCEPTION_TYPE_WITH_ERS_BASE(lua_stage_error, lua_error);
 }
 
 
@@ -76,16 +76,16 @@ namespace aengine {
 
         // Modifiers
 
-        void load_info();
+        void init_info();
 
-        void drop_metadata() const { std::ignore = m_metadata.release(); }
-        
-        void load_content() const;
-        void drop_content() const { std::ignore = m_content.release(); }
+        void drop_metadata() const { m_metadata.reset(); }
+
+        void init_content() const;
+        void drop_content() const { m_content.reset(); }
 
         void init_runtime(sol::state_view& lua) const;
         void load_runtime(std::string_view stage_name) const;
-        void drop_runtime() const { std::ignore = m_runtime.release(); }
+        void drop_runtime() const { m_runtime.reset(); }
 
 
         // Accessors

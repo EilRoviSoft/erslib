@@ -47,22 +47,22 @@ namespace aengine {
 
         // Destructor
 
-        virtual ~Core() = default;
+        virtual ~Core();
 
 
         // Modifiers
 
-        virtual ers::Status init() = 0;
+        virtual void init() = 0;
 
 
     protected:
         fs::path m_cwd;
-        quill::Logger* m_logger = nullptr;
+        ecs::Registry m_registry;
+        LayoutDictionary m_layouts;
+        ResourceManager m_resources;
         ModContainer m_mods;
         sol::state m_lua;
-        ecs::Registry m_registry;
-        ResourceManager m_resources;
-        LayoutDictionary m_layouts;
+        quill::Logger* m_logger = nullptr;
     };
 }
 
@@ -80,11 +80,17 @@ namespace aengine {
         // Observers
 
         const fs::path& cwd() const { return get()->m_cwd; }
-        quill::Logger* logger() { return get()->m_logger; }
-        ModContainer& mods() { return get()->m_mods; }
-        sol::state_view lua() { return static_cast<sol::state_view>(get()->m_lua); }
+
         ecs::Registry& registry() { return get()->m_registry; }
-        ResourceManager& resources() { return get()->m_resources; }
+
         LayoutDictionary& layouts() { return get()->m_layouts; }
+
+        ResourceManager& resources() { return get()->m_resources; }
+
+        sol::state_view lua() { return static_cast<sol::state_view>(get()->m_lua); }
+
+        ModContainer& mods() { return get()->m_mods; }
+
+        quill::Logger* logger() { return get()->m_logger; }
     };
 }
