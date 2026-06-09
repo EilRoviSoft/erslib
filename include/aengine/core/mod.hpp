@@ -1,8 +1,12 @@
 #pragma once
 
 // std
+#include <exception>
 #include <filesystem>
 #include <string>
+
+// boost
+#include <boost/unordered/unordered_set.hpp>
 
 // sol
 #include <sol/environment.hpp>
@@ -47,12 +51,8 @@ namespace aengine::internal {
         StringMap<sol::object> modules_cache;
         sol::protected_function main;
         sol::environment env;
+        std::exception_ptr pending_exception = nullptr;
     };
-
-
-    ERS_MAKE_EXCEPTION_TYPE_WITH_BASE(lua_error, std::runtime_error);
-    ERS_MAKE_EXCEPTION_TYPE_WITH_ERS_BASE(lua_package_error, lua_error);
-    ERS_MAKE_EXCEPTION_TYPE_WITH_ERS_BASE(lua_stage_error, lua_error);
 }
 
 
@@ -111,11 +111,11 @@ namespace aengine {
 
 
     private:
-        std::function<sol::object(std::string_view)> _make_require_fn() const;
+        std::function<sol::object(sol::this_state, std::string_view)> _make_require_fn() const;
     };
 
 
-    using ModContainer = HashSet<
+    using ModContainer = boost::unordered_set<
         Mod,
         ers::member_string_hash_adaptor<ers::hashing::rapid_policy, &Mod::name>,
         ers::member_equal_adaptor<&Mod::name>

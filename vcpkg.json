@@ -1,24 +1,24 @@
 {
-    "dependencies": [
-        "boost-container",
-        "boost-optional",
-        "boost-smart-ptr",
-        "boost-thread",
-        "boost-unordered",
-        "catch2",
-        "cpptrace",
-        "frozen",
-        "luajit",
-        "pkgconf",
-        "quill",
-        "rmlui",
-        "sol2",
-        "sdl3"
-    ],
-    "overrides": [
-        {
-            "name": "sol2",
-            "version": "3.5.0"
-        }
-    ]
+  "dependencies": [
+    "boost-container",
+    "boost-optional",
+    "boost-smart-ptr",
+    "boost-thread",
+    "boost-unordered",
+    "catch2",
+    "cpptrace",
+    "frozen",
+    "luajit",
+    "pkgconf",
+    "quill",
+    "rmlui",
+    "sol2",
+    "sdl3"
+  ],
+  "overrides": [
+    {
+      "name": "sol2",
+      "version": "3.5.0"
+    }
+  ]
 }

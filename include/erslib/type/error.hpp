@@ -16,6 +16,8 @@
 // export
 #include <erslib/export.hpp>
 
+#include "erslib/exception/internal.hpp"
+
 
 // Severity
 
@@ -61,7 +63,7 @@ namespace ers {
             Severity severity,
             std::string_view message,
             timestamp_t timestamp = std::chrono::system_clock::now(),
-            cpptrace::stacktrace stacktrace = cpptrace::generate_trace()
+            cpptrace::raw_trace trace = internal::get_trace(1)
         );
 
 
@@ -87,7 +89,7 @@ namespace ers {
         Severity severity() const noexcept { return m_severity; }
         timestamp_t timestamp() const noexcept { return m_timestamp; }
         std::string_view message() const noexcept { return m_message; }
-        const cpptrace::stacktrace& stacktrace() const noexcept { return m_stacktrace; }
+        const cpptrace::raw_trace& stacktrace() const noexcept { return m_trace; }
 
 
         virtual std::string to_string(bool trim_service_information = false) const;
@@ -97,7 +99,7 @@ namespace ers {
         Severity m_severity;
         std::string m_message;
         timestamp_t m_timestamp;
-        cpptrace::stacktrace m_stacktrace;
+        cpptrace::raw_trace m_trace;
     };
 
 

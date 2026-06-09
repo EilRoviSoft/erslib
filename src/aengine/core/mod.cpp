@@ -11,6 +11,7 @@
 
 // aengine
 #include <aengine/enum/phase.hpp>
+#include <aengine/script/error.hpp>
 
 
 using std::string_literals::operator ""s;
@@ -145,7 +146,7 @@ void aengine::Mod::init_runtime(sol::state_view& lua) const {
     {
         sol::environment env(lua, sol::create, lua.globals());
 
-        env["__mod_name"] = name();
+        env["__mod_name"] = m_identity.name;
 
         env["require"] = _make_require_fn();
 
@@ -163,22 +164,22 @@ void aengine::Mod::init_runtime(sol::state_view& lua) const {
 void aengine::Mod::load_runtime(std::string_view stage_name) const {
     auto it = content().stages.find(stage_name);
     if (it == content().stages.end())
-        throw internal::lua_stage_error("Stage {} is not found", stage_name);
+        throw lua_stage_error("Stage {} is not found", stage_name);
 
 
     sol::state_view lua = m_runtime->env.lua_state();
-    sol::load_result chunk = lua.load(it->second, std::format("{}:{}", name(), stage_name));
+    sol::load_result chunk = lua.load(it->second, std::format("{}:{}", m_identity.name, stage_name));
 
     if (!chunk.valid()) {
         sol::error e = chunk;
-        throw internal::lua_stage_error("Failed to compile stage '{}': {}",
+        throw lua_stage_error("Failed to compile stage '{}': {}",
             stage_name, e.what());
     }
 
     sol::protected_function fn = chunk;
 
     if (!m_runtime->env.set_on(fn)) {
-        throw internal::lua_stage_error("Failed to set environment for stage '{}'",
+        throw lua_stage_error("Failed to set environment for stage '{}'",
             stage_name);
     }
 
@@ -186,15 +187,24 @@ void aengine::Mod::load_runtime(std::string_view stage_name) const {
     sol::protected_function_result result = fn();
 
     if (!result.valid()) {
+        if (m_runtime->pending_exception) {
+            auto ex = m_runtime->pending_exception;
+            m_runtime->pending_exception = nullptr;
+            std::rethrow_exception(ex);
+        }
+
         sol::error e = result;
-        throw internal::lua_stage_error("Failed to execute stage '{}': {}",
+        throw lua_stage_error("Failed to execute stage '{}': {}",
             stage_name, e.what());
     }
 }
 
 
-std::function<sol::object(std::string_view)> aengine::Mod::_make_require_fn() const {
-    return [this](std::string_view package_name) -> sol::object {
+std::function<sol::object(sol::this_state, std::string_view)> aengine::Mod::_make_require_fn() const {
+    return [this](sol::this_state ts, std::string_view package_name) -> sol::object {
+        sol::state_view lua = ts.lua_state();
+
+        
         auto& content = *m_content;
         auto& runtime = *m_runtime;
 
@@ -203,25 +213,47 @@ std::function<sol::object(std::string_view)> aengine::Mod::_make_require_fn() co
 
         auto package_it = content.packages.find(package_name);
         if (package_it == content.packages.end()) {
-            throw internal::lua_package_error("Package {} is not found", package_name);
+            runtime.pending_exception = make_lua_error<lua_package_error_fn>(lua, "Package {} is not found",
+                package_name);
+            luaL_error(lua, "C++ exception is tunneled");
+            return sol::nil;
         }
-
-
-        sol::state_view lua = runtime.env.lua_state();
 
         runtime.modules_cache.emplace(package_name, sol::make_object(lua, true));
 
 
-        auto lr = lua.load(package_it->second);
+        auto lr = lua.load(package_it->second, std::format("{}:{}", m_identity.name, package_name));
 
         if (!lr.valid()) {
             sol::error e = lr;
-            throw internal::lua_package_error("Failed to compile package '{}': {}",
+            runtime.pending_exception = make_lua_error<lua_package_error_fn>(lua, "Failed to compile package '{}': {}",
                 package_name, e.what());
+            luaL_error(lua, "C++ exception is tunneled");
+            return sol::nil;
         }
 
 
-        auto result = lr(runtime.env);
+        sol::protected_function pf = lr;
+
+        if (!runtime.env.set_on(pf)) {
+            runtime.pending_exception = make_lua_error<lua_package_error_fn>(lua, "Failed to set environment for package '{}'",
+                package_name);
+            luaL_error(lua, "C++ exception is tunneled");
+            return sol::nil;
+        }
+
+
+        auto result = pf();
+
+        if (!result.valid()) {
+            sol::error e = result;
+            runtime.pending_exception = make_lua_error<lua_package_error_fn>(lua, "Failed to execute package '{}': {}",
+                package_name, e.what());
+            luaL_error(lua, "C++ exception is tunneled");
+            return sol::nil;
+        }
+
+
         sol::object module = result.return_count() > 0
             ? result.get<sol::object>()
             : sol::make_object(lua, true);
