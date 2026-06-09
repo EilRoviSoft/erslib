@@ -137,7 +137,7 @@ set(SOURCES
 
     # aengine
 
-    "src/aengine/core.cpp"
+    
 
     "src/aengine/core/dependency.cpp"
     "src/aengine/core/dependency_graph.cpp"
