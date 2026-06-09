@@ -80,7 +80,7 @@ namespace aengine {
 
         void drop_metadata() const { m_metadata.reset(); }
 
-        void init_content() const;
+        void init_content(const std::function<bool(std::string_view)>& stage_filter) const;
         void drop_content() const { m_content.reset(); }
 
         void init_runtime(sol::state_view& lua) const;
@@ -103,7 +103,6 @@ namespace aengine {
 
     protected:
         fs::path m_dir;
-
         identity_type m_identity;
         mutable std::unique_ptr<metadata_type> m_metadata;
         mutable std::unique_ptr<content_type> m_content;
@@ -117,7 +116,7 @@ namespace aengine {
 
     using ModContainer = boost::unordered_set<
         Mod,
-        ers::member_string_hash_adaptor<ers::hashing::rapid_policy, &Mod::name>,
+        ers::member_string_hash_adaptor<ers::RapidHash, &Mod::name>,
         ers::member_equal_adaptor<&Mod::name>
     >;
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 // std
+#include <limits>
 #include <exception>
 #include <format>
 #include <string>
@@ -13,47 +14,77 @@
 
 
 namespace ers::internal {
-    cpptrace::raw_trace ERSLIB_EXPORT get_trace(size_t skip = 0);
+#if !defined(ERS_TRACE_VERBOSITY) || ERS_TRACE_VERBOSITY == 0
 
-    std::string ERSLIB_EXPORT extend_with_trace(std::string_view message, const cpptrace::raw_trace& trace);
-    std::string ERSLIB_EXPORT extend_with_trace(std::string_view message, size_t skip = 0);
+#elif ERS_TRACE_VERBOSITY == 1
+
+    static constexpr size_t max_depth_default = 1;
+
+#elif ERS_TRACE_VERBOSITY == 2
+
+#if ERS_TRACE_MAX_DEPTH != 0
+
+    static constexpr size_t max_depth_default = ERS_TRACE_MAX_DEPTH;
+
+#else
+
+    static constexpr size_t max_depth_default = std::numeric_limits<size_t>::max();
+
+#endif
+
+#endif
 }
 
 
-#define ERS_MAKE_EXCEPTION_FUNCTOR(NAME, BASE) \
+namespace ers {
+    struct trace_config_t {
+        size_t skip = 2;
+        size_t max_depth = internal::max_depth_default;
+    };
+}
+
+
+namespace ers::internal {
+    cpptrace::raw_trace ERSLIB_EXPORT get_trace(trace_config_t config = {});
+
+    std::string ERSLIB_EXPORT extend_with_trace(std::string_view message, const cpptrace::raw_trace& trace);
+    std::string ERSLIB_EXPORT extend_with_trace(std::string_view message, trace_config_t config);
+}
+
+
+#define ERS_MAKE_EXCEPTION_FUNCTOR(NAME, TYPE) \
     struct NAME##_fn { \
         template<typename... Args> \
-        BASE operator()(std::format_string<Args...> fmt, Args&&... args) const { \
-            return BASE(ers::internal::extend_with_trace(std::format(fmt, std::forward<Args>(args)...), 2)); \
+        TYPE operator()(std::format_string<Args...> fmt, Args&&... args) const { \
+            return TYPE(std::format(fmt, std::forward<Args>(args)...)); \
         } \
         template<typename... Args> \
-        BASE operator()(size_t skip, std::format_string<Args...> fmt, Args&&... args) const { \
-            return BASE(ers::internal::extend_with_trace(std::format(fmt, std::forward<Args>(args)...), 2 + skip)); \
+        TYPE operator()(ers::trace_config_t config, std::format_string<Args...> fmt, Args&&... args) const { \
+            return TYPE(ers::internal::extend_with_trace(std::format(fmt, std::forward<Args>(args)...), config)); \
         } \
         \
-        BASE operator()(std::string_view what_arg) const { \
-            return BASE(ers::internal::extend_with_trace(what_arg, 2)); \
+        TYPE operator()(std::string_view what_arg) const { \
+            return TYPE(what_arg.data()); \
         } \
-        BASE operator()(size_t skip, std::string_view what_arg) const { \
-            return BASE(ers::internal::extend_with_trace(what_arg, 2 + skip)); \
+        TYPE operator()(ers::trace_config_t config, std::string_view what_arg) const { \
+            return TYPE(ers::internal::extend_with_trace(what_arg, config)); \
         } \
     }; \
-    static constexpr NAME##_fn NAME
+    static constexpr NAME##_fn make_##NAME
 
-#define ERS_MAKE_EXCEPTION_TYPE_WITH_BASE(NAME, BASE) \
-    struct NAME##_impl : BASE { \
-        explicit NAME##_impl(std::string what_arg) : \
-            BASE(std::move(what_arg)) { \
-        } \
-        \
-    }; \
-    ERS_MAKE_EXCEPTION_FUNCTOR(NAME, NAME##_impl)
 
-#define ERS_MAKE_EXCEPTION_TYPE_WITH_ERS_BASE(NAME, BASE) \
-    struct NAME##_impl : BASE##_impl { \
-        explicit NAME##_impl(std::string what_arg) : \
-            BASE##_impl(std::move(what_arg)) { \
+#define ERS_MAKE_EXCEPTION_TYPE(NAME, BASE) \
+    struct NAME : BASE { \
+        explicit NAME(const std::string& what_arg) : \
+            BASE(what_arg) { \
         } \
         \
+        explicit NAME(const char* what_arg) : \
+            BASE(what_arg) { \
+        } \
+        \
+        NAME(const NAME&) noexcept = default; \
+        NAME& operator=(const NAME& other) noexcept = default; \
     }; \
-    ERS_MAKE_EXCEPTION_FUNCTOR(NAME, NAME##_impl)
+    \
+    ERS_MAKE_EXCEPTION_FUNCTOR(NAME, NAME)

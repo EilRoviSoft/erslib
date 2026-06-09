@@ -63,7 +63,7 @@ namespace ers {
             Severity severity,
             std::string_view message,
             timestamp_t timestamp = std::chrono::system_clock::now(),
-            cpptrace::raw_trace trace = internal::get_trace(1)
+            cpptrace::raw_trace trace = internal::get_trace({ .skip = 1 })
         );
 
 

@@ -5,7 +5,6 @@
 #include <type_traits>
 
 // ers
-#include <erslib/hashing/base.hpp>
 #include <erslib/trait/member.hpp>
 
 
@@ -120,13 +119,13 @@ namespace ers::internal {
 }
 
 namespace ers::internal {
-    template<typename Policy, auto Member, typename... Ts>
+    template<template<typename> typename Hash, auto Member, typename... Ts>
     struct hash_base;
 
 
-    template<typename Policy, auto Member, typename T, typename... Ts>
+    template<template<typename> typename Hash, auto Member, typename T, typename... Ts>
         requires (Member != nullptr)
-    struct hash_base<Policy, Member, T, Ts...> : THashBase<std::remove_cvref_t<Ts>, Policy>... {
+    struct hash_base<Hash, Member, T, Ts...> : Hash<std::remove_cvref_t<Ts>>... {
         using is_transparent = void;
 
         using primary_type = std::remove_cvref_t<T>;
@@ -137,23 +136,23 @@ namespace ers::internal {
         static_assert(owner_matches<primary_type, Member>(), "T must match the class owning Member");
 
 
-        using THashBase<std::remove_cvref_t<Ts>, Policy>::operator()...;
+        using Hash<std::remove_cvref_t<Ts>>::operator()...;
 
         constexpr size_t operator()(
             const primary_type& v, size_t seed = 0
-        ) const noexcept(noexcept(invoke_projected<THashBase<projected_type, Policy>, Member>(v, seed))
-        ) requires (ProjectedInvocable<THashBase<projected_type, Policy>, Member, const primary_type&, size_t>) {
-            return invoke_projected<THashBase<projected_type, Policy>, Member>(v, seed);
+        ) const noexcept(noexcept(invoke_projected<Hash<projected_type>, Member>(v, seed))
+        ) requires (ProjectedInvocable<Hash<projected_type>, Member, const primary_type&, size_t>) {
+            return invoke_projected<Hash<projected_type>, Member>(v, seed);
         }
     };
 
-    template<typename Policy, typename... Ts>
-    struct hash_base<Policy, nullptr, Ts...> : THashBase<std::remove_cvref_t<Ts>, Policy>... {
+    template<template<typename> typename Hash, typename... Ts>
+    struct hash_base<Hash, nullptr, Ts...> : Hash<std::remove_cvref_t<Ts>>... {
         using is_transparent = void;
         using types = std::tuple<std::remove_cvref_t<Ts>...>;
 
 
-        using THashBase<std::remove_cvref_t<Ts>, Policy>::operator()...;
+        using Hash<std::remove_cvref_t<Ts>>::operator()...;
     };
 }
 
@@ -179,11 +178,11 @@ namespace ers::adaptor {
 // Specialized implementations
 
 namespace ers {
-    template<typename Policy, typename... Ts>
-    using hash_adaptor = internal::hash_base<Policy, nullptr, Ts...>;
+    template<template<typename> typename Hash, typename... Ts>
+    using hash_adaptor = internal::hash_base<Hash, nullptr, Ts...>;
 
-    template<typename Policy, auto Member, typename... Ts>
-    using member_hash_adaptor = internal::hash_base<Policy, Member, std::remove_cvref_t<member_class_t<Member>>, Ts...>;
+    template<template<typename> typename Hash, auto Member, typename... Ts>
+    using member_hash_adaptor = internal::hash_base<Hash, Member, std::remove_cvref_t<member_class_t<Member>>, Ts...>;
 }
 
 namespace ers {

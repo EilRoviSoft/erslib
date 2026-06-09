@@ -10,15 +10,14 @@
 #include <erslib/util/string.hpp>
 
 // aengine
-#include <aengine/enum/phase.hpp>
 #include <aengine/script/error.hpp>
+#include <aengine/script/exception.hpp>
 
 
 using std::string_literals::operator ""s;
 
 
 // Internal
-
 
 namespace {
     ers::Result<aengine::DependencyContainer> parse_dependencies(const utl::Json::array_type& array) {
@@ -59,12 +58,12 @@ namespace {
         fs::path info_path = m_dir / "info.json";
 
         if (!fs::exists(info_path)) {
-            throw ers::path_error("Mod directory '{}' without 'info.json' is specified",
+            throw ers::make_path_error("Mod directory '{}' without 'info.json' is specified",
                 info_path.string());
         }
 
         if (!fs::is_regular_file(info_path)) {
-            throw ers::path_error("Path '{}' doesn't lead to file",
+            throw ers::make_path_error("Path '{}' doesn't lead to file",
                 info_path.string());
         }
 
@@ -74,7 +73,7 @@ namespace {
         try {
             json = utl::from_file(info_path.string());
         } catch (const fs::filesystem_error& e) {
-            throw ers::path_error("Error during parsing json with path '{}' occured. Info: {}",
+            throw ers::make_path_error("Error during parsing json with path '{}' occured. Info: {}",
                 info_path.string(), e.what());
         }
 
@@ -94,7 +93,7 @@ namespace {
 
 
         if (auto folder_name = m_dir.stem().string(); folder_name != identity.name) {
-            throw ers::path_error("Mod name ('{}') should be the same as folder name ('{}').",
+            throw ers::make_path_error("Mod name ('{}') should be the same as folder name ('{}').",
                 identity.name, folder_name);
         }
 
@@ -118,7 +117,7 @@ void aengine::Mod::init_info() {
     m_metadata = std::make_unique<internal::ModMetadata>(std::move(metadata));
 }
 
-void aengine::Mod::init_content() const {
+void aengine::Mod::init_content(const std::function<bool(std::string_view)>& stage_filter) const {
     content_type content;
 
     for (const auto& it : fs::recursive_directory_iterator(m_dir)) {
@@ -131,7 +130,7 @@ void aengine::Mod::init_content() const {
         // If file isn't stage, it should be written as a package
         // and be available later as include.
 
-        if (*ers::convert::from_str<Phase>(stem) != Phase::Unknown)
+        if (stage_filter(stem))
             content.stages.emplace(stem, ers::util::read_file(it));
         else
             content.packages.emplace(path_to_package_name(fs::relative(it, m_dir)), ers::util::read_file(it));
@@ -164,7 +163,7 @@ void aengine::Mod::init_runtime(sol::state_view& lua) const {
 void aengine::Mod::load_runtime(std::string_view stage_name) const {
     auto it = content().stages.find(stage_name);
     if (it == content().stages.end())
-        throw lua_stage_error("Stage {} is not found", stage_name);
+        throw make_lua_stage_error("Stage {} is not found", stage_name);
 
 
     sol::state_view lua = m_runtime->env.lua_state();
@@ -172,14 +171,14 @@ void aengine::Mod::load_runtime(std::string_view stage_name) const {
 
     if (!chunk.valid()) {
         sol::error e = chunk;
-        throw lua_stage_error("Failed to compile stage '{}': {}",
+        throw make_lua_stage_error("Failed to compile stage '{}': {}",
             stage_name, e.what());
     }
 
     sol::protected_function fn = chunk;
 
     if (!m_runtime->env.set_on(fn)) {
-        throw lua_stage_error("Failed to set environment for stage '{}'",
+        throw make_lua_stage_error("Failed to set environment for stage '{}'",
             stage_name);
     }
 
@@ -194,7 +193,7 @@ void aengine::Mod::load_runtime(std::string_view stage_name) const {
         }
 
         sol::error e = result;
-        throw lua_stage_error("Failed to execute stage '{}': {}",
+        throw make_lua_stage_error("Failed to execute stage '{}': {}",
             stage_name, e.what());
     }
 }
@@ -213,7 +212,7 @@ std::function<sol::object(sol::this_state, std::string_view)> aengine::Mod::_mak
 
         auto package_it = content.packages.find(package_name);
         if (package_it == content.packages.end()) {
-            runtime.pending_exception = make_lua_error<lua_package_error_fn>(lua, "Package {} is not found",
+            runtime.pending_exception = script::tunnel_error<lua_package_error>(lua, "Package {} is not found",
                 package_name);
             luaL_error(lua, "C++ exception is tunneled");
             return sol::nil;
@@ -226,7 +225,7 @@ std::function<sol::object(sol::this_state, std::string_view)> aengine::Mod::_mak
 
         if (!lr.valid()) {
             sol::error e = lr;
-            runtime.pending_exception = make_lua_error<lua_package_error_fn>(lua, "Failed to compile package '{}': {}",
+            runtime.pending_exception = script::tunnel_error<lua_package_error>(lua, "Failed to compile package '{}': {}",
                 package_name, e.what());
             luaL_error(lua, "C++ exception is tunneled");
             return sol::nil;
@@ -236,7 +235,7 @@ std::function<sol::object(sol::this_state, std::string_view)> aengine::Mod::_mak
         sol::protected_function pf = lr;
 
         if (!runtime.env.set_on(pf)) {
-            runtime.pending_exception = make_lua_error<lua_package_error_fn>(lua, "Failed to set environment for package '{}'",
+            runtime.pending_exception = script::tunnel_error<lua_package_error>(lua, "Failed to set environment for package '{}'",
                 package_name);
             luaL_error(lua, "C++ exception is tunneled");
             return sol::nil;
@@ -247,7 +246,7 @@ std::function<sol::object(sol::this_state, std::string_view)> aengine::Mod::_mak
 
         if (!result.valid()) {
             sol::error e = result;
-            runtime.pending_exception = make_lua_error<lua_package_error_fn>(lua, "Failed to execute package '{}': {}",
+            runtime.pending_exception = script::tunnel_error<lua_package_error>(lua, "Failed to execute package '{}': {}",
                 package_name, e.what());
             luaL_error(lua, "C++ exception is tunneled");
             return sol::nil;

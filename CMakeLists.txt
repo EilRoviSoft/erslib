@@ -63,12 +63,14 @@ function(erslib_optional_package package_name target_name compile_definition)
 endfunction()
 
 
+erslib_optional_package(boost_container Boost::container _HAS_BOOST_CONTAINER)
 erslib_optional_package(boost_optional Boost::optional _HAS_BOOST_OPTIONAL)
+erslib_optional_package(boost_regex Boost::regex _HAS_BOOST_REGEX)
 erslib_optional_package(boost_smart_ptr Boost::smart_ptr _HAS_BOOST_SMART_PTR)
 erslib_optional_package(boost_thread Boost::thread _HAS_BOOST_THREAD)
 erslib_optional_package(boost_unordered Boost::unordered _HAS_BOOST_UNORDERED)
-erslib_optional_package(boost_container Boost::container _HAS_BOOST_CONTAINER)
 erslib_optional_package(cpptrace cpptrace::cpptrace _HAS_CPPTRACE)
+erslib_optional_package(frozen frozen::frozen _HAS_FROZEN)
 erslib_optional_package(sol2 sol2::sol2 _HAS_SOL2)
 erslib_optional_package(SDL3 SDL3::SDL3 _HAS_SDL3)
 erslib_optional_package(quill quill::quill _HAS_QUILL)
@@ -137,14 +139,14 @@ set(SOURCES
 
     # aengine
 
-    
-
     "src/aengine/core/dependency.cpp"
     "src/aengine/core/dependency_graph.cpp"
     "src/aengine/core/mod.cpp"
     "src/aengine/core/proto.cpp"
 
     "src/aengine/resource/texture.cpp"
+
+    "src/aengine/util/stage.cpp"
 
 
     # easy_ecs

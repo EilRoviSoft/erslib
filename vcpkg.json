@@ -2,6 +2,7 @@
   "dependencies": [
     "boost-container",
     "boost-optional",
+    "boost-regex",
     "boost-smart-ptr",
     "boost-thread",
     "boost-unordered",

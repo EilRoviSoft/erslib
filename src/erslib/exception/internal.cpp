@@ -20,26 +20,14 @@ namespace {
 }
 
 
-cpptrace::raw_trace ers::internal::get_trace(size_t skip) {
+cpptrace::raw_trace ers::internal::get_trace(trace_config_t config) {
 #if !defined(ERS_TRACE_VERBOSITY) || ERS_TRACE_VERBOSITY == 0
 
     return cpptrace::raw_trace();
 
-#elif ERS_TRACE_VERBOSITY == 1
-
-    return cpptrace::generate_raw_trace(skip + 1, 1);
-
-#elif ERS_TRACE_VERBOSITY == 2
-
-#if ERS_TRACE_MAX_DEPTH != 0
-
-    return cpptrace::generate_raw_trace(skip + 1, ERS_TRACE_MAX_DEPTH);
-
 #else
 
-    return cpptrace::generate_raw_trace(skip + 1);
-
-#endif
+    return cpptrace::generate_raw_trace(config.skip + 1, config.max_depth);
 
 #endif
 }
@@ -57,14 +45,14 @@ std::string ers::internal::extend_with_trace(std::string_view message, const cpp
 #endif
 }
 
-std::string ers::internal::extend_with_trace(std::string_view message, size_t skip) {
+std::string ers::internal::extend_with_trace(std::string_view message, trace_config_t config) {
 #if !defined(ERS_TRACE_VERBOSITY) || ERS_TRACE_VERBOSITY == 0
 
     return static_cast<std::string>(message);
 
 #else
 
-    return std::format("{}\n{}", message, get_formatter().format(get_trace(skip).resolve()));
+    return std::format("{}\n{}", message, get_formatter().format(get_trace(config).resolve()));
 
 #endif
 }

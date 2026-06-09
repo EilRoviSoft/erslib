@@ -56,28 +56,28 @@ namespace aengine {
 
     using StringSet = HashSet<
         std::string,
-        ers::string_hash_adaptor<ers::hashing::rapid_policy>,
+        ers::string_hash_adaptor<ers::RapidHash>,
         ers::equal_adaptor<std::string>
     >;
 
     template<typename V>
     using StringMap = HashMap<
         std::string, V,
-        ers::string_hash_adaptor<ers::hashing::rapid_policy>,
+        ers::string_hash_adaptor<ers::RapidHash>,
         ers::equal_adaptor<std::string>
     >;
 
 
     using StringViewSet = HashSet<
         std::string_view,
-        ers::string_hash_adaptor<ers::hashing::rapid_policy>,
+        ers::string_hash_adaptor<ers::RapidHash>,
         ers::equal_adaptor<std::string_view>
     >;
 
     template<typename V>
     using StringViewMap = HashMap<
         std::string_view, V,
-        ers::string_hash_adaptor<ers::hashing::rapid_policy>,
+        ers::string_hash_adaptor<ers::RapidHash>,
         ers::equal_adaptor<std::string_view>
     >;
 }

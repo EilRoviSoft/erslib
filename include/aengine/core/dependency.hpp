@@ -37,12 +37,12 @@ namespace aengine {
 
     using DependencyContainer = HashSet<
         dependency_t,
-        ers::member_string_hash_adaptor<ers::hashing::rapid_policy, &dependency_t::name>,
+        ers::member_string_hash_adaptor<ers::RapidHash, &dependency_t::name>,
         ers::member_equal_adaptor<&dependency_t::name>
     >;
 
 
-    ERS_MAKE_EXCEPTION_TYPE_WITH_BASE(dependency_error, std::runtime_error);
+    ERS_MAKE_EXCEPTION_TYPE(dependency_error, std::runtime_error);
 }
 
 

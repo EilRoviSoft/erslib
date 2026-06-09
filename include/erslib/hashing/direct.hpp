@@ -4,13 +4,13 @@
 #include <erslib/hashing/base.hpp>
 
 
-namespace ers::hashing {
-    struct direct_policy {};
+namespace ers {
+    struct direct_hash_policy {};
 }
 
 
 template<>
-struct ers::hashing::backend<ers::hashing::direct_policy> {
+struct ers::hashing::backend<ers::direct_hash_policy> {
     template<std::integral T>
     static constexpr size_t process_value(const T& value, size_t /*seed*/) noexcept {
         return static_cast<size_t>(value);
@@ -23,5 +23,5 @@ struct ers::hashing::backend<ers::hashing::direct_policy> {
 namespace ers {
     // Useful when you already provide hashed values.
     template<typename T>
-    using DirectHash = THashBase<T, hashing::direct_policy>;
+    using DirectHash = THashBase<T, direct_hash_policy>;
 }

@@ -8,11 +8,11 @@
 
 
 namespace ers {
-    ERS_MAKE_EXCEPTION_TYPE_WITH_BASE(runtime_error, std::runtime_error);
-    ERS_MAKE_EXCEPTION_TYPE_WITH_BASE(range_error, std::range_error);
-    ERS_MAKE_EXCEPTION_TYPE_WITH_BASE(overflow_error, std::overflow_error);
-    ERS_MAKE_EXCEPTION_TYPE_WITH_BASE(underflow_error, std::underflow_error);
+    ERS_MAKE_EXCEPTION_TYPE(runtime_error, std::runtime_error);
+    ERS_MAKE_EXCEPTION_TYPE(range_error, std::range_error);
+    ERS_MAKE_EXCEPTION_TYPE(overflow_error, std::overflow_error);
+    ERS_MAKE_EXCEPTION_TYPE(underflow_error, std::underflow_error);
 
-    ERS_MAKE_EXCEPTION_TYPE_WITH_BASE(parse_error, std::runtime_error);
-    ERS_MAKE_EXCEPTION_TYPE_WITH_BASE(conversion_error, std::runtime_error);
+    ERS_MAKE_EXCEPTION_TYPE(parse_error, std::runtime_error);
+    ERS_MAKE_EXCEPTION_TYPE(conversion_error, std::runtime_error);
 }

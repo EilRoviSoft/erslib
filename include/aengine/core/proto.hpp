@@ -67,7 +67,7 @@ namespace aengine::internal {
 
     using FieldPropertySet = HashSet<
         field_property_t,
-        ers::member_hash_adaptor<ers::hashing::direct_policy, &field_property_t::type, size_t>,
+        ers::member_hash_adaptor<ers::DirectHash, &field_property_t::type, size_t>,
         ers::member_equal_adaptor<&field_property_t::type>
     >;
 }
@@ -118,7 +118,7 @@ namespace aengine {
 
     using LayoutDictionary = HashSet<
         Layout,
-        ers::member_string_hash_adaptor<ers::hashing::rapid_policy, &Layout::name>,
+        ers::member_string_hash_adaptor<ers::RapidHash, &Layout::name>,
         ers::member_equal_adaptor<&Layout::name>
     >;
 }

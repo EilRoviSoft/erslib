@@ -68,7 +68,7 @@ namespace utl::internal {
     template<class T>
     using object_type_impl = boost::unordered_flat_map<
         std::string, T,
-        ers::string_hash_adaptor<ers::hashing::rapid_policy>,
+        ers::string_hash_adaptor<ers::RapidHash>,
         ers::equal_adaptor<std::string>
     >;
     template<class T>
@@ -319,7 +319,7 @@ namespace utl::internal {
             const auto it = object.find(key);
 
             if (it == object.end() || !it->second.is<T>())
-                throw ers::out_of_range_error("Json doesn't have key '{}'", key);
+                throw ers::make_out_of_range_error("Json doesn't have key '{}'", key);
             return it->second.as<T>();
         }
 
@@ -576,7 +576,7 @@ namespace utl {
     } // namespace literals
 
 
-    ERS_MAKE_EXCEPTION_TYPE_WITH_BASE(json_field_error, std::runtime_error);
+    ERS_MAKE_EXCEPTION_TYPE(json_field_error, std::runtime_error);
 }
 
 
