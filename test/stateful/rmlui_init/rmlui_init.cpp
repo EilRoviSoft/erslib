@@ -1,8 +1,10 @@
+#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+
 // std
 #include <filesystem>
 
-// catch2
-#include <catch2/catch_test_macros.hpp>
+// doctest
+#include <doctest/doctest.h>
 
 // Rml
 #include <RmlUi/Core.h>
@@ -49,7 +51,7 @@ namespace {
 }
 
 
-TEST_CASE("RmlUi initializes and creates context", "[rmlui]") {
+TEST_CASE("RmlUi initializes and creates context") {
     TestSystemInterface system_interface;
     NullRenderInterface render_interface;
 
@@ -74,7 +76,7 @@ TEST_CASE("RmlUi initializes and creates context", "[rmlui]") {
 }
 
 
-TEST_CASE("RmlUi loads basic document", "[rmlui]") {
+TEST_CASE("RmlUi loads basic document") {
     TestSystemInterface system_interface;
     NullRenderInterface render_interface;
 

@@ -16,8 +16,18 @@
 // General
 
 namespace ecs::util {
+    struct ComponentTypeInfo {
+        size_t id;
+        std::string_view name;
+    };
+
+
+    std::list<ComponentTypeInfo>& components_container();
+    aengine::TrivialMap<ComponentTypeInfo*>& components_by_id();
+    aengine::StringMap<ComponentTypeInfo*>& components_by_name();
+
+
     std::list<void(*)(sol::state_view& lua)>& component_definers();
-    aengine::StringSet& components_dictionary();
 
 
     template<ComponentLike T>
@@ -29,7 +39,14 @@ namespace ecs::util {
 
         ComponentInitializer() {
             component_definers().emplace_back(&define);
-            components_dictionary().emplace(ecs::component_name<T>());
+
+            auto& ref = components_container().emplace_back(ComponentTypeInfo {
+                .id   = ecs::component_id<T>(),
+                .name = ecs::component_name<T>()
+            });
+
+            components_by_id().emplace(ref.id, &ref);
+            components_by_name().emplace(ref.name, &ref);
         }
     };
 }
@@ -50,7 +67,7 @@ namespace ecs::util {
 
 // Macros
 
-#define AENGINE_ECS_COMPONENT(NAMESPACE, NAME, TYPE) \
+#define EASY_ECS_COMPONENT(NAMESPACE, NAME, TYPE) \
     namespace NAMESPACE { using NAME = ::ecs::TComponent<#NAME, TYPE>; } \
     namespace NAMESPACE::internal { inline const ::ecs::util::ComponentInitializer<NAME> NAME##_define_component {}; } \
     template<> struct ::ecs::util::component_by_name<#NAME> { using type = TYPE; }

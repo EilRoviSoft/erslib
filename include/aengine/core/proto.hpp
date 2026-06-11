@@ -9,68 +9,12 @@
 // ers
 #include <erslib/adaptor/transparent/base.hpp>
 
+// ecs
+#include <easy_ecs/registry.hpp>
+#include <easy_ecs/util/component_initializer.hpp>
+
 // aengine
 #include <aengine/fwd.hpp>
-
-
-// field_property_t
-
-namespace aengine {
-    // TODO: add more properties
-    struct field_property_t {
-        enum property_type {
-            None = 0,
-            Required
-        };
-
-
-        property_type type;
-        union {
-            bool is_required;
-        };
-
-
-        static field_property_t required(bool value);
-    };
-}
-
-
-template<typename Policy>
-struct ers::THashBase<aengine::field_property_t, Policy> {
-    using as_integral_type = std::underlying_type_t<aengine::field_property_t::property_type>;
-
-
-    constexpr size_t operator()(aengine::field_property_t what, size_t seed = 0) const noexcept {
-        return ers::THashBase<as_integral_type, Policy> {}(std::to_underlying(what.type), seed);
-    }
-};
-
-
-namespace aengine::internal {
-    struct field_property_equal {
-        using is_transparent = void;
-
-
-        constexpr bool operator()(const field_property_t& lhs, const field_property_t& rhs) const noexcept {
-            return lhs.type == rhs.type;
-        }
-
-        constexpr bool operator()(const field_property_t& lhs, size_t rhs) const noexcept {
-            return static_cast<size_t>(std::to_underlying(lhs.type)) == rhs;
-        }
-
-        constexpr bool operator()(size_t lhs, const field_property_t& rhs) const noexcept {
-            return lhs == static_cast<size_t>(std::to_underlying(rhs.type));
-        }
-    };
-
-
-    using FieldPropertySet = HashSet<
-        field_property_t,
-        ers::member_hash_adaptor<ers::DirectHash, &field_property_t::type, size_t>,
-        ers::member_equal_adaptor<&field_property_t::type>
-    >;
-}
 
 
 // Layout
@@ -79,48 +23,64 @@ namespace aengine {
     // In the best world you should allocate 'Layout' once and never change it again.
     // Otherwise, this could lead to UB.
     class Layout {
-        struct field_t {
-            std::string type;
-            internal::FieldPropertySet properties;
+    public:
+        // Member types
+
+        using Applier = std::function<void(ecs::Registry&, size_t entity_id)>;
+
+        struct ComponentEntry {
+            size_t id;
+            std::string name;
+            bool required;
+
+            // Returns nullopt when the relevant Lua fields are absent,
+            // allowing prototype-level inheritance to supply the value.
+            std::function<std::optional<Applier>(const sol::table&)> make_applier;
         };
 
 
-    public:
+        // Member functions
+
+        explicit Layout(std::string_view name);
+
+
         // Modifiers
 
-        void add_field(std::string_view name, std::string_view type, internal::FieldPropertySet properties);
-        void add_fields(std::initializer_list<std::tuple<std::string_view, std::string_view, internal::FieldPropertySet>> info);
+        template<ecs::ComponentLike T, typename Deserializer>
+        Layout& component(Deserializer&& d, bool required = true) {
+            m_entries.push_back({
+                .id           = ecs::component_id<T>(),
+                .name         = std::string(ecs::component_name<T>()),
+                .required     = required,
+                .make_applier =
+                [d = std::forward<Deserializer>(d)](const sol::table& table) -> std::optional<Applier> {
+                    auto r = d(table);
+                    if (!r)
+                        return std::nullopt;
 
-        void inherit(const Layout& layout);
+                    auto shared = std::make_shared<typename T::value_type>(std::move(*r));
 
-
-        // Observers
-
-        template<typename K>
-        const field_t& field(const K& k) const {
-            return m_fields[k];
+                    return Applier([shared](ecs::Registry& reg, size_t id) {
+                        reg.add_component<T>(id, *shared);
+                    });
+                }
+            });
+            return *this;
         }
 
-        template<typename K>
-        const field_t& operator[](const K& k) {
-            return field(k);
-        }
+        Layout& inherit(const Layout& parent);
 
 
-        std::string_view name() const noexcept { return m_name; }
+        // Accessors
+
+        std::string_view name() const { return m_name; }
+        const std::vector<ComponentEntry>& entries() const { return m_entries; }
 
 
     protected:
         std::string m_name;
-        StringMap<field_t> m_fields;
+        std::vector<ComponentEntry> m_entries;
     };
-
-
-    using LayoutDictionary = HashSet<
-        Layout,
-        ers::member_string_hash_adaptor<ers::RapidHash, &Layout::name>,
-        ers::member_equal_adaptor<&Layout::name>
-    >;
 }
 
 
@@ -129,11 +89,86 @@ namespace aengine {
 namespace aengine {
     class Prototype {
     public:
+        // Member types
+
+        using Applier = Layout::Applier;
+
+
+        // Member functions
+
+        Prototype() = default;
+        Prototype(std::string_view type, std::string_view name);
+
+
+        // Modifiers
+
+        void inherit_from(const Prototype& parent);
+
+        void load(const Layout& layout, const sol::table& table);
+
+        size_t instantiate(ecs::Registry& registry) const;
+
+        size_t instantiate(ecs::Registry& registry, std::string_view entity_name) const;
+
+
+        // Accessors
+
+        std::string_view type() const { return m_type; }
+        std::string_view name() const { return m_name; }
+
+        bool has_component(size_t id) const { return m_appliers.contains(id); }
 
 
     protected:
-        std::string m_name;
         std::string m_type;
-        StringMap<Object> m_components;
+        std::string m_name;
+
+        // key = component_id<T>()
+        TrivialMap<Applier> m_appliers;
+    };
+}
+
+
+// PrototypeRegistry
+
+namespace aengine {
+    class PrototypeRegistry {
+    public:
+        // Modifiers
+
+        Layout& add_layout(std::string_view name);
+
+
+        // Load one table: must have 'type' and 'name'; 'parent' is optional.
+        void load(const sol::table& table);
+
+        // Load an array of prototype tables (data:extend({...}) style).
+        void load_all(const sol::table& array);
+
+
+        size_t instantiate(ecs::Registry& registry, std::string_view proto_name) const;
+        size_t instantiate(ecs::Registry& registry, std::string_view proto_name, std::string_view entity_name) const;
+
+
+        // Injects a global 'data' table with an 'extend' method.
+        void bind_lua(sol::state_view& lua);
+
+
+        // Accessors
+
+        Layout& layout(std::string_view name) { return m_layouts.at(name); }
+        const Layout& layout(std::string_view name) const { return m_layouts.at(name); }
+
+        bool has_layout(std::string_view name) const { return m_layouts.contains(name); }
+
+
+        const Prototype& prototype(std::string_view name) const { return m_prototypes.at(name); }
+
+        bool has_prototype(std::string_view name) const { return m_prototypes.contains(name); }
+
+
+    private:
+        StringMap<Layout> m_layouts;
+        StringMap<Prototype> m_prototypes;
     };
 }

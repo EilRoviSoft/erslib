@@ -53,24 +53,36 @@ namespace ers::internal {
 
 
 #define ERS_MAKE_EXCEPTION_FUNCTOR(NAME, TYPE) \
+    template<bool IncludeTrace> \
     struct NAME##_fn { \
         template<typename... Args> \
-        TYPE operator()(std::format_string<Args...> fmt, Args&&... args) const { \
+        TYPE operator()(std::format_string<Args...> fmt, Args&&... args) const requires(!IncludeTrace) { \
             return TYPE(std::format(fmt, std::forward<Args>(args)...)); \
         } \
+        \
         template<typename... Args> \
-        TYPE operator()(ers::trace_config_t config, std::format_string<Args...> fmt, Args&&... args) const { \
+        TYPE operator()(ers::trace_config_t config, std::format_string<Args...> fmt, Args&&... args) const requires(IncludeTrace) { \
             return TYPE(ers::internal::extend_with_trace(std::format(fmt, std::forward<Args>(args)...), config)); \
         } \
+        template<typename... Args> \
+        TYPE operator()(std::format_string<Args...> fmt, Args&&... args) const requires(IncludeTrace) { \
+            return TYPE(ers::internal::extend_with_trace(std::format(fmt, std::forward<Args>(args)...), ers::trace_config_t {})); \
+        } \
         \
-        TYPE operator()(std::string_view what_arg) const { \
+        \
+        TYPE operator()(std::string_view what_arg) const requires(!IncludeTrace) { \
             return TYPE(what_arg.data()); \
         } \
-        TYPE operator()(ers::trace_config_t config, std::string_view what_arg) const { \
+        \
+        TYPE operator()(ers::trace_config_t config, std::string_view what_arg) const requires(IncludeTrace) { \
             return TYPE(ers::internal::extend_with_trace(what_arg, config)); \
         } \
+        TYPE operator()(std::string_view what_arg) const requires(IncludeTrace) { \
+            return TYPE(ers::internal::extend_with_trace(what_arg, ers::trace_config_t {})); \
+        } \
     }; \
-    static constexpr NAME##_fn make_##NAME
+    static constexpr NAME##_fn<false> make_##NAME; \
+    static constexpr NAME##_fn<true> make_##NAME##_with_trace
 
 
 #define ERS_MAKE_EXCEPTION_TYPE(NAME, BASE) \

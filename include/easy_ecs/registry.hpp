@@ -33,7 +33,7 @@ namespace ecs {
             size_t cid = component_id<T>();
 
             if (entity.linked_components.contains(cid)) {
-                throw ers::runtime_error("Component {} (id: {}) for entity {} already exists",
+                throw ers::make_runtime_error("Component {} (id: {}) for entity {} already exists",
                     component_name<T>(), cid, id);
             }
 
@@ -43,7 +43,7 @@ namespace ecs {
 
             auto [it, inserted] = m_components.try_emplace(key, std::move(component));
             if (!inserted) {
-                throw ers::runtime_error("Component {} (hash: {}) for entity {} already exist",
+                throw ers::make_runtime_error("Component {} (hash: {}) for entity {} already exist",
                     component_name<T>(), cid, id);
             }
 
