@@ -1,10 +1,10 @@
-#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-
 // doctest
 #include <doctest/doctest.h>
 
-// ers
+// contrib
 #include <contrib/json.hpp>
+
+// ers
 #include <erslib/io/json_schema.hpp>
 
 

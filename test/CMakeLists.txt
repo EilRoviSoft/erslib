@@ -49,13 +49,19 @@ source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${SIMPLE_SOURCES})
 
 
 add_executable(test_simple)
-target_sources(test_simple PRIVATE ${SIMPLE_SOURCES})
+target_sources(test_simple PRIVATE ${SIMPLE_SOURCES} "simple.cpp")
 
 target_link_libraries(test_simple
     PRIVATE
         erslib::erslib
         doctest::doctest
 )
+
+target_compile_definitions(test_simple
+    PRIVATE
+        DOCTEST_CONFIG_USE_STD_HEADERS
+)
+
 
 if(NOT IS_TOP_LEVEL)
     win_copy_deps_to_target_dir(test_simple erslib::erslib)
@@ -103,6 +109,7 @@ function(add_stateful_test TEST_TARGET RELATIVE_TEST_DIR)
 
     target_compile_definitions(${TEST_TARGET}
         PRIVATE
+            DOCTEST_CONFIG_USE_STD_HEADERS
             TEST_CWD="${BIN_DIR}"
     )
 endfunction()
