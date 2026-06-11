@@ -1,10 +1,12 @@
-// catch2
-#include <catch2/catch_test_macros.hpp>
+#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+
+// doctest
+#include <doctest/doctest.h>
 
 // ers
 #include <erslib/memory/any.hpp>
 
 
-TEST_CASE("testing TAny", "[any]") {
+TEST_CASE("testing TAny") {
     ers::Any example(std::in_place_type<std::string>, "hello world!");
 }

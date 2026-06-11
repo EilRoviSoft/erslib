@@ -1,10 +1,12 @@
+#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+
 // std
 #include <array>
 #include <cstddef>
 #include <memory>
 
-// catch2
-#include <catch2/catch_test_macros.hpp>
+// doctest
+#include <doctest/doctest.h>
 
 // ers
 #include <erslib/memory/holder.hpp>
@@ -23,17 +25,17 @@ namespace {
 }
 
 
-TEST_CASE("testing custom allocator", "[memory]") {
+TEST_CASE("testing custom allocator") {
     std::array<std::byte, 1024> buffer;
     std::pmr::monotonic_buffer_resource pool(buffer.data(), sizeof(buffer));
 
-    SECTION("general access") {
+    SUBCASE("general access") {
         auto n = ers::make_holder<int>(&pool, 42);
         REQUIRE(n);
         REQUIRE(*n == 42);
     }
 
-    SECTION("ecs") {
+    SUBCASE("ecs") {
         auto position = ers::make_holder<Position>(&pool, 1.0, 2.0);
         REQUIRE(position);
     }

@@ -1,17 +1,18 @@
+#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+
 // std
 #include <array>
 #include <chrono>
-#include <print>
 #include <random>
+#include <ranges>
 #include <string>
 #include <thread>
 
 // boost
 #include <boost/unordered/unordered_flat_map.hpp>
 
-// catch2
-#include <catch2/catch_get_random_seed.hpp>
-#include <catch2/catch_test_macros.hpp>
+// doctest
+#include <doctest/doctest.h>
 
 // ers
 #include <erslib/adaptor/transparent/string.hpp>
@@ -28,7 +29,7 @@ namespace {
 
 
     std::mt19937_64& gen() {
-        static std::mt19937_64 instance(Catch::getSeed());
+        static std::mt19937_64 instance(doctest::getContextOptions()->rand_seed);
         return instance;
     }
 
@@ -60,7 +61,7 @@ namespace {
 }
 
 
-TEST_CASE("testing thread_safe map", "[ts_map]") {
+TEST_CASE("testing thread_safe map") {
     Map c;
     std::array<std::string_view, 4> vals = { "player", "enemy:knight", "enemy:mage", "enemy:rogue" };
     std::array<std::chrono::milliseconds, 10> intervals;
@@ -71,20 +72,20 @@ TEST_CASE("testing thread_safe map", "[ts_map]") {
     for (auto it : vals)
         c.set(it);
 
-    //SECTION("intervaled output") {
-    //    auto print = [&c, &vals](size_t i) mutable {
-    //        //std::print("\niteration {}:\n", i);
-    //        for (auto it : vals) {
-    //            size_t v = *c[it].get();
-    //            //std::print("{:3}: {}\n", it, v);
-    //        }
-    //    };
+    SUBCASE("intervaled output") {
+        auto print = [&c, &vals](size_t i) mutable {
+            MESSAGE("\niteration {}:\n", i);
+            for (auto it : vals) {
+                size_t v = *c[it].get();
+                MESSAGE("{:3}: {}\n", it, v);
+            }
+        };
 
-    //    for (auto [i, d] : intervals | std::views::enumerate) {
-    //        print(i);
-    //        //std::print("waiting for {}\n", d);
-    //        std::this_thread::sleep_for(d);
-    //    }
-    //    print(intervals.size());
-    //}
+        for (auto [i, d] : intervals | std::views::enumerate) {
+            print(i);
+            MESSAGE("waiting for {}\n", d);
+            std::this_thread::sleep_for(d);
+        }
+        print(intervals.size());
+    }
 }

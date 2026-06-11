@@ -1,5 +1,7 @@
-// catch2
-#include <catch2/catch_test_macros.hpp>
+#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+
+// doctest
+#include <doctest/doctest.h>
 
 // ers
 #include <contrib/json.hpp>
@@ -11,14 +13,14 @@ using floating = utl::Json::floating_type;
 using string = utl::Json::string_type;
 
 
-TEST_CASE("assignment", "[json]") {
+TEST_CASE("assignment") {
     utl::Json obj;
 
     obj["hello"] = "world";
 }
 
 
-TEST_CASE("require_field", "[json]") {
+TEST_CASE("require_field") {
     utl::Json obj;
 
     obj["int"] = 42;
@@ -26,7 +28,7 @@ TEST_CASE("require_field", "[json]") {
     obj["str"] = "hello world";
 
 
-    SECTION("Require") {
+    SUBCASE("Require") {
         ers::JsonSchema schema(obj);
 
         schema.require<integral>("int");
@@ -36,7 +38,7 @@ TEST_CASE("require_field", "[json]") {
         REQUIRE(schema.finalize());
     }
 
-    SECTION("Require and Write") {
+    SUBCASE("Require and Write") {
         ers::JsonSchema schema(obj);
 
         integral i;

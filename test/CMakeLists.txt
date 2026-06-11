@@ -34,8 +34,7 @@ if(IS_TOP_LEVEL)
     find_package(erslib REQUIRED)
 endif()
 
-find_package(Catch2 CONFIG REQUIRED)
-include(Catch)
+find_package(doctest CONFIG REQUIRED)
 
 
 #----------------------------------------------------------------------------------------------------------------------
@@ -55,7 +54,7 @@ target_sources(test_simple PRIVATE ${SIMPLE_SOURCES})
 target_link_libraries(test_simple
     PRIVATE
         erslib::erslib
-        Catch2::Catch2WithMain
+        doctest::doctest
 )
 
 if(NOT IS_TOP_LEVEL)
@@ -86,7 +85,7 @@ function(add_stateful_test TEST_TARGET RELATIVE_TEST_DIR)
 	target_link_libraries(${TEST_TARGET}
         PRIVATE
             erslib::erslib
-            Catch2::Catch2WithMain
+            doctest::doctest
     )
 
 	file(MAKE_DIRECTORY "${BIN_DIR}")

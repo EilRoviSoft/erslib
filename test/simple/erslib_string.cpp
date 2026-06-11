@@ -1,13 +1,15 @@
+#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+
 // std
 #include <string>
 
-// catch2
-#include <catch2/catch_test_macros.hpp>
+// doctest
+#include <doctest/doctest.h>
 
 // ers
 #include <erslib/util/string.hpp>
 
 
-TEST_CASE("path", "[string]") {
+TEST_CASE("path") {
     REQUIRE(ers::util::replace("/home/user", "/", ".") == ".home.user");
 }

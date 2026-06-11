@@ -1,9 +1,10 @@
+#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+
 // std
 #include <limits>
 
-// catch2
-#include <catch2/catch_test_macros.hpp>
-#include <catch2/matchers/catch_matchers_floating_point.hpp>
+// doctest
+#include <doctest/doctest.h>
 
 // ers
 #include <erslib/type/result.hpp>
@@ -22,23 +23,23 @@ namespace {
 }
 
 
-TEST_CASE("division", "[error]") {
-    SECTION("successful") {
+TEST_CASE("division") {
+    SUBCASE("successful") {
         auto check = [](double n, double d, double e) {
             auto r = safe_divide(n, d);
             CHECK(r.has_value());
-            REQUIRE_THAT(*r, Catch::Matchers::WithinRel(e));
+            REQUIRE(*r == doctest::Approx(e));
         };
 
         check(1.0, 2.0, 0.5);
         check(3.0, 1.0, 3.0);
     }
 
-    SECTION("by zero") {
+    SUBCASE("by zero") {
         auto check = [](double n, double d) {
             auto r = safe_divide(n, d);
             CHECK(r.has_error());
-            SUCCEED(r.error().to_string());
+            MESSAGE(r.error().to_string());
         };
 
         check(1.0, 0.0);

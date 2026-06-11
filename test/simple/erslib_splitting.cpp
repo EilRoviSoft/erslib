@@ -1,9 +1,11 @@
+#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+
 // std
 #include <ranges>
 #include <string_view>
 
-// catch2
-#include <catch2/catch_test_macros.hpp>
+// doctest
+#include <doctest/doctest.h>
 
 // ers
 #include <erslib/splitting/regular.hpp>
@@ -34,13 +36,13 @@ namespace {
 }
 
 
-TEST_CASE("regular", "[splitting]") {
+TEST_CASE("regular") {
     REQUIRE(process<ers::RegularSplitter>("hello world") == make_vector("hello", "world"));
     REQUIRE(process<ers::RegularSplitter>("I love Isaac Iwasaki") == make_vector("I", "love", "Isaac", "Iwasaki"));
     REQUIRE(process<ers::RegularSplitter>("I hate \"Sir Isaac Westcott\"") == make_vector("I", "hate", "\"Sir", "Isaac", "Westcott\""));
 }
 
-TEST_CASE("smart", "[splitting]") {
+TEST_CASE("smart") {
     REQUIRE(process<ers::SmartSplitter>("hello world") == make_vector("hello", "world"));
     REQUIRE(process<ers::SmartSplitter>("I love Isaac Iwasaki") == make_vector("I", "love", "Isaac", "Iwasaki"));
     REQUIRE(process<ers::SmartSplitter>("I hate \"Sir Isaac Westcott\"") == make_vector("I", "hate", "Sir Isaac Westcott"));

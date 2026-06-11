@@ -1,21 +1,23 @@
-// catch2
-#include <catch2/catch_test_macros.hpp>
+#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+
+// doctest
+#include <doctest/doctest.h>
 
 // ers
 #include <erslib/type/version.hpp>
 
 
-TEST_CASE("version", "[convert]") {
+TEST_CASE("version") {
     std::string_view s;
     ers::version_t v;
 
 
-    SECTION("1.0.1") {
+    SUBCASE("1.0.1") {
         s = "1.0.1";
         v = { .major = 1, .minor = 0, .patch = 1 };
     }
 
-    SECTION("26.3.19") {
+    SUBCASE("26.3.19") {
         s = "26.3.19";
         v = { .major = 26, .minor = 3, .patch = 19 };
     }
