@@ -72,16 +72,16 @@ TEST_CASE("testing thread_safe map") {
 
     SUBCASE("intervaled output") {
         auto print = [&c, &vals](size_t i) mutable {
-            MESSAGE("\niteration {}:\n", i);
+            //MESSAGE("\niteration {}:\n", i);
             for (auto it : vals) {
                 size_t v = *c[it].get();
-                MESSAGE("{:3}: {}\n", it, v);
+                //MESSAGE("{:3}: {}\n", it, v);
             }
         };
 
         for (auto [i, d] : intervals | std::views::enumerate) {
             print(i);
-            MESSAGE("waiting for {}\n", d);
+            //MESSAGE("waiting for {}\n", d);
             std::this_thread::sleep_for(d);
         }
         print(intervals.size());

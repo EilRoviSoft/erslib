@@ -37,7 +37,7 @@ TEST_CASE("division") {
         auto check = [](double n, double d) {
             auto r = safe_divide(n, d);
             CHECK(r.has_error());
-            MESSAGE(r.error().to_string());
+            //MESSAGE(r.error().to_string());
         };
 
         check(1.0, 0.0);

@@ -5,7 +5,6 @@
 #include <vector>
 
 // ers
-#include <erslib/pattern/basic.hpp>
 #include <erslib/type/optional.hpp>
 
 // sdl3
@@ -22,11 +21,14 @@ namespace fs = std::filesystem;
 // SDL3 lifetimes
 
 namespace {
-    class SdlLifetime : public ers::NonCopyable {
+    class SdlLifetime {
     public:
         explicit SdlLifetime(SDL_InitFlags flags) {
             _ok = SDL_Init(flags);
         }
+
+        SdlLifetime(const SdlLifetime&) = delete;
+        SdlLifetime& operator=(const SdlLifetime&) = delete;
 
         ~SdlLifetime() {
             if (_ok)
@@ -43,19 +45,19 @@ namespace {
     };
 
 
-    class SdlTextInputScope : public ers::NonCopyable {
+    class SdlTextInputScope {
     public:
         explicit SdlTextInputScope(SDL_Window& window) :
             _window(window) {
             SDL_StartTextInput(&_window);
         }
 
+        SdlTextInputScope(const SdlTextInputScope&) = delete;
+        SdlTextInputScope& operator=(const SdlTextInputScope&) = delete;
+
         ~SdlTextInputScope() {
             SDL_StopTextInput(&_window);
         }
-
-        SdlTextInputScope(const SdlTextInputScope&) = delete;
-        SdlTextInputScope& operator=(const SdlTextInputScope&) = delete;
 
 
     private:
@@ -92,7 +94,7 @@ namespace {
 // RmlUi lifetimes
 
 namespace {
-    class RmlLifetime : public ers::NonCopyable {
+    class RmlLifetime {
     public:
         RmlLifetime(Rml::SystemInterface& system_interface, Rml::RenderInterface& render_interface) {
             Rml::SetSystemInterface(&system_interface);
@@ -100,6 +102,9 @@ namespace {
 
             _ok = Rml::Initialise();
         }
+
+        RmlLifetime(const RmlLifetime&) = delete;
+        RmlLifetime& operator=(const RmlLifetime&) = delete;
 
         ~RmlLifetime() {
             if (_ok)
@@ -119,12 +124,15 @@ namespace {
     };
 
 
-    class RmlContextHandle : public ers::NonCopyable {
+    class RmlContextHandle {
     public:
         RmlContextHandle(Rml::String name, Rml::Vector2i dimensions) :
             _name(std::move(name)) {
             _context = Rml::CreateContext(_name, dimensions);
         }
+
+        RmlContextHandle(const RmlContextHandle&) = delete;
+        RmlContextHandle& operator=(const RmlContextHandle&) = delete;
 
         ~RmlContextHandle() {
             if (_context) {

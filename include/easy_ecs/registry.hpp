@@ -71,10 +71,12 @@ namespace ecs {
         // Observers
 
         template<typename... Ts>
+        [[nodiscard]]
         GroupView<Ts...> view_group() {
             return { _get_group<Ts...>() };
         }
         template<typename... Ts>
+        [[nodiscard]]
         GroupWithEntityIdView<Ts...> view_group_with_entity_id() {
             return { _get_group<Ts...>() };
         }

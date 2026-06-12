@@ -84,7 +84,7 @@ void aengine::PrototypeRegistry::load(const sol::table& table) {
     proto.load(layout(type), table);
 }
 void aengine::PrototypeRegistry::load_all(const sol::table& array) {
-    for (const auto& v : array | std::views::values) {
+    for (const auto& [k, v] : array) {
         if (v.is<sol::table>())
             load(v.as<sol::table>());
     }
@@ -98,8 +98,10 @@ size_t aengine::PrototypeRegistry::instantiate(ecs::Registry& registry, std::str
 }
 
 void aengine::PrototypeRegistry::bind_lua(sol::state_view& lua) {
-    sol::table data = lua.create_named_table("data");
-    data.set_function("extend", [this](const sol::table&, const sol::table& protos) {
-        load_all(protos);
-    });
+    lua.new_usertype<PrototypeRegistry>(
+        "PrototypeRegistry",
+        "extend", &PrototypeRegistry::load_all
+    );
+
+    lua["data"] = this;
 }

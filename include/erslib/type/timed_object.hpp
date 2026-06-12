@@ -72,7 +72,7 @@ namespace ers {
 
                 if (auto s = load(); !s) {
                     m_expiring.value = T();
-                    return Unexpected(s.error());
+                    return s.error();
                 }
             }
 

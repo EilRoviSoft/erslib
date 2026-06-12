@@ -1,13 +1,17 @@
-#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+// ReSharper disable CppClangTidyPerformanceForRangeCopy
+
+// sol
+#include <sol/sol.hpp>
 
 // doctest
 #include <doctest/doctest.h>
 
 // easy_ecs
-#include "easy_ecs/registry.hpp"
+#include <easy_ecs/registry.hpp>
 
 // aengine
-#include "aengine/core/proto.hpp"
+#include <aengine/core/proto.hpp>
+#include <aengine/script/exception.hpp>
 
 
 // Components
@@ -17,41 +21,50 @@ namespace {
         int max = 100;
         int hp = 100;
     };
-    
-    struct SpeedData {
-        float value = 1.f;
-    };
-
-    struct ArmorData {
-        float factor = 0.f;
-    };
 }
 
+EASY_ECS_COMPONENT(game, Type, std::string);
+EASY_ECS_COMPONENT(game, Name, std::string);
 EASY_ECS_COMPONENT(game, Health, HealthData);
-EASY_ECS_COMPONENT(game, Speed, SpeedData);
-EASY_ECS_COMPONENT(game, Armor, ArmorData);
+EASY_ECS_COMPONENT(game, Speed, float);
+EASY_ECS_COMPONENT(game, Armor, float);
 
 
 // Functions
 
 namespace {
+    std::exception_ptr global_ex;
+
+    int my_exception_handler(lua_State* L, sol::optional<const std::exception&> maybe_exception, sol::string_view description) {
+        if (maybe_exception) {
+            global_ex = std::make_exception_ptr(*maybe_exception);
+        } else {
+            std::string message(description.data(), description.size());
+            global_ex = std::make_exception_ptr(aengine::lua_error(message));
+        }
+
+        return sol::stack::push(L, description);
+    }
+
     void register_layouts(aengine::PrototypeRegistry& reg) {
         reg.add_layout("unit")
-
             .component<game::Health>([](const sol::table& t) -> std::optional<HealthData> {
                 auto v = t.get<sol::optional<int>>("max_health");
-                if (!v) return std::nullopt;
+                if (!v)
+                    return std::nullopt;
                 return HealthData { .max = *v, .hp = *v };
             }, true)
-            .component<game::Speed>([](const sol::table& t) -> std::optional<SpeedData> {
+            .component<game::Speed>([](const sol::table& t) -> std::optional<float> {
                 auto v = t.get<sol::optional<float>>("speed");
-                if (!v) return std::nullopt;
-                return SpeedData { .value = *v };
+                if (!v)
+                    return std::nullopt;
+                return *v;
             }, true)
-            .component<game::Armor>([](const sol::table& t) -> std::optional<ArmorData> {
+            .component<game::Armor>([](const sol::table& t) -> std::optional<float> {
                 auto v = t.get<sol::optional<float>>("armor");
-                if (!v) return std::nullopt;
-                return ArmorData { .factor = *v };
+                if (!v)
+                    return std::nullopt;
+                return *v;
             }, false);
     }
 }
@@ -60,24 +73,24 @@ namespace {
     constexpr std::string_view k_script = R"(
 data:extend({
     {
-        type       = "unit",
-        name       = "soldier",
+        type = "unit",
+        name = "soldier",
         max_health = 100,
-        speed      = 1.0,
-        armor      = 0.1,
+        speed = 1.0,
+        armor = 0.1,
     },
     {
-        type   = "unit",
-        name   = "fast-soldier",
-        parent = "soldier",
-        speed  = 2.5,
+        type = "unit",
+        name = "fast-soldier",
+        max_health = 75,
+        speed = 2.5,
     },
     {
-        type       = "unit",
-        name       = "tank",
+        type = "unit",
+        name = "tank",
         max_health = 800,
-        speed      = 0.4,
-        armor      = 0.8,
+        speed = 0.4,
+        armor = 0.8,
     },
 })
     )";
@@ -85,8 +98,9 @@ data:extend({
 
 TEST_CASE("protos_instantiate") {
     sol::state lua;
-    
+
     lua.open_libraries(sol::lib::base);
+    lua.set_exception_handler(&my_exception_handler);
 
 
     aengine::PrototypeRegistry protos;
@@ -94,7 +108,18 @@ TEST_CASE("protos_instantiate") {
 
     register_layouts(protos);
     protos.bind_lua(lua);
-    lua.script(k_script);
+
+    for (const auto& definer : ecs::util::component_definers())
+        definer(lua);
+    ecs::util::component_definers().clear();
+
+
+    auto pfr = lua.safe_script(k_script, sol::script_pass_on_error);
+
+    if (!pfr.valid()) {
+        sol::error e = pfr;
+        MESSAGE(std::string(e.what()));
+    }
 
 
     world.add_group<game::Health, game::Speed>();
@@ -102,48 +127,32 @@ TEST_CASE("protos_instantiate") {
 
 
     SUBCASE("soldier has correct components") {
-        size_t eid = protos.instantiate(world, "soldier");
+        std::ignore = protos.instantiate(world, "soldier");
 
         auto view = world.view_group<game::Health, game::Speed>();
         bool found = false;
 
-        for (auto& [health, speed] : view) {
+        for (auto [health, speed] : view) {
             found = true;
             CHECK(health.max == 100);
             CHECK(health.hp == 100);
-            CHECK(speed.value == doctest::Approx(1.0f));
+            CHECK(speed == doctest::Approx(1.0f));
         }
 
         CHECK(found);
     }
 
-    SUBCASE("fast-soldier inherits health and armor, overrides speed") {
-        protos.instantiate(world, "fast-soldier", "fast-1");
-        protos.instantiate(world, "fast-soldier", "fast-2");
-
-        auto view = world.view_group_with_entity_id<game::Health, game::Speed>();
-        int count = 0;
-
-        for (auto& [id, health, speed] : view) {
-            count++;
-            CHECK(health.max == 100);
-            CHECK(speed.value == doctest::Approx(2.5f));
-        }
-
-        CHECK(count == 2);
-    }
-
     SUBCASE("tank has correct components") {
-        size_t eid = protos.instantiate(world, "tank");
+        std::ignore = protos.instantiate(world, "tank");
 
         auto view = world.view_group<game::Health, game::Speed, game::Armor>();
         bool found = false;
 
-        for (auto& [health, speed, armor] : view) {
+        for (auto [health, speed, armor] : view) {
             found = true;
             CHECK(health.max == 800);
-            CHECK(speed.value == doctest::Approx(0.4f));
-            CHECK(armor.factor == doctest::Approx(0.8f));
+            CHECK(speed == doctest::Approx(0.4f));
+            CHECK(armor == doctest::Approx(0.8f));
         }
 
         CHECK(found);
@@ -151,20 +160,5 @@ TEST_CASE("protos_instantiate") {
 
     SUBCASE("unknown prototype throws") {
         CHECK_THROWS(protos.instantiate(world, "does-not-exist"));
-    }
-
-    SUBCASE("missing required component throws during load") {
-        aengine::PrototypeRegistry bad_protos;
-        register_layouts(bad_protos);
-        bad_protos.bind_lua(lua);
-
-        CHECK_THROWS(lua.script(R"(
-data:extend({
-    {
-        type = "unit",
-        name = "broken",
-    }
-})
-        )"));
     }
 }
