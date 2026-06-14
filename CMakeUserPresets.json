@@ -17,6 +17,16 @@
 				"ERSLIB_BUILD_TESTS": "ON",
 				"SOL_EXCEPTIONS": "ON"
 			}
+		},
+		{
+			"name": "windows-local-clang-release",
+			"displayName": "Windows Clang Release w/ Debug Info",
+			"inherits": "windows-local-clang",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Release",
+				"ERSLIB_BUILD_TESTS": "ON",
+				"SOL_EXCEPTIONS": "ON"
+			}
 		}
 	]
 }

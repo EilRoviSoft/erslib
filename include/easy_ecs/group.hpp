@@ -8,6 +8,7 @@
 #include <frozen/unordered_set.h>
 
 // ers
+#include <erslib/macro.hpp>
 #include <erslib/hashing/algorithm.hpp>
 #include <erslib/util/tuple.hpp>
 
@@ -103,7 +104,7 @@ namespace ecs {
         }
 
         void add(const Registry& registry, IEntity& entity) override {
-            auto components = std::make_tuple(static_cast<component_value_t<Tags>*>(
+            auto components = std::make_tuple(static_cast<component_value_t<Tags>* ERS_RESTRICT>(
                 internal::get_component(registry, entity.id(), component_id<Tags>()))...);
 
             m_storage.emplace(entity.id(), std::move(components));

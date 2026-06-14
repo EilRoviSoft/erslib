@@ -7,13 +7,13 @@
 
 
 namespace {
-    constexpr double dt = 1.0 / 60.0;
+    constexpr float dt = 1.f / 60.f;
 }
 
 
 namespace {
     struct vec3 {
-        double x, y, z;
+        float x, y, z;
     };
 
 

@@ -59,7 +59,8 @@ namespace ecs {
     private:
         template<ComponentTag... Tags>
         TGroup<Tags...>& _get_group() {
-            return dynamic_cast<TGroup<Tags...>&>(*m_groups.at(TGroup<Tags...>::get_id()));
+            auto& ptr = m_groups.at(TGroup<Tags...>::get_id());
+            return static_cast<TGroup<Tags...>&>(*ptr);
         }
     };
 }

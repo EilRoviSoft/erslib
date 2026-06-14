@@ -15,7 +15,7 @@ namespace ers::internal {
         constexpr auto prefix = std::string_view { "with T = " };
         constexpr auto suffix = std::string_view { "]" };
         constexpr auto function = std::string_view { __PRETTY_FUNCTION__ };
-#elif defined(_MSC_VER)
+#elifdef _MSC_VER
         constexpr auto prefix = std::string_view { "type_name_array<" };
         constexpr auto suffix = std::string_view { ">(void)" };
         constexpr auto function = std::string_view { __FUNCSIG__ };
