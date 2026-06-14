@@ -142,7 +142,6 @@ set(SOURCES
     "src/aengine/core/dependency.cpp"
     "src/aengine/core/dependency_graph.cpp"
     "src/aengine/core/mod.cpp"
-    "src/aengine/core/proto.cpp"
 
     "src/aengine/resource/texture.cpp"
 
@@ -150,11 +149,10 @@ set(SOURCES
 
 
     # easy_ecs
-    
+
     "src/easy_ecs/entity.cpp"
     "src/easy_ecs/group.cpp"
-
-    "src/easy_ecs/util/component_initializer.cpp"
+    "src/easy_ecs/registry.cpp"
 )
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${SOURCES})
 

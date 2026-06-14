@@ -61,7 +61,7 @@ namespace ers {
 
         Error(
             Severity severity,
-            std::string_view message,
+            std::string message,
             timestamp_t timestamp = std::chrono::system_clock::now(),
             cpptrace::raw_trace trace = internal::get_trace({ .skip = 1 })
         );
@@ -109,7 +109,7 @@ namespace ers {
         return Error(severity, std::format(fmt, std::forward<Args>(args)...));
     }
 
-    inline Error make_error(Severity severity, std::string_view message) {
-        return Error(severity, message);
+    inline Error make_error(Severity severity, std::string message) {
+        return Error(severity, std::move(message));
     }
 }

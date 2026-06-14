@@ -1,27 +1,57 @@
 #pragma once
 
 // std
+#include <format>
 #include <string>
 
-// aengine
-#include <aengine/fwd.hpp>
+// ers
+#include <erslib/meta/type_name.hpp>
+#include <erslib/pattern/counter.hpp>
+
+// ecs
+#include <easy_ecs/fwd.hpp>
 
 
 namespace ecs {
-    class Entity {
+    template<typename T>
+    std::string make_canonical_name() {
+        return std::format("{}:{}", ers::meta::type_name_v<T>, ers::pattern::tagged_counter<T>());
+    }
+
+
+    class IEntity {
+        friend Registry;
+
     public:
-        std::string name;
-        aengine::TrivialMap<aengine::Object*> linked_components;
+        // Member functions
+
+        virtual ~IEntity() = default;
 
 
-        // Constructors
+        // Accessors
 
-        explicit Entity(std::string_view name);
+        [[nodiscard]]
+        // id is set only after 'init' is called
+        size_t id() const { return _id; }
+
+        [[nodiscard]]
+        std::string_view name() const { return _name; }
 
 
-        // Properties
+        // Modifiers
 
-        static size_t get_id(std::string_view name);
-        size_t id() const;
+        void init(Registry& registry);
+
+
+    protected:
+        explicit IEntity(std::string name);
+
+
+        virtual void track_components(Registry& registry) = 0;
+
+
+    private:
+        std::string _name;
+        size_t _id = 0;
     };
 }

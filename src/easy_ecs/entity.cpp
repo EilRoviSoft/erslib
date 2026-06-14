@@ -1,14 +1,27 @@
 #include "easy_ecs/entity.hpp"
 
+// ers
+#include <erslib/exception.hpp>
 
-ecs::Entity::Entity(std::string_view name) :
-    name(name) {
+// ecs
+#include <easy_ecs/registry.hpp>
+
+
+// IEntity
+
+void ecs::IEntity::init(Registry& registry) {
+    if (_id) {
+        throw ers::make_runtime_error_with_trace("Id for entity '{}' can't be set twice, you probably called 'init' twice",
+            _name);
+    }
+
+    _id = registry.track_entity(*this);
+
+
+    track_components(registry);
+    registry.finalize_entity_groups(id());
 }
 
-
-size_t ecs::Entity::get_id(std::string_view name) {
-    return ers::RapidHash<std::string_view> {}(name);
-}
-size_t ecs::Entity::id() const {
-    return get_id(name);
+ecs::IEntity::IEntity(std::string name) :
+    _name(std::move(name)) {
 }

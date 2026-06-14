@@ -1,12 +1,5 @@
 #pragma once
 
-// std
-#include <ranges>
-
-// ers
-#include <erslib/exception.hpp>
-#include <erslib/hashing/algorithm.hpp>
-
 // aengine
 #include <aengine/fwd.hpp>
 
@@ -19,82 +12,54 @@
 namespace ecs {
     class Registry {
     public:
-        // Modifiers
+        // Tracking
 
-        size_t add_entity(std::string_view name) {
-            size_t key = Entity::get_id(name);
-            m_entities.emplace(key, Entity(name));
-            return key;
-        }
+        size_t track_entity(IEntity& entity);
 
-        template<ComponentLike T, typename... Args>
-        size_t add_component(size_t id, Args&&... args) {
-            Entity& entity = m_entities.at(id);
-            size_t cid = component_id<T>();
+        void track_component(size_t eid, size_t cid, void* component);
 
-            if (entity.linked_components.contains(cid)) {
-                throw ers::make_runtime_error("Component {} (id: {}) for entity {} already exists",
-                    component_name<T>(), cid, id);
-            }
+        void finalize_entity_groups(size_t eid);
 
 
-            aengine::Object component(std::in_place_type<T>, std::forward<Args>(args)...);
-            size_t key = ers::hashing::combine<ers::RapidHash>(entity.name, cid);
+        // Groups
 
-            auto [it, inserted] = m_components.try_emplace(key, std::move(component));
-            if (!inserted) {
-                throw ers::make_runtime_error("Component {} (hash: {}) for entity {} already exist",
-                    component_name<T>(), cid, id);
-            }
-
-            entity.linked_components[cid] = &it->second;
-
-
-            // Rn it's guaranteed that entity with new component isn't registered by groups
-            // 'cause components are unique per entity.
-
-            for (auto& group : m_groups | std::views::values)
-                group->add_if_valid(entity);
-
-
-            return key;
-        }
-
-        template<typename... Ts>
+        template<ComponentTag... Tags>
         size_t add_group() {
-            size_t key = TGroup<Ts...>::get_id();
-            m_groups.emplace(key, make_group<Ts...>());
+            size_t key = TGroup<Tags...>::get_id();
+            m_groups.emplace(key, std::make_unique<TGroup<Tags...>>());
             return key;
         }
 
-
-        // Observers
-
-        template<typename... Ts>
-        [[nodiscard]]
-        GroupView<Ts...> view_group() {
-            return { _get_group<Ts...>() };
+        template<ComponentTag... Tags>
+        GroupView<Tags...> view_group() {
+            return GroupView<Tags...> { _get_group<Tags...>() };
         }
-        template<typename... Ts>
-        [[nodiscard]]
-        GroupWithEntityIdView<Ts...> view_group_with_entity_id() {
-            return { _get_group<Ts...>() };
+
+        template<ComponentTag... Tags>
+        GroupWithEntityIdView<Tags...> view_group_with_entity_id() {
+            return GroupWithEntityIdView<Tags...> { _get_group<Tags...>() };
         }
+
+
+        // Queries
+
+        [[nodiscard]]
+        bool has_component(size_t eid, size_t cid) const;
+
+        [[nodiscard]]
+        void* get_component(size_t eid, size_t cid) const;
 
 
     protected:
-        aengine::TrivialMap<Entity> m_entities;
-        aengine::TrivialMap<aengine::Object> m_components;
-        aengine::TrivialMap<GroupPtr> m_groups;
+        aengine::TrivialMap<IEntity*> m_entities;
+        aengine::TrivialMap<void*> m_components;
+        aengine::TrivialMap<std::unique_ptr<IGroup>> m_groups;
 
 
     private:
-        template<typename... Ts>
-        auto& _get_group() {
-            using concrete_group = TGroup<Ts...>;
-            size_t id = concrete_group::get_id();
-            auto& group = *m_groups.at(id).get();
-            return dynamic_cast<concrete_group&>(group);
+        template<ComponentTag... Tags>
+        TGroup<Tags...>& _get_group() {
+            return dynamic_cast<TGroup<Tags...>&>(*m_groups.at(TGroup<Tags...>::get_id()));
         }
     };
 }

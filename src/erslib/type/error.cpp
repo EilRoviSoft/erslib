@@ -4,9 +4,9 @@
 #include <erslib/exception/internal.hpp>
 
 
-ers::Error::Error(Severity severity, std::string_view message, timestamp_t timestamp, cpptrace::raw_trace trace) :
+ers::Error::Error(Severity severity, std::string message, timestamp_t timestamp, cpptrace::raw_trace trace) :
     m_severity(severity),
-    m_message(message),
+    m_message(std::move(message)),
     m_timestamp(timestamp),
     m_trace(std::move(trace)) {
 }
