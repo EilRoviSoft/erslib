@@ -9,12 +9,13 @@
 #include <erslib/util/file.hpp>
 #include <erslib/util/string.hpp>
 
-// aengine
-#include <aengine/script/error.hpp>
-#include <aengine/script/exception.hpp>
+// aescript
+#include <aescript/error.hpp>
+#include <aescript/exception.hpp>
 
 
 using std::string_literals::operator ""s;
+using namespace aescript;
 
 
 // Internal
@@ -212,7 +213,7 @@ std::function<sol::object(sol::this_state, std::string_view)> aengine::Mod::_mak
 
         auto package_it = content.packages.find(package_name);
         if (package_it == content.packages.end()) {
-            runtime.pending_exception = script::tunnel_error<lua_package_error>(lua, "Package {} is not found",
+            runtime.pending_exception = tunnel_error<lua_package_error>(lua, "Package {} is not found",
                 package_name);
             luaL_error(lua, "C++ exception is tunneled");
             return sol::nil;
@@ -225,7 +226,7 @@ std::function<sol::object(sol::this_state, std::string_view)> aengine::Mod::_mak
 
         if (!lr.valid()) {
             sol::error e = lr;
-            runtime.pending_exception = script::tunnel_error<lua_package_error>(lua, "Failed to compile package '{}': {}",
+            runtime.pending_exception = tunnel_error<lua_package_error>(lua, "Failed to compile package '{}': {}",
                 package_name, e.what());
             luaL_error(lua, "C++ exception is tunneled");
             return sol::nil;
@@ -235,7 +236,7 @@ std::function<sol::object(sol::this_state, std::string_view)> aengine::Mod::_mak
         sol::protected_function pf = lr;
 
         if (!runtime.env.set_on(pf)) {
-            runtime.pending_exception = script::tunnel_error<lua_package_error>(lua, "Failed to set environment for package '{}'",
+            runtime.pending_exception = tunnel_error<lua_package_error>(lua, "Failed to set environment for package '{}'",
                 package_name);
             luaL_error(lua, "C++ exception is tunneled");
             return sol::nil;
@@ -246,7 +247,7 @@ std::function<sol::object(sol::this_state, std::string_view)> aengine::Mod::_mak
 
         if (!result.valid()) {
             sol::error e = result;
-            runtime.pending_exception = script::tunnel_error<lua_package_error>(lua, "Failed to execute package '{}': {}",
+            runtime.pending_exception = tunnel_error<lua_package_error>(lua, "Failed to execute package '{}': {}",
                 package_name, e.what());
             luaL_error(lua, "C++ exception is tunneled");
             return sol::nil;
