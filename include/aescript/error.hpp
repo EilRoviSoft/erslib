@@ -10,7 +10,7 @@
 
 // Utility
 
-namespace aengine::script {
+namespace aescript {
     template<typename T, typename... Args>
     auto tunnel_error(sol::state_view& lua, std::format_string<Args...> fmt, Args&&... args) {
         std::string message = std::format(fmt, std::forward<Args>(args)...);
