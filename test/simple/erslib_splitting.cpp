@@ -1,9 +1,9 @@
+// doctest
+#include <doctest/doctest.h>
+
 // std
 #include <ranges>
 #include <string_view>
-
-// doctest
-#include <doctest/doctest.h>
 
 // ers
 #include <erslib/splitting/regular.hpp>

@@ -1,3 +1,6 @@
+// doctest
+#include <doctest/doctest.h>
+
 // std
 #include <array>
 #include <chrono>
@@ -9,16 +12,12 @@
 // boost
 #include <boost/unordered/unordered_flat_map.hpp>
 
-// doctest
-#include <doctest/doctest.h>
-
 // ers
 #include <erslib/adaptor/transparent/string.hpp>
 #include <erslib/hashing/rapid.hpp>
 #include <erslib/thread_safe/map.hpp>
 #include <erslib/type/time.hpp>
 #include <erslib/type/timed_object.hpp>
-#include <erslib/util/string.hpp>
 
 
 namespace {

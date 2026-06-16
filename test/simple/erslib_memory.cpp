@@ -1,10 +1,10 @@
+// doctest
+#include <doctest/doctest.h>
+
 // std
 #include <array>
 #include <cstddef>
 #include <memory>
-
-// doctest
-#include <doctest/doctest.h>
 
 // ers
 #include <erslib/memory/holder.hpp>

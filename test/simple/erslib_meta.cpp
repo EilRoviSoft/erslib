@@ -1,8 +1,8 @@
-// std
-#include <string>
-
 // doctest
 #include <doctest/doctest.h>
+
+// std
+#include <string>
 
 // ers
 #include <erslib/meta/type_name.hpp>
