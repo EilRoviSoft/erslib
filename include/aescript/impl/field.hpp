@@ -40,15 +40,18 @@ namespace aescript {
         void add(ParserPtr ptr);
 
 
-        // Checkers
+        // Api
 
         [[nodiscard]]
         ers::Status verify(sol::table table, std::string_view field) const;
 
+        [[nodiscard]]
+        ers::Status parse(sol::table table, std::string_view field, void* where) const;
+
 
     private:
-        std::list<VerifierPtr> _properties;
-        std::vector<storage_iterator> _properties_order;
+        std::list<VerifierPtr> _verifiers;
+        std::vector<storage_iterator> _verifiers_order;
 
         std::list<ParserPtr> _parsers;
 

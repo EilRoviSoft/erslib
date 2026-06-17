@@ -153,8 +153,8 @@ set(SOURCES
     "src/aescript/impl/field.cpp"
     "src/aescript/impl/layout.cpp"
 
-    "src/aescript/impl/properties/exclusive_with.cpp"
-    "src/aescript/impl/properties/presence.cpp"
+    "src/aescript/properties/exclusive_with.cpp"
+    "src/aescript/properties/presence.cpp"
 
 
     # easy_ecs

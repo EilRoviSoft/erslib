@@ -32,4 +32,14 @@ namespace aescript {
         [[nodiscard]]
         virtual ParserPtr clone() const = 0;
     };
+
+
+    template<typename T>
+    struct parser_t {
+        ers::Status exec(
+            [[maybe_unused]] parser_context& ctx,
+            sol::object obj,
+            T& dst
+        ) const = delete("generic specialization");
+    };
 }

@@ -48,6 +48,9 @@ namespace aescript {
         [[nodiscard]]
         ers::Status verify(sol::table table) const;
 
+        [[nodiscard]]
+        ers::Status parse(sol::table table, void* where) const;
+
 
     private:
         aengine::StringMap<Field> _fields;
