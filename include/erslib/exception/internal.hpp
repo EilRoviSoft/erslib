@@ -47,7 +47,7 @@ namespace ers {
 namespace ers::internal {
     cpptrace::raw_trace ERSLIB_EXPORT get_trace(trace_config_t config = {});
 
-    std::string ERSLIB_EXPORT extend_with_trace(std::string_view message, const cpptrace::raw_trace& trace);
+    std::string ERSLIB_EXPORT extend_with_trace(std::string_view message, const cpptrace::raw_trace& raw_trace);
     std::string ERSLIB_EXPORT extend_with_trace(std::string_view message, trace_config_t config);
 }
 

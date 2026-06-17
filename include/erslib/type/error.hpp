@@ -2,7 +2,6 @@
 
 // std
 #include <chrono>
-#include <concepts>
 #include <format>
 #include <string>
 
@@ -57,7 +56,7 @@ struct ers::convert::to_string_backend<ers::Severity> {
 namespace ers {
     class ERSLIB_EXPORT Error {
     public:
-        // Ctors
+        // Member functions
 
         Error(
             Severity severity,
@@ -66,22 +65,11 @@ namespace ers {
             cpptrace::raw_trace trace = internal::get_trace({ .skip = 1 })
         );
 
-
-        // Copy ctors
-
         Error(const Error& other) = default;
         Error& operator=(const Error& other) = default;
 
-
-        // Move ctors
-
         Error(Error&& other) noexcept;
         Error& operator=(Error&& other) noexcept;
-
-
-        // Dtor
-
-        virtual ~Error();
 
 
         // Observers
@@ -92,7 +80,20 @@ namespace ers {
         const cpptrace::raw_trace& stacktrace() const noexcept { return m_trace; }
 
 
-        virtual std::string to_string(bool trim_service_information = false) const;
+        std::string to_string(bool trim = false) const;
+
+
+        // Modifiers
+
+        Error&& expand_context(std::string_view message) &&;
+
+        template<typename... Args>
+            requires (sizeof...(Args) >= 1)
+        Error&& expand_context(std::format_string<Args...> fmt, Args&&... args) && {
+            m_message += '\n';
+            m_message += std::format(fmt, std::forward<Args>(args)...);
+            return std::move(*this);
+        }
 
 
     protected:

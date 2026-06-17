@@ -26,10 +26,9 @@ ers::Error& ers::Error::operator=(Error&& other) noexcept {
     return *this;
 }
 
-ers::Error::~Error() = default;
 
-std::string ers::Error::to_string(bool trim_service_information) const {
-    return trim_service_information
+std::string ers::Error::to_string(bool trim) const {
+    return trim
         ? internal::extend_with_trace(m_message, m_trace)
         : std::format(
             "[{:%Y-%m-%dT%H:%M:%S}] [{}] {}",
@@ -37,4 +36,11 @@ std::string ers::Error::to_string(bool trim_service_information) const {
             convert::to_sv<Severity>(m_severity),
             internal::extend_with_trace(m_message, m_trace)
         );
+}
+
+
+ers::Error&& ers::Error::expand_context(std::string_view message) && {
+    m_message += '\n';
+    m_message += message;
+    return std::move(*this);
 }

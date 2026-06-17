@@ -7,6 +7,10 @@
 			"hidden": true,
 			"environment": {
 				"VCPKG_ROOT": "D:/Libs/vcpkg"
+			},
+			"cacheVariables": {
+				"ERS_TRACE_VERBOSITY": "2",
+				"ERS_TRACE_MAX_DEPTH": "3"
 			}
 		},
 		{
