@@ -148,6 +148,15 @@ set(SOURCES
     "src/aengine/util/stage.cpp"
 
 
+    # aescript
+
+    "src/aescript/impl/field.cpp"
+    "src/aescript/impl/layout.cpp"
+
+    "src/aescript/impl/properties/exclusive_with.cpp"
+    "src/aescript/impl/properties/presence.cpp"
+
+
     # easy_ecs
 
     "src/easy_ecs/entity.cpp"

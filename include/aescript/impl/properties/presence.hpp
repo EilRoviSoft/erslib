@@ -1,0 +1,35 @@
+#pragma once
+
+// aescript
+#include <aescript/impl/field.hpp>
+#include <aescript/impl/property.hpp>
+
+
+namespace aescript {
+    class PresenceProperty : public IProperty {
+    public:
+        // Member functions
+
+        explicit PresenceProperty(bool is_required);
+
+
+        // Checkers
+
+        [[nodiscard]]
+        ers::Status verify([[maybe_unused]] property_context& ctx, sol::table table, std::string_view field) const override;
+
+        // Misc
+
+        FieldPropertyPtr clone() const override;
+
+
+    private:
+        bool _is_required;
+    };
+
+
+    namespace properties {
+        Field required();
+        Field optional();
+    }
+}

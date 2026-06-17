@@ -1,0 +1,40 @@
+#include "aescript/impl/properties/presence.hpp"
+
+
+aescript::PresenceProperty::PresenceProperty(bool is_required) :
+    IProperty(0),
+    _is_required(is_required) {
+}
+
+ers::Status aescript::PresenceProperty::verify([[maybe_unused]] property_context& ctx, sol::table table, std::string_view field) const {
+    if (!table.get<std::optional<sol::object>>(field)) {
+        if (_is_required) {
+            return ers::make_error(
+                ers::Severity::Error,
+                "Field '{}' is required but is not found",
+                field
+            );
+        } else {
+            ctx.skip_checks = true;
+        }
+    }
+
+    return ers::ok;
+}
+
+aescript::FieldPropertyPtr aescript::PresenceProperty::clone() const {
+    return std::make_unique<PresenceProperty>(_is_required);
+}
+
+
+aescript::Field aescript::properties::required() {
+    Field result;
+    result.add(std::make_unique<PresenceProperty>(true));
+    return result;
+}
+
+aescript::Field aescript::properties::optional() {
+    Field result;
+    result.add(std::make_unique<PresenceProperty>(false));
+    return result;
+}
