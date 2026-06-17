@@ -11,12 +11,15 @@
 #include <erslib/type/result.hpp>
 
 // aescript
-#include <aescript/impl/property.hpp>
+#include <aescript/impl/parser.hpp>
+#include <aescript/impl/verifier.hpp>
 
+
+// Field
 
 namespace aescript {
     class Field {
-        using storage_iterator = std::list<FieldPropertyPtr>::const_iterator;
+        using storage_iterator = std::list<VerifierPtr>::const_iterator;
 
 
     public:
@@ -31,13 +34,10 @@ namespace aescript {
         Field& operator=(Field&&) = default;
 
 
-        friend Field& operator|(Field& lhs, FieldPropertyPtr rhs);
-        friend Field&& operator|(Field&& lhs, FieldPropertyPtr rhs);
-
-
         // Modifiers
 
-        void add(FieldPropertyPtr ptr);
+        void add(VerifierPtr ptr);
+        void add(ParserPtr ptr);
 
 
         // Checkers
@@ -47,9 +47,24 @@ namespace aescript {
 
 
     private:
-        std::list<FieldPropertyPtr> _storage;
-        std::vector<storage_iterator> _inorder;
+        std::list<VerifierPtr> _properties;
+        std::vector<storage_iterator> _properties_order;
+
+        std::list<ParserPtr> _parsers;
+
 
         void _copy_from(const Field& other);
     };
+}
+
+
+// Operators
+
+namespace aescript {
+    Field& operator|(Field& lhs, VerifierPtr rhs);
+    Field&& operator|(Field&& lhs, VerifierPtr rhs);
+
+
+    Field& operator|(Field& lhs, ParserPtr rhs);
+    Field&& operator|(Field&& lhs, ParserPtr rhs);
 }

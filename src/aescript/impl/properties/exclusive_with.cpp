@@ -1,4 +1,4 @@
-#include "aescript/impl/properties/exclusive_with.hpp"
+#include "aescript/impl/verifiers/exclusive_with.hpp"
 
 
 aescript::ExclusiveWithProperty::ExclusiveWithProperty(std::initializer_list<std::string_view> il) :
@@ -8,11 +8,11 @@ aescript::ExclusiveWithProperty::ExclusiveWithProperty(std::initializer_list<std
 }
 
 aescript::ExclusiveWithProperty::ExclusiveWithProperty() :
-    IProperty(1) {
+    IVerifier(1) {
 }
 
 
-ers::Status aescript::ExclusiveWithProperty::verify([[maybe_unused]] property_context& ctx, sol::table table, std::string_view field) const {
+ers::Status aescript::ExclusiveWithProperty::exec([[maybe_unused]] verify_context& ctx, sol::table table, std::string_view field) const {
     if (!table.get<std::optional<sol::object>>(field))
         return ers::ok;
 
@@ -37,13 +37,13 @@ ers::Status aescript::ExclusiveWithProperty::verify([[maybe_unused]] property_co
     return ers::ok;
 }
 
-aescript::FieldPropertyPtr aescript::ExclusiveWithProperty::clone() const {
+aescript::VerifierPtr aescript::ExclusiveWithProperty::clone() const {
     ExclusiveWithProperty result;
     result._incompatible_fields = _incompatible_fields;
     return std::make_unique<ExclusiveWithProperty>(std::move(result));
 }
 
 
-aescript::FieldPropertyPtr aescript::properties::exclusive_with(std::initializer_list<std::string_view> il) {
+aescript::VerifierPtr aescript::properties::exclusive_with(std::initializer_list<std::string_view> il) {
     return std::make_unique<ExclusiveWithProperty>(il);
 }

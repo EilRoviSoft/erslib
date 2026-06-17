@@ -11,7 +11,7 @@
 
 #include <aescript/impl/field.hpp>
 #include <aescript/impl/layout.hpp>
-#include <aescript/impl/property.hpp>
-#include <aescript/impl/properties/exclusive_with.hpp>
-#include <aescript/impl/properties/presence.hpp>
-#include <aescript/impl/properties/with_types.hpp>
+#include <aescript/impl/verifier.hpp>
+#include <aescript/impl/verifiers//exclusive_with.hpp>
+#include <aescript/impl/verifiers/presence.hpp>
+#include <aescript/impl/verifiers/with_types.hpp>

@@ -5,8 +5,8 @@
 #include <string>
 
 // aescript
-#include <aescript/impl/property.hpp>
 #include <aescript/impl/layout.hpp>
+#include <aescript/impl/verifier.hpp>
 
 
 namespace aescript::internal {
@@ -43,17 +43,17 @@ namespace aescript::internal {
 
 namespace aescript {
     template<internal::FieldType... Ts>
-    class WithTypesProperty : public IProperty {
+    class WithTypesProperty : public IVerifier {
     public:
         // Member functions
 
-        WithTypesProperty() : IProperty(2) {}
+        WithTypesProperty() : IVerifier(2) {}
 
 
         // Checkers
 
         [[nodiscard]]
-        ers::Status verify([[maybe_unused]] property_context& ctx, sol::table table, std::string_view field) const override {
+        ers::Status exec([[maybe_unused]] verify_context& ctx, sol::table table, std::string_view field) const override {
             ers::Status result = ers::ok;
             ((result = _verify_one<Ts>(table, field)) && ...);
             return result;
@@ -62,7 +62,7 @@ namespace aescript {
 
         // Misc
 
-        FieldPropertyPtr clone() const override {
+        VerifierPtr clone() const override {
             return std::make_unique<WithTypesProperty>();
         }
 
@@ -102,12 +102,12 @@ namespace aescript {
 
     namespace properties {
         template<internal::FieldType T>
-        FieldPropertyPtr with_type() {
+        VerifierPtr with_type() {
             return std::make_unique<WithTypesProperty<T>>();
         }
 
         template<internal::FieldType... Ts>
-        FieldPropertyPtr with_types() {
+        VerifierPtr with_types() {
             return std::make_unique<WithTypesProperty<Ts...>>();
         }
     }

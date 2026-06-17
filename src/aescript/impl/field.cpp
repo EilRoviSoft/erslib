@@ -4,8 +4,10 @@
 #include <algorithm>
 
 // aescript
-#include <aescript/impl/property_context.hpp>
+#include <aescript/impl/context.hpp>
 
+
+// Field
 
 aescript::Field::Field(const Field& other) {
     _copy_from(other);
@@ -16,21 +18,27 @@ aescript::Field& aescript::Field::operator=(const Field& other) {
 }
 
 
-void aescript::Field::add(FieldPropertyPtr ptr) {
-    _storage.emplace_front(std::move(ptr));
+void aescript::Field::add(VerifierPtr ptr) {
+    _properties.emplace_front(std::move(ptr));
 
-    auto inorder_it = std::ranges::lower_bound(_inorder, _storage.begin(), [](const storage_iterator& lhs, const storage_iterator& rhs) {
+    auto inorder_it = std::ranges::lower_bound(
+        _properties_order,
+        _properties.begin(),
+        [](const storage_iterator& lhs, const storage_iterator& rhs) {
         return (*lhs)->precedence() < (*rhs)->precedence();
     });
 
-    _inorder.emplace(inorder_it, _storage.begin());
+    _properties_order.emplace(inorder_it, _properties.begin());
+}
+void aescript::Field::add(ParserPtr ptr) {
+    _parsers.emplace_front(std::move(ptr));
 }
 
 ers::Status aescript::Field::verify(sol::table table, std::string_view field) const {
-    for (const auto& prop : _inorder) {
-        property_context ctx;
+    for (const auto& prop : _properties_order) {
+        verify_context ctx;
 
-        if (auto s = (*prop)->verify(ctx, table, field); !s)
+        if (auto s = (*prop)->exec(ctx, table, field); !s)
             return s;
 
         if (ctx.skip_checks)
@@ -42,17 +50,30 @@ ers::Status aescript::Field::verify(sol::table table, std::string_view field) co
 
 
 void aescript::Field::_copy_from(const Field& other) {
-    for (const auto& it : other._storage)
+    for (const auto& it : other._properties)
+        add(it->clone());
+
+    for (const auto& it : other._parsers)
         add(it->clone());
 }
 
 
-aescript::Field& aescript::operator|(Field& lhs, FieldPropertyPtr rhs) {
+// Operators
+
+aescript::Field& aescript::operator|(Field& lhs, VerifierPtr rhs) {
     lhs.add(std::move(rhs));
     return lhs;
 }
+aescript::Field&& aescript::operator|(Field&& lhs, VerifierPtr rhs) {
+    lhs.add(std::move(rhs));
+    return std::move(lhs);
+}
 
-aescript::Field&& aescript::operator|(Field&& lhs, FieldPropertyPtr rhs) {
+aescript::Field& aescript::operator|(Field& lhs, ParserPtr rhs) {
+    lhs.add(std::move(rhs));
+    return lhs;
+}
+aescript::Field&& aescript::operator|(Field&& lhs, ParserPtr rhs) {
     lhs.add(std::move(rhs));
     return std::move(lhs);
 }

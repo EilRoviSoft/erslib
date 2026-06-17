@@ -8,7 +8,7 @@
 #include <sol/sol.hpp>
 
 // aescript
-#include <aescript/layout_verifier.hpp>
+#include <aescript/layout.hpp>
 
 
 static constexpr std::string_view script = R"(

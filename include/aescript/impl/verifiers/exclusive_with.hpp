@@ -6,11 +6,11 @@
 #include <vector>
 
 // aescript
-#include <aescript/impl/property.hpp>
+#include <aescript/impl/verifier.hpp>
 
 
 namespace aescript {
-    class ExclusiveWithProperty : public IProperty {
+    class ExclusiveWithProperty : public IVerifier {
     public:
         // Member functions
 
@@ -20,12 +20,12 @@ namespace aescript {
         // Checkers
 
         [[nodiscard]]
-        ers::Status verify([[maybe_unused]] property_context& ctx, sol::table table, std::string_view field) const override;
+        ers::Status exec([[maybe_unused]] verify_context& ctx, sol::table table, std::string_view field) const override;
 
 
         // Misc
 
-        FieldPropertyPtr clone() const override;
+        VerifierPtr clone() const override;
 
 
     private:
@@ -37,6 +37,6 @@ namespace aescript {
 
 
     namespace properties {
-        FieldPropertyPtr exclusive_with(std::initializer_list<std::string_view> il);
+        VerifierPtr exclusive_with(std::initializer_list<std::string_view> il);
     }
 }

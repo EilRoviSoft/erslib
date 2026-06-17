@@ -2,11 +2,11 @@
 
 // aescript
 #include <aescript/impl/field.hpp>
-#include <aescript/impl/property.hpp>
+#include <aescript/impl/verifier.hpp>
 
 
 namespace aescript {
-    class PresenceProperty : public IProperty {
+    class PresenceProperty : public IVerifier {
     public:
         // Member functions
 
@@ -16,11 +16,11 @@ namespace aescript {
         // Checkers
 
         [[nodiscard]]
-        ers::Status verify([[maybe_unused]] property_context& ctx, sol::table table, std::string_view field) const override;
+        ers::Status exec([[maybe_unused]] verify_context& ctx, sol::table table, std::string_view field) const override;
 
         // Misc
 
-        FieldPropertyPtr clone() const override;
+        VerifierPtr clone() const override;
 
 
     private:

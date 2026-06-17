@@ -1,12 +1,12 @@
-#include "aescript/impl/properties/presence.hpp"
+#include "aescript/impl/verifiers/presence.hpp"
 
 
 aescript::PresenceProperty::PresenceProperty(bool is_required) :
-    IProperty(0),
+    IVerifier(0),
     _is_required(is_required) {
 }
 
-ers::Status aescript::PresenceProperty::verify([[maybe_unused]] property_context& ctx, sol::table table, std::string_view field) const {
+ers::Status aescript::PresenceProperty::exec([[maybe_unused]] verify_context& ctx, sol::table table, std::string_view field) const {
     if (!table.get<std::optional<sol::object>>(field)) {
         if (_is_required) {
             return ers::make_error(
@@ -22,7 +22,7 @@ ers::Status aescript::PresenceProperty::verify([[maybe_unused]] property_context
     return ers::ok;
 }
 
-aescript::FieldPropertyPtr aescript::PresenceProperty::clone() const {
+aescript::VerifierPtr aescript::PresenceProperty::clone() const {
     return std::make_unique<PresenceProperty>(_is_required);
 }
 

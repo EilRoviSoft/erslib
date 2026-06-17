@@ -31,6 +31,18 @@ namespace aescript {
         void add_field(std::string name, Field field);
 
 
+        // Accessors
+
+        template<typename K>
+        Field& operator[](const K& name) {
+            return _fields[name];
+        }
+        template<typename K>
+        const Field& operator[](const K& name) const {
+            return _fields.at(name);
+        }
+
+
         // Checkers
 
         [[nodiscard]]
