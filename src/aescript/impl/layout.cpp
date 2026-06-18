@@ -4,20 +4,20 @@
 #include <aescript/impl/field.hpp>
 
 
-aescript::Layout::Layout(std::initializer_list<std::pair<std::string_view, Field>> il) {
-    for (auto& [name, descriptor] : il)
-        add_field(static_cast<std::string>(name), descriptor);
+aescript::Layout::Layout(std::initializer_list<Field> il) {
+    for (auto& field : il)
+        add_field(field);
 }
 
 
-void aescript::Layout::add_field(std::string name, Field field) {
-    _fields.emplace(std::move(name), std::move(field));
+void aescript::Layout::add_field(Field field) {
+    _fields.emplace(std::move(field));
 }
 
 
 ers::Status aescript::Layout::verify(sol::table table) const {
-    for (const auto& [name, field] : _fields) {
-        if (auto r = field.verify(table, name); !r)
+    for (const auto& field : _fields) {
+        if (auto r = field.verify(table); !r)
             return r;
     }
 
@@ -25,8 +25,8 @@ ers::Status aescript::Layout::verify(sol::table table) const {
 }
 
 ers::Status aescript::Layout::parse(sol::table table, void* where) const {
-    for (const auto& [name, field] : _fields) {
-        if (auto s = field.parse(table, name, where); !s) {
+    for (const auto& field : _fields) {
+        if (auto s = field.parse(table, where); !s) {
             return s;
         }
     }

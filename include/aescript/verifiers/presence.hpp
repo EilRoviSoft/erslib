@@ -1,7 +1,6 @@
 #pragma once
 
 // aescript
-#include <aescript/impl/field.hpp>
 #include <aescript/impl/verifier.hpp>
 
 
@@ -29,7 +28,6 @@ namespace aescript {
 
 
     namespace properties {
-        Field required();
-        Field optional();
+        VerifierPtr presence(bool flag);
     }
 }

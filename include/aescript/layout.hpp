@@ -9,12 +9,19 @@
 // { "icon-size , expected_type<SpriteSizeType> | exclusive_with("icons") }
 
 
+// In future this can be done with reflection:
+// [[=reflect::Field() | presence(Required)]]
+// std::string type;
+
+
 // Main implementation
 
 #include <aescript/impl/field.hpp>
 #include <aescript/impl/layout.hpp>
 #include <aescript/impl/parser.hpp>
 #include <aescript/impl/verifier.hpp>
+
+#include <aescript/impl/util.hpp>
 
 
 // Utility

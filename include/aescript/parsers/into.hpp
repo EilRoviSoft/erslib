@@ -36,7 +36,7 @@ namespace aescript {
     };
 
 
-    namespace parsers {
+    namespace properties {
         template<typename Owner, typename Member>
         ParserPtr parse_into(Member Owner::* dst) {
             return std::make_unique<ParseIntoParser<Owner, Member>>(dst);

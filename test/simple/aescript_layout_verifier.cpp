@@ -14,6 +14,10 @@
 #include <aescript/layout.hpp>
 
 
+using namespace aescript;
+using namespace properties;
+
+
 namespace {
     template<std::floating_point T>
     bool equals(T lhs, T rhs) {
@@ -35,12 +39,9 @@ namespace {
 
 
         static auto get_layout() {
-            using namespace aescript::properties;
-            using namespace aescript::parsers;
-
-            static aescript::Layout layout = {
-                { "x", optional() | with_type<double>() | parse_into(&Vector::x) },
-                { "y", optional() | with_type<double>() | parse_into(&Vector::y) },
+            static Layout layout = {
+                optional_field("x") | with_type<double>() | parse_into(&Vector::x),
+                optional_field("y") | with_type<double>() | parse_into(&Vector::y),
             };
 
             return layout;
@@ -60,14 +61,11 @@ namespace {
 
 
         static auto get_layout() {
-            using namespace aescript::properties;
-            using namespace aescript::parsers;
-
-            static aescript::Layout layout = {
-                { "r", optional() | with_type<float>() | parse_into(&Color::r) },
-                { "g", optional() | with_type<float>() | parse_into(&Color::g) },
-                { "b", optional() | with_type<float>() | parse_into(&Color::b) },
-                { "a", optional() | with_type<float>() | parse_into(&Color::a) },
+            static Layout layout = {
+                optional_field("r") | with_type<float>() | parse_into(&Color::r),
+                optional_field("g") | with_type<float>() | parse_into(&Color::g),
+                optional_field("b") | with_type<float>() | parse_into(&Color::b),
+                optional_field("a") | with_type<float>() | parse_into(&Color::a),
             };
 
             return layout;
@@ -96,17 +94,14 @@ namespace {
 
 
         static auto get_layout() {
-            using namespace aescript::properties;
-            using namespace aescript::parsers;
-
-            static aescript::Layout layout = {
-                { "icon", required() | with_type<std::string>() | parse_into(&IconData::icon) },
-                { "icon_size", optional() | with_type<SpriteSizeType>() | parse_into(&IconData::icon_size) },
-                { "tint", optional() | with_type<Color>() | parse_into(&IconData::tint) },
-                { "shift", optional() | with_type<Vector>() | parse_into(&IconData::shift) },
-                { "scale", optional() | with_type<double>() | parse_into(&IconData::scale) },
-                { "draw_background", optional() | with_type<bool>() | parse_into(&IconData::draw_background) },
-                { "floating", optional() | with_type<bool>() | parse_into(&IconData::is_floating) }
+            static Layout layout = {
+                required_field("icon") | with_type<std::string>() | parse_into(&IconData::icon),
+                optional_field("icon_size") | with_type<SpriteSizeType>() | parse_into(&IconData::icon_size),
+                optional_field("tint") | with_type<Color>() | parse_into(&IconData::tint),
+                optional_field("shift") | with_type<Vector>() | parse_into(&IconData::shift),
+                optional_field("scale") | with_type<double>() | parse_into(&IconData::scale),
+                optional_field("draw_background") | with_type<bool>() | parse_into(&IconData::draw_background),
+                optional_field("floating") | with_type<bool>() | parse_into(&IconData::is_floating),
             };
 
             return layout;
@@ -131,22 +126,31 @@ namespace {
 
         // TODO: implement parsing for 'icon' and 'icon_size'
         static auto get_layout() {
-            using namespace aescript::properties;
-            using namespace aescript::parsers;
+            static Layout layout = {
+                required_field("type")
+                | with_type<std::string>()
+                | parse_into(&ItemPrototype::type),
 
-            static aescript::Layout layout = {
-                { "type", required() | with_type<std::string>() | parse_into(&ItemPrototype::type) },
-                { "name", required() | with_type<std::string>() | parse_into(&ItemPrototype::name) },
-                { "stack_size", required() | with_type<size_t>() | parse_into(&ItemPrototype::stack_size) },
-                {
-                    "icons",
-                    optional()
-                    | exclusive_with({ "icon", "icon_size" })
-                    | with_type<std::vector<IconData>>()
-                    | parse_into(&ItemPrototype::icons)
-                },
-                { "icon", optional() | exclusive_with({ "icons" }) | with_type<std::string>() },
-                { "icon_size", optional() | exclusive_with({ "icons" }) | with_type<SpriteSizeType>() },
+                required_field("name")
+                | with_type<std::string>()
+                | parse_into(&ItemPrototype::name),
+
+                required_field("stack_size")
+                | with_type<size_t>()
+                | parse_into(&ItemPrototype::stack_size),
+
+                optional_field("icons")
+                | exclusive_with({ "icon", "icon_size" })
+                | with_type<std::vector<IconData>>()
+                | parse_into(&ItemPrototype::icons),
+
+                optional_field("icon")
+                | exclusive_with({ "icons" })
+                | with_type<std::string>(),
+
+                optional_field("icon_size")
+                | exclusive_with({ "icons" })
+                | with_type<SpriteSizeType>(),
             };
 
             return layout;
@@ -245,7 +249,8 @@ TEST_CASE("layout_verifier") {
 
 
         if (proto != expected) {
-            FAIL_CHECK(std::format("Extracted prototype '{}' doesn't equal to expected value", proto.name));
+            FAIL_CHECK(std::format("Extracted prototype '{}' doesn't equal to expected value '{}'",
+                proto.name, expected.name));
             continue;
         }
     }

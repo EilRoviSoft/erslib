@@ -27,14 +27,6 @@ aescript::VerifierPtr aescript::PresenceProperty::clone() const {
 }
 
 
-aescript::Field aescript::properties::required() {
-    Field result;
-    result.add(std::make_unique<PresenceProperty>(true));
-    return result;
-}
-
-aescript::Field aescript::properties::optional() {
-    Field result;
-    result.add(std::make_unique<PresenceProperty>(false));
-    return result;
+aescript::VerifierPtr aescript::properties::presence(bool flag) {
+    return std::make_unique<PresenceProperty>(flag);
 }

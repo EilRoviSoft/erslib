@@ -25,13 +25,18 @@ namespace aescript {
     public:
         // Member functions
 
-        explicit Field() = default;
+        explicit Field(std::string name);
 
         Field(const Field& other);
         Field& operator=(const Field& other);
 
         Field(Field&&) = default;
         Field& operator=(Field&&) = default;
+
+
+        // Accessors
+
+        std::string_view name() const { return _name; }
 
 
         // Modifiers
@@ -43,14 +48,16 @@ namespace aescript {
         // Api
 
         [[nodiscard]]
-        ers::Status verify(sol::table table, std::string_view field) const;
+        ers::Status verify(sol::table table) const;
 
         // Should be called only after 'verify'.
         [[nodiscard]]
-        ers::Status parse(sol::table table, std::string_view field, void* where) const;
+        ers::Status parse(sol::table table, void* where) const;
 
 
     private:
+        std::string _name;
+
         std::list<VerifierPtr> _verifiers;
         std::vector<storage_iterator> _verifiers_order;
 

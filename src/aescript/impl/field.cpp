@@ -9,6 +9,10 @@
 
 // Field
 
+aescript::Field::Field(std::string name) :
+    _name(std::move(name)) {
+}
+
 aescript::Field::Field(const Field& other) {
     _copy_from(other);
 }
@@ -35,11 +39,11 @@ void aescript::Field::add(ParserPtr ptr) {
 }
 
 
-ers::Status aescript::Field::verify(sol::table table, std::string_view field) const {
+ers::Status aescript::Field::verify(sol::table table) const {
     for (const auto& prop : _verifiers_order) {
         verify_context ctx;
 
-        if (auto s = (*prop)->exec(ctx, table, field); !s)
+        if (auto s = (*prop)->exec(ctx, table, _name); !s)
             return s;
 
         if (ctx.skip)
@@ -49,18 +53,18 @@ ers::Status aescript::Field::verify(sol::table table, std::string_view field) co
     return ers::ok;
 }
 
-ers::Status aescript::Field::parse(sol::table table, std::string_view field, void* where) const {
+ers::Status aescript::Field::parse(sol::table table, void* where) const {
     // At this point we have already verified table
     // so we can skip processing of every absent field.
 
-    if (!table.get<std::optional<sol::object>>(field))
+    if (!table.get<std::optional<sol::object>>(_name))
         return ers::ok;
 
 
     for (const auto& prop : _parsers) {
         parser_context ctx;
 
-        if (auto s = prop->exec(ctx, table, field, where); !s)
+        if (auto s = prop->exec(ctx, table, _name, where); !s)
             return s;
     }
 
@@ -69,6 +73,8 @@ ers::Status aescript::Field::parse(sol::table table, std::string_view field, voi
 
 
 void aescript::Field::_copy_from(const Field& other) {
+    _name = other._name;
+
     for (const auto& it : other._verifiers)
         add(it->clone());
 
