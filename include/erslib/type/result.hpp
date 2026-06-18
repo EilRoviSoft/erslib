@@ -105,6 +105,12 @@ namespace ers {
         constexpr const error_type& error() const { return std::get<1>(m_variant); }
 
 
+        // Modifiers
+
+        // Needed just in case you want to extend error's message
+        constexpr error_type&& extract_error() && { return std::move(std::get<1>(m_variant)); }
+
+
     protected:
         std::variant<value_type, error_type> m_variant;
     };
@@ -196,6 +202,12 @@ namespace ers {
         constexpr const error_type& error() const { return std::get<1>(m_variant); }
 
 
+        // Modifiers
+
+        // Needed just in case you want to extend error's message
+        constexpr error_type&& extract_error() && { return std::move(std::get<1>(m_variant)); }
+
+
     protected:
         std::variant<ref<value_type>, error_type> m_variant;
     };
@@ -262,6 +274,12 @@ namespace ers {
         [[nodiscard]] constexpr explicit operator bool() const noexcept { return has_value(); }
 
         constexpr const error_type& error() const { return *m_error; }
+
+
+        // Modifiers
+
+        // Needed just in case you want to extend error's message
+        constexpr error_type&& extract_error() && { return std::move(*m_error); }
 
 
     protected:

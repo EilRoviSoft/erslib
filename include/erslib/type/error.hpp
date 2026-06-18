@@ -54,14 +54,6 @@ struct ers::convert::to_string_backend<ers::Severity> {
 
 namespace ers {
     class ERSLIB_EXPORT Error {
-        struct storage_type {
-            Severity severity;
-            std::string message;
-            timestamp_t timestamp;
-            cpptrace::raw_trace trace;
-        };
-
-
     public:
         // Member functions
 
@@ -72,8 +64,8 @@ namespace ers {
             cpptrace::raw_trace trace = internal::get_trace({ .skip = 1 })
         );
 
-        Error(const Error& other);
-        Error& operator=(const Error& other);
+        Error(const Error& other) = default;
+        Error& operator=(const Error& other) = default;
 
         Error(Error&& other) noexcept;
         Error& operator=(Error&& other) noexcept;
@@ -81,10 +73,10 @@ namespace ers {
 
         // Observers
 
-        Severity severity() const noexcept { return _storage->severity; }
-        timestamp_t timestamp() const noexcept { return _storage->timestamp; }
-        std::string_view message() const noexcept { return _storage->message; }
-        const cpptrace::raw_trace& stacktrace() const noexcept { return _storage->trace; }
+        Severity severity() const noexcept { return m_severity; }
+        timestamp_t timestamp() const noexcept { return m_timestamp; }
+        std::string_view message() const noexcept { return m_message; }
+        const cpptrace::raw_trace& stacktrace() const noexcept { return m_trace; }
 
 
         std::string to_string(bool trim = false) const;
@@ -92,19 +84,21 @@ namespace ers {
 
         // Modifiers
 
-        Error&& expand_context(std::string_view message) &&;
+        Error&& extend(std::string_view message) &&;
 
         template<typename... Args>
             requires (sizeof...(Args) >= 1)
-        Error&& expand_context(std::format_string<Args...> fmt, Args&&... args) && {
-            _storage->message += '\n';
-            _storage->message += std::format(fmt, std::forward<Args>(args)...);
+        Error&& extend(std::format_string<Args...> fmt, Args&&... args) && {
+            m_message += std::format(fmt, std::forward<Args>(args)...);
             return std::move(*this);
         }
 
 
-    private:
-        std::unique_ptr<storage_type> _storage;
+    protected:
+        Severity m_severity;
+        std::string m_message;
+        timestamp_t m_timestamp;
+        cpptrace::raw_trace m_trace;
     };
 
 

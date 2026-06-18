@@ -56,4 +56,14 @@ namespace aescript::internal {
     concept HasLayoutDescriptor = requires() {
         { T::get_layout() } -> std::same_as<Layout>;
     };
+
+    template<typename T>
+    concept HasVerifier = requires(verify_context ctx, sol::object obj) {
+        { verifier_t<T> {}.exec(ctx, obj) } -> std::convertible_to<ers::Status>;
+    };
+
+    template<typename T>
+    concept HasParser = requires(verify_context ctx, sol::object obj, void* dst) {
+        { parser_t<T> {}.exec(ctx, obj, dst) } -> std::convertible_to<ers::Status>;
+    };
 }

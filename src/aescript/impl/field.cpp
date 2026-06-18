@@ -42,7 +42,7 @@ ers::Status aescript::Field::verify(sol::table table, std::string_view field) co
         if (auto s = (*prop)->exec(ctx, table, field); !s)
             return s;
 
-        if (ctx.skip_checks)
+        if (ctx.skip)
             break;
     }
 
@@ -50,6 +50,13 @@ ers::Status aescript::Field::verify(sol::table table, std::string_view field) co
 }
 
 ers::Status aescript::Field::parse(sol::table table, std::string_view field, void* where) const {
+    // At this point we have already verified table
+    // so we can skip processing of every absent field.
+
+    if (!table.get<std::optional<sol::object>>(field))
+        return ers::ok;
+
+
     for (const auto& prop : _parsers) {
         parser_context ctx;
 

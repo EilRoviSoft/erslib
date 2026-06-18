@@ -3,7 +3,7 @@
 
 namespace aescript {
     struct verify_context {
-        bool skip_checks = false;
+        bool skip : 1 = false;
     };
 
 

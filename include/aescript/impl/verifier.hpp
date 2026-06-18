@@ -43,4 +43,10 @@ namespace aescript {
     private:
         size_t _precedence;
     };
+
+
+    template<typename T>
+    struct verifier_t {
+        ers::Status exec(verify_context& ctx, sol::object obj) const = delete("no verifier_t specialization for T");
+    };
 }

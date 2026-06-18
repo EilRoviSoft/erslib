@@ -15,7 +15,7 @@ ers::Status aescript::PresenceProperty::exec([[maybe_unused]] verify_context& ct
                 field
             );
         } else {
-            ctx.skip_checks = true;
+            ctx.skip = true;
         }
     }
 

@@ -45,6 +45,7 @@ namespace aescript {
         [[nodiscard]]
         ers::Status verify(sol::table table, std::string_view field) const;
 
+        // Should be called only after 'verify'.
         [[nodiscard]]
         ers::Status parse(sol::table table, std::string_view field, void* where) const;
 
