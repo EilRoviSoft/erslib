@@ -12,7 +12,7 @@ namespace aescript {
         explicit PresenceProperty(bool is_required);
 
 
-        // Checkers
+        // Executors
 
         [[nodiscard]]
         ers::Status exec([[maybe_unused]] verify_context& ctx, sol::table table, std::string_view field) const override;

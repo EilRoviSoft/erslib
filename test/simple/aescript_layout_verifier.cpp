@@ -146,11 +146,13 @@ namespace {
 
                 optional_field("icon")
                 | exclusive_with({ "icons" })
-                | with_type<std::string>(),
+                | with_type<std::string>()
+                | parse_into_front(&ItemPrototype::icons, &IconData::icon),
 
                 optional_field("icon_size")
                 | exclusive_with({ "icons" })
-                | with_type<SpriteSizeType>(),
+                | with_type<SpriteSizeType>()
+                | parse_into_front(&ItemPrototype::icons, &IconData::icon_size),
             };
 
             return layout;
@@ -190,7 +192,12 @@ namespace {
                 .type       = "item",
                 .name       = "fish",
                 .stack_size = 200,
-                .icons      = {}
+                .icons      = {
+                    IconData {
+                        .icon      = "fish.png",
+                        .icon_size = 64,
+                    }
+                },
             },
             ItemPrototype {
                 .type       = "item",

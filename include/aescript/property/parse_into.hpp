@@ -15,7 +15,7 @@ namespace aescript {
         }
 
 
-        // Parsers
+        // Executors
 
         ers::Status exec(parser_context& ctx, sol::table table, std::string_view field, void* dst) const override {
             auto& owner = *static_cast<Owner*>(dst);

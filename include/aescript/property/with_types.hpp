@@ -20,7 +20,7 @@ namespace aescript {
         WithTypesProperty() : IVerifier(2) {}
 
 
-        // Checkers
+        // Executors
 
         [[nodiscard]]
         ers::Status exec([[maybe_unused]] verify_context& ctx, sol::table table, std::string_view field) const override {

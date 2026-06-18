@@ -153,8 +153,10 @@ set(SOURCES
     "src/aescript/impl/field.cpp"
     "src/aescript/impl/layout.cpp"
 
-    "src/aescript/properties/exclusive_with.cpp"
-    "src/aescript/properties/presence.cpp"
+    "src/aescript/impl/util.cpp"
+
+    "src/aescript/property/exclusive_with.cpp"
+    "src/aescript/property/presence.cpp"
 
 
     # easy_ecs
@@ -162,7 +164,7 @@ set(SOURCES
     "src/easy_ecs/entity.cpp"
     "src/easy_ecs/group.cpp"
     "src/easy_ecs/registry.cpp"
-  "src/aescript/impl/util.cpp")
+ )
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${SOURCES})
 
 

@@ -10,7 +10,7 @@
 
 
 // In future this can be done with reflection:
-// [[=reflect::Field() | presence(Required)]]
+// [[=reflect::required]]
 // std::string type;
 
 
@@ -37,8 +37,8 @@
 
 // Properties
 
-#include <aescript/verifiers/exclusive_with.hpp>
-#include <aescript/verifiers/presence.hpp>
-#include <aescript/verifiers/with_types.hpp>
-
-#include <aescript/parsers/into.hpp>
+#include <aescript/property/exclusive_with.hpp>
+#include <aescript/property/parse_into.hpp>
+#include <aescript/property/parse_into_with_index.hpp>
+#include <aescript/property/presence.hpp>
+#include <aescript/property/with_types.hpp>

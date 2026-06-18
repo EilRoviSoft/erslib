@@ -1,4 +1,4 @@
-#include "aescript/verifiers/exclusive_with.hpp"
+#include "aescript/property/exclusive_with.hpp"
 
 
 aescript::ExclusiveWithProperty::ExclusiveWithProperty(std::initializer_list<std::string_view> il) :
