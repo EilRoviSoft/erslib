@@ -10,7 +10,7 @@ macro(import_targets type)
     include("${CMAKE_CURRENT_LIST_DIR}/erslib-${type}-targets.cmake")
 endmacro()
 
-if(NOT TARGET erslib::erslib)
+if(NOT TARGET erslib::core)
     set(type "")
 
     if(DEFINED ERSLIB_SHARED_LIBS)

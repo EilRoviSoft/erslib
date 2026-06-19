@@ -22,6 +22,11 @@ option(ERSLIB_BUILD_TESTS "Build erslib tests" OFF)
 option(ERSLIB_INSTALL "Generate target for installing erslib" ${IS_TOP_LEVEL})
 option(ERSLIB_STANDALONE "Build as standalone project (includes tests/executables)" OFF)
 
+option(ERSLIB_BUILD_CONTRIB "Build erslib::contrib target" ON)
+option(ERSLIB_BUILD_AENGINE "Build erslib::aengine target" ON)
+option(ERSLIB_BUILD_EASY_ECS "Build erslib::easy_ecs target" ON)
+option(ERSLIB_BUILD_AESCRIPT "Build erslib::aescript target" ON)
+
 set_if_undefined(ERSLIB_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/erslib"
     CACHE STRING "Install path for erslib package-related CMake files"
 )
@@ -31,77 +36,277 @@ if(NOT DEFINED CMAKE_BUILD_TYPE AND NOT DEFINED CMAKE_CONFIGURATION_TYPES)
     set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif()
 
-if(ERSLIB_SHARED_LIBS)
-    add_library(erslib SHARED)
-else()
-    add_library(erslib STATIC)
-endif()
-
-add_library(erslib::erslib ALIAS erslib)
-
-target_compile_features(erslib PUBLIC cxx_std_23)
-
 
 #----------------------------------------------------------------------------------------------------------------------
-# erslib dependencies
+# helper functions
 #----------------------------------------------------------------------------------------------------------------------
 
 
-set(DEPENDENCIES "")
+function(erslib_add_library target_name alias_name)
+    if(ERSLIB_SHARED_LIBS)
+        add_library(${target_name} SHARED)
+    else()
+        add_library(${target_name} STATIC)
+    endif()
+
+    add_library(erslib::${alias_name} ALIAS ${target_name})
+
+    set_target_properties(${target_name} PROPERTIES EXPORT_NAME ${alias_name})
+
+    target_compile_features(${target_name} PUBLIC cxx_std_23)
+
+    target_include_directories(${target_name}
+        PUBLIC
+            "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+            "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>"
+    )
+
+    target_compile_definitions(${target_name}
+        PUBLIC
+            "$<$<NOT:$<BOOL:${BUILD_SHARED_LIBS}>>:ERSLIB_STATIC_DEFINE>"
+    )
+endfunction()
 
 
-function(erslib_optional_package package_name target_name compile_definition)
+function(erslib_optional_package target_name package_name dep_target_name compile_definition)
     find_package(${package_name} CONFIG QUIET)
 
-    if(TARGET ${target_name})
-        message(STATUS "erslib: found optional dependency ${package_name}")
-        target_compile_definitions(erslib PUBLIC ${compile_definition})
-        target_link_libraries(erslib PUBLIC ${target_name})
+    if(TARGET ${dep_target_name})
+        message(STATUS "erslib: found optional dependency ${package_name} for ${target_name}")
+        target_compile_definitions(${target_name} PUBLIC ${compile_definition})
+        target_link_libraries(${target_name} PUBLIC ${dep_target_name})
     else()
         message(STATUS "erslib: optional dependency ${package_name} not found")
     endif()
 endfunction()
 
 
-erslib_optional_package(boost_container Boost::container _HAS_BOOST_CONTAINER)
-erslib_optional_package(boost_optional Boost::optional _HAS_BOOST_OPTIONAL)
-erslib_optional_package(boost_regex Boost::regex _HAS_BOOST_REGEX)
-erslib_optional_package(boost_smart_ptr Boost::smart_ptr _HAS_BOOST_SMART_PTR)
-erslib_optional_package(boost_thread Boost::thread _HAS_BOOST_THREAD)
-erslib_optional_package(boost_unordered Boost::unordered _HAS_BOOST_UNORDERED)
-erslib_optional_package(cpptrace cpptrace::cpptrace _HAS_CPPTRACE)
-erslib_optional_package(frozen frozen::frozen _HAS_FROZEN)
-erslib_optional_package(sol2 sol2::sol2 _HAS_SOL2)
-erslib_optional_package(SDL3 SDL3::SDL3 _HAS_SDL3)
-erslib_optional_package(quill quill::quill _HAS_QUILL)
-erslib_optional_package(RmlUi RmlUi::RmlUi _HAS_RMLUI)
-
-
-find_package(PkgConfig QUIET)
-
-if(PkgConfig_FOUND)
-    pkg_check_modules(LuaJIT QUIET IMPORTED_TARGET luajit)
-
-    if(TARGET PkgConfig::LuaJIT)
-        message(STATUS "erslib: found optional dependency LuaJIT")
-        target_compile_definitions(erslib PUBLIC _HAS_LUAJIT)
-        target_link_libraries(erslib PUBLIC PkgConfig::LuaJIT)
-    else()
-        message(STATUS "erslib: optional dependency LuaJIT not found")
-    endif()
-else()
-    message(STATUS "erslib: PkgConfig not found, skipping LuaJIT")
-endif()
-
-
-target_link_libraries(erslib
-    PUBLIC
-        ${DEPENDENCIES}
-)
+set(ERSLIB_TARGETS "")
 
 
 #----------------------------------------------------------------------------------------------------------------------
-# erslib sources
+# erslib::core
+#----------------------------------------------------------------------------------------------------------------------
+
+
+erslib_add_library(erslib_core core)
+
+target_sources(erslib_core
+    PRIVATE
+        "include/erslib/core/export.hpp"
+
+        "src/erslib/core/assert.cpp"
+
+        "src/erslib/core/exception/internal.cpp"
+
+        "src/erslib/core/splitting/regular.cpp"
+        "src/erslib/core/splitting/smart.cpp"
+
+        "src/erslib/core/type/error.cpp"
+
+        "src/erslib/core/util/file.cpp"
+        "src/erslib/core/util/string.cpp"
+)
+
+erslib_optional_package(erslib_core boost_optional Boost::optional _HAS_BOOST_OPTIONAL)
+erslib_optional_package(erslib_core boost_smart_ptr Boost::smart_ptr _HAS_BOOST_SMART_PTR)
+erslib_optional_package(erslib_core boost_thread Boost::thread _HAS_BOOST_THREAD)
+erslib_optional_package(erslib_core cpptrace cpptrace::cpptrace _HAS_CPPTRACE)
+
+if(IS_TOP_LEVEL)
+    target_compile_definitions(erslib_core
+        PRIVATE
+            ERS_ASSERT_INFO
+    )
+endif()
+
+set(ERS_TRACE_VERBOSITY "1" CACHE STRING "Trace verbosity level for erslib (0 = off, 1 = basic, 2 = full)")
+
+target_compile_definitions(erslib_core
+    PUBLIC
+        ERS_TRACE_VERBOSITY=${ERS_TRACE_VERBOSITY}
+)
+
+if(ERS_TRACE_VERBOSITY STREQUAL "2")
+    set(ERS_TRACE_MAX_DEPTH "0" CACHE STRING "Trace verbosity max depth")
+
+    target_compile_definitions(erslib_core
+        PUBLIC
+            ERS_TRACE_MAX_DEPTH=${ERS_TRACE_MAX_DEPTH}
+    )
+endif()
+
+list(APPEND ERSLIB_TARGETS erslib_core)
+
+
+#----------------------------------------------------------------------------------------------------------------------
+# erslib::contrib
+#----------------------------------------------------------------------------------------------------------------------
+
+
+if(ERSLIB_BUILD_CONTRIB)
+    erslib_add_library(erslib_contrib contrib)
+
+    target_sources(erslib_contrib
+        PRIVATE
+            "src/erslib/contrib/json.cpp"
+    )
+
+    target_link_libraries(erslib_contrib
+        PUBLIC
+            erslib_core
+    )
+
+    find_package(boost_unordered CONFIG QUIET)
+    if(TARGET Boost::unordered)
+        target_link_libraries(erslib_contrib PUBLIC Boost::unordered)
+    endif()
+
+    list(APPEND ERSLIB_TARGETS erslib_contrib)
+endif()
+
+
+#----------------------------------------------------------------------------------------------------------------------
+# erslib::aengine
+#----------------------------------------------------------------------------------------------------------------------
+
+
+if(ERSLIB_BUILD_AENGINE)
+    erslib_add_library(erslib_aengine aengine)
+
+    target_sources(erslib_aengine
+        PRIVATE
+            "src/erslib/aengine/dependency.cpp"
+            "src/erslib/aengine/dependency_graph.cpp"
+            "src/erslib/aengine/mod.cpp"
+
+            "src/erslib/aengine/resource/texture.cpp"
+
+            "src/erslib/aengine/util/stage.cpp"
+    )
+
+    target_link_libraries(erslib_aengine
+        PUBLIC
+            erslib_core
+    )
+
+    if(ERSLIB_BUILD_CONTRIB)
+        target_link_libraries(erslib_aengine
+            PRIVATE
+                erslib_contrib
+        )
+    endif()
+
+    find_package(boost_container CONFIG QUIET)
+    if(TARGET Boost::container)
+        target_compile_definitions(erslib_aengine PUBLIC _HAS_BOOST_CONTAINER)
+        target_link_libraries(erslib_aengine PUBLIC Boost::container)
+    endif()
+
+    find_package(boost_unordered CONFIG QUIET)
+    if(TARGET Boost::unordered)
+        target_compile_definitions(erslib_aengine PUBLIC _HAS_BOOST_UNORDERED)
+        target_link_libraries(erslib_aengine PUBLIC Boost::unordered)
+    endif()
+
+    find_package(sol2 CONFIG QUIET)
+    if(TARGET sol2::sol2)
+        target_compile_definitions(erslib_aengine PUBLIC _HAS_SOL2)
+        target_link_libraries(erslib_aengine PUBLIC sol2::sol2)
+    endif()
+
+    find_package(PkgConfig QUIET)
+    if(PkgConfig_FOUND)
+        pkg_check_modules(LuaJIT QUIET IMPORTED_TARGET luajit)
+        if(TARGET PkgConfig::LuaJIT)
+            message(STATUS "erslib: found optional dependency LuaJIT for erslib_aengine")
+            target_compile_definitions(erslib_aengine PUBLIC _HAS_LUAJIT)
+            target_link_libraries(erslib_aengine PUBLIC PkgConfig::LuaJIT)
+        else()
+            message(STATUS "erslib: optional dependency LuaJIT not found")
+        endif()
+    else()
+        message(STATUS "erslib: PkgConfig not found, skipping LuaJIT")
+    endif()
+
+    erslib_optional_package(erslib_aengine boost_regex Boost::regex _HAS_BOOST_REGEX)
+    erslib_optional_package(erslib_aengine SDL3 SDL3::SDL3 _HAS_SDL3)
+    erslib_optional_package(erslib_aengine quill quill::quill _HAS_QUILL)
+    erslib_optional_package(erslib_aengine RmlUi RmlUi::RmlUi _HAS_RMLUI)
+
+    list(APPEND ERSLIB_TARGETS erslib_aengine)
+endif()
+
+
+#----------------------------------------------------------------------------------------------------------------------
+# erslib::easy_ecs
+#----------------------------------------------------------------------------------------------------------------------
+
+
+if(ERSLIB_BUILD_EASY_ECS)
+    if(NOT ERSLIB_BUILD_AENGINE)
+        message(FATAL_ERROR "ERSLIB_BUILD_EASY_ECS requires ERSLIB_BUILD_AENGINE")
+    endif()
+
+    erslib_add_library(erslib_easy_ecs easy_ecs)
+
+    target_sources(erslib_easy_ecs
+        PRIVATE
+            "src/erslib/easy_ecs/entity.cpp"
+            "src/erslib/easy_ecs/group.cpp"
+            "src/erslib/easy_ecs/registry.cpp"
+    )
+
+    target_link_libraries(erslib_easy_ecs
+        PUBLIC
+            erslib_aengine
+    )
+
+    find_package(frozen CONFIG QUIET)
+    if(TARGET frozen::frozen)
+        target_compile_definitions(erslib_easy_ecs PUBLIC _HAS_FROZEN)
+        target_link_libraries(erslib_easy_ecs PUBLIC frozen::frozen)
+    endif()
+
+    list(APPEND ERSLIB_TARGETS erslib_easy_ecs)
+endif()
+
+
+#----------------------------------------------------------------------------------------------------------------------
+# erslib::aescript
+#----------------------------------------------------------------------------------------------------------------------
+
+
+if(ERSLIB_BUILD_AESCRIPT)
+    if(NOT ERSLIB_BUILD_AENGINE)
+        message(FATAL_ERROR "ERSLIB_BUILD_AESCRIPT requires ERSLIB_BUILD_AENGINE")
+    endif()
+
+    erslib_add_library(erslib_aescript aescript)
+
+    target_sources(erslib_aescript
+        PRIVATE
+            "src/erslib/aescript/impl/field.cpp"
+            "src/erslib/aescript/impl/layout.cpp"
+            "src/erslib/aescript/impl/util.cpp"
+
+            "src/erslib/aescript/properties/exclusive_with.cpp"
+            "src/erslib/aescript/properties/inclusive_with.cpp"
+            "src/erslib/aescript/properties/one_of.cpp"
+            "src/erslib/aescript/properties/presence.cpp"
+    )
+
+    target_link_libraries(erslib_aescript
+        PUBLIC
+            erslib_aengine
+    )
+
+    list(APPEND ERSLIB_TARGETS erslib_aescript)
+endif()
+
+
+#----------------------------------------------------------------------------------------------------------------------
+# export header
 #----------------------------------------------------------------------------------------------------------------------
 
 
@@ -112,119 +317,20 @@ if(NOT BUILD_SHARED_LIBS)
     set(EXPORT_FILE_NAME "export_static.hpp")
 endif()
 
-generate_export_header(erslib EXPORT_FILE_NAME include/erslib/${EXPORT_FILE_NAME})
-
-set(SOURCES
-    # core
-
-    "include/erslib/core/export.hpp"
-
-    "src/erslib/core/assert.cpp"
-
-    "src/erslib/core/exception/internal.cpp"
-
-    "src/erslib/core/splitting/regular.cpp"
-    "src/erslib/core/splitting/smart.cpp"
-
-    "src/erslib/core/type/error.cpp"
-
-    "src/erslib/core/util/file.cpp"
-    "src/erslib/core/util/string.cpp"    
-
-
-    # contrib
-
-    "src/erslib/contrib/json.cpp"
-
-
-    # aengine
-
-    "src/erslib/aengine/dependency.cpp"
-    "src/erslib/aengine/dependency_graph.cpp"
-    "src/erslib/aengine/mod.cpp"
-
-    "src/erslib/aengine/resource/texture.cpp"
-
-    "src/erslib/aengine/util/stage.cpp"
-
-
-    # aescript
-
-    "src/erslib/aescript/impl/field.cpp"
-    "src/erslib/aescript/impl/layout.cpp"
-    "src/erslib/aescript/impl/util.cpp"
-
-    "src/erslib/aescript/properties/exclusive_with.cpp"
-    "src/erslib/aescript/properties/inclusive_with.cpp"
-    "src/erslib/aescript/properties/one_of.cpp"
-    "src/erslib/aescript/properties/presence.cpp"
-
-
-    # easy_ecs
-
-    "src/erslib/easy_ecs/entity.cpp"
-    "src/erslib/easy_ecs/group.cpp"
-    "src/erslib/easy_ecs/registry.cpp"
+generate_export_header(erslib_core
+    BASE_NAME erslib
+    EXPORT_FILE_NAME include/erslib/${EXPORT_FILE_NAME}
 )
-source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${SOURCES})
 
 
 #----------------------------------------------------------------------------------------------------------------------
-# erslib target
+# install
 #----------------------------------------------------------------------------------------------------------------------
 
-
-include(CMakePackageConfigHelpers)
-
-target_sources(erslib
-    PRIVATE
-        ${SOURCES}
-)
-
-
-target_compile_definitions(erslib
-    PUBLIC
-        "$<$<NOT:$<BOOL:${BUILD_SHARED_LIBS}>>:ERSLIB_STATIC_DEFINE>"
-)
-
-
-if(IS_TOP_LEVEL)
-    target_compile_definitions(erslib
-        PRIVATE
-            ERS_ASSERT_INFO
-    )
-endif()
-
-
-set(ERS_TRACE_VERBOSITY "1" CACHE STRING "Trace verbosity level for erslib (0 = off, 1 = basic, 2 = full)")
-
-target_compile_definitions(erslib
-    PUBLIC 
-        ERS_TRACE_VERBOSITY=${ERS_TRACE_VERBOSITY}
-)
-
-if(ERS_TRACE_VERBOSITY STREQUAL "2")
-    set(ERS_TRACE_MAX_DEPTH "0" CACHE STRING "Trace verbosity max depth")
-
-    target_compile_definitions(erslib
-        PUBLIC 
-            ERS_TRACE_MAX_DEPTH=${ERS_TRACE_MAX_DEPTH}
-    )
-endif()
-
-
-target_include_directories(erslib
-    PUBLIC
-        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-        "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>"
-)
-
-set_target_properties(erslib PROPERTIES
-    SOVERSION ${PROJECT_VERSION_MAJOR}
-    VERSION ${PROJECT_VERSION}
-)
 
 if(ERSLIB_INSTALL AND NOT CMAKE_SKIP_INSTALL_RULES)
+    include(CMakePackageConfigHelpers)
+
     configure_package_config_file(
         cmake/erslib-config.cmake.in
         erslib-config.cmake
@@ -236,7 +342,7 @@ if(ERSLIB_INSTALL AND NOT CMAKE_SKIP_INSTALL_RULES)
         COMPATIBILITY SameMajorVersion
     )
 
-    install(TARGETS erslib EXPORT erslib_export
+    install(TARGETS ${ERSLIB_TARGETS} EXPORT erslib_export
         RUNTIME COMPONENT erslib
         LIBRARY COMPONENT erslib NAMELINK_COMPONENT erslib_dev
         ARCHIVE COMPONENT erslib_dev

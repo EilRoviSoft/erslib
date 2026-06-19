@@ -53,7 +53,7 @@ target_sources(test_simple PRIVATE ${SIMPLE_SOURCES} "simple.cpp")
 
 target_link_libraries(test_simple
     PRIVATE
-        erslib::erslib
+        erslib::core erslib::contrib erslib::aengine erslib::easy_ecs erslib::aescript
         doctest::doctest
 )
 
@@ -64,10 +64,10 @@ target_compile_definitions(test_simple
 
 
 if(NOT IS_TOP_LEVEL)
-    win_copy_deps_to_target_dir(test_simple erslib::erslib)
+    win_copy_deps_to_target_dir(test_simple erslib::core erslib::contrib erslib::aengine erslib::easy_ecs erslib::aescript)
 endif()
 
-target_compile_definitions(erslib
+target_compile_definitions(erslib_core
     PRIVATE
         ERS_ASSERT_INFO
 )
@@ -90,7 +90,7 @@ function(add_stateful_test TEST_TARGET RELATIVE_TEST_DIR)
 
 	target_link_libraries(${TEST_TARGET}
         PRIVATE
-            erslib::erslib
+            erslib::core erslib::contrib erslib::aengine erslib::easy_ecs erslib::aescript
             doctest::doctest
     )
 
@@ -147,7 +147,7 @@ function(add_sandbox_test TEST_TARGET RELATIVE_TEST_DIR)
 
 	target_link_libraries(${TEST_TARGET}
         PRIVATE
-            erslib::erslib
+            erslib::core erslib::contrib erslib::aengine erslib::easy_ecs erslib::aescript
     )
 
 	file(MAKE_DIRECTORY "${BIN_DIR}")
