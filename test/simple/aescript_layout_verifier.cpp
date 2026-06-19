@@ -29,6 +29,7 @@ namespace {
 namespace {
     using SpriteSizeType = uint16_t;
 
+
     struct Vector {
         double x = 0.0, y = 0.0;
 
@@ -38,7 +39,7 @@ namespace {
         }
 
 
-        static auto get_layout() {
+        static const auto& get_layout() {
             static Layout layout = {
                 optional_field("x") | with_type<double>() | parse_into(&Vector::x),
                 optional_field("y") | with_type<double>() | parse_into(&Vector::y),
@@ -47,6 +48,7 @@ namespace {
             return layout;
         }
     };
+
 
     struct Color {
         float r = 0.f, g = 0.f, b = 0.f, a = 0.f;
@@ -60,7 +62,7 @@ namespace {
         }
 
 
-        static auto get_layout() {
+        static const auto& get_layout() {
             static Layout layout = {
                 optional_field("r") | with_type<float>() | parse_into(&Color::r),
                 optional_field("g") | with_type<float>() | parse_into(&Color::g),
@@ -71,6 +73,7 @@ namespace {
             return layout;
         }
     };
+
 
     struct IconData {
         std::string icon;
@@ -93,7 +96,7 @@ namespace {
         }
 
 
-        static auto get_layout() {
+        static const auto& get_layout() {
             static Layout layout = {
                 required_field("icon") | with_type<std::string>() | parse_into(&IconData::icon),
                 optional_field("icon_size") | with_type<SpriteSizeType>() | parse_into(&IconData::icon_size),
@@ -124,8 +127,7 @@ namespace {
         }
 
 
-        // TODO: implement parsing for 'icon' and 'icon_size'
-        static auto get_layout() {
+        static const auto& get_layout() {
             static Layout layout = {
                 required_field("type")
                 | with_type<std::string>()
@@ -139,18 +141,18 @@ namespace {
                 | with_type<size_t>()
                 | parse_into(&ItemPrototype::stack_size),
 
+                one_of({ "icon", "icons" }),
+
                 optional_field("icons")
-                | exclusive_with({ "icon", "icon_size" })
                 | with_type<std::vector<IconData>>()
                 | parse_into(&ItemPrototype::icons),
 
                 optional_field("icon")
-                | exclusive_with({ "icons" })
                 | with_type<std::string>()
                 | parse_into_front(&ItemPrototype::icons, &IconData::icon),
 
                 optional_field("icon_size")
-                | exclusive_with({ "icons" })
+                | inclusive_with("icon")
                 | with_type<SpriteSizeType>()
                 | parse_into_front(&ItemPrototype::icons, &IconData::icon_size),
             };
@@ -169,6 +171,7 @@ item1 = {
     icon = "fish.png",
     icon_size = 64,
 }
+
 item2 = {
     type = "item",
     name = "fish-koi",
@@ -238,10 +241,8 @@ TEST_CASE("layout_verifier") {
             continue;
         }
 
-        auto layout = ItemPrototype::get_layout();
 
-
-        if (auto s = layout.verify(*item); !s) {
+        if (auto s = ItemPrototype::get_layout().verify(*item); !s) {
             FAIL_CHECK(s.error().to_string());
             continue;
         }
@@ -249,7 +250,7 @@ TEST_CASE("layout_verifier") {
 
         ItemPrototype proto;
 
-        if (auto s = layout.parse(*item, &proto); !s) {
+        if (auto s = ItemPrototype::get_layout().parse(*item, &proto); !s) {
             FAIL_CHECK(s.error().to_string());
             continue;
         }

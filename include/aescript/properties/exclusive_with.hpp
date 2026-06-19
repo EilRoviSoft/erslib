@@ -14,7 +14,7 @@ namespace aescript {
     public:
         // Member functions
 
-        ExclusiveWithProperty(std::initializer_list<std::string_view> il);
+        explicit ExclusiveWithProperty(std::vector<std::string> incompatible_fields);
 
 
         // Executors
@@ -30,13 +30,11 @@ namespace aescript {
 
     private:
         std::vector<std::string> _incompatible_fields;
-
-
-        ExclusiveWithProperty();
     };
 
 
     namespace properties {
+        VerifierPtr exclusive_with(std::string_view field);
         VerifierPtr exclusive_with(std::initializer_list<std::string_view> il);
     }
 }

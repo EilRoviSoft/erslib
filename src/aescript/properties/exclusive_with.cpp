@@ -1,14 +1,9 @@
-#include "aescript/property/exclusive_with.hpp"
+#include "aescript/properties/exclusive_with.hpp"
 
 
-aescript::ExclusiveWithProperty::ExclusiveWithProperty(std::initializer_list<std::string_view> il) :
-    ExclusiveWithProperty() {
-    for (const auto& it : il)
-        _incompatible_fields.emplace_back(it);
-}
-
-aescript::ExclusiveWithProperty::ExclusiveWithProperty() :
-    IVerifier(1) {
+aescript::ExclusiveWithProperty::ExclusiveWithProperty(std::vector<std::string> incompatible_fields) :
+    IVerifier(1),
+    _incompatible_fields(std::move(incompatible_fields)) {
 }
 
 
@@ -28,7 +23,7 @@ ers::Status aescript::ExclusiveWithProperty::exec([[maybe_unused]] verify_contex
     if (!intersection.empty()) {
         return ers::make_error(
             ers::Severity::Error,
-            "Field '{}' is exclusive with fields [{}]",
+            "Field '{}' is exclusive with fields {}",
             field, intersection
         );
     }
@@ -38,12 +33,20 @@ ers::Status aescript::ExclusiveWithProperty::exec([[maybe_unused]] verify_contex
 }
 
 aescript::VerifierPtr aescript::ExclusiveWithProperty::clone() const {
-    ExclusiveWithProperty result;
-    result._incompatible_fields = _incompatible_fields;
-    return std::make_unique<ExclusiveWithProperty>(std::move(result));
+    return std::make_unique<ExclusiveWithProperty>(_incompatible_fields);
 }
 
 
+aescript::VerifierPtr aescript::properties::exclusive_with(std::string_view field) {
+    return exclusive_with({ field });
+}
+
 aescript::VerifierPtr aescript::properties::exclusive_with(std::initializer_list<std::string_view> il) {
-    return std::make_unique<ExclusiveWithProperty>(il);
+    std::vector<std::string> incompatible_fields;
+
+    incompatible_fields.reserve(il.size());
+    for (const auto& it : il)
+        incompatible_fields.emplace_back(it);
+
+    return std::make_unique<ExclusiveWithProperty>(std::move(incompatible_fields));
 }

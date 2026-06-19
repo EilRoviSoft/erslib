@@ -3,3 +3,4 @@ out/*
 .vs/*
 vcpkg-configuration.json
 CMakeUserPresets.json
+test/sandbox/personal_sandbox

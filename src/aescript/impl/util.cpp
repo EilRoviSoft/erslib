@@ -1,7 +1,7 @@
 #include "aescript/impl/util.hpp"
 
 // aescript
-#include <aescript/property/presence.hpp>
+#include <aescript/properties/presence.hpp>
 
 
 namespace {

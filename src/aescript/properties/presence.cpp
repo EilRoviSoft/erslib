@@ -1,4 +1,4 @@
-#include "aescript/property/presence.hpp"
+#include "aescript/properties/presence.hpp"
 
 
 aescript::PresenceProperty::PresenceProperty(bool is_required) :

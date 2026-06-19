@@ -2,7 +2,8 @@
 
 // std
 #include <initializer_list>
-#include <string_view>
+#include <variant>
+#include <vector>
 
 // sol
 #include <sol/table.hpp>
@@ -15,20 +16,25 @@
 
 // aescript
 #include <aescript/impl/field.hpp>
+#include <aescript/impl/descriptor.hpp>
 
 
 namespace aescript {
     class Layout {
     public:
+        using possible_property_t = std::variant<Field, DescriptorPtr>;
+
         // Member functions
 
         Layout() = default;
-        Layout(std::initializer_list<Field> il);
+        Layout(std::initializer_list<possible_property_t> il);
 
 
         // Modifiers
 
         void add_field(Field field);
+
+        void add_property(DescriptorPtr property);
 
 
         // Accessors
@@ -39,7 +45,7 @@ namespace aescript {
         }
 
 
-        // Checkers
+        // Executors
 
         [[nodiscard]]
         ers::Status verify(sol::table table) const;
@@ -54,6 +60,8 @@ namespace aescript {
             ers::member_string_hash_adaptor<ers::RapidHash, &Field::name>,
             ers::member_equal_adaptor<&Field::name>
         > _fields;
+
+        std::vector<DescriptorPtr> _descriptors;
     };
 
 

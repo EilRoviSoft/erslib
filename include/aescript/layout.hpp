@@ -37,8 +37,10 @@
 
 // Properties
 
-#include <aescript/property/exclusive_with.hpp>
-#include <aescript/property/parse_into.hpp>
-#include <aescript/property/parse_into_with_index.hpp>
-#include <aescript/property/presence.hpp>
-#include <aescript/property/with_types.hpp>
+#include <aescript/properties/exclusive_with.hpp>
+#include <aescript/properties/inclusive_with.hpp>
+#include <aescript/properties/one_of.hpp>
+#include <aescript/properties/parse_into.hpp>
+#include <aescript/properties/parse_into_with_index.hpp>
+#include <aescript/properties/presence.hpp>
+#include <aescript/properties/with_types.hpp>

@@ -54,7 +54,7 @@ namespace aescript::internal {
 namespace aescript::internal {
     template<typename T>
     concept HasLayoutDescriptor = requires() {
-        { T::get_layout() } -> std::same_as<Layout>;
+        { T::get_layout() } -> std::same_as<const Layout&>;
     };
 
     template<typename T>

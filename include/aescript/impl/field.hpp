@@ -2,6 +2,7 @@
 
 // std
 #include <list>
+#include <memory>
 #include <vector>
 
 // sol
@@ -45,7 +46,14 @@ namespace aescript {
         void add(ParserPtr ptr);
 
 
-        // Api
+        // Verifiers
+
+        template<typename... Args>
+        Field& with_types() const {
+        }
+
+
+        // Executors
 
         [[nodiscard]]
         ers::Status verify(sol::table table) const;
