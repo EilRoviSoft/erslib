@@ -2,7 +2,7 @@
 #include <doctest/doctest.h>
 
 // ers
-#include <erslib/type/version.hpp>
+#include <erslib/core/type/version.hpp>
 
 
 TEST_CASE("version") {

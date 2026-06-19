@@ -5,7 +5,7 @@
 #include <string>
 
 // ers
-#include <erslib/util/string.hpp>
+#include <erslib/core/util/string.hpp>
 
 
 TEST_CASE("path") {

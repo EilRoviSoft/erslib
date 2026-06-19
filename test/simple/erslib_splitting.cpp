@@ -6,8 +6,8 @@
 #include <string_view>
 
 // ers
-#include <erslib/splitting/regular.hpp>
-#include <erslib/splitting/smart.hpp>
+#include <erslib/core/splitting/regular.hpp>
+#include <erslib/core/splitting/smart.hpp>
 
 
 namespace {

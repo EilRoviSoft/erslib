@@ -1,0 +1,89 @@
+#pragma once
+
+// std
+#include <list>
+#include <memory>
+#include <vector>
+
+// sol
+#include <sol/table.hpp>
+
+// ers
+#include <erslib/core/type/result.hpp>
+
+// aescript
+#include <erslib/aescript/impl/parser.hpp>
+#include <erslib/aescript/impl/verifier.hpp>
+
+
+// Field
+
+namespace aescript {
+    class Field {
+        using storage_iterator = std::list<VerifierPtr>::const_iterator;
+
+
+    public:
+        // Member functions
+
+        explicit Field(std::string name);
+
+        Field(const Field& other);
+        Field& operator=(const Field& other);
+
+        Field(Field&&) = default;
+        Field& operator=(Field&&) = default;
+
+
+        // Accessors
+
+        std::string_view name() const { return _name; }
+
+
+        // Modifiers
+
+        void add(VerifierPtr ptr);
+        void add(ParserPtr ptr);
+
+
+        // Verifiers
+
+        template<typename... Args>
+        Field& with_types() const {
+        }
+
+
+        // Executors
+
+        [[nodiscard]]
+        ers::Status verify(sol::table table) const;
+
+        // Should be called only after 'verify'.
+        [[nodiscard]]
+        ers::Status parse(sol::table table, void* where) const;
+
+
+    private:
+        std::string _name;
+
+        std::list<VerifierPtr> _verifiers;
+        std::vector<storage_iterator> _verifiers_order;
+
+        std::list<ParserPtr> _parsers;
+
+
+        void _copy_from(const Field& other);
+    };
+}
+
+
+// Operators
+
+namespace aescript {
+    Field& operator|(Field& lhs, VerifierPtr rhs);
+    Field&& operator|(Field&& lhs, VerifierPtr rhs);
+
+
+    Field& operator|(Field& lhs, ParserPtr rhs);
+    Field&& operator|(Field&& lhs, ParserPtr rhs);
+}

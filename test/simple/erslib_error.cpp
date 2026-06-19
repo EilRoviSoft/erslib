@@ -5,7 +5,7 @@
 #include <limits>
 
 // ers
-#include <erslib/type/result.hpp>
+#include <erslib/core/type/result.hpp>
 
 
 namespace {

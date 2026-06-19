@@ -115,56 +115,56 @@ endif()
 generate_export_header(erslib EXPORT_FILE_NAME include/erslib/${EXPORT_FILE_NAME})
 
 set(SOURCES
-    # erslib
+    # core
 
-    "include/erslib/export.hpp"
+    "include/erslib/core/export.hpp"
 
-    "src/erslib/assert.cpp"
+    "src/erslib/core/assert.cpp"
 
-    "src/erslib/exception/internal.cpp"
+    "src/erslib/core/exception/internal.cpp"
 
-    "src/erslib/splitting/regular.cpp"
-    "src/erslib/splitting/smart.cpp"
+    "src/erslib/core/splitting/regular.cpp"
+    "src/erslib/core/splitting/smart.cpp"
 
-    "src/erslib/type/error.cpp"
+    "src/erslib/core/type/error.cpp"
 
-    "src/erslib/util/file.cpp"
-    "src/erslib/util/string.cpp"    
+    "src/erslib/core/util/file.cpp"
+    "src/erslib/core/util/string.cpp"    
 
 
     # contrib
 
-    "src/contrib/json.cpp"
+    "src/erslib/contrib/json.cpp"
 
 
     # aengine
 
-    "src/aengine/core/dependency.cpp"
-    "src/aengine/core/dependency_graph.cpp"
-    "src/aengine/core/mod.cpp"
+    "src/erslib/aengine/dependency.cpp"
+    "src/erslib/aengine/dependency_graph.cpp"
+    "src/erslib/aengine/mod.cpp"
 
-    "src/aengine/resource/texture.cpp"
+    "src/erslib/aengine/resource/texture.cpp"
 
-    "src/aengine/util/stage.cpp"
+    "src/erslib/aengine/util/stage.cpp"
 
 
     # aescript
 
-    "src/aescript/impl/field.cpp"
-    "src/aescript/impl/layout.cpp"
-    "src/aescript/impl/util.cpp"
+    "src/erslib/aescript/impl/field.cpp"
+    "src/erslib/aescript/impl/layout.cpp"
+    "src/erslib/aescript/impl/util.cpp"
 
-    "src/aescript/properties/exclusive_with.cpp"
-    "src/aescript/properties/inclusive_with.cpp"
-    "src/aescript/properties/one_of.cpp"
-    "src/aescript/properties/presence.cpp"
+    "src/erslib/aescript/properties/exclusive_with.cpp"
+    "src/erslib/aescript/properties/inclusive_with.cpp"
+    "src/erslib/aescript/properties/one_of.cpp"
+    "src/erslib/aescript/properties/presence.cpp"
 
 
     # easy_ecs
 
-    "src/easy_ecs/entity.cpp"
-    "src/easy_ecs/group.cpp"
-    "src/easy_ecs/registry.cpp"
+    "src/erslib/easy_ecs/entity.cpp"
+    "src/erslib/easy_ecs/group.cpp"
+    "src/erslib/easy_ecs/registry.cpp"
 )
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${SOURCES})
 

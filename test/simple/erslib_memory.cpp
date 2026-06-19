@@ -7,8 +7,8 @@
 #include <memory>
 
 // ers
-#include <erslib/memory/holder.hpp>
-#include <erslib/type/general.hpp>
+#include <erslib/core/memory/holder.hpp>
+#include <erslib/core/type/general.hpp>
 
 
 namespace {

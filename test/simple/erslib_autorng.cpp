@@ -13,11 +13,11 @@
 #include <boost/unordered/unordered_flat_map.hpp>
 
 // ers
-#include <erslib/adaptor/transparent/string.hpp>
-#include <erslib/hashing/rapid.hpp>
-#include <erslib/thread_safe/map.hpp>
-#include <erslib/type/time.hpp>
-#include <erslib/type/timed_object.hpp>
+#include <erslib/core/adaptor/transparent/string.hpp>
+#include <erslib/core/hashing/rapid.hpp>
+#include <erslib/core/thread_safe/map.hpp>
+#include <erslib/core/type/time.hpp>
+#include <erslib/core/type/timed_object.hpp>
 
 
 namespace {

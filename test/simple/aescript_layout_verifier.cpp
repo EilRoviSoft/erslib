@@ -11,7 +11,7 @@
 #include <sol/sol.hpp>
 
 // aescript
-#include <aescript/layout.hpp>
+#include <erslib/aescript/layout.hpp>
 
 
 using namespace aescript;

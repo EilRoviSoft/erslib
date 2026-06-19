@@ -5,7 +5,7 @@
 #include <vector>
 
 // ers
-#include <erslib/type/optional.hpp>
+#include <erslib/core/type/optional.hpp>
 
 // sdl3
 #include <SDL3/SDL.h>

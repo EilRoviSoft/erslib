@@ -2,10 +2,10 @@
 #include <doctest/doctest.h>
 
 // contrib
-#include <contrib/json.hpp>
+#include <erslib/contrib/json.hpp>
 
 // ers
-#include <erslib/io/json_schema.hpp>
+#include <erslib/core/io/json_schema.hpp>
 
 
 using integral = utl::Json::integral_type;

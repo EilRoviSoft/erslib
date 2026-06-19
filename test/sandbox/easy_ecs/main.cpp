@@ -3,7 +3,7 @@
 #include <vector>
 
 // ecs
-#include <easy_ecs/registry.hpp>
+#include <erslib/easy_ecs/registry.hpp>
 
 
 namespace {

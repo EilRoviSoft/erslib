@@ -1,11 +1,8 @@
 // doctest
 #include <doctest/doctest.h>
 
-// std
-#include <string>
-
 // ers
-#include <erslib/meta/type_name.hpp>
+#include <erslib/core/meta/type_name.hpp>
 
 
 template<typename T>
