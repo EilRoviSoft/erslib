@@ -5,9 +5,6 @@
 #include <format>
 #include <string>
 
-// cpptrace
-#include <cpptrace/cpptrace.hpp>
-
 // ers
 #include <erslib/core/convert/impl/to_str.hpp>
 #include <erslib/core/exception/internal.hpp>
@@ -52,6 +49,12 @@ struct ers::convert::to_string_backend<ers::Severity> {
 
 // Error
 
+#ifdef _HAS_CPPTRACE
+
+// cpptrace
+#include <cpptrace/cpptrace.hpp>
+
+
 namespace ers {
     class ERSLIB_EXPORT Error {
     public:
@@ -63,12 +66,6 @@ namespace ers {
             timestamp_t timestamp = std::chrono::system_clock::now(),
             cpptrace::raw_trace trace = internal::get_trace({ .skip = 1 })
         );
-
-        Error(const Error& other) = default;
-        Error& operator=(const Error& other) = default;
-
-        Error(Error&& other) noexcept;
-        Error& operator=(Error&& other) noexcept;
 
 
         // Observers
@@ -100,8 +97,55 @@ namespace ers {
         timestamp_t m_timestamp;
         cpptrace::raw_trace m_trace;
     };
+}
+
+#else
+
+namespace ers {
+    class ERSLIB_EXPORT Error {
+    public:
+        // Member functions
+
+        Error(
+            Severity severity,
+            std::string message,
+            timestamp_t timestamp = std::chrono::system_clock::now()
+        );
 
 
+        // Observers
+
+        Severity severity() const noexcept { return m_severity; }
+        timestamp_t timestamp() const noexcept { return m_timestamp; }
+        std::string_view message() const noexcept { return m_message; }
+
+
+        std::string to_string(bool trim = false) const;
+
+
+        // Modifiers
+
+        Error&& extend(std::string_view message) &&;
+
+        template<typename... Args>
+            requires (sizeof...(Args) >= 1)
+        Error&& extend(std::format_string<Args...> fmt, Args&&... args) && {
+            m_message += std::format(fmt, std::forward<Args>(args)...);
+            return std::move(*this);
+        }
+
+
+    protected:
+        Severity m_severity;
+        std::string m_message;
+        timestamp_t m_timestamp;
+    };
+}
+
+#endif
+
+
+namespace ers {
     template<typename... Args>
         requires (sizeof...(Args) >= 1)
     Error make_error(Severity severity, std::format_string<Args...> fmt, Args&&... args) {

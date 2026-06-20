@@ -22,9 +22,6 @@
 #include <variant>
 #include <vector>
 
-// boost
-#include <boost/unordered/unordered_flat_map.hpp>
-
 // ers
 #include <erslib/core/exception.hpp>
 #include <erslib/core/adaptor/transparent/string.hpp>
@@ -36,6 +33,17 @@
 
 // export
 #include <erslib/core/export.hpp>
+
+
+#ifdef _HAS_BOOST_UNORDERED
+
+#include <boost/unordered/unordered_flat_map.hpp>
+
+#else
+
+#include <unordered_map>
+
+#endif
 
 
 // ____________________ DEVELOPER DOCS ____________________
@@ -66,11 +74,17 @@ namespace utl::internal {
     // ===================================
 
     template<class T>
-    using object_type_impl = boost::unordered_flat_map<
+    using object_type_impl =
+#ifdef _HAS_BOOST_UNORDERED
+    boost::unordered_flat_map<
+#else
+    std::unordered_map<
+#endif
         std::string, T,
         ers::string_hash_adaptor<ers::RapidHash>,
         ers::equal_adaptor<std::string>
     >;
+
     template<class T>
     using array_type_impl = std::vector<T>;
     using string_type_impl = std::string;

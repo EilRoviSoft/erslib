@@ -5,11 +5,14 @@
 #include <format>
 #include <string>
 
-// cpptrace
-#include <cpptrace/cpptrace.hpp>
-
 // export
 #include <erslib/core/export.hpp>
+
+
+#ifdef _HAS_CPPTRACE
+
+// cpptrace
+#include <cpptrace/cpptrace.hpp>
 
 
 namespace ers::internal {
@@ -82,6 +85,23 @@ namespace ers::internal {
     }; \
     static constexpr NAME##_fn<false> make_##NAME; \
     static constexpr NAME##_fn<true> make_##NAME##_with_trace
+
+#else
+
+#define ERS_MAKE_EXCEPTION_FUNCTOR(NAME, TYPE) \
+    struct NAME##_fn { \
+        template<typename... Args> \
+        TYPE operator()(std::format_string<Args...> fmt, Args&&... args) const { \
+            return TYPE(std::format(fmt, std::forward<Args>(args)...)); \
+        } \
+        \
+        TYPE operator()(std::string_view what_arg) const { \
+            return TYPE(what_arg.data()); \
+        } \
+    }; \
+    static constexpr NAME##_fn make_##NAME, make_##NAME##_with_trace
+
+#endif
 
 
 #define ERS_MAKE_EXCEPTION_TYPE(NAME, BASE) \

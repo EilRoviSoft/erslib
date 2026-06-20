@@ -81,6 +81,12 @@ function(erslib_optional_package target_name package_name dep_target_name compil
 endfunction()
 
 
+function(erslib_required_package target_name package_name dep_target_name)
+    find_package(${package_name} CONFIG REQUIRED)
+    target_link_libraries(${target_name} PUBLIC ${dep_target_name})
+endfunction()
+
+
 set(ERSLIB_TARGETS "")
 
 
@@ -157,10 +163,7 @@ if(ERSLIB_BUILD_CONTRIB)
             erslib_core
     )
 
-    find_package(boost_unordered CONFIG QUIET)
-    if(TARGET Boost::unordered)
-        target_link_libraries(erslib_contrib PUBLIC Boost::unordered)
-    endif()
+    erslib_required_package(erslib_contrib boost_unordered Boost::unordered)
 
     list(APPEND ERSLIB_TARGETS erslib_contrib)
 endif()
@@ -197,42 +200,19 @@ if(ERSLIB_BUILD_AENGINE)
         )
     endif()
 
-    find_package(boost_container CONFIG QUIET)
-    if(TARGET Boost::container)
-        target_compile_definitions(erslib_aengine PUBLIC _HAS_BOOST_CONTAINER)
-        target_link_libraries(erslib_aengine PUBLIC Boost::container)
-    endif()
+    erslib_required_package(erslib_aengine boost_container Boost::container)
+    erslib_required_package(erslib_aengine boost_regex Boost::regex)
+    erslib_required_package(erslib_aengine boost_unordered Boost::unordered)
+    erslib_required_package(erslib_aengine sol2 sol2::sol2)
+    
+    find_package(PkgConfig)
+    pkg_check_modules(LuaJIT IMPORTED_TARGET luajit)
+    target_compile_definitions(erslib_aengine PUBLIC _HAS_LUAJIT)
+    target_link_libraries(erslib_aengine PUBLIC PkgConfig::LuaJIT)
 
-    find_package(boost_unordered CONFIG QUIET)
-    if(TARGET Boost::unordered)
-        target_compile_definitions(erslib_aengine PUBLIC _HAS_BOOST_UNORDERED)
-        target_link_libraries(erslib_aengine PUBLIC Boost::unordered)
-    endif()
-
-    find_package(sol2 CONFIG QUIET)
-    if(TARGET sol2::sol2)
-        target_compile_definitions(erslib_aengine PUBLIC _HAS_SOL2)
-        target_link_libraries(erslib_aengine PUBLIC sol2::sol2)
-    endif()
-
-    find_package(PkgConfig QUIET)
-    if(PkgConfig_FOUND)
-        pkg_check_modules(LuaJIT QUIET IMPORTED_TARGET luajit)
-        if(TARGET PkgConfig::LuaJIT)
-            message(STATUS "erslib: found optional dependency LuaJIT for erslib_aengine")
-            target_compile_definitions(erslib_aengine PUBLIC _HAS_LUAJIT)
-            target_link_libraries(erslib_aengine PUBLIC PkgConfig::LuaJIT)
-        else()
-            message(STATUS "erslib: optional dependency LuaJIT not found")
-        endif()
-    else()
-        message(STATUS "erslib: PkgConfig not found, skipping LuaJIT")
-    endif()
-
-    erslib_optional_package(erslib_aengine boost_regex Boost::regex _HAS_BOOST_REGEX)
-    erslib_optional_package(erslib_aengine SDL3 SDL3::SDL3 _HAS_SDL3)
-    erslib_optional_package(erslib_aengine quill quill::quill _HAS_QUILL)
-    erslib_optional_package(erslib_aengine RmlUi RmlUi::RmlUi _HAS_RMLUI)
+    erslib_required_package(erslib_aengine SDL3 SDL3::SDL3)
+    erslib_required_package(erslib_aengine quill quill::quill)
+    erslib_required_package(erslib_aengine RmlUi RmlUi::RmlUi)
 
     list(APPEND ERSLIB_TARGETS erslib_aengine)
 endif()
@@ -262,11 +242,7 @@ if(ERSLIB_BUILD_EASY_ECS)
             erslib_aengine
     )
 
-    find_package(frozen CONFIG QUIET)
-    if(TARGET frozen::frozen)
-        target_compile_definitions(erslib_easy_ecs PUBLIC _HAS_FROZEN)
-        target_link_libraries(erslib_easy_ecs PUBLIC frozen::frozen)
-    endif()
+    erslib_required_package(erslib_easy_ecs frozen frozen::frozen _HAS_FROZEN)
 
     list(APPEND ERSLIB_TARGETS erslib_easy_ecs)
 endif()

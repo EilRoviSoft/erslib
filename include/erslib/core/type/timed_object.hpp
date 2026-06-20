@@ -1,22 +1,17 @@
 #pragma once
 
+#ifdef _HAS_BOOST_THREAD
+
 // std
 #include <chrono>
-
-// boost
-#include <boost/thread/locks.hpp>
-#include <boost/thread/shared_mutex.hpp>
 
 // ers
 #include <erslib/core/type/result.hpp>
 #include <erslib/core/type/expiring.hpp>
 
-
-#ifndef _HAS_BOOST_THREAD
-
-#error "Using ITimedObject requires boost/thread because of upgrade_mutex/lock"
-
-#endif
+// boost
+#include <boost/thread/locks.hpp>
+#include <boost/thread/shared_mutex.hpp>
 
 
 namespace ers {
@@ -91,3 +86,9 @@ namespace ers {
         mutable boost::upgrade_mutex _mutex;
     };
 }
+
+#else
+
+#warning "Using ITimedObject requires boost/thread because of upgrade_mutex/lock"
+
+#endif
