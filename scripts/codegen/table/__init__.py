@@ -125,7 +125,7 @@ class Field:
         'DOUBLE': 'double',
         'FLOAT8': 'double',
         
-        # just variantions of strings
+        # just variations of strings
         'VARCHAR': 'std::string',
         'INET': 'std::string',
         'UUID': 'std::string',

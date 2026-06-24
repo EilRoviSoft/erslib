@@ -17,8 +17,8 @@ class TableCodegen(BaseCodegen):
         self._resolve_includes()
 
     def _resolve_includes(self):
-        # (target, group, file): target is 'header'/'source', group keys into
-        # include_groups, file is the include path.
+        # (target, group, file): target is 'header'/'source',
+        # group keys into include_groups, file is the include path.
         includes: set[tuple[str, str, str]] = set(TableCodegen._default_includes())
 
         for field in self.table.fields:
@@ -69,8 +69,8 @@ class TableCodegen(BaseCodegen):
         ]
 
     def exec(self) -> list[GeneratedFile]:
-        # Render every SQL statement once so the standalone .sql files and the
-        # literals embedded into the generated source can never drift apart.
+        # Render every SQL statement once so the standalone .sql files
+        # and the literals embedded into the generated source can never drift apart.
         rendered = self._render_queries()
         return self._generate_sql(rendered) + self._generate_code(rendered)
 

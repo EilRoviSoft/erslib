@@ -33,7 +33,6 @@ def _output_path(args: argparse.Namespace, file: GeneratedFile, relative_dir: Pa
 
 def execute(args: argparse.Namespace) -> str:
     scan_root = Path(args.dir)
-
     generated_sources: list[str] = []
 
     for item in scan_root.rglob("*"):
@@ -48,16 +47,10 @@ def execute(args: argparse.Namespace) -> str:
             print(f"Not implemented config for {config['type']}", file = sys.stderr)
             continue
 
-        # Let the descriptor opt into a different runtime namespace; otherwise use
-        # the one provided on the command line.
         config.setdefault('runtime_namespace', args.runtime_namespace)
 
         name = item.name.removesuffix('.g.json')
-
-        # Path of the descriptor relative to the scan root, so the same folder
-        # structure is mirrored under the header/source output directories.
         relative_dir = item.parent.relative_to(scan_root)
-
         generator = variants[config['type']](name, config)
 
         for generated in generator.exec():
