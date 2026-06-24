@@ -47,7 +47,7 @@ namespace dbio {
     public:
         // Member functions
 
-        explicit Database(const std::string& connection_string, QueryStore queries = {});
+        explicit Database(const std::string& connection_string);
 
 
         // Accessors
@@ -55,22 +55,16 @@ namespace dbio {
         pqxx::connection& connection() noexcept { return m_connection; }
         const pqxx::connection& connection() const noexcept { return m_connection; }
 
-        const QueryStore& queries() const { return m_queries; }
-
 
         // Initializers
 
         // Runs each query found in the given store under the provided labels,
         // every one in its own savepoint. Missing labels are skipped. Intended for
         // schema bootstrap (e.g. the generated CREATE TABLE statements).
-        ers::Status init(const fs::path& root, std::span<const std::string> query_labels);
+        ers::Status init(const QueryStore& queries, std::span<const std::string> query_labels);
 
 
     protected:
         pqxx::connection m_connection;
-        QueryStore m_queries;
     };
-
-
-    Database ERSLIB_EXPORT make_database(const db_options_t& options, QueryStore queries = {});
 }
