@@ -6,7 +6,7 @@
 #include <string>
 
 // export
-#include <erslib/core/export.hpp>
+#include <erslib/export.hpp>
 
 
 #ifdef _HAS_CPPTRACE

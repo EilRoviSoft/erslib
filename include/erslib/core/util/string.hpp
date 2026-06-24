@@ -9,7 +9,7 @@
 #include <erslib/core/type/fixed_string.hpp>
 
 // export
-#include <erslib/core/export.hpp>
+#include <erslib/export.hpp>
 
 
 namespace ers::util {

@@ -32,7 +32,7 @@
 #include <erslib/core/util/string.hpp>
 
 // export
-#include <erslib/core/export.hpp>
+#include <erslib/export.hpp>
 
 
 #ifdef _HAS_BOOST_UNORDERED

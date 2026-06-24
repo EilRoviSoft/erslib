@@ -4,7 +4,7 @@
 #include <erslib/core/splitting/base.hpp>
 
 // export
-#include <erslib/core/export.hpp>
+#include <erslib/export.hpp>
 
 
 namespace ers::splitting {

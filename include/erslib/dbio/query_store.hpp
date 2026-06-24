@@ -2,29 +2,33 @@
 
 // std
 #include <filesystem>
-#include <string>
-#include <unordered_map>
+#include <string_view>
 
 // ers
 #include <erslib/core/thread_safe/map.hpp>
 
+// dbio
+#include <erslib/dbio/fwd.hpp>
+
 // export
-#include <erslib/core/export.hpp>
+#include <erslib/export.hpp>
 
 
 namespace dbio {
     // Thread-safe registry mapping query labels to their SQL text.
     // Generated code looks queries up by label, e.g. queries["sql.user.save"].
-    class ERSLIB_EXPORT QueryStore : public ers::thread_safe::Map<std::unordered_map<std::string, std::string>> {
+    class ERSLIB_EXPORT QueryStore : public ers::thread_safe::Map<internal::kv_container_type> {
     public:
+        // Member functions
+
         QueryStore() = default;
 
-        // Recursively walks a folder of generated.sql files
-        // and registers each one under "sql.<relative/path/without-ext>" with '/' replaced by '.',
-        // so <root>/user/save.sql  ->  "sql.user.save"
+
+        // Modifiers
+
+        // "sql.<relative/path/without-ext>" with '/' replaced by '.'.
         size_t load_directory(const std::filesystem::path& root);
 
-        // Registers a single label -> sql pair (overwrites if present).
-        void add(const std::string& label, std::string sql);
+        void add(std::string_view label, std::string_view query);
     };
 }

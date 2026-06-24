@@ -11,7 +11,7 @@
 #include <erslib/core/type/time.hpp>
 
 // export
-#include <erslib/core/export.hpp>
+#include <erslib/export.hpp>
 
 
 // Severity
