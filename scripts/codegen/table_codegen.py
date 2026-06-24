@@ -9,7 +9,7 @@ class TableCodegen(BaseCodegen):
     def __init__(self, name: str, data: dict):
         self.name = name
         self.namespace = data['namespace']
-        self.runtime_namespace = data.get('runtime_namespace', 'dbio')
+        self.table_name = data.get('table_name', self.name + 's')
 
         self.table = Table(data)
 
@@ -78,7 +78,7 @@ class TableCodegen(BaseCodegen):
         _, templates = load_templates("table/sql")
         ctx = self._default_context()
 
-        ctx.update({ "name": self.name + 's' })
+        ctx.update({ "name": self.table_name })
 
         rendered: dict[str, str] = dict()
 
@@ -113,18 +113,16 @@ class TableCodegen(BaseCodegen):
         return queries
 
     def _make_table_properties(self):
-        result = []
+        result = [
+            f"{e.name} {e.original_type}" + (' ' + e.flatten_remarks() if len(e.remarks) > 0 else "")
+            for e in self.table.fields
+        ]
 
-        if len(self.table.fields) > 0:
-            result.extend(f"{e.name} {e.original_type}" + (' ' + e.flatten_remarks() if len(e.remarks) > 0 else "") for e in self.table.fields)
+        if not self.table.primary_key.is_field_applicable():
+            result.append(self.table.primary_key.flatten())
 
-        if len(self.table.remarks) > 0:
-            remarks = [e.flatten() for e in self.table.remarks]
-            result.extend(remarks)
-
-        if len(self.table.remarks) > 0 and any(e for e in self.table.unique if len(e.fields) > 1):
-            unique = [e.flatten() for e in self.table.unique if len(e.fields) > 1]
-            result.extend(unique)
+        result.extend(e.flatten() for e in self.table.remarks)
+        result.extend(e.flatten() for e in self.table.unique if len(e.fields) > 1)
 
         return result
 
@@ -142,7 +140,6 @@ class TableCodegen(BaseCodegen):
         ctx.update({
             "name": self.name,
             "namespace": self.namespace,
-            "rt": self.runtime_namespace,
             "include_groups": self.include_groups,
             "queries": queries
         })
@@ -173,7 +170,6 @@ class TableCodegen(BaseCodegen):
 
         return {
             "table": self.table,
-            "rt": self.runtime_namespace,
             "fn": {
                 "len": len,
                 "to_camel_case": to_camel_case,

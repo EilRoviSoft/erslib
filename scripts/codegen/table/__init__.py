@@ -27,14 +27,21 @@ class PrimaryKey(BaseRemark):
         return len(self.fields) == 1
 
 class ForeignKey(BaseRemark):
-    def __init__(self, table: str, field: str):
+    def __init__(self, table: str, field: str, on_delete: str | None = None, on_update: str | None = None):
         super().__init__()
         self.table = table
         self.field = field
-    
+        self.on_delete = on_delete
+        self.on_update = on_update
+
     def flatten(self) -> str:
-        return f"REFERENCES {self.table} ({self.field})"
-    
+        result = f"REFERENCES {self.table} ({self.field})"
+        if self.on_delete:
+            result += f" ON DELETE {self.on_delete}"
+        if self.on_update:
+            result += f" ON UPDATE {self.on_update}"
+        return result
+
     def is_field_applicable(self) -> bool:
         return True
 
@@ -83,10 +90,21 @@ class CheckRemark(BaseRemark):
 class StatefulRemark(BaseRemark):
     def __init__(self):
         super().__init__()
-    
+
     def flatten(self) -> str:
         return "NOT NULL"
-    
+
+    def is_field_applicable(self) -> bool:
+        return True
+
+class DefaultRemark(BaseRemark):
+    def __init__(self, expr: str):
+        super().__init__()
+        self.expr = expr
+
+    def flatten(self) -> str:
+        return f"DEFAULT {self.expr}"
+
     def is_field_applicable(self) -> bool:
         return True
 
@@ -94,12 +112,13 @@ def get_precedence(cls):
     order = {
         UniqueRemark: 1,
         StatefulRemark: 2,
-        IdentityRemark: 3,
-        ForeignKey: 4,
-        PrimaryKey: 5,
-        CheckRemark: 6
+        DefaultRemark: 3,
+        IdentityRemark: 4,
+        ForeignKey: 5,
+        PrimaryKey: 6,
+        CheckRemark: 7
     }
-    
+
     return order[cls]
 
 
@@ -112,6 +131,7 @@ class Field:
         'BOOLEAN': 'bool',
 
         'INT2': 'int16_t',
+        'SMALLINT': 'int16_t',
 
         'INT4': 'int32_t',
         'INT': 'int32_t',
@@ -126,6 +146,7 @@ class Field:
         'FLOAT8': 'double',
         
         # just variations of strings
+        'TEXT': 'std::string',
         'VARCHAR': 'std::string',
         'INET': 'std::string',
         'UUID': 'std::string',
@@ -167,23 +188,34 @@ class Field:
             original_type: str,
             explicit_type: str | None,
             flags: set[str],
-            default: str | None
+            default: "str | dict | None"
             ):
         if original_type not in Field.to_cpp_type_table:
             raise ValueError(f"Unknown type: {original_type}")
-        
+
         self.name = name
 
         self.original_type = original_type
         self.type = explicit_type if explicit_type else Field.to_cpp_type_table[self.original_type]
-        
+
         self.flags = flags
         if self.type not in Field.trivially_copyable_types:
             self.flags.add('immovable')
-        
+
         self._init_remarks()
 
-        self.default = 'std::nullopt' if not default and 'nullable' in self.flags else default
+        code_default, sql_default = Field._split_default(default)
+
+        if sql_default is not None:
+            self.add_remark(DefaultRemark(sql_default))
+
+        self.default = 'std::nullopt' if not code_default and 'nullable' in self.flags else code_default
+
+    @staticmethod
+    def _split_default(default: "str | dict | None") -> "tuple[str | None, str | None]":
+        if isinstance(default, dict):
+            return default.get('code'), default.get('sql')
+        return default, default
     
     def _init_remarks(self):
         self.remarks: list[BaseRemark] = list()
@@ -266,8 +298,6 @@ def make_name_from_fields(fields: list[str]) -> str:
 
 class Table:
     def __init__(self, data: dict):
-        self.runtime_namespace: str = data.get('runtime_namespace', 'dbio')
-
         self.fields: list[Field] = [Field.make(e) for e in data['fields']]
         self.fields_by_name: dict[str, Field] = {e.name: e for e in self.fields}
 
@@ -288,7 +318,7 @@ class Table:
     
     def _init_foreign_keys(self, data: dict):
         for k, v in data.items():
-            fk = ForeignKey(v['table'], v['field'])
+            fk = ForeignKey(v['table'], v['field'], v.get('on_delete'), v.get('on_update'))
             self.fields_by_name[k].add_remark(fk)
     
     def _init_remarks(self, data: dict):
@@ -310,7 +340,7 @@ class Table:
                     field = self.fields_by_name[e['field']]
 
                     field.add_remark(IdentityRemark())
-                    field.default = f"{self.runtime_namespace}::undefined_id"
+                    field.default = f"dbio::undefined_id"
                 case 'CHECK':
                     self.remarks.append(CheckRemark(e['expr']))
 

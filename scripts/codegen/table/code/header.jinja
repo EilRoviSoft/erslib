@@ -54,11 +54,11 @@ namespace {{ namespace }} {
 }
 
 namespace  {{ namespace }}::{{ name }} {
-    template<{{ rt }}::PersistencyFlag>
+    template<dbio::PersistencyFlag>
     constexpr {{ fn.to_camel_case(name) }}Config make_config({{ fn.to_camel_case(name) }}Layout layout) = delete("non-specialized definition");
 
     template<>
-    constexpr {{ fn.to_camel_case(name) }}Config make_config<{{ rt }}::In>({{ fn.to_camel_case(name) }}Layout layout) {
+    constexpr {{ fn.to_camel_case(name) }}Config make_config<dbio::In>({{ fn.to_camel_case(name) }}Layout layout) {
         using enum {{ fn.to_camel_case(name) }}Field;
 
         switch (layout) {
@@ -75,7 +75,7 @@ namespace  {{ namespace }}::{{ name }} {
     }
 
     template<>
-    constexpr {{ fn.to_camel_case(name) }}Config make_config<{{ rt }}::Out>({{ fn.to_camel_case(name) }}Layout layout) {
+    constexpr {{ fn.to_camel_case(name) }}Config make_config<dbio::Out>({{ fn.to_camel_case(name) }}Layout layout) {
         using enum {{ fn.to_camel_case(name) }}Field;
 
         switch (layout) {
@@ -108,14 +108,14 @@ namespace {{ namespace }} {
 
         {{ fn.to_camel_case(name) }}() = default;
         {{ fn.to_camel_case(name) }}({{ fn.to_camel_case(name) }}Values values);
-        explicit {{ fn.to_camel_case(name) }}(const pqxx::row& row, const {{ fn.to_camel_case(name) }}Config& config = {{ name }}::make_config<{{ rt }}::In>(All));
+        explicit {{ fn.to_camel_case(name) }}(const pqxx::row& row, const {{ fn.to_camel_case(name) }}Config& config = {{ name }}::make_config<dbio::In>(All));
 
-        bool init(const pqxx::row& row, const {{ fn.to_camel_case(name) }}Config& config = {{ name }}::make_config<{{ rt }}::In>(All));
+        bool init(const pqxx::row& row, const {{ fn.to_camel_case(name) }}Config& config = {{ name }}::make_config<dbio::In>(All));
     };
 }
 
 template<>
-struct {{ rt }}::entity_traits<{{ namespace }}::{{ fn.to_camel_case(name) }}> {
+struct dbio::entity_traits<{{ namespace }}::{{ fn.to_camel_case(name) }}> {
     using field_type = {{ namespace }}::{{ fn.to_camel_case(name) }}Field;
     using layout_type = {{ namespace }}::{{ fn.to_camel_case(name) }}Layout;
     using config_type = {{ namespace }}::{{ fn.to_camel_case(name) }}Config;
@@ -130,7 +130,7 @@ struct {{ rt }}::entity_traits<{{ namespace }}::{{ fn.to_camel_case(name) }}> {
 // Database interactions
 
 namespace {{ namespace }}::{{ name }} {
-    using Generator = {{ rt }}::EntityGenerator<{{ fn.to_camel_case(name) }}>;
+    using Generator = dbio::EntityGenerator<{{ fn.to_camel_case(name) }}>;
 
 
 {% for layout in table.layouts if layout.type %}
@@ -155,10 +155,10 @@ namespace {{ namespace }}::{{ name }} {
 {% for layout in table.layouts if layout.type %}
 {% if layout.is_bulk() %}
     ers::Result<Generator> ERSLIB_EXPORT {{ layout.name }}(pqxx::dbtransaction& tnx{% for field in layout['put'] %}, {{ table.fields_by_name[field].arg_type() }} {{ field }}{% endfor %});
-    ers::Result<Generator> ERSLIB_EXPORT {{ layout.name }}({{ rt }}::tag::transaction_t, pqxx::dbtransaction& tnx{% for field in layout['put'] %}, {{ table.fields_by_name[field].arg_type() }} {{ field }}{% endfor %});
+    ers::Result<Generator> ERSLIB_EXPORT {{ layout.name }}(dbio::tag::transaction_t, pqxx::dbtransaction& tnx{% for field in layout['put'] %}, {{ table.fields_by_name[field].arg_type() }} {{ field }}{% endfor %});
 {% else %}
     ers::Status ERSLIB_EXPORT {{ layout.name }}(pqxx::dbtransaction& tnx, {{ fn.to_camel_case(name) }}& entity);
-    ers::Status ERSLIB_EXPORT {{ layout.name }}({{ rt }}::tag::transaction_t, pqxx::dbtransaction& tnx, {{ fn.to_camel_case(name) }}& entity);
+    ers::Status ERSLIB_EXPORT {{ layout.name }}(dbio::tag::transaction_t, pqxx::dbtransaction& tnx, {{ fn.to_camel_case(name) }}& entity);
 {% endif %}
 {{ "\n" if not loop.last else "" }}{% endfor %}
 }

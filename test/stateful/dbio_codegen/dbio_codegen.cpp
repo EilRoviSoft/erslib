@@ -10,7 +10,7 @@
 // ers
 #include <erslib/dbio.hpp>
 
-// generated (from schema/user.g.json via dbio_generate in CMakeLists.txt)
+// generated (from schema/*.g.json via dbio_generate in CMakeLists.txt)
 #include "user.g.hpp"
 
 

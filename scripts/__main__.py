@@ -6,10 +6,7 @@ import traceback
 import codegen
 
 
-def main():
-    parser = argparse.ArgumentParser(prog = "dbio")
-    subparsers = parser.add_subparsers(dest = 'command')
-
+def add_codegen_subparser(subparsers):
     # Codegen
 
     codegen_parser = subparsers.add_parser('codegen', help = "Generates dbio code from '*.g.json' descriptors")
@@ -29,10 +26,16 @@ def main():
     codegen_parser.add_argument("--query-dir", type = str, required = True, dest = "query_dir",
         help = "Output directory for generated SQL queries (*.sql)")
 
-    # Namespace of the dbio runtime the generated code targets.
     codegen_parser.add_argument("--runtime-namespace", type = str, default = "dbio",
         dest = "runtime_namespace",
         help = "Namespace of the dbio runtime referenced by generated code (default: dbio)")
+
+
+def main():
+    parser = argparse.ArgumentParser(prog = "dbio")
+    subparsers = parser.add_subparsers(dest = 'command')
+
+    add_codegen_subparser(subparsers)
 
     # Executing
 
