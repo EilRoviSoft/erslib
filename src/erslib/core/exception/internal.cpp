@@ -1,5 +1,8 @@
 #include "erslib/core/exception/internal.hpp"
 
+
+#ifdef _HAS_CPPTRACE
+
 // std
 #include <ranges>
 
@@ -78,3 +81,5 @@ std::string ers::internal::extend_with_trace(std::string_view message, trace_con
 
 #endif
 }
+
+#endif

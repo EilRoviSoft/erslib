@@ -1,0 +1,163 @@
+#pragma once
+
+{% for name, type in include_groups %}
+{% if fn.len(includes[name]) != 0 %}
+// {{ name }}
+{% for filename in includes[name] %}
+{% if type == 'library' %}
+#include <{{ filename }}>
+{% elif type == 'project' %}
+#include "{{ filename }}"
+{% endif %}
+{% endfor %}
+{{ "\n" if not loop.last else "" }}{% endif %}
+{% endfor %}
+
+// enums
+
+namespace {{ namespace }} {
+    enum class {{ fn.to_camel_case(name) }}Field : uint8_t {
+{% for field in table.fields %}
+        {{ fn.to_camel_case(field.name) }} = {{ loop.index0 }},
+{% endfor %}
+        Max = {{ fn.len(table.fields) }}
+    };
+
+    enum class {{ fn.to_camel_case(name) }}Layout : uint8_t {
+{% for layout in table.layouts %}
+        {{ fn.to_camel_case(layout.name) }} = {{ loop.index0 }}{{ "," if not loop.last else "" }}
+{% endfor %}
+    };
+}
+
+// helpers
+
+namespace {{ namespace }} {
+    class {{ fn.to_camel_case(name) }}Config {
+    public:
+        static constexpr auto length = static_cast<size_t>({{ fn.to_camel_case(name) }}Field::Max);
+
+        constexpr {{ fn.to_camel_case(name) }}Config(const std::initializer_list<{{ fn.to_camel_case(name) }}Field>& il) noexcept {
+            for (const {{ fn.to_camel_case(name) }}Field it : il)
+                this->_bitset.set(static_cast<size_t>(it));
+        }
+
+        constexpr bool operator[]({{ fn.to_camel_case(name) }}Field member) const noexcept {
+            return this->_bitset[static_cast<size_t>(member)];
+        }
+
+    private:
+        std::bitset<length> _bitset;
+    };
+}
+
+namespace  {{ namespace }}::{{ name }} {
+    template<{{ rt }}::PersistencyFlag>
+    constexpr {{ fn.to_camel_case(name) }}Config make_config({{ fn.to_camel_case(name) }}Layout layout) = delete("non-specialized definition");
+
+    template<>
+    constexpr {{ fn.to_camel_case(name) }}Config make_config<{{ rt }}::In>({{ fn.to_camel_case(name) }}Layout layout) {
+        using enum {{ fn.to_camel_case(name) }}Field;
+
+        switch (layout) {
+{% for layout in table.layouts %}
+{% if fn.len(layout.get) != 0 %}
+            case {{ fn.to_camel_case(name) }}Layout::{{ fn.to_camel_case(layout.name) }}:
+                return { {{ layout.get | map('to_camel_case') | join(", ") }} };
+
+{% endif %}
+{% endfor %}
+            default:
+                return {};
+        }
+    }
+
+    template<>
+    constexpr {{ fn.to_camel_case(name) }}Config make_config<{{ rt }}::Out>({{ fn.to_camel_case(name) }}Layout layout) {
+        using enum {{ fn.to_camel_case(name) }}Field;
+
+        switch (layout) {
+{% for layout in table.layouts %}
+{% if fn.len(layout.put) != 0 %}
+            case {{ fn.to_camel_case(name) }}Layout::{{ fn.to_camel_case(layout.name) }}:
+                return { {{ layout.put | map('to_camel_case') | join(", ") }} };
+
+{% endif %}
+{% endfor %}
+            default:
+                return {};
+        }
+    }
+}
+
+// {{ fn.to_camel_case(name) }}
+
+namespace {{ namespace }} {
+    struct {{ fn.to_camel_case(name) }}Values {
+{% for field in table.fields if field.name %}
+        {{ field.class_type() }} {{ field.name }}{% if field.default %} = {{ field.default }}{% endif %};
+{% endfor %}
+    };
+
+    class {{ fn.to_camel_case(name) }} : public {{ fn.to_camel_case(name) }}Values {
+    public:
+        using enum {{ fn.to_camel_case(name) }}Field;
+        using enum {{ fn.to_camel_case(name) }}Layout;
+
+        {{ fn.to_camel_case(name) }}() = default;
+        {{ fn.to_camel_case(name) }}({{ fn.to_camel_case(name) }}Values values);
+        explicit {{ fn.to_camel_case(name) }}(const pqxx::row& row, const {{ fn.to_camel_case(name) }}Config& config = {{ name }}::make_config<{{ rt }}::In>(All));
+
+        bool init(const pqxx::row& row, const {{ fn.to_camel_case(name) }}Config& config = {{ name }}::make_config<{{ rt }}::In>(All));
+    };
+}
+
+namespace {{ rt }} {
+    template<>
+    struct entity_traits<{{ namespace }}::{{ fn.to_camel_case(name) }}> {
+        using field_type = {{ namespace }}::{{ fn.to_camel_case(name) }}Field;
+        using layout_type = {{ namespace }}::{{ fn.to_camel_case(name) }}Layout;
+        using config_type = {{ namespace }}::{{ fn.to_camel_case(name) }}Config;
+
+        template<{{ rt }}::PersistencyFlag T>
+        static constexpr config_type make_config(layout_type layout) {
+            return {{ namespace }}::{{ name }}::make_config<T>(layout);
+        }
+    };
+}
+
+// Database interactions
+
+namespace {{ namespace }}::{{ name }} {
+    using Generator = {{ rt }}::EntityGenerator<{{ fn.to_camel_case(name) }}>;
+
+{% for layout in table.layouts if layout.type %}
+{% if layout.is_bulk() %}
+    struct {{ layout.name }}_fn {
+        static ers::Result<Generator> operator()(pqxx::dbtransaction& tnx, const {{ rt }}::QueryStore& queries{% for field in layout['put'] %}, {{ table.fields_by_name[field].arg_type() }} {{ field }}{% endfor %});
+{% else %}
+    struct {{ layout.name }}_fn {
+        static ers::Status operator()(pqxx::dbtransaction& tnx, const {{ rt }}::QueryStore& queries, {{ fn.to_camel_case(name) }}& entity);
+{% endif %}
+
+    private:
+{% if layout.is_bulk() %}
+        static ers::Result<pqxx::result> _dbio(pqxx::dbtransaction& tnx, const {{ rt }}::QueryStore& queries{% for field in layout['put'] %}, {{ table.fields_by_name[field].arg_type() }} {{ field }}{% endfor %});
+{% else %}
+        static ers::Result<pqxx::result> _dbio(pqxx::dbtransaction& tnx, const {{ rt }}::QueryStore& queries, {{ fn.to_camel_case(name) }}& entity);
+{% endif %}
+    };
+{{ "\n" if not loop.last else "" }}{% endfor %}
+}
+
+namespace {{ namespace }}::{{ name }} {
+{% for layout in table.layouts if layout.type %}
+{% if layout.is_bulk() %}
+    ers::Result<Generator> {{ layout.name }}(const {{ rt }}::QueryStore& queries, pqxx::dbtransaction& tnx{% for field in layout['put'] %}, {{ table.fields_by_name[field].arg_type() }} {{ field }}{% endfor %});
+    ers::Result<Generator> {{ layout.name }}({{ rt }}::tag::transaction_t, const {{ rt }}::QueryStore& queries, pqxx::dbtransaction& tnx{% for field in layout['put'] %}, {{ table.fields_by_name[field].arg_type() }} {{ field }}{% endfor %});
+{% else %}
+    ers::Status {{ layout.name }}(const {{ rt }}::QueryStore& queries, pqxx::dbtransaction& tnx, {{ fn.to_camel_case(name) }}& entity);
+    ers::Status {{ layout.name }}({{ rt }}::tag::transaction_t, const {{ rt }}::QueryStore& queries, pqxx::dbtransaction& tnx, {{ fn.to_camel_case(name) }}& entity);
+{% endif %}
+{{ "\n" if not loop.last else "" }}{% endfor %}
+}

@@ -8,6 +8,7 @@
 		"boost-unordered",
 		"cpptrace",
 		"frozen",
+		"libpqxx",
 		"luajit",
 		"pkgconf",
 		"quill",

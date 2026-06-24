@@ -13,6 +13,7 @@ project(erslib
 
 
 include(cmake/utils.cmake)
+include(cmake/dbio.cmake)
 include(GNUInstallDirs)
 
 string(COMPARE EQUAL "${CMAKE_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}" IS_TOP_LEVEL)
@@ -26,6 +27,7 @@ option(ERSLIB_BUILD_CONTRIB "Build erslib::contrib target" ON)
 option(ERSLIB_BUILD_AENGINE "Build erslib::aengine target" ON)
 option(ERSLIB_BUILD_EASY_ECS "Build erslib::easy_ecs target" ON)
 option(ERSLIB_BUILD_AESCRIPT "Build erslib::aescript target" ON)
+option(ERSLIB_BUILD_DBIO "Build erslib::dbio target (requires libpqxx)" OFF)
 
 set_if_undefined(ERSLIB_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/erslib"
     CACHE STRING "Install path for erslib package-related CMake files"
@@ -163,9 +165,34 @@ if(ERSLIB_BUILD_CONTRIB)
             erslib_core
     )
 
-    erslib_required_package(erslib_contrib boost_unordered Boost::unordered)
+    erslib_optional_package(erslib_contrib boost_unordered Boost::unordered _HAS_BOOST_UNORDERED)
 
     list(APPEND ERSLIB_TARGETS erslib_contrib)
+endif()
+
+
+#----------------------------------------------------------------------------------------------------------------------
+# erslib::dbio
+#----------------------------------------------------------------------------------------------------------------------
+
+
+if(ERSLIB_BUILD_DBIO)
+    erslib_add_library(erslib_dbio dbio)
+
+    target_sources(erslib_dbio
+        PRIVATE
+            "src/erslib/dbio/database.cpp"
+            "src/erslib/dbio/query_store.cpp"
+    )
+
+    target_link_libraries(erslib_dbio
+        PUBLIC
+            erslib_core
+    )
+
+    erslib_required_package(erslib_dbio libpqxx libpqxx::pqxx)
+
+    list(APPEND ERSLIB_TARGETS erslib_dbio)
 endif()
 
 
@@ -353,6 +380,23 @@ if(ERSLIB_INSTALL AND NOT CMAKE_SKIP_INSTALL_RULES)
         "${CMAKE_CURRENT_BINARY_DIR}/erslib-config.cmake"
         COMPONENT erslib_dev
         DESTINATION "${ERSLIB_INSTALL_CMAKEDIR}"
+    )
+
+    # dbio codegen integration: the dbio_generate() function plus the Python
+    # codegen package it drives, so downstream find_package(erslib) can generate.
+    install(FILES
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/dbio.cmake"
+        COMPONENT erslib_dev
+        DESTINATION "${ERSLIB_INSTALL_CMAKEDIR}"
+    )
+
+    install(
+        DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/scripts/"
+        COMPONENT erslib_dev
+        DESTINATION "${ERSLIB_INSTALL_CMAKEDIR}/scripts"
+        FILES_MATCHING
+            PATTERN "*.py"
+            PATTERN "*.jinja"
     )
 endif()
 

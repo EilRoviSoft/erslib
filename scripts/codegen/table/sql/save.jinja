@@ -1,0 +1,22 @@
+INSERT
+INTO {{ name }} (
+{% for field in layout['put'] %}
+    {{ field }}{{ "," if not loop.last else "" }}
+{% endfor %}
+)
+VALUES (
+{% for _ in layout['put'] %}
+    ${{ loop.index }}{{ "," if not loop.last else "" }}
+{% endfor %}
+)
+{% for unique in table.unique %}
+ON CONFLICT (
+{% for field in unique.fields %}
+    {{ field }}{{ "," if not loop.last else "" }}
+{% endfor %})
+DO UPDATE SET
+{% for field in table.fields if field.name not in unique.fields_map and not fn.is_primary_key(field) %}
+    {{ field.name }} = excluded.{{ field.name }}{{ "," if not loop.last else "" }}
+{% endfor %}
+{% endfor %}
+RETURNING {{ layout['get'] | join(', ') }}

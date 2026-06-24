@@ -1,0 +1,5 @@
+CREATE TABLE {{ name }} (
+{% for property in properties %}
+    {{ property }}{{ "," if not loop.last else "" }}
+{% endfor %}
+)

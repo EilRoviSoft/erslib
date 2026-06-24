@@ -1,0 +1,5 @@
+CREATE TYPE {{ name }} AS ENUM (
+{% for v in enum.values %}
+    '{{ v }}'{{ "," if not loop.last else "" }}
+{% endfor %}
+)

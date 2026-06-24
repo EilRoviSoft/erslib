@@ -1,0 +1,43 @@
+#pragma once
+
+// std
+#include <cstdint>
+#include <optional>
+#include <string_view>
+
+namespace {{ namespace }} {
+    enum class {{ typename }} : {{ inherit_type }} {
+{% for v in enum.values %}
+        {{ fn.to_camel_case(v) }}{{ "," if not loop.last else "" }}
+{% endfor %}
+    };
+}
+
+namespace {{ namespace }} {
+    constexpr std::string_view to_string({{ typename }} v) noexcept {
+        using enum {{ typename }};
+
+        switch (v) {
+{% for v in enum.values %}
+            case {{ fn.to_camel_case(v) }}:
+                return "{{ v }}";
+{% endfor %}
+        }
+
+        return "";
+    }
+
+    constexpr std::optional<{{ typename }}> {{ name }}_from_string(std::string_view v) noexcept {
+        using enum {{ typename }};
+
+{% for v in enum.values %}
+        if (v == "{{ v }}")
+            return {{ fn.to_camel_case(v) }};
+{% endfor %}
+{% if default %}
+        return {{ fn.to_camel_case(default) }};
+{% else %}
+        return std::nullopt;
+{% endif %}
+    }
+}

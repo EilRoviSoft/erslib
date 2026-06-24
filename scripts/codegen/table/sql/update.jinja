@@ -1,0 +1,9 @@
+UPDATE {{ name }}
+SET
+{% for field in layout['put'] %}
+    {{ field }} = ${{ loop.index }}{{ "," if not loop.last else "" }}
+{% endfor %}
+WHERE
+{% for field in layout['condition'] %}
+    {{ field }} = ${{ loop.index + fn.len(layout['put']) }}{{ " AND" if not loop.last else "" }}
+{% endfor %}

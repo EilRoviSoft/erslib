@@ -1,0 +1,7 @@
+SELECT {{ layout['get'] | join(', ') }}
+FROM {{ name }}
+WHERE
+{% for field in layout['put'] %}
+    {{ field }} = ${{ loop.index }}{{ " AND" if not loop.last else "" }}
+{% endfor %}
+LIMIT 1

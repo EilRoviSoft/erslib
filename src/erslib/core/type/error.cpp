@@ -33,7 +33,7 @@ ers::Error&& ers::Error::extend(std::string_view message) && {
 
 #else
 
-ers::Error::Error(Severity severity, std::string message, timestamp_t timestamp, cpptrace::raw_trace trace) :
+ers::Error::Error(Severity severity, std::string message, timestamp_t timestamp) :
     m_severity(severity),
     m_message(std::move(message)),
     m_timestamp(timestamp) {
