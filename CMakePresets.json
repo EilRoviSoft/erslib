@@ -33,8 +33,7 @@
                 "CMAKE_CXX_FLAGS": "/EHsc /std:c++latest /W4 /GR",
                 "CMAKE_CXX_FLAGS_DEBUG": "/MDd /Zi /Ob0 /Od /RTC1 /D_DEBUG",
                 "CMAKE_CXX_FLAGS_RELEASE": "/MD /O2 /Ob2 /DNDEBUG /Zi /GR /arch:AVX2 /fp:fast",
-                "CMAKE_EXE_LINKER_FLAGS_RELEASE": "/DEBUG /OPT:REF /OPT:ICF",
-                "VCPKG_TARGET_TRIPLET": "x64-windows"
+                "CMAKE_EXE_LINKER_FLAGS_RELEASE": "/DEBUG /OPT:REF /OPT:ICF"
             }
         },
 

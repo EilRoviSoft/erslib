@@ -4,24 +4,28 @@ PostgreSQL (libpqxx) data-access code generator for the `erslib::dbio` runtime.
 It reads `*.g.json` descriptors and emits, per descriptor:
 
 - a header (`<name>.g.hpp`) — the entity struct, field/layout enums, `entity_traits`
-  specialization and the data-access function declarations;
+  specialization, the SQL as `inline constexpr std::string_view` constants in a
+  per-entity `sql` namespace, and the data-access function declarations;
 - a source (`<name>.g.cpp`) — the data-access function definitions;
-- SQL queries (`<name>/<layout>.sql`) — registered at runtime by label
-  `sql.<name>.<layout>` (see `dbio::QueryStore::load_directory`).
+- SQL queries (`<name>/<layout>.sql`) — the same statements as standalone files,
+  for migrations / `CREATE TABLE` (loadable via `dbio::QueryStore::load_directory`).
 
 The generated code targets the `dbio` runtime (`#include <erslib/dbio.hpp>`)
 and uses `ers::Result<T>` / `ers::Status` / `ers::Error` for results.
 
-Each generated data-access function takes a `const dbio::QueryStore&` as its first
-argument (after the optional transaction tag) — there is no global query store, so
-you construct/populate one and pass it explicitly:
+The SQL is **hardcoded into the generated source** — each `_dbio` references the
+embedded constant (e.g. `app::user::sql::save`), so the data-access functions take
+no query store and there is nothing to load at runtime:
 
 ```cpp
-dbio::QueryStore queries;
-queries.load_directory(res_dir / "query");
-// ...
-auto status = app::user::save(queries, tnx, entity);
+auto status = app::user::save(tnx, entity);
+auto users  = app::user::select_all(tnx);
+// inspect the embedded SQL directly if needed:
+static_assert(!app::user::sql::save.empty());
 ```
+
+The standalone `.sql` files are still emitted (identical text) for migrations and
+schema setup; `dbio::QueryStore` remains available for that purpose.
 
 ## CLI
 

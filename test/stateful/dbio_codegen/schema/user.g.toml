@@ -1,0 +1,29 @@
+type = "table"
+namespace = "app"
+
+
+[[fields]]
+name = "id"
+type = "BIGINT"
+explicit_type = "uint32_t"
+
+[[fields]]
+name = "name"
+type = "VARCHAR"
+
+[[fields]]
+name = "age"
+type = "INT"
+
+
+[keys]
+primary = ["id"]
+
+
+[[remarks]]
+field = "id"
+type = "IDENTITY"
+
+[[remarks]]
+field = "name"
+type = "UNIQUE"

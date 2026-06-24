@@ -1,0 +1,17 @@
+{
+    "type": "table",
+    "namespace": "app",
+
+    "fields": [
+        { "type": "BIGINT",  "name": "id", "explicit_type": "uint32_t" },
+        { "type": "VARCHAR", "name": "name" },
+        { "type": "INT",     "name": "age" }
+    ],
+
+    "keys": { "primary": ["id"] },
+
+    "remarks": [
+        { "type": "IDENTITY", "field": "id" },
+        { "type": "UNIQUE",   "field": "name" }
+    ]
+}

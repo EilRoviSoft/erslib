@@ -13,91 +13,100 @@
 {{ "\n" if not loop.last else "" }}{% endif %}
 {% endfor %}
 
-// {{ fn.to_camel_case(name) }}
 
-namespace {{ namespace }} {
-    {{ fn.to_camel_case(name) }}::{{ fn.to_camel_case(name) }}({{ fn.to_camel_case(name) }}Values values) :
-        {{ fn.to_camel_case(name) }}Values(std::move(values)) {
-    }
-    {{ fn.to_camel_case(name) }}::{{ fn.to_camel_case(name) }}(const pqxx::row& row, const {{ fn.to_camel_case(name) }}Config& config) {
-        this->init(row, config);
-    }
+// Queries
 
-    bool {{ fn.to_camel_case(name) }}::init(const pqxx::row& row, const {{ fn.to_camel_case(name) }}Config& config) {
-        {{ rt }}::PqxxRowStream stream(row);
+{% for layout in table.layouts if layout.type %}
+static constexpr std::string_view sql_{{ layout.name }} = R"__sql(
+{{ queries[layout.name] }}
+)__sql";
+{% endfor %}
+
+
+
+// {{ name }}
+
+{{ namespace }}::{{ fn.to_camel_case(name) }}::{{ fn.to_camel_case(name) }}({{ fn.to_camel_case(name) }}Values values) :
+    {{ fn.to_camel_case(name) }}Values(std::move(values)) {
+}
+{{ namespace }}::{{ fn.to_camel_case(name) }}::{{ fn.to_camel_case(name) }}(const pqxx::row& row, const {{ fn.to_camel_case(name) }}Config& config) {
+    this->init(row, config);
+}
+
+bool {{ namespace }}::{{ fn.to_camel_case(name) }}::init(const pqxx::row& row, const {{ fn.to_camel_case(name) }}Config& config) {
+    {{ rt }}::PqxxRowStream stream(row);
 
 {% for field in table.fields %}
-        if (config[{{ fn.to_camel_case(field.name) }}] && !stream.store(this->{{ field.name }}))
-            return false;
+    if (config[{{ fn.to_camel_case(field.name) }}] && !stream.store(this->{{ field.name }}))
+        return false;
 
 {% endfor %}
-        return true;
-    }
+    return true;
 }
+
 
 // Database interactions
 
-namespace {{ namespace }}::{{ name }} {
 {% for layout in table.layouts if layout.type %}
 {% if layout.is_bulk() %}
-    ers::Result<Generator> {{ layout.name }}_fn::operator()(pqxx::dbtransaction& tnx, const {{ rt }}::QueryStore& queries{% for field in layout['put'] %}, {{ table.fields_by_name[field].arg_type() }} {{ field }}{% endfor %}) {
-        auto content = _dbio(tnx, queries{% for field in layout['put'] %}, {{ table.fields_by_name[field].assigment_expression() }}{% endfor %});
-        if (!content)
-            return content.error();
+ers::Result<{{ namespace }}::{{ name}}::Generator> {{ namespace }}::{{ name }}::{{ layout.name }}_fn::operator()(pqxx::dbtransaction& tnx{% for field in layout['put'] %}, {{ table.fields_by_name[field].arg_type() }} {{ field }}{% endfor %}) {
+    auto content = _dbio(tnx{% for field in layout['put'] %}, {{ table.fields_by_name[field].assigment_expression() }}{% endfor %});
+    if (!content)
+        return content.error();
 
-        return Generator(*content, {{ fn.to_camel_case(name) }}::{{ fn.to_camel_case(layout.name) }});
-    }
-    ers::Result<pqxx::result> {{ layout.name }}_fn::_dbio(pqxx::dbtransaction& tnx, const {{ rt }}::QueryStore& queries{% for field in layout['put'] %}, {{ table.fields_by_name[field].arg_type() }} {{ field }}{% endfor %}) ERS_DBIO_TRY_EVAL {
-        return tnx.exec(queries["sql.{{ name }}.{{ layout.name }}"]{% if layout['put'] %}, pqxx::params {
+    return Generator(*content, {{ fn.to_camel_case(name) }}::{{ fn.to_camel_case(layout.name) }});
+}
+ers::Result<pqxx::result> {{ namespace }}::{{ name }}::{{ layout.name }}_fn::_dbio(pqxx::dbtransaction& tnx{% for field in layout['put'] %}, {{ table.fields_by_name[field].arg_type() }} {{ field }}{% endfor %}) ERS_DBIO_TRY_EVAL {
+    return tnx.exec(sql_{{ layout.name }}{% if layout['put'] %}, pqxx::params {
 {% for field in layout['put'] %}
-            {{ field }}{{ "," if not loop.last else "" }}
+        {{ field }}{{ "," if not loop.last else "" }}
 {% endfor %}
-        }{% endif %});
-    } ERS_DBIO_CATCH_EVAL_ERRORS
+    }{% endif %});
+} ERS_DBIO_CATCH_EVAL_ERRORS
 {% else %}
-    ers::Status {{ layout.name }}_fn::operator()(pqxx::dbtransaction& tnx, const {{ rt }}::QueryStore& queries, {{ fn.to_camel_case(name) }}& entity) {
-        auto content = _dbio(tnx, queries, entity);
-        if (!content)
-            return content.error();
+ers::Status {{ namespace }}::{{ name }}::{{ layout.name }}_fn::operator()(pqxx::dbtransaction& tnx, {{ fn.to_camel_case(name) }}& entity) {
+    auto content = _dbio(tnx, entity);
+    if (!content)
+        return content.error();
 
 {% if fn.len(layout['get']) != 0 %}
-        entity.init(content->one_row(), make_config<{{ rt }}::In>({{ fn.to_camel_case(name) }}::{{ fn.to_camel_case(layout.name) }}));
+    entity.init(content->one_row(), make_config<{{ rt }}::In>({{ fn.to_camel_case(name) }}::{{ fn.to_camel_case(layout.name) }}));
 
 {% endif %}
-        return ers::ok;
-    }
-    ers::Result<pqxx::result> {{ layout.name }}_fn::_dbio(pqxx::dbtransaction& tnx, const {{ rt }}::QueryStore& queries, {{ fn.to_camel_case(name) }}& entity) ERS_DBIO_TRY_EVAL {
+    return ers::ok;
+}
+ers::Result<pqxx::result> {{ namespace }}::{{ name }}::{{ layout.name }}_fn::_dbio(pqxx::dbtransaction& tnx, {{ fn.to_camel_case(name) }}& entity) ERS_DBIO_TRY_EVAL {
 {% set binds = layout['put'] %}
 {% if 'condition' in layout %}
 {% set binds = binds + layout['condition'] %}
 {% endif %}
-        return tnx.exec(queries["sql.{{ name }}.{{ layout.name }}"]{% if binds %}, pqxx::params {
+    return tnx.exec(sql_{{ layout.name }}{% if binds %}, pqxx::params {
 {% for field in binds %}
-            entity.{{ field }}{{ "," if not loop.last else "" }}
+        entity.{{ field }}{{ "," if not loop.last else "" }}
 {% endfor %}
-        }{% endif %});
-    } ERS_DBIO_CATCH_EVAL_ERRORS
+    }{% endif %});
+} ERS_DBIO_CATCH_EVAL_ERRORS
 {% endif %}
 {{ "\n" if not loop.last else "" }}{% endfor %}
-}
+
 
 // Database interactions
 
 namespace {{ namespace }}::{{ name }} {
 {% for layout in table.layouts if layout.type %}
 {% if layout.is_bulk() %}
-    ers::Result<Generator> {{ layout.name }}(const {{ rt }}::QueryStore& queries, pqxx::dbtransaction& tnx{% for field in layout['put'] %}, {{ table.fields_by_name[field].arg_type() }} {{ field }}{% endfor %}) {
-        return {{ rt }}::fn::eval<{{ layout.name }}_fn, const {{ rt }}::QueryStore&{% for field in layout['put'] %}, {{ table.fields_by_name[field].arg_type() }}{% endfor %}>(tnx, queries{% for field in layout['put'] %}, {{ table.fields_by_name[field].assigment_expression() }}{% endfor %});
+    ers::Result<Generator> {{ layout.name }}(pqxx::dbtransaction& tnx{% for field in layout['put'] %}, {{ table.fields_by_name[field].arg_type() }} {{ field }}{% endfor %}) {
+        return {{ rt }}::fn::eval<{{ layout.name }}_fn{% for field in layout['put'] %}, {{ table.fields_by_name[field].arg_type() }}{% endfor %}>(tnx{% for field in layout['put'] %}, {{ table.fields_by_name[field].assigment_expression() }}{% endfor %});
     }
-    ers::Result<Generator> {{ layout.name }}({{ rt }}::tag::transaction_t, const {{ rt }}::QueryStore& queries, pqxx::dbtransaction& tnx{% for field in layout['put'] %}, {{ table.fields_by_name[field].arg_type() }} {{ field }}{% endfor %}) {
-        return {{ rt }}::fn::eval_with_transaction<{{ layout.name }}_fn, const {{ rt }}::QueryStore&{% for field in layout['put'] %}, {{ table.fields_by_name[field].arg_type() }}{% endfor %}>(tnx, "{{ fn.to_camel_case(name) }}/{{ fn.to_camel_case(layout.name) }}", queries{% for field in layout['put'] %}, {{ table.fields_by_name[field].assigment_expression() }}{% endfor %});
+    ers::Result<Generator> {{ layout.name }}({{ rt }}::tag::transaction_t, pqxx::dbtransaction& tnx{% for field in layout['put'] %}, {{ table.fields_by_name[field].arg_type() }} {{ field }}{% endfor %}) {
+        return {{ rt }}::fn::eval_with_transaction<{{ layout.name }}_fn{% for field in layout['put'] %}, {{ table.fields_by_name[field].arg_type() }}{% endfor %}>(tnx, "{{ fn.to_camel_case(name) }}/{{ fn.to_camel_case(layout.name) }}"{% for field in layout['put'] %}, {{ table.fields_by_name[field].assigment_expression() }}{% endfor %});
     }
 {% else %}
-    ers::Status {{ layout.name }}(const {{ rt }}::QueryStore& queries, pqxx::dbtransaction& tnx, {{ fn.to_camel_case(name) }}& entity) {
-        return {{ rt }}::fn::eval<{{ layout.name }}_fn, const {{ rt }}::QueryStore&, {{ fn.to_camel_case(name) }}&>(tnx, queries, entity);
+    ers::Status {{ layout.name }}(pqxx::dbtransaction& tnx, {{ fn.to_camel_case(name) }}& entity) {
+        return {{ rt }}::fn::eval<{{ layout.name }}_fn, {{ fn.to_camel_case(name) }}&>(tnx, entity);
     }
-    ers::Status {{ layout.name }}({{ rt }}::tag::transaction_t, const {{ rt }}::QueryStore& queries, pqxx::dbtransaction& tnx, {{ fn.to_camel_case(name) }}& entity) {
-        return {{ rt }}::fn::eval_with_transaction<{{ layout.name }}_fn, const {{ rt }}::QueryStore&, {{ fn.to_camel_case(name) }}&>(tnx, "{{ fn.to_camel_case(name) }}/{{ fn.to_camel_case(layout.name) }}", queries, entity);
+    ers::Status {{ layout.name }}({{ rt }}::tag::transaction_t, pqxx::dbtransaction& tnx, {{ fn.to_camel_case(name) }}& entity) {
+        return {{ rt }}::fn::eval_with_transaction<{{ layout.name }}_fn, {{ fn.to_camel_case(name) }}&>(tnx, "{{ fn.to_camel_case(name) }}/{{ fn.to_camel_case(layout.name) }}", entity);
     }
 {% endif %}
 {{ "\n" if not loop.last else "" }}{% endfor %}

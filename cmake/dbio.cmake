@@ -25,7 +25,7 @@ endif()
 #   QUERY_DIR  <dir>            # output directory for generated SQL        (required)
 #   [TARGET    <target>]        # add generated sources + HPP_DIR include to this target
 #   [OUT_VAR   <var>]           # set <var> to the ';'-list of generated .cpp files
-#   [NAMESPACE <ns>]            # dbio runtime namespace (default: ers::dbio)
+#   [NAMESPACE <ns>]            # dbio runtime namespace (default: dbio)
 #   [WORKING_DIRECTORY <dir>]   # cwd for the generator (default: CMAKE_CURRENT_SOURCE_DIR)
 # )
 #
@@ -45,7 +45,7 @@ function(dbio_generate)
     endforeach()
 
     if(NOT ARG_NAMESPACE)
-        set(ARG_NAMESPACE "ers::dbio")
+        set(ARG_NAMESPACE "dbio")
     endif()
 
     if(NOT ARG_WORKING_DIRECTORY)

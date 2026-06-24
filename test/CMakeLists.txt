@@ -53,7 +53,7 @@ target_sources(test_simple PRIVATE ${SIMPLE_SOURCES} "simple.cpp")
 
 target_link_libraries(test_simple
     PRIVATE
-        erslib::core erslib::contrib erslib::aengine erslib::easy_ecs erslib::aescript
+        erslib::core erslib::contrib erslib::dbio erslib::aengine erslib::easy_ecs erslib::aescript
         doctest::doctest
 )
 
@@ -76,112 +76,107 @@ add_test(NAME test_simple COMMAND test_simple)
 
 
 #----------------------------------------------------------------------------------------------------------------------
-# statefull tests
+# helpers for per-directory tests
 #----------------------------------------------------------------------------------------------------------------------
 
 
-function(add_stateful_test TEST_TARGET RELATIVE_TEST_DIR)
-	set(SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/${RELATIVE_TEST_DIR}")
-    set(BIN_DIR "${CMAKE_CURRENT_BINARY_DIR}/${RELATIVE_TEST_DIR}")
+# Both helpers are meant to be called from a test's own CMakeLists.txt (added via
+# add_subdirectory below). They derive everything from the calling directory, so a
+# test's CMakeLists.txt only needs the single call. The target is named
+# test_<category>_<directory-name> and all *.cpp in the directory are compiled.
 
-	file(GLOB TEST_SOURCES "${SRC_DIR}/*.cpp")
+function(add_stateful_test)
+    get_filename_component(TEST_NAME "${CMAKE_CURRENT_SOURCE_DIR}" NAME)
+    set(TEST_TARGET "test_stateful_${TEST_NAME}")
 
-	add_executable(${TEST_TARGET} ${TEST_SOURCES})
+    file(GLOB TEST_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 
-	target_link_libraries(${TEST_TARGET}
+    add_executable(${TEST_TARGET} ${TEST_SOURCES})
+
+    target_link_libraries(${TEST_TARGET}
         PRIVATE
-            erslib::core erslib::contrib erslib::aengine erslib::easy_ecs erslib::aescript
+            erslib::core erslib::contrib erslib::dbio erslib::aengine erslib::easy_ecs erslib::aescript
             doctest::doctest
     )
-
-	file(MAKE_DIRECTORY "${BIN_DIR}")
-
-	if(EXISTS "${SRC_DIR}/res")
-        add_custom_command(TARGET ${TEST_TARGET} POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_directory
-                "${SRC_DIR}/res"
-                "${BIN_DIR}/res"
-            COMMENT "Copying resources for ${TEST_TARGET}"
-        )
-    endif()
-
-    add_test(NAME ${TEST_TARGET} COMMAND ${TEST_TARGET})
 
     target_compile_definitions(${TEST_TARGET}
         PRIVATE
             DOCTEST_CONFIG_USE_STD_HEADERS
-            TEST_CWD="${BIN_DIR}"
-    )
-endfunction()
-
-
-set(STATEFUL_DIR "${CMAKE_CURRENT_SOURCE_DIR}/stateful")
-
-file(GLOB POTENTIAL_TEST_DIRS CONFIGURE_DEPENDS
-    LIST_DIRECTORIES true
-    RELATIVE "${STATEFUL_DIR}"
-    "${STATEFUL_DIR}/*"
-)
-
-foreach(DIR_NAME IN LISTS POTENTIAL_TEST_DIRS)
-    if(IS_DIRECTORY "${STATEFUL_DIR}/${DIR_NAME}")
-        set(TARGET_NAME "test_stateful_${DIR_NAME}")
-        add_stateful_test(${TARGET_NAME} "stateful/${DIR_NAME}")
-        message(STATUS "Discovered stateful test: ${DIR_NAME} -> Target: ${TARGET_NAME}")
-    endif()
-endforeach()
-
-
-#----------------------------------------------------------------------------------------------------------------------
-# sandbox tests
-#----------------------------------------------------------------------------------------------------------------------
-
-
-function(add_sandbox_test TEST_TARGET RELATIVE_TEST_DIR)
-	set(SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/${RELATIVE_TEST_DIR}")
-    set(BIN_DIR "${CMAKE_CURRENT_BINARY_DIR}/${RELATIVE_TEST_DIR}")
-
-	file(GLOB TEST_SOURCES "${SRC_DIR}/*.cpp")
-
-	add_executable(${TEST_TARGET} ${TEST_SOURCES})
-
-	target_link_libraries(${TEST_TARGET}
-        PRIVATE
-            erslib::core erslib::contrib erslib::aengine erslib::easy_ecs erslib::aescript
+            TEST_CWD="${CMAKE_CURRENT_BINARY_DIR}"
     )
 
-	file(MAKE_DIRECTORY "${BIN_DIR}")
-
-	if(EXISTS "${SRC_DIR}/res")
+    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/res")
         add_custom_command(TARGET ${TEST_TARGET} POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_directory
-                "${SRC_DIR}/res"
-                "${BIN_DIR}/res"
+                "${CMAKE_CURRENT_SOURCE_DIR}/res"
+                "${CMAKE_CURRENT_BINARY_DIR}/res"
             COMMENT "Copying resources for ${TEST_TARGET}"
         )
     endif()
 
     add_test(NAME ${TEST_TARGET} COMMAND ${TEST_TARGET})
 
-    target_compile_definitions(${TEST_TARGET}
-        PRIVATE
-            TEST_CWD="${SRC_DIR}"
-    )
+    message(STATUS "Discovered stateful test: ${TEST_NAME} -> Target: ${TEST_TARGET}")
 endfunction()
 
 
-set(SANDBOX_DIR "${CMAKE_CURRENT_SOURCE_DIR}/sandbox")
+function(add_sandbox_test)
+    get_filename_component(TEST_NAME "${CMAKE_CURRENT_SOURCE_DIR}" NAME)
+    set(TEST_TARGET "test_sandbox_${TEST_NAME}")
 
-file(GLOB POTENTIAL_TEST_DIRS CONFIGURE_DEPENDS
-    LIST_DIRECTORIES true
-    RELATIVE "${SANDBOX_DIR}"
-    "${SANDBOX_DIR}/*"
-)
+    file(GLOB TEST_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 
-foreach(DIR_NAME IN LISTS POTENTIAL_TEST_DIRS)
-    if(IS_DIRECTORY "${SANDBOX_DIR}/${DIR_NAME}")
-        set(TARGET_NAME "test_sandbox_${DIR_NAME}")
-        add_sandbox_test(${TARGET_NAME} "sandbox/${DIR_NAME}")
-        message(STATUS "Discovered sandbox test: ${DIR_NAME} -> Target: ${TARGET_NAME}")
+    add_executable(${TEST_TARGET} ${TEST_SOURCES})
+
+    target_link_libraries(${TEST_TARGET}
+        PRIVATE
+            erslib::core erslib::contrib erslib::dbio erslib::aengine erslib::easy_ecs erslib::aescript
+    )
+
+    target_compile_definitions(${TEST_TARGET}
+        PRIVATE
+            TEST_CWD="${CMAKE_CURRENT_SOURCE_DIR}"
+    )
+
+    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/res")
+        add_custom_command(TARGET ${TEST_TARGET} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_directory
+                "${CMAKE_CURRENT_SOURCE_DIR}/res"
+                "${CMAKE_CURRENT_BINARY_DIR}/res"
+            COMMENT "Copying resources for ${TEST_TARGET}"
+        )
     endif()
+
+    add_test(NAME ${TEST_TARGET} COMMAND ${TEST_TARGET})
+
+    message(STATUS "Discovered sandbox test: ${TEST_NAME} -> Target: ${TEST_TARGET}")
+endfunction()
+
+
+#----------------------------------------------------------------------------------------------------------------------
+# stateful + sandbox test discovery
+#----------------------------------------------------------------------------------------------------------------------
+
+
+# Each test under stateful/ and sandbox/ owns a CMakeLists.txt (typically a single
+# add_stateful_test()/add_sandbox_test() call). Drop in a new directory with its
+# own CMakeLists.txt and it is picked up on the next configure.
+foreach(CATEGORY IN ITEMS stateful sandbox)
+    set(CATEGORY_DIR "${CMAKE_CURRENT_SOURCE_DIR}/${CATEGORY}")
+
+    if(NOT IS_DIRECTORY "${CATEGORY_DIR}")
+        continue()
+    endif()
+
+    file(GLOB ENTRIES CONFIGURE_DEPENDS
+        LIST_DIRECTORIES true
+        RELATIVE "${CATEGORY_DIR}"
+        "${CATEGORY_DIR}/*"
+    )
+
+    foreach(ENTRY IN LISTS ENTRIES)
+        if(IS_DIRECTORY "${CATEGORY_DIR}/${ENTRY}" AND EXISTS "${CATEGORY_DIR}/${ENTRY}/CMakeLists.txt")
+            add_subdirectory("${CATEGORY}/${ENTRY}")
+        endif()
+    endforeach()
 endforeach()

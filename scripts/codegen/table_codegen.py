@@ -49,42 +49,57 @@ class TableCodegen(BaseCodegen):
 
     @staticmethod
     def _default_include_groups():
-        # All erslib/pqxx includes use angle brackets, hence 'library'.
         return [
             ("std", "library"),
             ("pqxx", "library"),
-            ("ers", "library")
+            ("ers", "library"),
+            ("dbio", "library"),
+            ("export", "library")
         ]
 
     @staticmethod
     def _default_includes():
         return [
             ('header', 'std', "bitset"),
+            ('header', 'std', "string_view"),
             ('header', 'pqxx', "pqxx/pqxx"),
-            ('header', 'ers', "erslib/dbio.hpp"),
             ('header', 'ers', "erslib/core/type/result.hpp"),
-        ] + [
-            ('source', 'ers', "erslib/dbio.hpp"),
+            ('header', 'dbio', "erslib/dbio.hpp"),
+            ('header', 'export', "erslib/export.hpp")
         ]
 
     def exec(self) -> list[GeneratedFile]:
-        return self._generate_sql() + self._generate_code()
+        # Render every SQL statement once so the standalone .sql files and the
+        # literals embedded into the generated source can never drift apart.
+        rendered = self._render_queries()
+        return self._generate_sql(rendered) + self._generate_code(rendered)
 
-    def _generate_sql(self) -> list[GeneratedFile]:
+    def _render_queries(self) -> dict[str, str]:
         _, templates = load_templates("table/sql")
         ctx = self._default_context()
 
         ctx.update({ "name": self.name + 's' })
 
+        rendered: dict[str, str] = dict()
+
+        rendered["create"] = templates["create_table"].render(
+            properties = self._make_table_properties(),
+            **ctx
+        )
+
+        for layout in self.table.layouts:
+            if layout.type:
+                rendered[layout.name] = templates[layout.type].render(layout = layout, **ctx)
+
+        return rendered
+
+    def _generate_sql(self, rendered: dict[str, str]) -> list[GeneratedFile]:
         queries: list[GeneratedFile] = list()
 
         queries.append(GeneratedFile(
             filename = "create.sql",
             type = "sql",
-            content = templates["create_table"].render(
-                properties = self._make_table_properties(),
-                **ctx
-            )
+            content = rendered["create"]
         ))
 
         for layout in self.table.layouts:
@@ -92,7 +107,7 @@ class TableCodegen(BaseCodegen):
                 queries.append(GeneratedFile(
                     filename = layout.name + ".sql",
                     type = "sql",
-                    content = templates[layout.type].render(layout = layout, **ctx)
+                    content = rendered[layout.name]
                 ))
 
         return queries
@@ -113,17 +128,23 @@ class TableCodegen(BaseCodegen):
 
         return result
 
-    def _generate_code(self) -> list[GeneratedFile]:
+    def _generate_code(self, rendered: dict[str, str]) -> list[GeneratedFile]:
         env, templates = load_templates("table/code")
 
         env.filters['to_camel_case'] = to_camel_case
+
+        queries = {
+            layout.name: rendered[layout.name][:-1]
+            for layout in self.table.layouts if layout.type
+        }
 
         ctx = self._default_context()
         ctx.update({
             "name": self.name,
             "namespace": self.namespace,
             "rt": self.runtime_namespace,
-            "include_groups": self.include_groups
+            "include_groups": self.include_groups,
+            "queries": queries
         })
 
         header = GeneratedFile(
@@ -138,7 +159,7 @@ class TableCodegen(BaseCodegen):
             filename = self.name + ".g.cpp",
             type = "source",
             content = templates["source"].render(
-                includes = self.includes['source'],
+                includes = self.includes.get('source', {}),
                 linked_header = self.name,
                 **ctx
             )

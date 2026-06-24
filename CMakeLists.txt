@@ -24,10 +24,10 @@ option(ERSLIB_INSTALL "Generate target for installing erslib" ${IS_TOP_LEVEL})
 option(ERSLIB_STANDALONE "Build as standalone project (includes tests/executables)" OFF)
 
 option(ERSLIB_BUILD_CONTRIB "Build erslib::contrib target" ON)
+option(ERSLIB_BUILD_DBIO "Build erslib::dbio target" ON)
 option(ERSLIB_BUILD_AENGINE "Build erslib::aengine target" ON)
 option(ERSLIB_BUILD_EASY_ECS "Build erslib::easy_ecs target" ON)
 option(ERSLIB_BUILD_AESCRIPT "Build erslib::aescript target" ON)
-option(ERSLIB_BUILD_DBIO "Build erslib::dbio target (requires libpqxx)" OFF)
 
 set_if_undefined(ERSLIB_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/erslib"
     CACHE STRING "Install path for erslib package-related CMake files"
@@ -67,6 +67,8 @@ function(erslib_add_library target_name alias_name)
         PUBLIC
             "$<$<NOT:$<BOOL:${BUILD_SHARED_LIBS}>>:ERSLIB_STATIC_DEFINE>"
     )
+
+    message(STATUS "erslib: added target ${target_name} with alias ${alias_name}")
 endfunction()
 
 
@@ -101,7 +103,7 @@ erslib_add_library(erslib_core core)
 
 target_sources(erslib_core
     PRIVATE
-        "include/erslib/core/export.hpp"
+        "include/erslib/export.hpp"
 
         "src/erslib/core/assert.cpp"
 
