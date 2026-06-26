@@ -8,19 +8,18 @@
             "binaryDir": "${sourceDir}/out/build/${presetName}",
             "cacheVariables": {
                 "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
-                "CMAKE_MAKE_PROGRAM": "Ninja",
                 "CMAKE_CXX_STANDARD": "26",
                 "CMAKE_CXX_STANDARD_REQUIRED": "ON",
                 "CMAKE_CXX_EXTENSIONS": "OFF",
-                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
-            },
-            "environment": {
-                "CXX_FLAGS": "/std:c++latest",
-                "CMAKE_CXX_STANDARD": "26"
-            },
-            "architecture": {
-                "value": "x64",
-                "strategy": "external"
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+
+                "ERSLIB_BUILD_TESTS": "ON",
+                "SOL_EXCEPTIONS": "ON",
+                "ERSLIB_BUILD_CONTRIB": "ON",
+                "ERSLIB_BUILD_DBIO": "ON",
+                "ERSLIB_BUILD_AENGINE": "ON",
+                "ERSLIB_BUILD_EASY_ECS": "ON",
+                "ERSLIB_BUILD_AESCRIPT": "ON"
             }
         },
 
@@ -34,6 +33,10 @@
                 "CMAKE_CXX_FLAGS_DEBUG": "/MDd /Zi /Ob0 /Od /RTC1 /D_DEBUG",
                 "CMAKE_CXX_FLAGS_RELEASE": "/MD /O2 /Ob2 /DNDEBUG /Zi /GR /arch:AVX2 /fp:fast",
                 "CMAKE_EXE_LINKER_FLAGS_RELEASE": "/DEBUG /OPT:REF /OPT:ICF"
+            },
+            "architecture": {
+                "value": "x64",
+                "strategy": "external"
             }
         },
 
@@ -54,6 +57,51 @@
             "cacheVariables": {
                 "CMAKE_CXX_COMPILER": "clang-cl.exe",
                 "CMAKE_C_COMPILER": "clang-cl.exe"
+            }
+        },
+
+        {
+            "name": "linux-base",
+            "inherits": "base",
+            "hidden": true,
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_CXX_FLAGS": "-Wall -Wextra -Wpedantic",
+                "CMAKE_CXX_FLAGS_DEBUG": "-g -O0",
+                "CMAKE_CXX_FLAGS_RELEASE": "-O2 -DNDEBUG -march=x86-64-v3"
+            },
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Linux"
+            },
+            "vendor": {
+                "microsoft.com/VisualStudioRemoteSettings/CMake/2.0": {
+                    "remoteSourceRootDir": "$env{HOME}/.vs/$ms{projectDirName}"
+                }
+            }
+        },
+
+        {
+            "name": "linux-clang",
+            "inherits": "linux-base",
+            "hidden": true,
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "clang",
+                "CMAKE_CXX_COMPILER": "clang++",
+                "CMAKE_CXX_FLAGS": "-stdlib=libc++ -Wall -Wextra -Wpedantic",
+                "CMAKE_EXE_LINKER_FLAGS": "-stdlib=libc++ -lc++abi",
+                "CMAKE_SHARED_LINKER_FLAGS": "-stdlib=libc++ -lc++abi"
+            }
+        },
+
+        {
+            "name": "linux-gcc",
+            "inherits": "linux-base",
+            "hidden": true,
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "gcc",
+                "CMAKE_CXX_COMPILER": "g++"
             }
         }
     ]

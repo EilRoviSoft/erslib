@@ -12,7 +12,7 @@ namespace ers {
 
 
     using nullopt_t = std::nullopt_t;
-    static constexpr nullopt_t nullopt;
+    static constexpr nullopt_t nullopt = std::nullopt;
 }
 
 

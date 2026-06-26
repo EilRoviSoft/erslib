@@ -23,11 +23,11 @@ option(ERSLIB_BUILD_TESTS "Build erslib tests" OFF)
 option(ERSLIB_INSTALL "Generate target for installing erslib" ${IS_TOP_LEVEL})
 option(ERSLIB_STANDALONE "Build as standalone project (includes tests/executables)" OFF)
 
-option(ERSLIB_BUILD_CONTRIB "Build erslib::contrib target" ON)
-option(ERSLIB_BUILD_DBIO "Build erslib::dbio target" ON)
-option(ERSLIB_BUILD_AENGINE "Build erslib::aengine target" ON)
-option(ERSLIB_BUILD_EASY_ECS "Build erslib::easy_ecs target" ON)
-option(ERSLIB_BUILD_AESCRIPT "Build erslib::aescript target" ON)
+option(ERSLIB_BUILD_CONTRIB "Build erslib::contrib target" OFF)
+option(ERSLIB_BUILD_DBIO "Build erslib::dbio target" OFF)
+option(ERSLIB_BUILD_AENGINE "Build erslib::aengine target" OFF)
+option(ERSLIB_BUILD_EASY_ECS "Build erslib::easy_ecs target" OFF)
+option(ERSLIB_BUILD_AESCRIPT "Build erslib::aescript target" OFF)
 
 set_if_undefined(ERSLIB_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/erslib"
     CACHE STRING "Install path for erslib package-related CMake files"
@@ -192,6 +192,7 @@ if(ERSLIB_BUILD_DBIO)
             erslib_core
     )
 
+    find_package(PostgreSQL)
     erslib_required_package(erslib_dbio libpqxx libpqxx::pqxx)
 
     list(APPEND ERSLIB_TARGETS erslib_dbio)

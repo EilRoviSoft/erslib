@@ -212,9 +212,20 @@ class Field:
         self.default = 'std::nullopt' if not code_default and 'nullable' in self.flags else code_default
 
     @staticmethod
-    def _split_default(default: "str | dict | None") -> "tuple[str | None, str | None]":
+    def _normalize_singular_default(default: str) -> None | tuple[str, str]:
+        if default.lower() == "true" or default.lower() == "false":
+            return default.lower(), default.upper()
+        return None
+
+    @staticmethod
+    def _split_default(default: str | dict | None) -> tuple[str | None, str | None]:
         if isinstance(default, dict):
             return default.get('code'), default.get('sql')
+        elif isinstance(default, str):
+            normalized = Field._normalize_singular_default(default)
+            if normalized:
+                return normalized
+
         return default, default
     
     def _init_remarks(self):

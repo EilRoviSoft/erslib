@@ -3,8 +3,10 @@
 // std
 #include <array>
 #include <bit>
+#include <cstring>
 #include <span>
 #include <string>
+#include <utility>
 
 
 // Definition

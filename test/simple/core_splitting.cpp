@@ -4,6 +4,7 @@
 // std
 #include <ranges>
 #include <string_view>
+#include <vector>
 
 // ers
 #include <erslib/core/splitting/regular.hpp>
