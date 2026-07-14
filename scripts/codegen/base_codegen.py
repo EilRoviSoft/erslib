@@ -5,7 +5,7 @@ class GeneratedFile:
         self.content = content
 
 class BaseCodegen:
-    def __init__(self, name: str, data: dict):
+    def __init__(self, name: str, data: dict, source_dir):
         raise NotImplementedError("You have to override this method")
 
     def exec(self) -> list[GeneratedFile]:

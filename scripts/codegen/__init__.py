@@ -2,17 +2,18 @@ import argparse
 import json
 from pathlib import Path
 import os
-import sys
 
 
 from .base_codegen import BaseCodegen, GeneratedFile
 from .table_codegen import TableCodegen
 from .enum_codegen import EnumCodegen
+from .query_codegen import QueriesCodegen
 
 
 variants: dict[str, type[BaseCodegen]] = {
     'table': TableCodegen,
-    'enum': EnumCodegen
+    'enum': EnumCodegen,
+    'queries': QueriesCodegen
 }
 
 
@@ -43,17 +44,21 @@ def execute(args: argparse.Namespace) -> str:
         with open(item, 'r') as file:
             config = json.load(file)
 
-        if config['type'] not in variants:
-            print(f"Not implemented config for {config['type']}", file = sys.stderr)
-            continue
-
         config.setdefault('runtime_namespace', args.runtime_namespace)
 
         name = item.name.removesuffix('.g.json')
         relative_dir = item.parent.relative_to(scan_root)
-        generator = variants[config['type']](name, config)
 
-        for generated in generator.exec():
+        try:
+            if config.get('type') not in variants:
+                raise ValueError(f"unknown descriptor type '{config.get('type')}'")
+
+            generator = variants[config['type']](name, config, item.parent)
+            generated_files = generator.exec()
+        except Exception as error:
+            raise RuntimeError(f"{item}: {error}") from error
+
+        for generated in generated_files:
             file_path = _output_path(args, generated, relative_dir, name)
 
             os.makedirs(os.path.dirname(file_path), exist_ok = True)

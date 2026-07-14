@@ -3,7 +3,7 @@ from .util import load_templates, to_camel_case
 
 
 class EnumCodegen(BaseCodegen):
-    def __init__(self, name: str, data: dict):
+    def __init__(self, name: str, data: dict, source_dir = None):
         self.name = name
         self.namespace = data['namespace']
 

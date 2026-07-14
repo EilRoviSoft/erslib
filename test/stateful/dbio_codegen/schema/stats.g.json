@@ -1,0 +1,35 @@
+{
+    "type": "queries",
+    "namespace": "app",
+
+    "queries": [
+        {
+            "name": "age_histogram",
+            "kind": "rows",
+            "params": [ { "name": "min_age", "type": "INT" } ],
+            "result": [
+                { "name": "age",        "type": "INT" },
+                { "name": "user_count", "type": "BIGINT" }
+            ],
+            "sql": "SELECT age, COUNT(*) AS user_count FROM users WHERE age >= $1 GROUP BY age ORDER BY age"
+        },
+        {
+            "name": "oldest_user",
+            "kind": "row",
+            "result": [
+                { "name": "id",   "type": "BIGINT", "explicit_type": "uint32_t" },
+                { "name": "name", "type": "VARCHAR" }
+            ],
+            "sql": "SELECT id, name FROM users ORDER BY age DESC LIMIT 1"
+        },
+        {
+            "name": "rename_user",
+            "kind": "statement",
+            "params": [
+                { "name": "id",       "type": "BIGINT", "explicit_type": "uint32_t" },
+                { "name": "new_name", "type": "VARCHAR" }
+            ],
+            "sql_file": "sql/rename_user.sql"
+        }
+    ]
+}

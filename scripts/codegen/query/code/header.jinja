@@ -1,0 +1,59 @@
+{% macro fn_params(q) %}{% for p in q.params %}, {{ p.arg_type() }} {{ p.name }}{% endfor %}{% endmacro %}
+{% macro ret(q) %}{% if q.kind == "rows" %}ers::Result<{{ q.struct_name }}Generator>{% elif q.kind == "row" %}ers::Result<{{ namespace }}::{{ q.struct_name }}>{% else %}ers::Status{% endif %}{% endmacro %}
+#pragma once
+
+{% for name, type in include_groups %}
+{% if fn.len(includes[name]) != 0 %}
+// {{ name }}
+{% for filename in includes[name] %}
+{% if type == 'library' %}
+#include <{{ filename }}>
+{% elif type == 'project' %}
+#include "{{ filename }}"
+{% endif %}
+{% endfor %}
+{{ "\n" if not loop.last else "" }}{% endif %}
+{% endfor %}
+
+
+// Result structs
+
+namespace {{ namespace }} {
+{% for q in queries if q.has_result() %}
+    struct ERSLIB_EXPORT {{ q.struct_name }} {
+{% for field in q.result %}
+        {{ field.class_type() }} {{ field.name }} {};
+{% endfor %}
+
+        {{ q.struct_name }}() = default;
+        explicit {{ q.struct_name }}(const pqxx::row& row);
+
+        bool init(const pqxx::row& row);
+    };
+{{ "\n" if not loop.last else "" }}{% endfor %}
+}
+
+
+// Database interactions
+
+namespace {{ namespace }}::{{ name }} {
+{% for q in queries if q.is_bulk() %}
+    using {{ q.struct_name }}Generator = {{ rt }}::RowGenerator<{{ namespace }}::{{ q.struct_name }}>;
+{% endfor %}
+
+{% for q in queries %}
+    struct ERSLIB_EXPORT {{ q.name }}_fn {
+        static {{ ret(q) }} operator()(pqxx::dbtransaction& tnx{{ fn_params(q) }});
+
+    private:
+        static ers::Result<pqxx::result> _dbio(pqxx::dbtransaction& tnx{{ fn_params(q) }});
+    };
+{{ "\n" if not loop.last else "" }}{% endfor %}
+}
+
+namespace {{ namespace }}::{{ name }} {
+{% for q in queries %}
+    {{ ret(q) }} ERSLIB_EXPORT {{ q.name }}(pqxx::dbtransaction& tnx{{ fn_params(q) }});
+    {{ ret(q) }} ERSLIB_EXPORT {{ q.name }}({{ rt }}::tag::transaction_t, pqxx::dbtransaction& tnx{{ fn_params(q) }});
+{{ "\n" if not loop.last else "" }}{% endfor %}
+}

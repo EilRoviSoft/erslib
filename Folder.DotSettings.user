@@ -1,4 +1,6 @@
 ﻿<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:ss="urn:shemas-jetbrains-com:settings-storage-xaml" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+	<s:String x:Key="/Default/Environment/SqlDaemon/FilesAndFoldersSqlDialects/=DB94C55F_002D6B9A_002D4AAE_002D80D7_002D29FD8153E6B5_002Fd_003Atest_002Fd_003Astateful_002Fd_003Adbio_005Fcodegen_002Fd_003Aschema_002Fd_003Asql_002Ff_003Arename_005Fuser_002Esql/@EntryIndexedValue">GenericSQL</s:String>
+	<s:String x:Key="/Default/Environment/SqlDaemon/SolutionSqlDialect/@EntryValue">PostgreSQL</s:String>
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=89bca98b_002D3570_002D41a4_002D9b5f_002D6c9f26c5e550/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="engine test" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
   &lt;TestAncestor&gt;&#xD;
     &lt;TestId&gt;Catch::DB94C55F-6B9A-4AAE-80D7-29FD8153E6B5::::engine test&lt;/TestId&gt;&#xD;

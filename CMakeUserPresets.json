@@ -11,7 +11,13 @@
 			"cacheVariables": {
 				"ERS_TRACE_VERBOSITY": "2",
 				"ERS_TRACE_MAX_DEPTH": "3",
-				"ERSLIB_BUILD_TESTS": "ON"
+
+				"ERSLIB_BUILD_TESTS": "ON",
+				"ERSLIB_BUILD_CONTRIB": "ON",
+				"ERSLIB_BUILD_DBIO": "ON",
+				"ERSLIB_BUILD_AENGINE": "ON",
+				"ERSLIB_BUILD_EASY_ECS": "ON",
+				"ERSLIB_BUILD_AESCRIPT": "ON"
 			}
 		},
 		{
@@ -24,7 +30,13 @@
 			"cacheVariables": {
 				"ERS_TRACE_VERBOSITY": "2",
 				"ERS_TRACE_MAX_DEPTH": "3",
-				"ERSLIB_BUILD_TESTS": "ON"
+				
+				"ERSLIB_BUILD_TESTS": "ON",
+				"ERSLIB_BUILD_CONTRIB": "ON",
+				"ERSLIB_BUILD_DBIO": "ON",
+				"ERSLIB_BUILD_AENGINE": "ON",
+				"ERSLIB_BUILD_EASY_ECS": "ON",
+				"ERSLIB_BUILD_AESCRIPT": "ON"
 			}
 		}
 	]

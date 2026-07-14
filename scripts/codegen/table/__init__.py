@@ -1,3 +1,6 @@
+from ..util import resolve_sql
+
+
 # Remarks -------------------------------------------------------------------------------------------------------------
 
 
@@ -283,20 +286,34 @@ class Field:
 
 
 class Layout:
-    def __init__(self, name: str, content: dict[str, list[str] | str], type: str | None = None, persistency: str | None = None):
+    def __init__(
+            self,
+            name: str,
+            content: dict[str, list[str] | str],
+            type: str | None = None,
+            persistency: str | None = None,
+            params: "list[Field] | None" = None,
+            order_by: str | None = None,
+            limit: "int | str | None" = None,
+            raw_sql: str | None = None
+            ):
         self.name = name
         self._content = content
         self.type = type
         self.persistency = persistency
-    
+        self.params = params if params is not None else []
+        self.order_by = order_by
+        self.limit = limit
+        self.raw_sql = raw_sql
+
     def __getitem__(self, index: str):
         return self._content[index]
-    
+
     def __contains__(self, index):
         return index in self._content
-    
+
     bulk_types = {
-        "select_by",
+        "select",
         "select_all"
     }
 
@@ -312,7 +329,7 @@ def make_name_from_fields(fields: list[str]) -> str:
 
 
 class Table:
-    def __init__(self, data: dict):
+    def __init__(self, data: dict, source_dir):
         self.fields: list[Field] = [Field.make(e) for e in data['fields']]
         self.fields_by_name: dict[str, Field] = {e.name: e for e in self.fields}
 
@@ -321,7 +338,7 @@ class Table:
 
         self._init_remarks(data.get('remarks', list()))
 
-        self._init_layouts(data.get('layouts', list()))
+        self._init_layouts(data.get('layouts', list()), source_dir)
     
     def _init_primary_key(self, data: list):
         pk = PrimaryKey(data)
@@ -359,14 +376,14 @@ class Table:
                 case 'CHECK':
                     self.remarks.append(CheckRemark(e['expr']))
 
-    def _init_layouts(self, data: dict):
+    def _init_layouts(self, data: dict, source_dir):
         self.layouts: list[Layout] = list()
-        
+
         # helpers
 
         self.layouts.append(Layout(name = "none", content = { "get": [] }))
         self.layouts.append(Layout(name = "all", content = { "get": [field.name for field in self.fields] }))
-        
+
         # mandatory
 
         self.layouts.append(Layout(
@@ -375,7 +392,8 @@ class Table:
                 "get": [field.name for field in self.fields]
             },
             type = "select_all",
-            persistency = "in"
+            persistency = "in",
+            params = []
         ))
 
         self.layouts.append(Layout(
@@ -422,21 +440,73 @@ class Table:
 
         # custom layouts
 
-        for layout in data:
-            match layout['type']:
-                case "select_by":
-                    put = layout.get("put", set())
+        reserved = {layout.name for layout in self.layouts}
 
-                    self.layouts.append(Layout(
-                        name = layout['name'],
-                        content = {
-                            "put": list(put),
-                            "get": [field.name for field in self.fields if field.name not in put],
-                            "condition": layout['condition']
-                        },
-                        type = "select_by",
-                        persistency = "in"
-                    ))
-                
+        for layout in data:
+            match layout.get('type'):
+                case "select" | "select_by":
+                    self.layouts.append(self._make_select_layout(layout, source_dir, reserved))
+
                 case _:
-                    pass
+                    raise ValueError(
+                        f"Unknown layout type '{layout.get('type')}' (layout '{layout.get('name')}')"
+                    )
+
+    def _make_select_layout(self, layout: dict, source_dir, reserved: set[str]) -> Layout:
+        name = layout['name']
+        if name in reserved:
+            raise ValueError(f"Layout name '{name}' collides with an existing layout")
+        reserved.add(name)
+
+        raw_params = layout.get('params')
+        if raw_params is None:
+            raw_params = [{"field": f} for f in layout.get('put', list())]
+
+        params: list[Field] = list()
+        seen: set[str] = set()
+        for entry in raw_params:
+            if 'field' in entry:
+                fname = entry['field']
+                if fname not in self.fields_by_name:
+                    raise ValueError(f"Layout '{name}': unknown field '{fname}' in params")
+                field = self.fields_by_name[fname]
+                pname = fname
+            else:
+                field = Field(entry['name'], entry['type'], entry.get('explicit_type'), set(), None)
+                pname = entry['name']
+
+            if pname in seen:
+                raise ValueError(f"Layout '{name}': duplicate parameter '{pname}'")
+            seen.add(pname)
+            params.append(field)
+
+        if 'get' in layout:
+            requested = set(layout['get'])
+            for gname in requested:
+                if gname not in self.fields_by_name:
+                    raise ValueError(f"Layout '{name}': unknown field '{gname}' in get")
+            get = [field.name for field in self.fields if field.name in requested]
+        else:
+            get = [field.name for field in self.fields]
+
+        has_builder = any(key in layout for key in ('condition', 'order_by', 'limit'))
+        has_raw = 'sql' in layout or 'sql_file' in layout
+        if has_builder and has_raw:
+            raise ValueError(f"Layout '{name}': cannot mix condition/order_by/limit with sql/sql_file")
+
+        raw_sql = resolve_sql(layout, source_dir, f"Layout '{name}'") if has_raw else None
+
+        return Layout(
+            name = name,
+            content = {
+                "put": list(),
+                "get": get,
+                "condition": layout.get('condition')
+            },
+            type = "select",
+            persistency = "in",
+            params = params,
+            order_by = layout.get('order_by'),
+            limit = layout.get('limit'),
+            raw_sql = raw_sql
+        )

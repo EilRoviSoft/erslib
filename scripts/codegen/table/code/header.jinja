@@ -136,14 +136,14 @@ namespace {{ namespace }}::{{ name }} {
 {% for layout in table.layouts if layout.type %}
     struct ERSLIB_EXPORT {{ layout.name }}_fn {
 {% if layout.is_bulk() %}
-        static ers::Result<Generator> operator()(pqxx::dbtransaction& tnx{% for field in layout['put'] %}, {{ table.fields_by_name[field].arg_type() }} {{ field }}{% endfor %});
+        static ers::Result<Generator> operator()(pqxx::dbtransaction& tnx{% for p in layout.params %}, {{ p.arg_type() }} {{ p.name }}{% endfor %});
 {% else %}
         static ers::Status operator()(pqxx::dbtransaction& tnx, {{ fn.to_camel_case(name) }}& entity);
 {% endif %}
 
     private:
 {% if layout.is_bulk() %}
-        static ers::Result<pqxx::result> _dbio(pqxx::dbtransaction& tnx{% for field in layout['put'] %}, {{ table.fields_by_name[field].arg_type() }} {{ field }}{% endfor %});
+        static ers::Result<pqxx::result> _dbio(pqxx::dbtransaction& tnx{% for p in layout.params %}, {{ p.arg_type() }} {{ p.name }}{% endfor %});
 {% else %}
         static ers::Result<pqxx::result> _dbio(pqxx::dbtransaction& tnx, {{ fn.to_camel_case(name) }}& entity);
 {% endif %}
@@ -154,8 +154,8 @@ namespace {{ namespace }}::{{ name }} {
 namespace {{ namespace }}::{{ name }} {
 {% for layout in table.layouts if layout.type %}
 {% if layout.is_bulk() %}
-    ers::Result<Generator> ERSLIB_EXPORT {{ layout.name }}(pqxx::dbtransaction& tnx{% for field in layout['put'] %}, {{ table.fields_by_name[field].arg_type() }} {{ field }}{% endfor %});
-    ers::Result<Generator> ERSLIB_EXPORT {{ layout.name }}(dbio::tag::transaction_t, pqxx::dbtransaction& tnx{% for field in layout['put'] %}, {{ table.fields_by_name[field].arg_type() }} {{ field }}{% endfor %});
+    ers::Result<Generator> ERSLIB_EXPORT {{ layout.name }}(pqxx::dbtransaction& tnx{% for p in layout.params %}, {{ p.arg_type() }} {{ p.name }}{% endfor %});
+    ers::Result<Generator> ERSLIB_EXPORT {{ layout.name }}(dbio::tag::transaction_t, pqxx::dbtransaction& tnx{% for p in layout.params %}, {{ p.arg_type() }} {{ p.name }}{% endfor %});
 {% else %}
     ers::Status ERSLIB_EXPORT {{ layout.name }}(pqxx::dbtransaction& tnx, {{ fn.to_camel_case(name) }}& entity);
     ers::Status ERSLIB_EXPORT {{ layout.name }}(dbio::tag::transaction_t, pqxx::dbtransaction& tnx, {{ fn.to_camel_case(name) }}& entity);

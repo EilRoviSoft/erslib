@@ -6,19 +6,17 @@ from .table import Table, Field, PrimaryKey, IdentityRemark, StatefulRemark
 
 
 class TableCodegen(BaseCodegen):
-    def __init__(self, name: str, data: dict):
+    def __init__(self, name: str, data: dict, source_dir):
         self.name = name
         self.namespace = data['namespace']
         self.table_name = data.get('table_name', self.name + 's')
 
-        self.table = Table(data)
+        self.table = Table(data, source_dir)
 
         self.include_groups = TableCodegen._default_include_groups()
         self._resolve_includes()
 
     def _resolve_includes(self):
-        # (target, group, file): target is 'header'/'source',
-        # group keys into include_groups, file is the include path.
         includes: set[tuple[str, str, str]] = set(TableCodegen._default_includes())
 
         for field in self.table.fields:
@@ -33,10 +31,11 @@ class TableCodegen(BaseCodegen):
                     includes.add(('header', 'std', 'string'))
 
         for layout in self.table.layouts:
-            if layout.type == "select_by":
-                includes.add(('header', 'std', 'vector'))
+            for param in layout.params:
+                match param.type:
+                    case 'int16_t' | 'int32_t' | 'int64_t' | 'uint16_t' | 'uint32_t' | 'uint64_t':
+                        includes.add(('header', 'std', 'cstdint'))
 
-        # Build {target: {group: sorted unique files}}
         grouped: dict[str, dict[str, list[str]]] = dict()
         for target, group, file in includes:
             grouped.setdefault(target, dict()).setdefault(group, list()).append(file)
@@ -69,8 +68,6 @@ class TableCodegen(BaseCodegen):
         ]
 
     def exec(self) -> list[GeneratedFile]:
-        # Render every SQL statement once so the standalone .sql files
-        # and the literals embedded into the generated source can never drift apart.
         rendered = self._render_queries()
         return self._generate_sql(rendered) + self._generate_code(rendered)
 
@@ -88,7 +85,12 @@ class TableCodegen(BaseCodegen):
         )
 
         for layout in self.table.layouts:
-            if layout.type:
+            if not layout.type:
+                continue
+
+            if layout.raw_sql is not None:
+                rendered[layout.name] = layout.raw_sql + '\n'
+            else:
                 rendered[layout.name] = templates[layout.type].render(layout = layout, **ctx)
 
         return rendered

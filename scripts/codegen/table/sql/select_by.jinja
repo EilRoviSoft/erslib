@@ -1,7 +1,0 @@
-SELECT
-{% for field in layout['get'] %}
-    {{ field }}{{ "," if not loop.last else "" }}
-{% endfor %}
-FROM {{ name }}
-WHERE
-    {{ layout['condition'] }}

@@ -1,0 +1,88 @@
+{% macro fn_params(q) %}{% for p in q.params %}, {{ p.arg_type() }} {{ p.name }}{% endfor %}{% endmacro %}
+{% macro fn_args(q) %}{% for p in q.params %}, {{ p.assigment_expression() }}{% endfor %}{% endmacro %}
+{% macro fn_argtypes(q) %}{% for p in q.params %}, {{ p.arg_type() }}{% endfor %}{% endmacro %}
+{% macro ret(q) %}{% if q.kind == "rows" %}ers::Result<{{ q.struct_name }}Generator>{% elif q.kind == "row" %}ers::Result<{{ namespace }}::{{ q.struct_name }}>{% else %}ers::Status{% endif %}{% endmacro %}
+{% macro ret_def(q) %}{% if q.kind == "rows" %}ers::Result<{{ namespace }}::{{ name }}::{{ q.struct_name }}Generator>{% elif q.kind == "row" %}ers::Result<{{ namespace }}::{{ q.struct_name }}>{% else %}ers::Status{% endif %}{% endmacro %}
+#include "{{ linked_header }}.g.hpp"
+
+{% for name, type in include_groups %}
+{% if fn.len(includes[name]) != 0 %}
+// {{ name }}
+{% for filename in includes[name] %}
+{% if type == 'library' %}
+#include <{{ filename }}>
+{% elif type == 'project' %}
+#include "{{ filename }}"
+{% endif %}
+{% endfor %}
+{{ "\n" if not loop.last else "" }}{% endif %}
+{% endfor %}
+
+
+// Queries
+
+{% for q in queries %}
+static constexpr std::string_view sql_{{ q.name }} = R"__sql(
+{{ q.sql }}
+)__sql";
+{% endfor %}
+
+
+// Result structs
+
+{% for q in queries if q.has_result() %}
+{{ namespace }}::{{ q.struct_name }}::{{ q.struct_name }}(const pqxx::row& row) {
+    this->init(row);
+}
+
+bool {{ namespace }}::{{ q.struct_name }}::init(const pqxx::row& row) {
+    {{ rt }}::PqxxRowStream stream(row);
+
+{% for field in q.result %}
+    if (!stream.store(this->{{ field.name }}))
+        return false;
+
+{% endfor %}
+    return true;
+}
+{{ "\n" if not loop.last else "" }}{% endfor %}
+
+
+// Database interactions
+
+{% for q in queries %}
+{{ ret_def(q) }} {{ namespace }}::{{ name }}::{{ q.name }}_fn::operator()(pqxx::dbtransaction& tnx{{ fn_params(q) }}) {
+    auto content = _dbio(tnx{{ fn_args(q) }});
+    if (!content)
+        return content.error();
+
+{% if q.kind == "rows" %}
+    return {{ q.struct_name }}Generator(*content);
+{% elif q.kind == "row" %}
+    return {{ namespace }}::{{ q.struct_name }}(content->one_row());
+{% else %}
+    return ers::ok;
+{% endif %}
+}
+ers::Result<pqxx::result> {{ namespace }}::{{ name }}::{{ q.name }}_fn::_dbio(pqxx::dbtransaction& tnx{{ fn_params(q) }}) ERS_DBIO_TRY_EVAL {
+    return tnx.exec(sql_{{ q.name }}{% if q.params %}, pqxx::params {
+{% for p in q.params %}
+        {{ p.name }}{{ "," if not loop.last else "" }}
+{% endfor %}
+    }{% endif %});
+} ERS_DBIO_CATCH_EVAL_ERRORS
+{{ "\n" if not loop.last else "" }}{% endfor %}
+
+
+// Database interactions
+
+namespace {{ namespace }}::{{ name }} {
+{% for q in queries %}
+    {{ ret(q) }} {{ q.name }}(pqxx::dbtransaction& tnx{{ fn_params(q) }}) {
+        return {{ rt }}::fn::eval<{{ q.name }}_fn{{ fn_argtypes(q) }}>(tnx{{ fn_args(q) }});
+    }
+    {{ ret(q) }} {{ q.name }}({{ rt }}::tag::transaction_t, pqxx::dbtransaction& tnx{{ fn_params(q) }}) {
+        return {{ rt }}::fn::eval_with_transaction<{{ q.name }}_fn{{ fn_argtypes(q) }}>(tnx, "{{ fn.to_camel_case(name) }}/{{ fn.to_camel_case(q.name) }}"{{ fn_args(q) }});
+    }
+{{ "\n" if not loop.last else "" }}{% endfor %}
+}

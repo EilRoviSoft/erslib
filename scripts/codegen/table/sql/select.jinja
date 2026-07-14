@@ -1,0 +1,15 @@
+SELECT
+{% for field in layout['get'] %}
+    {{ field }}{{ "," if not loop.last else "" }}
+{% endfor %}
+FROM {{ name }}
+{% if layout['condition'] %}
+WHERE
+    {{ layout['condition'] }}
+{% endif %}
+{% if layout.order_by %}
+ORDER BY {{ layout.order_by }}
+{% endif %}
+{% if layout.limit %}
+LIMIT {{ layout.limit }}
+{% endif %}

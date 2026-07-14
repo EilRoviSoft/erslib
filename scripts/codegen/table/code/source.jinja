@@ -49,17 +49,17 @@ bool {{ namespace }}::{{ fn.to_camel_case(name) }}::init(const pqxx::row& row, c
 
 {% for layout in table.layouts if layout.type %}
 {% if layout.is_bulk() %}
-ers::Result<{{ namespace }}::{{ name}}::Generator> {{ namespace }}::{{ name }}::{{ layout.name }}_fn::operator()(pqxx::dbtransaction& tnx{% for field in layout['put'] %}, {{ table.fields_by_name[field].arg_type() }} {{ field }}{% endfor %}) {
-    auto content = _dbio(tnx{% for field in layout['put'] %}, {{ table.fields_by_name[field].assigment_expression() }}{% endfor %});
+ers::Result<{{ namespace }}::{{ name}}::Generator> {{ namespace }}::{{ name }}::{{ layout.name }}_fn::operator()(pqxx::dbtransaction& tnx{% for p in layout.params %}, {{ p.arg_type() }} {{ p.name }}{% endfor %}) {
+    auto content = _dbio(tnx{% for p in layout.params %}, {{ p.assigment_expression() }}{% endfor %});
     if (!content)
         return content.error();
 
     return Generator(*content, {{ fn.to_camel_case(name) }}::{{ fn.to_camel_case(layout.name) }});
 }
-ers::Result<pqxx::result> {{ namespace }}::{{ name }}::{{ layout.name }}_fn::_dbio(pqxx::dbtransaction& tnx{% for field in layout['put'] %}, {{ table.fields_by_name[field].arg_type() }} {{ field }}{% endfor %}) ERS_DBIO_TRY_EVAL {
-    return tnx.exec(sql_{{ layout.name }}{% if layout['put'] %}, pqxx::params {
-{% for field in layout['put'] %}
-        {{ field }}{{ "," if not loop.last else "" }}
+ers::Result<pqxx::result> {{ namespace }}::{{ name }}::{{ layout.name }}_fn::_dbio(pqxx::dbtransaction& tnx{% for p in layout.params %}, {{ p.arg_type() }} {{ p.name }}{% endfor %}) ERS_DBIO_TRY_EVAL {
+    return tnx.exec(sql_{{ layout.name }}{% if layout.params %}, pqxx::params {
+{% for p in layout.params %}
+        {{ p.name }}{{ "," if not loop.last else "" }}
 {% endfor %}
     }{% endif %});
 } ERS_DBIO_CATCH_EVAL_ERRORS
@@ -95,11 +95,11 @@ ers::Result<pqxx::result> {{ namespace }}::{{ name }}::{{ layout.name }}_fn::_db
 namespace {{ namespace }}::{{ name }} {
 {% for layout in table.layouts if layout.type %}
 {% if layout.is_bulk() %}
-    ers::Result<Generator> {{ layout.name }}(pqxx::dbtransaction& tnx{% for field in layout['put'] %}, {{ table.fields_by_name[field].arg_type() }} {{ field }}{% endfor %}) {
-        return dbio::fn::eval<{{ layout.name }}_fn{% for field in layout['put'] %}, {{ table.fields_by_name[field].arg_type() }}{% endfor %}>(tnx{% for field in layout['put'] %}, {{ table.fields_by_name[field].assigment_expression() }}{% endfor %});
+    ers::Result<Generator> {{ layout.name }}(pqxx::dbtransaction& tnx{% for p in layout.params %}, {{ p.arg_type() }} {{ p.name }}{% endfor %}) {
+        return dbio::fn::eval<{{ layout.name }}_fn{% for p in layout.params %}, {{ p.arg_type() }}{% endfor %}>(tnx{% for p in layout.params %}, {{ p.assigment_expression() }}{% endfor %});
     }
-    ers::Result<Generator> {{ layout.name }}(dbio::tag::transaction_t, pqxx::dbtransaction& tnx{% for field in layout['put'] %}, {{ table.fields_by_name[field].arg_type() }} {{ field }}{% endfor %}) {
-        return dbio::fn::eval_with_transaction<{{ layout.name }}_fn{% for field in layout['put'] %}, {{ table.fields_by_name[field].arg_type() }}{% endfor %}>(tnx, "{{ fn.to_camel_case(name) }}/{{ fn.to_camel_case(layout.name) }}"{% for field in layout['put'] %}, {{ table.fields_by_name[field].assigment_expression() }}{% endfor %});
+    ers::Result<Generator> {{ layout.name }}(dbio::tag::transaction_t, pqxx::dbtransaction& tnx{% for p in layout.params %}, {{ p.arg_type() }} {{ p.name }}{% endfor %}) {
+        return dbio::fn::eval_with_transaction<{{ layout.name }}_fn{% for p in layout.params %}, {{ p.arg_type() }}{% endfor %}>(tnx, "{{ fn.to_camel_case(name) }}/{{ fn.to_camel_case(layout.name) }}"{% for p in layout.params %}, {{ p.assigment_expression() }}{% endfor %});
     }
 {% else %}
     ers::Status {{ layout.name }}(pqxx::dbtransaction& tnx, {{ fn.to_camel_case(name) }}& entity) {
