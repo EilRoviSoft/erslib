@@ -9,6 +9,7 @@
 #include <erslib/core/memory/holder.hpp>
 #include <erslib/core/meta/type_hash.hpp>
 #include <erslib/core/type/result.hpp>
+#include <erslib/core/type/optional.hpp>
 
 
 // Forward declaration
@@ -34,7 +35,7 @@ namespace aengine::internal {
         }
 
 
-        boost::optional<T> value = boost::none;
+        ers::optional<T> value = ers::nullopt;
         std::atomic<size_t> refs = 0;
         std::mutex mutex;
         ctor_fn ctor;

@@ -150,10 +150,14 @@ class Field:
         'VARCHAR': 'std::string',
         'INET': 'std::string',
         'UUID': 'std::string',
+
+        # binary data
+        'BYTEA': 'pqxx::bytes',
     }
 
     to_arg_type_table = {
-        'std::string': 'std::string_view'
+        'std::string': 'std::string_view',
+        'pqxx::bytes': 'pqxx::bytes_view',
     }
 
     trivially_copyable_types = {

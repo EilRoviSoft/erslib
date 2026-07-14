@@ -78,7 +78,13 @@ TEST_CASE("testing thread_safe map") {
             }
         };
 
+#if __cpp_lib_ranges_enumerate >= 202302L
         for (auto [i, d] : intervals | std::views::enumerate) {
+#else
+        size_t i = -1;
+        for (auto d : intervals) {
+            i++;
+#endif
             print(i);
             //MESSAGE("waiting for {}\n", d);
             std::this_thread::sleep_for(d);

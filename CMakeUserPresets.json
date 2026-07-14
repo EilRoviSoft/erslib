@@ -2,33 +2,29 @@
 	"version": 4,
 	"configurePresets": [
 		{
-			"name": "windows-local-clang",
-			"displayName": "windows-x64-dbg",
-			"inherits": "windows-clang",
-			"environment": {
-				"VCPKG_ROOT": "D:/Libs/vcpkg"
-			},
-			"cacheVariables": {
-				"ERS_TRACE_VERBOSITY": "2",
-				"ERS_TRACE_MAX_DEPTH": "3"
-			}
-		},
-
-		{
 			"name": "linux-local-clang",
-			"displayName": "linux-x64-dbg",
+			"displayName": "linux-x64-dbg-clang",
 			"inherits": "linux-clang",
 			"environment": {
 				"VCPKG_ROOT": "$penv{HOME}/vcpkg"
 			},
 			"cacheVariables": {
 				"ERS_TRACE_VERBOSITY": "2",
-				"ERS_TRACE_MAX_DEPTH": "3"
+				"ERS_TRACE_MAX_DEPTH": "3",
+				"ERSLIB_BUILD_TESTS": "ON"
+			}
+		},
+		{
+			"name": "linux-local-gcc-16",
+			"displayName": "linux-x64-dbg-gcc16",
+			"inherits": "linux-gcc-16",
+			"environment": {
+				"VCPKG_ROOT": "$penv{HOME}/vcpkg"
 			},
-			"vendor": {
-				"microsoft.com/VisualStudioSettings/CMake/1.0": {
-					"intelliSenseMode": "linux-gcc-x64"
-				}
+			"cacheVariables": {
+				"ERS_TRACE_VERBOSITY": "2",
+				"ERS_TRACE_MAX_DEPTH": "3",
+				"ERSLIB_BUILD_TESTS": "ON"
 			}
 		}
 	]

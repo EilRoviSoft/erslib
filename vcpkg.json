@@ -1,20 +1,20 @@
 {
-	"dependencies": [
-		"boost-container",
-		"boost-optional",
-		"boost-regex",
-		"boost-smart-ptr",
-		"boost-thread",
-		"boost-unordered",
-		"cpptrace",
-		"frozen",
-		"libpqxx",
-		"luajit",
-		"pkgconf",
-		"quill",
-		"rmlui",
-		"sol2",
-		"sdl3",
-		"doctest"
-	]
+  "dependencies": [
+    "boost-container",
+    "boost-optional",
+    "boost-regex",
+    "boost-smart-ptr",
+    "boost-thread",
+    "boost-unordered",
+    "cpptrace",
+    "frozen",
+    "libpqxx",
+    "luajit",
+    "pkgconf",
+    "quill",
+    "rmlui",
+    "sol2",
+    "sdl3",
+    "doctest"
+  ]
 }

@@ -12,7 +12,7 @@ ers::Status aescript::InclusiveWithProperty::exec([[maybe_unused]] verify_contex
         return ers::ok;
 
 
-    std::list<std::string_view> absent;
+    std::vector<std::string_view> absent;
 
     for (const auto& it : _mandatory_fields) {
         if (!table.get<std::optional<sol::object>>(it))

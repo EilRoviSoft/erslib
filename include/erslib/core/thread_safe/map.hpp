@@ -71,7 +71,6 @@ namespace ers::thread_safe {
         template<typename T>
         bool set(const T& k, mapped_type v = mapped_type()) {
             std::unique_lock lock(this->m_mutex);
-
             auto [_, flag] = this->m_data.emplace(k, std::move(v));
             return flag;
         }
@@ -79,13 +78,10 @@ namespace ers::thread_safe {
         [[nodiscard]]
         optional<const mapped_type&> get(const T& k) const {
             std::shared_lock lock(this->m_mutex);
-
-
             auto it = this->m_data.find(k);
 
             if (it == this->m_data.end())
                 return nullopt;
-
 
             return it->second;
         }
@@ -96,7 +92,9 @@ namespace ers::thread_safe {
         template<typename T>
         [[nodiscard]]
         const mapped_type& operator[](const T& k) const {
-            return *this->get(k);
+            std::shared_lock lock(this->m_mutex);
+            auto it = this->m_data.find(k);
+            return it->second;
         }
 
         [[nodiscard]]

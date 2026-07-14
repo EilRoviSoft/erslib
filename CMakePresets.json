@@ -12,54 +12,11 @@
                 "CMAKE_CXX_STANDARD_REQUIRED": "ON",
                 "CMAKE_CXX_EXTENSIONS": "OFF",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-
-                "ERSLIB_BUILD_TESTS": "ON",
-                "SOL_EXCEPTIONS": "ON",
+                "ERSLIB_BUILD_TESTS": "OFF",
                 "ERSLIB_BUILD_CONTRIB": "ON",
-                "ERSLIB_BUILD_DBIO": "ON",
-                "ERSLIB_BUILD_AENGINE": "ON",
-                "ERSLIB_BUILD_EASY_ECS": "ON",
-                "ERSLIB_BUILD_AESCRIPT": "ON"
+                "ERSLIB_BUILD_DBIO": "ON"
             }
         },
-
-        {
-            "name": "windows-base",
-            "inherits": "base",
-            "hidden": true,
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug",
-                "CMAKE_CXX_FLAGS": "/EHsc /std:c++latest /W4 /GR",
-                "CMAKE_CXX_FLAGS_DEBUG": "/MDd /Zi /Ob0 /Od /RTC1 /D_DEBUG",
-                "CMAKE_CXX_FLAGS_RELEASE": "/MD /O2 /Ob2 /DNDEBUG /Zi /GR /arch:AVX2 /fp:fast",
-                "CMAKE_EXE_LINKER_FLAGS_RELEASE": "/DEBUG /OPT:REF /OPT:ICF"
-            },
-            "architecture": {
-                "value": "x64",
-                "strategy": "external"
-            }
-        },
-
-        {
-            "name": "windows-msvc",
-            "inherits": "windows-base",
-            "hidden": true,
-            "cacheVariables": {
-                "CMAKE_C_COMPILER": "cl.exe",
-                "CMAKE_CXX_COMPILER": "cl.exe"
-            }
-        },
-
-        {
-            "name": "windows-clang",
-            "inherits": "windows-base",
-            "hidden": true,
-            "cacheVariables": {
-                "CMAKE_CXX_COMPILER": "clang-cl.exe",
-                "CMAKE_C_COMPILER": "clang-cl.exe"
-            }
-        },
-
         {
             "name": "linux-base",
             "inherits": "base",
@@ -74,14 +31,8 @@
                 "type": "equals",
                 "lhs": "${hostSystemName}",
                 "rhs": "Linux"
-            },
-            "vendor": {
-                "microsoft.com/VisualStudioRemoteSettings/CMake/2.0": {
-                    "remoteSourceRootDir": "$env{HOME}/.vs/$ms{projectDirName}"
-                }
             }
         },
-
         {
             "name": "linux-clang",
             "inherits": "linux-base",
@@ -91,17 +42,21 @@
                 "CMAKE_CXX_COMPILER": "clang++",
                 "CMAKE_CXX_FLAGS": "-stdlib=libc++ -Wall -Wextra -Wpedantic",
                 "CMAKE_EXE_LINKER_FLAGS": "-stdlib=libc++ -lc++abi",
-                "CMAKE_SHARED_LINKER_FLAGS": "-stdlib=libc++ -lc++abi"
+                "CMAKE_SHARED_LINKER_FLAGS": "-stdlib=libc++ -lc++abi",
+                "VCPKG_TARGET_TRIPLET": "x64-linux-clang"
             }
         },
-
         {
-            "name": "linux-gcc",
+            "name": "linux-gcc-16",
             "inherits": "linux-base",
             "hidden": true,
+            "environment": {
+                "CC": "gcc-16",
+                "CXX": "g++-16"
+            },
             "cacheVariables": {
-                "CMAKE_C_COMPILER": "gcc",
-                "CMAKE_CXX_COMPILER": "g++"
+                "CMAKE_C_COMPILER": "gcc-16",
+                "CMAKE_CXX_COMPILER": "g++-16"
             }
         }
     ]

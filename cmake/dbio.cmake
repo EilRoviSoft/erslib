@@ -1,20 +1,14 @@
-# dbio.cmake - codegen integration for the dbio PostgreSQL runtime.
-#
-# Provides dbio_generate(), which runs the Python codegen over a tree of
-# '*.g.json' descriptors and emits headers, sources and SQL queries. It is meant
-# to feel like protobuf_generate(): point it at a target and an import directory
-# and it wires the generated sources in.
-
-
-# Locate the codegen package (the 'scripts' directory containing __main__.py).
-# In-tree it sits next to this file's parent; when installed it is shipped
-# alongside the package config.
 if(NOT DEFINED ERSLIB_DBIO_SCRIPTS_DIR)
+    set(_erslib_dbio_scripts_dir "")
     if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/../scripts/__main__.py")
-        get_filename_component(ERSLIB_DBIO_SCRIPTS_DIR "${CMAKE_CURRENT_LIST_DIR}/../scripts" ABSOLUTE)
+        get_filename_component(_erslib_dbio_scripts_dir "${CMAKE_CURRENT_LIST_DIR}/../scripts" ABSOLUTE)
     elseif(EXISTS "${CMAKE_CURRENT_LIST_DIR}/scripts/__main__.py")
-        set(ERSLIB_DBIO_SCRIPTS_DIR "${CMAKE_CURRENT_LIST_DIR}/scripts")
+        set(_erslib_dbio_scripts_dir "${CMAKE_CURRENT_LIST_DIR}/scripts")
     endif()
+
+    set(ERSLIB_DBIO_SCRIPTS_DIR "${_erslib_dbio_scripts_dir}" CACHE PATH
+        "Directory containing the dbio codegen scripts (__main__.py)")
+    unset(_erslib_dbio_scripts_dir)
 endif()
 
 
@@ -58,6 +52,18 @@ function(dbio_generate)
     endif()
 
     find_package(Python3 COMPONENTS Interpreter REQUIRED)
+
+    # Re-run configuration (and therefore regeneration) whenever a descriptor or a
+    # referenced .sql file under IMPORT_DIR is added, removed, or edited. Generation
+    # happens here at configure time via execute_process, so without this the build
+    # would keep using stale generated sources.
+    get_filename_component(_dbio_import_abs "${ARG_IMPORT_DIR}" ABSOLUTE BASE_DIR "${ARG_WORKING_DIRECTORY}")
+    file(GLOB_RECURSE _dbio_gen_inputs CONFIGURE_DEPENDS
+        "${_dbio_import_abs}/*.g.json"
+        "${_dbio_import_abs}/*.sql")
+    if(_dbio_gen_inputs)
+        set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${_dbio_gen_inputs})
+    endif()
 
     message(STATUS "dbio_generate: generating from '${ARG_IMPORT_DIR}' (namespace ${ARG_NAMESPACE})")
 

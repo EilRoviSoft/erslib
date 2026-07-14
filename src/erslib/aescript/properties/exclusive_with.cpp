@@ -12,7 +12,7 @@ ers::Status aescript::ExclusiveWithProperty::exec([[maybe_unused]] verify_contex
         return ers::ok;
 
 
-    std::list<std::string_view> intersection;
+    std::vector<std::string_view> intersection;
 
     for (const auto& it : _incompatible_fields) {
         if (table.get<std::optional<sol::object>>(it))
