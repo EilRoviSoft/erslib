@@ -8,6 +8,7 @@ class QueriesCodegen(BaseCodegen):
         self.name = name
         self.namespace = data['namespace']
         self.runtime_namespace: str = data.get('runtime_namespace', 'dbio')
+        self.use_query_store: bool = data.get('use_query_store', False)
 
         self.queries: list[Query] = parse_queries(data, source_dir)
 
@@ -88,6 +89,7 @@ class QueriesCodegen(BaseCodegen):
             "rt": self.runtime_namespace,
             "queries": self.queries,
             "include_groups": self.include_groups,
+            "use_query_store": self.use_query_store,
             "fn": {
                 "len": len,
                 "to_camel_case": to_camel_case

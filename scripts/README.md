@@ -26,10 +26,12 @@ The standalone `.sql` files carry the exact same statement text (rendered once, 
 
 ```sh
 python scripts codegen \
-    --dir       <input-dir>     # scanned recursively for *.g.json
-    --hpp-dir   <out-include>   # generated headers (mirrors --dir layout)
-    --cpp-dir   <out-src>       # generated sources (mirrors --dir layout)
-    --query-dir <out-query>     # generated *.sql, grouped by entity name
+    --dir               <input-dir>     # scanned recursively for *.g.json
+    --hpp-dir           <out-include>   # generated headers (mirrors --dir layout)
+    --cpp-dir           <out-src>       # generated sources (mirrors --dir layout)
+    --query-dir         <out-query>     # generated *.sql, grouped by entity name
+    --runtime-namespace <ns>            # dbio runtime namespace (default: dbio)
+    --use-query-store                   # generate dbio::queries lookups instead of embedded SQL literals (see below)
 ```
 
 ## CMake
@@ -50,6 +52,8 @@ dbio_generate(
 ```
 
 With `TARGET`, the generated sources are added to it, `HPP_DIR` is added to its include path, and it is linked against `dbio`. Generation runs at configure time, so re-run CMake after adding or removing descriptors.
+
+Pass `USE_QUERY_STORE` to switch the generated code from embedded SQL literals to `dbio::QueryStore` lookups (see below); it requires `erslib::dbio` to have been built with `ERSLIB_DBIO_OWN_QUERY_STORE=ON`, otherwise `dbio_generate()` fails at configure time.
 
 ## Descriptor example
 
@@ -173,6 +177,47 @@ For queries that are not a projection of a single table (joins, aggregates, bare
 - **`sql` / `sql_file`** - exactly one, same as raw-mode layouts.
 
 The `namespace` places the result structs in `<namespace>` and the functions in `<namespace>::<descriptor-name>` (e.g. `app::AgeHistogram` and `app::stats::age_histogram`). Standalone `.sql` files are emitted under `sql.<descriptor>.<query>` for the query store, exactly like table layouts.
+
+## Embedded SQL vs. `dbio::QueryStore` (`--use-query-store`)
+
+By default every generated data-access function embeds its SQL as a `static constexpr std::string_view` literal in the `.cpp` file. Passing **`--use-query-store`** to the generator changes what gets emitted: the literal is omitted entirely and the function instead reads its SQL from the global `dbio::queries` store, by the same label the standalone `.sql` files use (e.g. `sql.user.save`, `sql.stats.age_histogram`):
+
+```cpp
+// --use-query-store off (default)
+static constexpr std::string_view sql_save = R"__sql(...)__sql";
+...
+    return tnx.exec(sql_save, pqxx::params { ... });
+```
+```cpp
+// --use-query-store on
+...
+    const std::string_view sql_save = dbio::queries["sql.user.save"];
+    return tnx.exec(sql_save, pqxx::params { ... });
+```
+
+This is a **codegen-time** decision, not a compile-time `#ifdef` - the generator renders exactly one of the two forms into the `.cpp`, so a given generated tree always uses one mode. Regenerate (with or without the flag) to switch a target. The simplest way to turn it on is the `USE_QUERY_STORE` flag on `dbio_generate()`:
+
+```cmake
+dbio_generate(
+    TARGET          my_app
+    IMPORT_DIR      "${CMAKE_CURRENT_SOURCE_DIR}/src"
+    HPP_DIR         "${CMAKE_CURRENT_BINARY_DIR}/generated/include"
+    CPP_DIR         "${CMAKE_CURRENT_BINARY_DIR}/generated/src"
+    QUERY_DIR       "${CMAKE_CURRENT_BINARY_DIR}/generated/query"
+    USE_QUERY_STORE
+)
+```
+
+which just passes `--use-query-store` through to the generator.
+
+**Prerequisites**, since `dbio::queries` is itself conditionally compiled:
+
+- `erslib::dbio` must be built with `-DERSLIB_DBIO_OWN_QUERY_STORE=ON`, which makes the library define `ERS_DBIO_GLOBAL_QUERY_STORE` as a `PUBLIC` compile definition (so every consumer sees `extern dbio::QueryStore queries;`) and, together with `ERS_DBIO_GLOBAL_QUERY_STORE_INIT`, auto-populates it from `./res/query` (relative to the process's working directory) at static-init time. `dbio_generate(... USE_QUERY_STORE ...)` checks this option and fails the configure early if it's off.
+- If your `QUERY_DIR` differs from `./res/query` (it usually does), the auto-populated store won't have your labels. Load your own directory once at startup, before any generated function runs:
+  ```cpp
+  dbio::queries.load_directory(query_dir);
+  ```
+- Looking up a label that isn't loaded is undefined behavior (`QueryStore::operator[]` does not bounds-check) - make sure every `QUERY_DIR` a `USE_QUERY_STORE`-enabled target generates into gets loaded before use.
 
 ## Errors
 

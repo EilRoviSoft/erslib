@@ -30,6 +30,10 @@ def add_codegen_subparser(subparsers):
         dest = "runtime_namespace",
         help = "Namespace of the dbio runtime referenced by generated code (default: dbio)")
 
+    codegen_parser.add_argument("--use-query-store", action = "store_true",
+        dest = "use_query_store",
+        help = "Generate data-access code that looks SQL up from dbio::queries at runtime instead of embedding it as a string literal")
+
 
 def main():
     parser = argparse.ArgumentParser(prog = "dbio")

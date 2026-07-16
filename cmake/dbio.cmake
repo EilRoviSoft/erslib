@@ -13,21 +13,22 @@ endif()
 
 
 # dbio_generate(
-#   IMPORT_DIR <dir>            # directory scanned recursively for '*.g.json' (required)
-#   HPP_DIR    <dir>            # output directory for generated headers   (required)
-#   CPP_DIR    <dir>            # output directory for generated sources   (required)
-#   QUERY_DIR  <dir>            # output directory for generated SQL        (required)
-#   [TARGET    <target>]        # add generated sources + HPP_DIR include to this target
-#   [OUT_VAR   <var>]           # set <var> to the ';'-list of generated .cpp files
-#   [NAMESPACE <ns>]            # dbio runtime namespace (default: dbio)
-#   [WORKING_DIRECTORY <dir>]   # cwd for the generator (default: CMAKE_CURRENT_SOURCE_DIR)
+#   IMPORT_DIR <dir>
+#   HPP_DIR    <dir>
+#   CPP_DIR    <dir>
+#   QUERY_DIR  <dir>
+#   [TARGET    <target>]
+#   [OUT_VAR   <var>]
+#   [NAMESPACE <ns>]
+#   [WORKING_DIRECTORY <dir>]
+#   [USE_QUERY_STORE]
 # )
 #
 # Generation runs at configure time, so the set of generated sources is known
 # when the target is built. Re-run CMake configuration after adding/removing
 # descriptors.
 function(dbio_generate)
-    set(options "")
+    set(options USE_QUERY_STORE)
     set(one_value_args TARGET OUT_VAR IMPORT_DIR HPP_DIR CPP_DIR QUERY_DIR NAMESPACE WORKING_DIRECTORY)
     set(multi_value_args "")
     cmake_parse_arguments(ARG "${options}" "${one_value_args}" "${multi_value_args}" ${ARGN})
@@ -37,6 +38,12 @@ function(dbio_generate)
             message(FATAL_ERROR "dbio_generate: ${required} is required")
         endif()
     endforeach()
+
+    if(ARG_USE_QUERY_STORE AND NOT ERSLIB_DBIO_OWN_QUERY_STORE)
+        message(FATAL_ERROR "dbio_generate: USE_QUERY_STORE requires erslib::dbio to be built "
+            "with ERSLIB_DBIO_OWN_QUERY_STORE=ON (otherwise dbio::queries does not exist to "
+            "look queries up from)")
+    endif()
 
     if(NOT ARG_NAMESPACE)
         set(ARG_NAMESPACE "dbio")
@@ -51,7 +58,7 @@ function(dbio_generate)
             "set ERSLIB_DBIO_SCRIPTS_DIR to the directory containing __main__.py")
     endif()
 
-    find_package(Python3 COMPONENTS Interpreter REQUIRED)
+    find_package(Python3 3.14 COMPONENTS Interpreter REQUIRED)
 
     # Re-run configuration (and therefore regeneration) whenever a descriptor or a
     # referenced .sql file under IMPORT_DIR is added, removed, or edited. Generation
@@ -67,6 +74,11 @@ function(dbio_generate)
 
     message(STATUS "dbio_generate: generating from '${ARG_IMPORT_DIR}' (namespace ${ARG_NAMESPACE})")
 
+    set(_dbio_extra_args "")
+    if(ARG_USE_QUERY_STORE)
+        list(APPEND _dbio_extra_args --use-query-store)
+    endif()
+
     execute_process(
         WORKING_DIRECTORY "${ARG_WORKING_DIRECTORY}"
         COMMAND "${Python3_EXECUTABLE}" "${ERSLIB_DBIO_SCRIPTS_DIR}" codegen
@@ -75,6 +87,7 @@ function(dbio_generate)
             --cpp-dir "${ARG_CPP_DIR}"
             --query-dir "${ARG_QUERY_DIR}"
             --runtime-namespace "${ARG_NAMESPACE}"
+            ${_dbio_extra_args}
         OUTPUT_VARIABLE dbio_sources
         ERROR_VARIABLE dbio_error
         RESULT_VARIABLE dbio_result

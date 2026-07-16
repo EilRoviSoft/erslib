@@ -10,6 +10,7 @@ class TableCodegen(BaseCodegen):
         self.name = name
         self.namespace = data['namespace']
         self.table_name = data.get('table_name', self.name + 's')
+        self.use_query_store: bool = data.get('use_query_store', False)
 
         self.table = Table(data, source_dir)
 
@@ -143,7 +144,8 @@ class TableCodegen(BaseCodegen):
             "name": self.name,
             "namespace": self.namespace,
             "include_groups": self.include_groups,
-            "queries": queries
+            "queries": queries,
+            "use_query_store": self.use_query_store
         })
 
         header = GeneratedFile(

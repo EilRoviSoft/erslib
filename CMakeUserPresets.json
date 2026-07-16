@@ -1,43 +1,27 @@
 {
-	"version": 4,
-	"configurePresets": [
-		{
-			"name": "linux-local-clang",
-			"displayName": "linux-x64-dbg-clang",
-			"inherits": "linux-clang",
-			"environment": {
-				"VCPKG_ROOT": "$penv{HOME}/vcpkg"
-			},
-			"cacheVariables": {
-				"ERS_TRACE_VERBOSITY": "2",
-				"ERS_TRACE_MAX_DEPTH": "3",
+    "version": 4,
+    "configurePresets": [
+        {
+            "name": "linux-local-gcc-16",
+            "displayName": "linux-x64-dbg-gcc16",
+            "inherits": "linux-gcc-16",
+            "environment": {
+                "VCPKG_ROOT": "$penv{HOME}/vcpkg"
+            },
+            "cacheVariables": {
+                "ERS_TRACE_VERBOSITY": "2",
+                "ERS_TRACE_MAX_DEPTH": "3",
 
-				"ERSLIB_BUILD_TESTS": "ON",
-				"ERSLIB_BUILD_CONTRIB": "ON",
-				"ERSLIB_BUILD_DBIO": "ON",
-				"ERSLIB_BUILD_AENGINE": "ON",
-				"ERSLIB_BUILD_EASY_ECS": "ON",
-				"ERSLIB_BUILD_AESCRIPT": "ON"
-			}
-		},
-		{
-			"name": "linux-local-gcc-16",
-			"displayName": "linux-x64-dbg-gcc16",
-			"inherits": "linux-gcc-16",
-			"environment": {
-				"VCPKG_ROOT": "$penv{HOME}/vcpkg"
-			},
-			"cacheVariables": {
-				"ERS_TRACE_VERBOSITY": "2",
-				"ERS_TRACE_MAX_DEPTH": "3",
-				
-				"ERSLIB_BUILD_TESTS": "ON",
-				"ERSLIB_BUILD_CONTRIB": "ON",
-				"ERSLIB_BUILD_DBIO": "ON",
-				"ERSLIB_BUILD_AENGINE": "ON",
-				"ERSLIB_BUILD_EASY_ECS": "ON",
-				"ERSLIB_BUILD_AESCRIPT": "ON"
-			}
-		}
-	]
+                "ERSLIB_BUILD_TESTS": "ON",
+
+                "ERSLIB_BUILD_CONTRIB": "ON",
+                "ERSLIB_BUILD_DBIO": "ON",
+                "ERSLIB_BUILD_AENGINE": "ON",
+                "ERSLIB_BUILD_EASY_ECS": "ON",
+                "ERSLIB_BUILD_AESCRIPT": "ON",
+
+                "ERSLIB_DBIO_OWN_QUERY_STORE": "ON"
+            }
+        }
+    ]
 }

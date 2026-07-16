@@ -3,7 +3,7 @@
 	<s:String x:Key="/Default/Environment/SqlDaemon/SolutionSqlDialect/@EntryValue">PostgreSQL</s:String>
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=89bca98b_002D3570_002D41a4_002D9b5f_002D6c9f26c5e550/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="engine test" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
   &lt;TestAncestor&gt;&#xD;
-    &lt;TestId&gt;Catch::DB94C55F-6B9A-4AAE-80D7-29FD8153E6B5::::engine test&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;Doctest::DB94C55F-6B9A-4AAE-80D7-29FD8153E6B5::::dbio codegen: custom SQL queries load from the query store&lt;/TestId&gt;&#xD;
   &lt;/TestAncestor&gt;&#xD;
 &lt;/SessionState&gt;</s:String>
 	<s:Boolean x:Key="/Default/Housekeeping/Bookmarks/NumberedBookmarks/=Bookmark9/@KeyIndexDefined">True</s:Boolean>

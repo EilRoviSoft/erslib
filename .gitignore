@@ -7,3 +7,4 @@ test/sandbox/personal_sandbox
 
 vcpkg-configuration.json
 CMakeUserPresets.json
+erslib.code-workspace

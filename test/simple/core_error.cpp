@@ -2,6 +2,7 @@
 #include <doctest/doctest.h>
 
 // std
+#include <cmath>
 #include <limits>
 
 // ers

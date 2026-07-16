@@ -13,5 +13,15 @@
     "remarks": [
         { "type": "IDENTITY", "field": "id" },
         { "type": "UNIQUE",   "field": "name" }
+    ],
+
+    "layouts": [
+        {
+            "type": "select",
+            "name": "select_adults",
+            "params": [ { "name": "min_age", "type": "INT" } ],
+            "condition": "age >= $1",
+            "order_by": "age DESC, name"
+        }
     ]
 }

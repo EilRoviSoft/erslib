@@ -31,4 +31,9 @@ namespace dbio {
 
         void add(std::string_view label, std::string_view query);
     };
+
+
+#ifdef ERS_DBIO_GLOBAL_QUERY_STORE
+    extern QueryStore queries;
+#endif
 }

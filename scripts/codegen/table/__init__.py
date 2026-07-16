@@ -131,6 +131,7 @@ def get_precedence(cls):
 class Field:
     to_cpp_type_table = {
         # fundamental types
+
         'BOOLEAN': 'bool',
 
         'INT2': 'int16_t',
@@ -147,14 +148,18 @@ class Field:
 
         'DOUBLE': 'double',
         'FLOAT8': 'double',
+
         
         # just variations of strings
+
         'TEXT': 'std::string',
         'VARCHAR': 'std::string',
         'INET': 'std::string',
         'UUID': 'std::string',
 
+
         # binary data
+        
         'BYTEA': 'pqxx::bytes',
     }
 
@@ -163,21 +168,15 @@ class Field:
         'pqxx::bytes': 'pqxx::bytes_view',
     }
 
-    trivially_copyable_types = {
+    trivial_types = {
         'bool',
         'int16_t', 'int32_t', 'int64_t',
         'uint16_t', 'uint32_t', 'uint64_t',
         'float', 'double',
-        'std::string_view'
+        'std::string_view',
     }
 
-    primitive_types = {
-        'bool',
-        'int16_t', 'int32_t', 'int64_t',
-        'uint16_t', 'uint32_t', 'uint64_t',
-        'float', 'double',
-        'std::string_view'
-    }
+    movable_types = {}
 
     @staticmethod
     def make(data: dict):
@@ -206,8 +205,6 @@ class Field:
         self.type = explicit_type if explicit_type else Field.to_cpp_type_table[self.original_type]
 
         self.flags = flags
-        if self.type not in Field.trivially_copyable_types:
-            self.flags.add('immovable')
 
         self._init_remarks()
 
@@ -268,15 +265,15 @@ class Field:
         type = self.type
         type = Field.to_arg_type_table.get(type, type)
 
-        if type not in Field.primitive_types or 'immovable' in self.flags:
+        if type not in Field.trivial_types and type not in Field.movable_types:
             type = f"const {type}&"
 
         return type
     
-    def assigment_expression(self) -> str:
+    def assignment_expression(self) -> str:
         expr = self.name
 
-        if 'immovable' not in self.flags:
+        if self.type in Field.movable_types:
             expr = f"std::move({expr})"
 
         return expr
@@ -448,9 +445,7 @@ class Table:
                     self.layouts.append(self._make_select_layout(layout, source_dir, reserved))
 
                 case _:
-                    raise ValueError(
-                        f"Unknown layout type '{layout.get('type')}' (layout '{layout.get('name')}')"
-                    )
+                    raise ValueError(f"Unknown layout type '{layout.get('type')}' (layout '{layout.get('name')}')")
 
     def _make_select_layout(self, layout: dict, source_dir, reserved: set[str]) -> Layout:
         name = layout['name']

@@ -45,6 +45,7 @@ def execute(args: argparse.Namespace) -> str:
             config = json.load(file)
 
         config.setdefault('runtime_namespace', args.runtime_namespace)
+        config.setdefault('use_query_store', args.use_query_store)
 
         name = item.name.removesuffix('.g.json')
         relative_dir = item.parent.relative_to(scan_root)

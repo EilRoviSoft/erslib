@@ -22,9 +22,9 @@ namespace dbio {
 
 namespace dbio::fn {
     // Invokes a generated dbio functor against an existing transaction.
-    template<typename TFunc, typename... TArgs>
-    auto eval(pqxx::dbtransaction& tnx, TArgs&&... args) {
-        return TFunc {}(tnx, std::forward<TArgs>(args)...);
+    template<typename Fn, typename... Args>
+    auto eval(pqxx::dbtransaction& tnx, Args&&... args) {
+        return Fn {}(tnx, std::forward<Args>(args)...);
     }
 
 
@@ -32,11 +32,11 @@ namespace dbio::fn {
     // success and aborting on failure. The result type is whatever the functor
     // returns (ers::Result<...> / ers::Status), so its operator bool drives the
     // commit/abort decision.
-    template<typename TFunc, typename... TArgs>
-    auto eval_with_transaction(pqxx::dbtransaction& tnx, std::string_view label, TArgs&&... args) {
+    template<typename Fn, typename... Args>
+    auto eval_with_transaction(pqxx::dbtransaction& tnx, std::string_view label, Args&&... args) {
         pqxx::subtransaction subtnx(tnx, std::string(label));
 
-        auto s = TFunc {}(subtnx, std::forward<TArgs>(args)...);
+        auto s = Fn {}(subtnx, std::forward<Args>(args)...);
 
         if (s)
             subtnx.commit();
