@@ -32,41 +32,51 @@ def _output_path(args: argparse.Namespace, file: GeneratedFile, relative_dir: Pa
             raise ValueError(f"Handling of type '{file.type}' doesn't exist")
 
 
+def _process_descriptor(
+        args: argparse.Namespace,
+        item: Path,
+        scan_root: Path,
+        generated_sources: list[str]
+        ):
+    config: dict
+    with open(item, 'r') as file:
+        config = json.load(file)
+
+    config.setdefault('runtime_namespace', args.runtime_namespace)
+    config.setdefault('use_query_store', args.use_query_store)
+
+    name = item.name.removesuffix('.g.json')
+    relative_dir = item.parent.relative_to(scan_root)
+
+    try:
+        descriptor_type = config.get('type')
+        if descriptor_type not in variants:
+            raise ValueError(f"unknown descriptor type '{descriptor_type}'")
+
+        generator = variants[descriptor_type](name, config, item.parent)
+        generated_files = generator.exec()
+    except Exception as error:
+        raise RuntimeError(f"{item}: {error}") from error
+
+    for generated in generated_files:
+        file_path = _output_path(args, generated, relative_dir, name)
+
+        os.makedirs(os.path.dirname(file_path), exist_ok = True)
+        with open(file_path, 'w') as file:
+            file.write(generated.content)
+
+        if generated.type == "source":
+            generated_sources.append(os.path.abspath(file_path).replace('\\', '/'))
+
+
 def execute(args: argparse.Namespace) -> str:
-    scan_root = Path(args.dir)
     generated_sources: list[str] = []
 
-    for item in scan_root.rglob("*"):
-        if not item.is_file() or not item.name.endswith('.g.json'):
+    schema_root = Path(args.dir)
+    for item in schema_root.rglob("*.g.json"):
+        if not item.is_file():
             continue
 
-        config: dict
-        with open(item, 'r') as file:
-            config = json.load(file)
-
-        config.setdefault('runtime_namespace', args.runtime_namespace)
-        config.setdefault('use_query_store', args.use_query_store)
-
-        name = item.name.removesuffix('.g.json')
-        relative_dir = item.parent.relative_to(scan_root)
-
-        try:
-            if config.get('type') not in variants:
-                raise ValueError(f"unknown descriptor type '{config.get('type')}'")
-
-            generator = variants[config['type']](name, config, item.parent)
-            generated_files = generator.exec()
-        except Exception as error:
-            raise RuntimeError(f"{item}: {error}") from error
-
-        for generated in generated_files:
-            file_path = _output_path(args, generated, relative_dir, name)
-
-            os.makedirs(os.path.dirname(file_path), exist_ok = True)
-            with open(file_path, 'w') as file:
-                file.write(generated.content)
-
-            if generated.type == "source":
-                generated_sources.append(os.path.abspath(file_path).replace('\\', '/'))
+        _process_descriptor(args, item, schema_root, generated_sources)
 
     return ';'.join(generated_sources)

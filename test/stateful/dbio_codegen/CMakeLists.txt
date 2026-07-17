@@ -27,7 +27,7 @@ dbio_generate(
     IMPORT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/schema"
     HPP_DIR    "${CMAKE_CURRENT_BINARY_DIR}/generated/include"
     CPP_DIR    "${CMAKE_CURRENT_BINARY_DIR}/generated/src"
-    QUERY_DIR  "${CMAKE_CURRENT_BINARY_DIR}/query"
+    QUERY_DIR  "${CMAKE_CURRENT_BINARY_DIR}/res/query"
     USE_QUERY_STORE
 )
 

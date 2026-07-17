@@ -13,27 +13,12 @@ def add_codegen_subparser(subparsers):
 
     codegen_parser.add_argument("--cwd", default = os.getcwd(), type = str, dest = "cwd")
 
-    # Input: directory that is recursively scanned for '*.g.json' descriptors.
-    codegen_parser.add_argument("--dir", type = str, required = True, dest = "dir",
-        help = "Directory scanned recursively for '*.g.json' descriptors")
-
-    # Output directories. The descriptor's path relative to '--dir' is preserved
-    # under each output directory.
-    codegen_parser.add_argument("--hpp-dir", type = str, required = True, dest = "hpp_dir",
-        help = "Output directory for generated headers (*.g.hpp)")
-    codegen_parser.add_argument("--cpp-dir", type = str, required = True, dest = "cpp_dir",
-        help = "Output directory for generated sources (*.g.cpp)")
-    codegen_parser.add_argument("--query-dir", type = str, required = True, dest = "query_dir",
-        help = "Output directory for generated SQL queries (*.sql)")
-
-    codegen_parser.add_argument("--runtime-namespace", type = str, default = "dbio",
-        dest = "runtime_namespace",
-        help = "Namespace of the dbio runtime referenced by generated code (default: dbio)")
-
-    codegen_parser.add_argument("--use-query-store", action = "store_true",
-        dest = "use_query_store",
-        help = "Generate data-access code that looks SQL up from dbio::queries at runtime instead of embedding it as a string literal")
-
+    codegen_parser.add_argument("--dir", type = str, required = True, dest = "dir")
+    codegen_parser.add_argument("--hpp-dir", type = str, required = True, dest = "hpp_dir")
+    codegen_parser.add_argument("--cpp-dir", type = str, required = True, dest = "cpp_dir")
+    codegen_parser.add_argument("--query-dir", type = str, required = True, dest = "query_dir")
+    codegen_parser.add_argument("--runtime-namespace", type = str, default = "dbio", dest = "runtime_namespace")
+    codegen_parser.add_argument("--use-query-store", action = "store_true", dest = "use_query_store")
 
 def main():
     parser = argparse.ArgumentParser(prog = "dbio")

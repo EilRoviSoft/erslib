@@ -5,7 +5,11 @@ It reads `*.g.json` descriptors and emits, per descriptor:
 
 - a header (`<name>.g.hpp`) - the entity struct, field/layout enums, `entity_traits` specialization, and the data-access function declarations;
 - a source (`<name>.g.cpp`) - the data-access function definitions;
-- SQL queries (`<name>/<layout>.sql`) - the same statements as standalone files, for migrations / `CREATE TABLE` (loadable via `dbio::QueryStore::load_directory`).
+- SQL queries (`<name>/<layout>.g.sql`) - the same statements as standalone files, for migrations / `CREATE TABLE` (loadable via `dbio::QueryStore::load_directory`).
+
+`--dir`/`IMPORT_DIR` is scanned recursively for every `*.g.json` descriptor, `table`, `enum`, and `queries` alike - there's no restriction on where a given descriptor type has to live, they can all sit side by side in the same tree. `--query-dir`/`QUERY_DIR` is purely an output directory (like `--hpp-dir`/`--cpp-dir`): every descriptor's generated SQL lands there, grouped by descriptor name.
+
+Generated SQL files always use the **`.g.sql`** extension, never plain `.sql`, so they're never mistaken for hand-authored `.sql` files (e.g. `sql_file` references) that might live nearby. `dbio::QueryStore::load_directory` only loads `*.g.sql` files for the same reason.
 
 The generated code targets the `dbio` runtime (`#include <erslib/dbio.hpp>`).
 
@@ -20,16 +24,16 @@ Each data-access function takes an open `pqxx::dbtransaction&` and returns `ers:
 auto status = app::user::save(dbio::transaction_tag, tnx, entity);
 ```
 
-The standalone `.sql` files carry the exact same statement text (rendered once, so they can never drift from the embedded literals) and are emitted for migrations and schema setup; load them via `dbio::QueryStore::load_directory` under labels like `sql.user.save`.
+The standalone `.g.sql` files carry the exact same statement text (rendered once, so they can never drift from the embedded literals) and are emitted for migrations and schema setup; load them via `dbio::QueryStore::load_directory` under labels like `sql.user.save`.
 
 ## CLI
 
 ```sh
 python scripts codegen \
-    --dir               <input-dir>     # scanned recursively for *.g.json
+    --dir               <input-dir>     # scanned recursively for *.g.json (table/enum/queries alike)
     --hpp-dir           <out-include>   # generated headers (mirrors --dir layout)
     --cpp-dir           <out-src>       # generated sources (mirrors --dir layout)
-    --query-dir         <out-query>     # generated *.sql, grouped by entity name
+    --query-dir         <out-query>     # generated *.g.sql, grouped by descriptor name (output only)
     --runtime-namespace <ns>            # dbio runtime namespace (default: dbio)
     --use-query-store                   # generate dbio::queries lookups instead of embedded SQL literals (see below)
 ```
@@ -52,6 +56,8 @@ dbio_generate(
 ```
 
 With `TARGET`, the generated sources are added to it, `HPP_DIR` is added to its include path, and it is linked against `dbio`. Generation runs at configure time, so re-run CMake after adding or removing descriptors.
+
+`IMPORT_DIR` is scanned for every descriptor type - `table`, `enum`, and `queries` can all live under it, mixed together. `QUERY_DIR` is output-only and can safely be a build directory; it receives every descriptor's generated SQL (as `*.g.sql`), grouped by descriptor name.
 
 Pass `USE_QUERY_STORE` to switch the generated code from embedded SQL literals to `dbio::QueryStore` lookups (see below); it requires `erslib::dbio` to have been built with `ERSLIB_DBIO_OWN_QUERY_STORE=ON`, otherwise `dbio_generate()` fails at configure time.
 
@@ -176,11 +182,11 @@ For queries that are not a projection of a single table (joins, aggregates, bare
 - **`result_name`** - optional struct name (default: the query name in CamelCase, e.g. `age_histogram` -> `AgeHistogram`).
 - **`sql` / `sql_file`** - exactly one, same as raw-mode layouts.
 
-The `namespace` places the result structs in `<namespace>` and the functions in `<namespace>::<descriptor-name>` (e.g. `app::AgeHistogram` and `app::stats::age_histogram`). Standalone `.sql` files are emitted under `sql.<descriptor>.<query>` for the query store, exactly like table layouts.
+The `namespace` places the result structs in `<namespace>` and the functions in `<namespace>::<descriptor-name>` (e.g. `app::AgeHistogram` and `app::stats::age_histogram`). Standalone `.g.sql` files are emitted under `sql.<descriptor>.<query>` for the query store, exactly like table layouts.
 
 ## Embedded SQL vs. `dbio::QueryStore` (`--use-query-store`)
 
-By default every generated data-access function embeds its SQL as a `static constexpr std::string_view` literal in the `.cpp` file. Passing **`--use-query-store`** to the generator changes what gets emitted: the literal is omitted entirely and the function instead reads its SQL from the global `dbio::queries` store, by the same label the standalone `.sql` files use (e.g. `sql.user.save`, `sql.stats.age_histogram`):
+By default every generated data-access function embeds its SQL as a `static constexpr std::string_view` literal in the `.cpp` file. Passing **`--use-query-store`** to the generator changes what gets emitted: the literal is omitted entirely and the function instead reads its SQL from the global `dbio::queries` store, by the same label the standalone `.g.sql` files use (e.g. `sql.user.save`, `sql.stats.age_histogram`):
 
 ```cpp
 // --use-query-store off (default)
@@ -199,11 +205,11 @@ This is a **codegen-time** decision, not a compile-time `#ifdef` - the generator
 
 ```cmake
 dbio_generate(
-    TARGET          my_app
-    IMPORT_DIR      "${CMAKE_CURRENT_SOURCE_DIR}/src"
-    HPP_DIR         "${CMAKE_CURRENT_BINARY_DIR}/generated/include"
-    CPP_DIR         "${CMAKE_CURRENT_BINARY_DIR}/generated/src"
-    QUERY_DIR       "${CMAKE_CURRENT_BINARY_DIR}/generated/query"
+    TARGET     my_app
+    IMPORT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src"
+    HPP_DIR    "${CMAKE_CURRENT_BINARY_DIR}/generated/include"
+    CPP_DIR    "${CMAKE_CURRENT_BINARY_DIR}/generated/src"
+    QUERY_DIR  "${CMAKE_CURRENT_BINARY_DIR}/res/query"
     USE_QUERY_STORE
 )
 ```

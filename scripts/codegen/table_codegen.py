@@ -100,7 +100,7 @@ class TableCodegen(BaseCodegen):
         queries: list[GeneratedFile] = list()
 
         queries.append(GeneratedFile(
-            filename = "create.sql",
+            filename = "create.g.sql",
             type = "sql",
             content = rendered["create"]
         ))
@@ -108,7 +108,7 @@ class TableCodegen(BaseCodegen):
         for layout in self.table.layouts:
             if layout.type:
                 queries.append(GeneratedFile(
-                    filename = layout.name + ".sql",
+                    filename = layout.name + ".g.sql",
                     type = "sql",
                     content = rendered[layout.name]
                 ))

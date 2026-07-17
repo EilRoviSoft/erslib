@@ -64,7 +64,7 @@ bool {{ namespace }}::{{ query.struct_name }}::init(const pqxx::row& row) {
 {% endif %}
 }
 ers::Result<pqxx::result> {{ namespace }}::{{ name }}::{{ query.name }}_fn::_dbio(pqxx::dbtransaction& tnx{{ fn_params(query) }}) ERS_DBIO_TRY_EVAL {
-{% set sql_query = "dbio::queries[\"sql.%s.%s\"]" % (name, query.name) if use_query_store else "sql_%s" % (query.name) %}
+{% set sql_query = "dbio::queries[\"%s.%s\"]" % (name, query.name) if use_query_store else "sql_%s" % (query.name) %}
     return tnx.exec({{ sql_query }}{% if query.params %}, pqxx::params {
 {% for param in query.params %}
         {{ param.name }}{{ "," if not loop.last else "" }}

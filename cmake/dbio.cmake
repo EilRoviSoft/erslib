@@ -23,10 +23,6 @@ endif()
 #   [WORKING_DIRECTORY <dir>]
 #   [USE_QUERY_STORE]
 # )
-#
-# Generation runs at configure time, so the set of generated sources is known
-# when the target is built. Re-run CMake configuration after adding/removing
-# descriptors.
 function(dbio_generate)
     set(options USE_QUERY_STORE)
     set(one_value_args TARGET OUT_VAR IMPORT_DIR HPP_DIR CPP_DIR QUERY_DIR NAMESPACE WORKING_DIRECTORY)
@@ -60,14 +56,11 @@ function(dbio_generate)
 
     find_package(Python3 3.14 COMPONENTS Interpreter REQUIRED)
 
-    # Re-run configuration (and therefore regeneration) whenever a descriptor or a
-    # referenced .sql file under IMPORT_DIR is added, removed, or edited. Generation
-    # happens here at configure time via execute_process, so without this the build
-    # would keep using stale generated sources.
     get_filename_component(_dbio_import_abs "${ARG_IMPORT_DIR}" ABSOLUTE BASE_DIR "${ARG_WORKING_DIRECTORY}")
     file(GLOB_RECURSE _dbio_gen_inputs CONFIGURE_DEPENDS
         "${_dbio_import_abs}/*.g.json"
         "${_dbio_import_abs}/*.sql")
+
     if(_dbio_gen_inputs)
         set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${_dbio_gen_inputs})
     endif()

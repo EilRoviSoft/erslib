@@ -14,7 +14,7 @@
 // ers
 #include <erslib/dbio.hpp>
 
-// generated (from schema/*.g.json via dbio_generate in CMakeLists.txt)
+// generated
 #include "stats.g.hpp"
 #include "user.g.hpp"
 
@@ -25,7 +25,7 @@ namespace fs = std::filesystem;
 TEST_CASE("dbio codegen: generated SQL loads from the query store") {
     dbio::QueryStore queries;
 
-    const auto loaded = queries.load_directory(fs::path(TEST_CWD) / "query");
+    const auto loaded = queries.load_directory(fs::path(TEST_CWD) / "res/query");
     REQUIRE(loaded > 0);
 
     CHECK(queries.get("sql.user.create").has_value());
@@ -71,7 +71,7 @@ TEST_CASE("dbio codegen: generated make_config") {
 
 
 TEST_CASE("dbio codegen: custom SQL queries load from the query store") {
-    const auto loaded = dbio::queries.load_directory(fs::path(TEST_CWD) / "query");
+    const auto loaded = dbio::queries.load_directory(fs::path(TEST_CWD) / "res/query");
     REQUIRE(loaded > 0);
 
     CHECK(dbio::queries.get("sql.user.select_adults").has_value());

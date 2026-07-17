@@ -44,7 +44,7 @@ class EnumCodegen(BaseCodegen):
         env.filters['to_camel_case'] = to_camel_case
 
         return [GeneratedFile(
-            filename = self.name + ".sql",
+            filename = self.name + ".g.sql",
             type = "sql",
             content = templates["create_enum"].render(**self._default_context())
         )]

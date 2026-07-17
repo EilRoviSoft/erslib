@@ -71,7 +71,7 @@ class QueriesCodegen(BaseCodegen):
 
         for query in self.queries:
             result.append(GeneratedFile(
-                filename = query.name + ".sql",
+                filename = query.name + ".g.sql",
                 type = "sql",
                 content = query.sql + '\n'
             ))

@@ -5,6 +5,9 @@ out
 
 test/sandbox/personal_sandbox
 
+vcpkg_installed
+
 vcpkg-configuration.json
 CMakeUserPresets.json
 erslib.code-workspace
+Folder.DotSettings.user

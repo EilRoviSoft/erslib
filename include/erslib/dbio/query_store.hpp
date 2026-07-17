@@ -16,7 +16,7 @@
 
 namespace dbio {
     // Thread-safe registry mapping query labels to their SQL text.
-    // Generated code looks queries up by label, e.g. queries["sql.user.save"].
+    // Generated code looks queries up by label, e.g. queries["user.save"].
     class ERSLIB_EXPORT QueryStore : public ers::thread_safe::Map<internal::kv_container_type> {
     public:
         // Member functions
@@ -26,7 +26,8 @@ namespace dbio {
 
         // Modifiers
 
-        // "sql.<relative/path/without-ext>" with '/' replaced by '.'.
+        // Recursively loads every "*.g.sql" file under root (hand-authored ".sql" files are ignored)
+        // as "sql.<relative/path/without-ext>" with '/' replaced by '.'.
         size_t load_directory(const std::filesystem::path& root);
 
         void add(std::string_view label, std::string_view query);

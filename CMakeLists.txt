@@ -33,7 +33,7 @@ set_if_undefined(ERSLIB_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/erslib"
     CACHE STRING "Install path for erslib package-related CMake files"
 )
 
-option(ERSLIB_DBIO_OWN_QUERY_STORE "Init own 'QueryStore queries' for sql." OFF)
+option(ERSLIB_DBIO_OWN_QUERY_STORE "Init own 'QueryStore queries' for sql" OFF)
 
 if(NOT DEFINED CMAKE_BUILD_TYPE AND NOT DEFINED CMAKE_CONFIGURATION_TYPES)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
@@ -75,7 +75,7 @@ endfunction()
 
 
 function(erslib_optional_package target_name package_name dep_target_name compile_definition)
-    find_package(${package_name} CONFIG QUIET)
+    find_package(${package_name} CONFIG)
 
     if(TARGET ${dep_target_name})
         message(STATUS "erslib: found optional dependency ${package_name} for ${target_name}")
@@ -395,8 +395,6 @@ if(ERSLIB_INSTALL AND NOT CMAKE_SKIP_INSTALL_RULES)
         DESTINATION "${ERSLIB_INSTALL_CMAKEDIR}"
     )
 
-    # dbio codegen integration: the dbio_generate() function plus the Python
-    # codegen package it drives, so downstream find_package(erslib) can generate.
     install(FILES
         "${CMAKE_CURRENT_SOURCE_DIR}/cmake/dbio.cmake"
         COMPONENT erslib_dev

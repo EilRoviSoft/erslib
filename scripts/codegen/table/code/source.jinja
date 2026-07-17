@@ -59,7 +59,7 @@ ers::Result<{{ namespace }}::{{ name}}::Generator> {{ namespace }}::{{ name }}::
     return Generator(*content, {{ fn.to_camel_case(name) }}::{{ fn.to_camel_case(layout.name) }});
 }
 ers::Result<pqxx::result> {{ namespace }}::{{ name }}::{{ layout.name }}_fn::_dbio(pqxx::dbtransaction& tnx{{ fn_params(layout) }}) ERS_DBIO_TRY_EVAL {
-{% set sql_query = "dbio::queries[\"sql.%s.%s\"]" % (name, layout.name) if use_query_store else "sql_%s" % (layout.name) %}
+{% set sql_query = "dbio::queries[\"%s.%s\"]" % (name, layout.name) if use_query_store else "sql_%s" % (layout.name) %}
     return tnx.exec({{ sql_query }}{% if layout.params %}, pqxx::params {
 {% for p in layout.params %}
         {{ p.name }}{{ "," if not loop.last else "" }}
@@ -79,7 +79,7 @@ ers::Status {{ namespace }}::{{ name }}::{{ layout.name }}_fn::operator()(pqxx::
     return ers::ok;
 }
 ers::Result<pqxx::result> {{ namespace }}::{{ name }}::{{ layout.name }}_fn::_dbio(pqxx::dbtransaction& tnx{{ fn_params(layout) }}) ERS_DBIO_TRY_EVAL {
-{% set sql_query = "dbio::queries[\"sql.%s.%s\"]" % (name, layout.name) if use_query_store else "sql_%s" % (layout.name) %}
+{% set sql_query = "dbio::queries[\"%s.%s\"]" % (name, layout.name) if use_query_store else "sql_%s" % (layout.name) %}
 {% set binds = layout['put'] + layout['condition'] if 'condition' in layout else layout['put'] %}
     return tnx.exec({{ sql_query }}{% if binds %}, pqxx::params {
 {% for field in binds %}
