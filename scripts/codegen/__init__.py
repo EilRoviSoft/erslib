@@ -35,7 +35,6 @@ def _output_path(args: argparse.Namespace, file: GeneratedFile, relative_dir: Pa
 def _process_descriptor(
         args: argparse.Namespace,
         item: Path,
-        scan_root: Path,
         generated_sources: list[str]
         ):
     config: dict
@@ -43,17 +42,16 @@ def _process_descriptor(
         config = json.load(file)
 
     config.setdefault('runtime_namespace', args.runtime_namespace)
-    config.setdefault('use_query_store', args.use_query_store)
 
     name = item.name.removesuffix('.g.json')
-    relative_dir = item.parent.relative_to(scan_root)
+    relative_dir = item.parent.relative_to(args.dir)
 
     try:
         descriptor_type = config.get('type')
         if descriptor_type not in variants:
             raise ValueError(f"unknown descriptor type '{descriptor_type}'")
 
-        generator = variants[descriptor_type](name, config, item.parent)
+        generator = variants[descriptor_type](name, config, Path(args.query_dir))
         generated_files = generator.exec()
     except Exception as error:
         raise RuntimeError(f"{item}: {error}") from error
@@ -72,11 +70,10 @@ def _process_descriptor(
 def execute(args: argparse.Namespace) -> str:
     generated_sources: list[str] = []
 
-    schema_root = Path(args.dir)
-    for item in schema_root.rglob("*.g.json"):
+    for item in Path(args.dir).rglob("*.g.json"):
         if not item.is_file():
             continue
 
-        _process_descriptor(args, item, schema_root, generated_sources)
+        _process_descriptor(args, item, generated_sources)
 
     return ';'.join(generated_sources)

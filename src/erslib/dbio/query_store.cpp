@@ -58,7 +58,7 @@ void dbio::QueryStore::add(std::string_view label, std::string_view query) {
 }
 
 
-#if defined(ERS_DBIO_GLOBAL_QUERY_STORE) && defined(ERS_DBIO_GLOBAL_QUERY_STORE_INIT)
+#ifdef ERS_DBIO_GLOBAL_QUERY_STORE_INIT
 namespace {
     auto make_queries() try {
         dbio::QueryStore result;

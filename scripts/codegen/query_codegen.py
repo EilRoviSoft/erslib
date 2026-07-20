@@ -1,17 +1,17 @@
+from pathlib import Path
+
+
 from .base_codegen import BaseCodegen, GeneratedFile
 from .util import load_templates, to_camel_case
 from .query import parse_queries, Query
 
 
 class QueriesCodegen(BaseCodegen):
-    def __init__(self, name: str, data: dict, source_dir):
+    def __init__(self, name: str, data: dict, search_dir: Path):
         self.name = name
         self.namespace = data['namespace']
         self.runtime_namespace: str = data.get('runtime_namespace', 'dbio')
-        self.use_query_store: bool = data.get('use_query_store', False)
-
-        self.queries: list[Query] = parse_queries(data, source_dir)
-
+        self.queries: list[Query] = parse_queries(data, search_dir)
         self.include_groups = QueriesCodegen._default_include_groups()
         self._resolve_includes()
 
@@ -67,19 +67,6 @@ class QueriesCodegen(BaseCodegen):
         ]
 
     def exec(self) -> list[GeneratedFile]:
-        result: list[GeneratedFile] = list()
-
-        for query in self.queries:
-            result.append(GeneratedFile(
-                filename = query.name + ".g.sql",
-                type = "sql",
-                content = query.sql + '\n'
-            ))
-
-        result.extend(self._generate_code())
-        return result
-
-    def _generate_code(self) -> list[GeneratedFile]:
         env, templates = load_templates("query/code")
         env.filters['to_camel_case'] = to_camel_case
 
@@ -89,7 +76,6 @@ class QueriesCodegen(BaseCodegen):
             "rt": self.runtime_namespace,
             "queries": self.queries,
             "include_groups": self.include_groups,
-            "use_query_store": self.use_query_store,
             "fn": {
                 "len": len,
                 "to_camel_case": to_camel_case

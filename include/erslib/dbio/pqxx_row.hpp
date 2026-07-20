@@ -8,18 +8,17 @@
 
 
 namespace dbio {
-    // Sequential reader over a pqxx::row.
+    // Sequential reader over a pqxx::row_ref.
     // Keeps an internal cursor so generated entity code can pull fields one after another in declaration order.
-    // Holds a reference to the wrapped row, so it can only live as long as the row.
     class PqxxRow {
     public:
-        using size_type = pqxx::row::size_type;
+        using size_type = pqxx::row_ref::size_type;
 
 
         // Member functions
 
-        explicit PqxxRow(const pqxx::row& r) :
-            m_row(&r) {
+        explicit PqxxRow(pqxx::row_ref row) :
+            m_row(row) {
         }
 
 
@@ -31,7 +30,7 @@ namespace dbio {
 
         [[nodiscard]]
         bool has_next(size_type amount = 1) const {
-            return m_index + amount <= m_row->size();
+            return m_index + amount <= m_row.size();
         }
 
         template<typename T = std::string_view>
@@ -76,11 +75,11 @@ namespace dbio {
 
     protected:
         size_type m_index = 0;
-        const pqxx::row* m_row;
+        pqxx::row_ref m_row;
 
         template<typename T>
         T get() {
-            return (*m_row)[m_index].template as<T>();
+            return m_row[m_index].template as<T>();
         }
     };
 

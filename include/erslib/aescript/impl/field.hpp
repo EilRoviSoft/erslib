@@ -46,13 +46,6 @@ namespace aescript {
         void add(ParserPtr ptr);
 
 
-        // Verifiers
-
-        template<typename... Args>
-        Field& with_types() const {
-        }
-
-
         // Executors
 
         [[nodiscard]]

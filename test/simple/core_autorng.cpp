@@ -70,10 +70,10 @@ TEST_CASE("testing thread_safe map") {
         c.set(it);
 
     SUBCASE("intervaled output") {
-        auto print = [&c, &vals](size_t i) mutable {
+        auto print = [&c, &vals]([[maybe_unused]] size_t i) mutable {
             //MESSAGE("\niteration {}:\n", i);
             for (auto it : vals) {
-                size_t v = *c[it].get();
+                [[maybe_unused]] size_t v = *c[it].get();
                 //MESSAGE("{:3}: {}\n", it, v);
             }
         };

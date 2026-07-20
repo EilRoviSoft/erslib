@@ -14,6 +14,7 @@ target_compile_definitions(test_stateful_dbio_codegen
         DOCTEST_CONFIG_USE_STD_HEADERS
         ERS_DBIO_SAFE
         TEST_CWD="${CMAKE_CURRENT_BINARY_DIR}"
+        TEST_QUERY_DIR="${CMAKE_CURRENT_SOURCE_DIR}/query"
 )
 
 target_link_libraries(test_stateful_dbio_codegen
@@ -27,8 +28,16 @@ dbio_generate(
     IMPORT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/schema"
     HPP_DIR    "${CMAKE_CURRENT_BINARY_DIR}/generated/include"
     CPP_DIR    "${CMAKE_CURRENT_BINARY_DIR}/generated/src"
-    QUERY_DIR  "${CMAKE_CURRENT_BINARY_DIR}/res/query"
+    QUERY_DIR  "${CMAKE_CURRENT_BINARY_DIR}/query"
     USE_QUERY_STORE
+)
+
+target_include_directories(test_stateful_dbio_codegen
+    PUBLIC
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>"
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/src>"
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/generated>"
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/generated>"
 )
 
 add_test(NAME test_stateful_dbio_codegen COMMAND test_stateful_dbio_codegen)

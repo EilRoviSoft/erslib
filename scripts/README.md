@@ -7,9 +7,9 @@ It reads `*.g.json` descriptors and emits, per descriptor:
 - a source (`<name>.g.cpp`) - the data-access function definitions;
 - SQL queries (`<name>/<layout>.g.sql`) - the same statements as standalone files, for migrations / `CREATE TABLE` (loadable via `dbio::QueryStore::load_directory`).
 
-`--dir`/`IMPORT_DIR` is scanned recursively for every `*.g.json` descriptor, `table`, `enum`, and `queries` alike - there's no restriction on where a given descriptor type has to live, they can all sit side by side in the same tree. `--query-dir`/`QUERY_DIR` is purely an output directory (like `--hpp-dir`/`--cpp-dir`): every descriptor's generated SQL lands there, grouped by descriptor name.
+`--dir`/`IMPORT_DIR` and `--query-dir`/`QUERY_DIR` are both scanned recursively for `*.g.json` descriptors of any type (`table`, `enum`, `queries`) - a descriptor can live under either, there's no restriction on which type goes where. `--query-dir`/`QUERY_DIR` additionally doubles as output: every descriptor's generated SQL is written there, grouped by descriptor name. In practice, `table`/`enum` descriptors usually live under `--dir` and `queries` descriptors (especially ones with `sql_file` references) are often kept under `--query-dir` for organization, but that's a convention, not a requirement.
 
-Generated SQL files always use the **`.g.sql`** extension, never plain `.sql`, so they're never mistaken for hand-authored `.sql` files (e.g. `sql_file` references) that might live nearby. `dbio::QueryStore::load_directory` only loads `*.g.sql` files for the same reason.
+Generated SQL files always use the **`.g.sql`** extension, never plain `.sql` - that's what lets `--query-dir`/`QUERY_DIR` safely serve as both input and output: hand-authored `.sql` files (e.g. `sql_file` references) can live in the same directory tree without ever being confused for, or overwritten by, generated output. `dbio::QueryStore::load_directory` only loads `*.g.sql` files for exactly this reason.
 
 The generated code targets the `dbio` runtime (`#include <erslib/dbio.hpp>`).
 
@@ -30,12 +30,12 @@ The standalone `.g.sql` files carry the exact same statement text (rendered once
 
 ```sh
 python scripts codegen \
-    --dir               <input-dir>     # scanned recursively for *.g.json (table/enum/queries alike)
-    --hpp-dir           <out-include>   # generated headers (mirrors --dir layout)
-    --cpp-dir           <out-src>       # generated sources (mirrors --dir layout)
-    --query-dir         <out-query>     # generated *.g.sql, grouped by descriptor name (output only)
-    --runtime-namespace <ns>            # dbio runtime namespace (default: dbio)
-    --use-query-store                   # generate dbio::queries lookups instead of embedded SQL literals (see below)
+    --dir
+    --hpp-dir
+    --cpp-dir
+    --query-dir
+    --runtime-namespace
+    --use-query-store
 ```
 
 ## CMake
@@ -50,14 +50,14 @@ dbio_generate(
     IMPORT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src"
     HPP_DIR    "${CMAKE_CURRENT_BINARY_DIR}/generated/include"
     CPP_DIR    "${CMAKE_CURRENT_BINARY_DIR}/generated/src"
-    QUERY_DIR  "${CMAKE_CURRENT_BINARY_DIR}/generated/query"
+    QUERY_DIR  "${CMAKE_CURRENT_SOURCE_DIR}/src/query"
     # OUT_VAR   GENERATED_SOURCES  # optional: receive the .cpp list
 )
 ```
 
 With `TARGET`, the generated sources are added to it, `HPP_DIR` is added to its include path, and it is linked against `dbio`. Generation runs at configure time, so re-run CMake after adding or removing descriptors.
 
-`IMPORT_DIR` is scanned for every descriptor type - `table`, `enum`, and `queries` can all live under it, mixed together. `QUERY_DIR` is output-only and can safely be a build directory; it receives every descriptor's generated SQL (as `*.g.sql`), grouped by descriptor name.
+`IMPORT_DIR` and `QUERY_DIR` are both scanned for descriptors of any type - `table`, `enum`, and `queries` can live under either, mixed freely. `QUERY_DIR` must be a real directory (not just a build path) since it's scanned as input too; it also receives every descriptor's generated SQL (as `*.g.sql`), grouped by descriptor name.
 
 Pass `USE_QUERY_STORE` to switch the generated code from embedded SQL literals to `dbio::QueryStore` lookups (see below); it requires `erslib::dbio` to have been built with `ERSLIB_DBIO_OWN_QUERY_STORE=ON`, otherwise `dbio_generate()` fails at configure time.
 
@@ -209,7 +209,7 @@ dbio_generate(
     IMPORT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src"
     HPP_DIR    "${CMAKE_CURRENT_BINARY_DIR}/generated/include"
     CPP_DIR    "${CMAKE_CURRENT_BINARY_DIR}/generated/src"
-    QUERY_DIR  "${CMAKE_CURRENT_BINARY_DIR}/res/query"
+    QUERY_DIR  "${CMAKE_CURRENT_SOURCE_DIR}/res/query"
     USE_QUERY_STORE
 )
 ```

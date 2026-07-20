@@ -1,9 +1,12 @@
+from pathlib import Path
+
+
 from .base_codegen import BaseCodegen, GeneratedFile
 from .util import load_templates, to_camel_case
 
 
 class EnumCodegen(BaseCodegen):
-    def __init__(self, name: str, data: dict, source_dir = None):
+    def __init__(self, name: str, data: dict, search_dir: Path):
         self.name = name
         self.namespace = data['namespace']
 

@@ -1,4 +1,6 @@
 import os
+from pathlib import Path
+
 
 from .base_codegen import BaseCodegen, GeneratedFile
 from .util import load_templates, to_camel_case
@@ -6,13 +8,12 @@ from .table import Table, Field, PrimaryKey, IdentityRemark, StatefulRemark
 
 
 class TableCodegen(BaseCodegen):
-    def __init__(self, name: str, data: dict, source_dir):
+    def __init__(self, name: str, data: dict, search_dir: Path):
         self.name = name
         self.namespace = data['namespace']
         self.table_name = data.get('table_name', self.name + 's')
-        self.use_query_store: bool = data.get('use_query_store', False)
 
-        self.table = Table(data, source_dir)
+        self.table = Table(data, search_dir)
 
         self.include_groups = TableCodegen._default_include_groups()
         self._resolve_includes()
@@ -144,8 +145,7 @@ class TableCodegen(BaseCodegen):
             "name": self.name,
             "namespace": self.namespace,
             "include_groups": self.include_groups,
-            "queries": queries,
-            "use_query_store": self.use_query_store
+            "queries": queries
         })
 
         header = GeneratedFile(

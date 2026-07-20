@@ -1,5 +1,5 @@
-{% macro fn_params(layout) %}{% if layout.is_bulk() %}{% for p in layout.params %}, {{ p.arg_type() }} {{ p.name }}{% endfor %}{% else %}, {{ fn.to_camel_case(name) }}& entity{% endif %}{% endmacro %}
-{% macro ret(layout) %}{% if layout.is_bulk() %}ers::Result<Generator>{% else %}ers::Status{% endif %}{% endmacro %}
+{% macro fn_params(layout) %}{% if layout.is_bulk() %}{% for param in layout.params %}, {{ param.arg_type() }} {{ param.name }}{% endfor %}{% else %}, {{ fn.to_camel_case(name) }}& entity{% endif %}{% endmacro %}
+{% macro ret(layout) %}{% if layout.is_bulk() %}ers::Result<{{ fn.to_camel_case(name) }}Generator>{% else %}ers::Status{% endif %}{% endmacro %}
 #pragma once
 
 {% for name, type in include_groups %}
@@ -110,9 +110,9 @@ namespace {{ namespace }} {
 
         {{ fn.to_camel_case(name) }}() = default;
         {{ fn.to_camel_case(name) }}({{ fn.to_camel_case(name) }}Values values);
-        explicit {{ fn.to_camel_case(name) }}(const pqxx::row& row, const {{ fn.to_camel_case(name) }}Config& config = {{ name }}::make_config<dbio::In>(All));
+        explicit {{ fn.to_camel_case(name) }}(pqxx::row_ref row, const {{ fn.to_camel_case(name) }}Config& config = {{ name }}::make_config<dbio::In>(All));
 
-        bool init(const pqxx::row& row, const {{ fn.to_camel_case(name) }}Config& config = {{ name }}::make_config<dbio::In>(All));
+        bool init(pqxx::row_ref row, const {{ fn.to_camel_case(name) }}Config& config = {{ name }}::make_config<dbio::In>(All));
     };
 }
 
@@ -131,23 +131,25 @@ struct dbio::entity_traits<{{ namespace }}::{{ fn.to_camel_case(name) }}> {
 
 // Database interactions
 
-namespace {{ namespace }}::{{ name }} {
-    using Generator = dbio::EntityGenerator<{{ fn.to_camel_case(name) }}>;
 
-
-{% for layout in table.layouts if layout.type %}
-    struct ERSLIB_EXPORT {{ layout.name }}_fn {
-        static {{ ret(layout) }} operator()(pqxx::dbtransaction& tnx{{ fn_params(layout) }});
-
-    private:
-        static ers::Result<pqxx::result> _dbio(pqxx::dbtransaction& tnx{{ fn_params(layout) }});
-    };
-{{ "\n" if not loop.last else "" }}{% endfor %}
+namespace {{ namespace }} {
+    using {{ fn.to_camel_case(name) }}Generator = dbio::EntityGenerator<{{ fn.to_camel_case(name) }}>;
 }
 
+
 namespace {{ namespace }}::{{ name }} {
 {% for layout in table.layouts if layout.type %}
-    {{ ret(layout) }} ERSLIB_EXPORT {{ layout.name }}(pqxx::dbtransaction& tnx{{ fn_params(layout) }});
-    {{ ret(layout) }} ERSLIB_EXPORT {{ layout.name }}(dbio::tag::transaction_t, pqxx::dbtransaction& tnx{{ fn_params(layout) }});
-{{ "\n" if not loop.last else "" }}{% endfor %}
+    struct ERSLIB_EXPORT {{ layout.name }}_fn {
+        static constexpr std::string_view label = "{{ fn.to_camel_case(name) }}/{{ fn.to_camel_case(layout.name) }}";
+
+        static {{ ret(layout) }} operator()(pqxx::dbtransaction& tx{{ fn_params(layout) }});
+        static {{ ret(layout) }} operator()(dbio::tag::transaction_t, pqxx::dbtransaction& tx{{ fn_params(layout) }});
+
+
+    private:
+        static ers::Result<pqxx::result> _exec(pqxx::dbtransaction& tx{{ fn_params(layout) }});
+        static {{ ret(layout) }} _process(const pqxx::result& content{% if not layout.is_bulk() %}, {{ fn.to_camel_case(name) }}& entity{% endif %});
+    };
+    static constexpr {{ layout.name }}_fn {{ layout.name }};
+{{ "\n\n" if not loop.last else "" }}{% endfor %}
 }

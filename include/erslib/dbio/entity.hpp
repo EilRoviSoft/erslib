@@ -126,7 +126,7 @@ namespace dbio {
 
 namespace dbio {
     template<typename T>
-    concept RowConstructible = std::constructible_from<T, const pqxx::row&>;
+    concept RowConstructible = std::constructible_from<T, pqxx::row_ref>;
 
     // Owning lazy view over a pqxx::result that materializes one lightweight row struct per row.
     // Unlike EntityGenerator it needs no entity_traits:

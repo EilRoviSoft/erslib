@@ -34,7 +34,5 @@ namespace dbio {
     };
 
 
-#ifdef ERS_DBIO_GLOBAL_QUERY_STORE
     extern QueryStore queries;
-#endif
 }

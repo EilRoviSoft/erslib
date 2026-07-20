@@ -21,10 +21,8 @@ endif()
 #   [OUT_VAR   <var>]
 #   [NAMESPACE <ns>]
 #   [WORKING_DIRECTORY <dir>]
-#   [USE_QUERY_STORE]
 # )
 function(dbio_generate)
-    set(options USE_QUERY_STORE)
     set(one_value_args TARGET OUT_VAR IMPORT_DIR HPP_DIR CPP_DIR QUERY_DIR NAMESPACE WORKING_DIRECTORY)
     set(multi_value_args "")
     cmake_parse_arguments(ARG "${options}" "${one_value_args}" "${multi_value_args}" ${ARGN})
@@ -34,12 +32,6 @@ function(dbio_generate)
             message(FATAL_ERROR "dbio_generate: ${required} is required")
         endif()
     endforeach()
-
-    if(ARG_USE_QUERY_STORE AND NOT ERSLIB_DBIO_OWN_QUERY_STORE)
-        message(FATAL_ERROR "dbio_generate: USE_QUERY_STORE requires erslib::dbio to be built "
-            "with ERSLIB_DBIO_OWN_QUERY_STORE=ON (otherwise dbio::queries does not exist to "
-            "look queries up from)")
-    endif()
 
     if(NOT ARG_NAMESPACE)
         set(ARG_NAMESPACE "dbio")
@@ -61,6 +53,15 @@ function(dbio_generate)
         "${_dbio_import_abs}/*.g.json"
         "${_dbio_import_abs}/*.sql")
 
+    get_filename_component(_dbio_query_abs "${ARG_QUERY_DIR}" ABSOLUTE BASE_DIR "${ARG_WORKING_DIRECTORY}")
+    file(GLOB_RECURSE _dbio_query_gen_inputs CONFIGURE_DEPENDS
+        "${_dbio_query_abs}/*.g.json"
+        "${_dbio_query_abs}/*.sql")
+    if(_dbio_query_gen_inputs)
+        list(FILTER _dbio_query_gen_inputs EXCLUDE REGEX "\\.g\\.sql$")
+        list(APPEND _dbio_gen_inputs ${_dbio_query_gen_inputs})
+    endif()
+
     if(_dbio_gen_inputs)
         set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${_dbio_gen_inputs})
     endif()
@@ -68,9 +69,6 @@ function(dbio_generate)
     message(STATUS "dbio_generate: generating from '${ARG_IMPORT_DIR}' (namespace ${ARG_NAMESPACE})")
 
     set(_dbio_extra_args "")
-    if(ARG_USE_QUERY_STORE)
-        list(APPEND _dbio_extra_args --use-query-store)
-    endif()
 
     execute_process(
         WORKING_DIRECTORY "${ARG_WORKING_DIRECTORY}"

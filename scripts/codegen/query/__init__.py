@@ -1,4 +1,7 @@
-from ..util import resolve_sql, to_camel_case
+from pathlib import Path
+
+
+from ..util import to_camel_case
 from ..table import Field
 
 
@@ -16,8 +19,8 @@ def _make_field(entry: dict, owner: str) -> Field:
 
 
 class Query:
-    def __init__(self, data: dict, source_dir):
-        self.name = data['name']
+    def __init__(self, data: dict, search_dir: Path):
+        self.name: str = data['name']
         if not self.name.isidentifier():
             raise ValueError(f"Query name '{self.name}' is not a valid identifier")
 
@@ -31,10 +34,13 @@ class Query:
         seen: set[str] = set()
         for entry in data.get('params', list()):
             field = _make_field(entry, self.name)
+
             if 'nullable' in field.flags:
                 raise ValueError(f"Query '{self.name}': nullable parameters are not supported")
+            
             if field.name in seen:
                 raise ValueError(f"Query '{self.name}': duplicate parameter '{field.name}'")
+            
             seen.add(field.name)
             self.params.append(field)
 
@@ -47,16 +53,16 @@ class Query:
             result_seen: set[str] = set()
             for entry in data['result']:
                 field = _make_field(entry, self.name)
+                
                 if field.name in result_seen:
                     raise ValueError(f"Query '{self.name}': duplicate result column '{field.name}'")
+                
                 result_seen.add(field.name)
                 self.result.append(field)
         elif 'result' in data:
             raise ValueError(f"Query '{self.name}': '{self.kind}' kind cannot have a 'result'")
 
         self.struct_name = data.get('result_name', to_camel_case(self.name))
-
-        self.sql = resolve_sql(data, source_dir, f"Query '{self.name}'")
 
     def is_bulk(self) -> bool:
         return self.kind == "rows"
@@ -65,8 +71,8 @@ class Query:
         return self.result is not None
 
 
-def parse_queries(data: dict, source_dir) -> list[Query]:
-    queries = [Query(entry, source_dir) for entry in data.get('queries', list())]
+def parse_queries(data: dict, search_dir: Path) -> list[Query]:
+    queries = [Query(entry, search_dir) for entry in data.get('queries', list())]
 
     names: set[str] = set()
     structs: set[str] = set()

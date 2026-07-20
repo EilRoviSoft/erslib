@@ -1,16 +1,5 @@
 #pragma once
 
-// std
-#include <string_view>
-#include <utility>
-
-// pqxx
-#include <pqxx/pqxx>
-
-// ers
-#include <erslib/core/type/error.hpp>
-#include <erslib/core/type/result.hpp>
-
 
 namespace dbio::tag {
     struct transaction_t {};
@@ -18,33 +7,6 @@ namespace dbio::tag {
 
 namespace dbio {
     constexpr tag::transaction_t transaction_tag;
-}
-
-namespace dbio::fn {
-    // Invokes a generated dbio functor against an existing transaction.
-    template<typename Fn, typename... Args>
-    auto eval(pqxx::dbtransaction& tnx, Args&&... args) {
-        return Fn {}(tnx, std::forward<Args>(args)...);
-    }
-
-
-    // Invokes a generated dbio functor inside a nested savepoint, committing on
-    // success and aborting on failure. The result type is whatever the functor
-    // returns (ers::Result<...> / ers::Status), so its operator bool drives the
-    // commit/abort decision.
-    template<typename Fn, typename... Args>
-    auto eval_with_transaction(pqxx::dbtransaction& tnx, std::string_view label, Args&&... args) {
-        pqxx::subtransaction subtnx(tnx, std::string(label));
-
-        auto s = Fn {}(subtnx, std::forward<Args>(args)...);
-
-        if (s)
-            subtnx.commit();
-        else
-            subtnx.abort();
-
-        return s;
-    }
 }
 
 

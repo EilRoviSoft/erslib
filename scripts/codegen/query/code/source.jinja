@@ -1,7 +1,7 @@
 {% macro fn_params(query) %}{% for param in query.params %}, {{ param.arg_type() }} {{ param.name }}{% endfor %}{% endmacro %}
 {% macro fn_args(query) %}{% for param in query.params %}, {{ param.assignment_expression() }}{% endfor %}{% endmacro %}
-{% macro ret(query) %}{% if query.kind == "rows" %}ers::Result<{{ query.struct_name }}Generator>{% elif query.kind == "row" %}ers::Result<{{ namespace }}::{{ query.struct_name }}>{% else %}ers::Status{% endif %}{% endmacro %}
-{% macro ret_def(query) %}{% if query.kind == "rows" %}ers::Result<{{ namespace }}::{{ name }}::{{ query.struct_name }}Generator>{% elif query.kind == "row" %}ers::Result<{{ namespace }}::{{ query.struct_name }}>{% else %}ers::Status{% endif %}{% endmacro %}
+{% macro ret(query) %}{% if query.kind == "rows" %}ers::Result<{{ namespace }}::{{ query.struct_name }}Generator>{% elif query.kind == "row" %}ers::Result<{{ namespace }}::{{ query.struct_name }}Result>{% else %}ers::Status{% endif %}{% endmacro %}
+{% macro ret_def(query) %}{% if query.kind == "rows" %}ers::Result<{{ namespace }}::{{ query.struct_name }}Generator>{% elif query.kind == "row" %}ers::Result<{{ namespace }}::{{ query.struct_name }}Result>{% else %}ers::Status{% endif %}{% endmacro %}
 #include "{{ linked_header }}.g.hpp"
 
 {% for name, type in include_groups %}
@@ -17,28 +17,18 @@
 {{ "\n" if not loop.last else "" }}{% endif %}
 {% endfor %}
 
-{% if not use_query_store %}
-// Queries
-
-{% for query in queries %}
-static constexpr std::string_view sql_{{ query.name }} = R"__sql(
-{{ query.sql }}
-)__sql";
-{% endfor %}
-{% endif %}
-
 // Result structs
 
 {% for query in queries if query.has_result() %}
-{{ namespace }}::{{ query.struct_name }}::{{ query.struct_name }}(const pqxx::row& row) {
-    this->init(row);
+{{ namespace }}::{{ query.struct_name }}Result::{{ query.struct_name }}Result(pqxx::row_ref row) {
+    init(row);
 }
 
-bool {{ namespace }}::{{ query.struct_name }}::init(const pqxx::row& row) {
+bool {{ namespace }}::{{ query.struct_name }}Result::init(pqxx::row_ref row) {
     {{ rt }}::PqxxRowStream stream(row);
 
 {% for field in query.result %}
-    if (!stream.store(this->{{ field.name }}))
+    if (!stream.store({{ field.name }}))
         return false;
 
 {% endfor %}
@@ -50,39 +40,35 @@ bool {{ namespace }}::{{ query.struct_name }}::init(const pqxx::row& row) {
 // Database interactions
 
 {% for query in queries %}
-{{ ret_def(query) }} {{ namespace }}::{{ name }}::{{ query.name }}_fn::operator()(pqxx::dbtransaction& tnx{{ fn_params(query) }}) {
-    auto content = _dbio(tnx{{ fn_args(query) }});
-    if (!content)
-        return content.error();
-
-{% if query.kind == "rows" %}
-    return {{ query.struct_name }}Generator(*content);
-{% elif query.kind == "row" %}
-    return {{ namespace }}::{{ query.struct_name }}(content->one_row());
-{% else %}
-    return ers::ok;
-{% endif %}
+{{ ret(query) }} {{ namespace }}::{{ name }}::{{ query.name }}_fn::operator()(pqxx::dbtransaction& tx{{ fn_params(query) }}) {
+    auto r = _exec(tx{{ fn_args(query) }});
+    if (!r)
+        return r.error();
+    return _process(*r);
 }
-ers::Result<pqxx::result> {{ namespace }}::{{ name }}::{{ query.name }}_fn::_dbio(pqxx::dbtransaction& tnx{{ fn_params(query) }}) ERS_DBIO_TRY_EVAL {
-{% set sql_query = "dbio::queries[\"%s.%s\"]" % (name, query.name) if use_query_store else "sql_%s" % (query.name) %}
-    return tnx.exec({{ sql_query }}{% if query.params %}, pqxx::params {
+{{ ret(query) }} {{ namespace }}::{{ name }}::{{ query.name }}_fn::operator()(dbio::tag::transaction_t, pqxx::dbtransaction& tx{{ fn_params(query) }}) {
+    pqxx::subtransaction subtx(tx, label);
+    auto r = _exec(subtx{{ fn_args(query) }});
+    if (!r)
+        return r.error();
+    return _process(*r);
+}
+
+ers::Result<pqxx::result> {{ namespace }}::{{ name }}::{{ query.name }}_fn::_exec(pqxx::dbtransaction& tx{{ fn_params(query) }}) ERS_DBIO_TRY_EVAL {
+    return tx.exec(dbio::queries["{{ name }}.{{ query.name }}"]{% if query.params %}, pqxx::params {
 {% for param in query.params %}
         {{ param.name }}{{ "," if not loop.last else "" }}
 {% endfor %}
     }{% endif %});
 } ERS_DBIO_CATCH_EVAL_ERRORS
-{{ "\n" if not loop.last else "" }}{% endfor %}
 
-
-// Database interactions
-
-namespace {{ namespace }}::{{ name }} {
-{% for query in queries %}
-    {{ ret(query) }} {{ query.name }}(pqxx::dbtransaction& tnx{{ fn_params(query) }}) {
-        return {{ rt }}::fn::eval<{{ query.name }}_fn>(tnx{{ fn_args(query) }});
-    }
-    {{ ret(query) }} {{ query.name }}({{ rt }}::tag::transaction_t, pqxx::dbtransaction& tnx{{ fn_params(query) }}) {
-        return {{ rt }}::fn::eval_with_transaction<{{ query.name }}_fn>(tnx, "{{ fn.to_camel_case(name) }}/{{ fn.to_camel_case(query.name) }}"{{ fn_args(query) }});
-    }
-{{ "\n" if not loop.last else "" }}{% endfor %}
+{{ ret_def(query) }} {{ namespace }}::{{ name }}::{{ query.name }}_fn::_process(const pqxx::result& content) {
+{% if query.kind == "rows" %}
+    return {{ query.struct_name }}Generator(content);
+{% elif query.kind == "row" %}
+    return {{ namespace }}::{{ query.struct_name }}Result(content.one_row_ref());
+{% else %}
+    return ers::ok;
+{% endif %}
 }
+{{ "\n\n" if not loop.last else "" }}{% endfor %}

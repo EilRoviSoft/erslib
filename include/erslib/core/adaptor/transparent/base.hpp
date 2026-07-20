@@ -2,6 +2,7 @@
 
 // std
 #include <concepts>
+#include <functional>
 #include <type_traits>
 
 // ers

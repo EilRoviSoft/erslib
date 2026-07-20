@@ -1,6 +1,3 @@
-from ..util import resolve_sql
-
-
 # Remarks -------------------------------------------------------------------------------------------------------------
 
 
@@ -322,7 +319,7 @@ class Layout:
 
 
 def make_name_from_fields(fields: list[str]) -> str:
-    return "_and_".join([field.removesuffix("_id") for field in fields])
+    return "_".join([field.removesuffix("_id") for field in fields])
 
 
 class Table:
@@ -489,8 +486,6 @@ class Table:
         if has_builder and has_raw:
             raise ValueError(f"Layout '{name}': cannot mix condition/order_by/limit with sql/sql_file")
 
-        raw_sql = resolve_sql(layout, source_dir, f"Layout '{name}'") if has_raw else None
-
         return Layout(
             name = name,
             content = {
@@ -502,6 +497,5 @@ class Table:
             persistency = "in",
             params = params,
             order_by = layout.get('order_by'),
-            limit = layout.get('limit'),
-            raw_sql = raw_sql
+            limit = layout.get('limit')
         )
