@@ -13,6 +13,7 @@ def _make_field(entry: dict, owner: str) -> Field:
         entry['name'],
         entry['type'],
         entry.get('explicit_type', None),
+        entry.get('format', None),
         set(entry.get('flags', list())),
         None
     )

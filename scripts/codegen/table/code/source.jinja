@@ -16,7 +16,7 @@
 {{ "\n" if not loop.last else "" }}{% endif %}
 {% endfor %}
 
-// {{ name }}
+// {{ fn.to_camel_case(name) }}
 
 {{ namespace }}::{{ fn.to_camel_case(name) }}::{{ fn.to_camel_case(name) }}({{ fn.to_camel_case(name) }}Values values) :
     {{ fn.to_camel_case(name) }}Values(std::move(values)) {
@@ -76,11 +76,28 @@ ers::Result<pqxx::result> {{ namespace }}::{{ name }}::{{ layout.name }}_fn::_ex
     return {{ fn.to_camel_case(name) }}Generator(content, {{ fn.to_camel_case(name) }}::{{ fn.to_camel_case(layout.name) }});
 }
 {% else %}
+{% if fn.len(layout['get']) == 0 %}
+{{ ret(layout) }} {{ namespace }}::{{ name }}::{{ layout.name }}_fn::_process([[maybe_unused]] const pqxx::result& content, [[maybe_unused]] {{ fn.to_camel_case(name) }}& entity) {
+    return ers::ok;
+}
+{% else %}
 {{ ret(layout) }} {{ namespace }}::{{ name }}::{{ layout.name }}_fn::_process(const pqxx::result& content, {{ fn.to_camel_case(name) }}& entity) {
-{% if fn.len(layout['get']) != 0 %}
     entity.init(content.one_row_ref(), make_config<dbio::In>({{ fn.to_camel_case(name) }}::{{ fn.to_camel_case(layout.name) }}));
-{% endif %}
     return ers::ok;
 }
 {% endif %}
+{% endif %}
 {{ "\n\n" if not loop.last else "" }}{% endfor %}
+
+
+// Formatter
+
+std::format_context::iterator std::formatter<{{ namespace }}::{{ fn.to_camel_case(name) }}Values>::format(const {{ namespace }}::{{ fn.to_camel_case(name) }}Values& v, std::format_context& ctx) const {
+    return std::format_to(
+        ctx.out(),
+        "{{ namespace }}::{{ fn.to_camel_case(name) }}Results [{% for field in table.fields if field.name %}{{ field.name }} = {{ field.format_str() }}{{ ", " if not loop.last else "" }}{% endfor %}]",
+{% for field in table.fields if field.name %}
+        {{ field.format_arg("v.") }}{{ "," if not loop.last else "" }}
+{% endfor %}
+    );
+}

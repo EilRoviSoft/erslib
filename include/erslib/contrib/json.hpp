@@ -18,6 +18,7 @@
 #include <string>
 #include <string_view>
 #include <type_traits>
+#include <unordered_map>
 #include <utility>
 #include <variant>
 #include <vector>
@@ -38,10 +39,6 @@
 #ifdef _HAS_BOOST_UNORDERED
 
 #include <boost/unordered/unordered_flat_map.hpp>
-
-#else
-
-#include <unordered_map>
 
 #endif
 
@@ -638,7 +635,7 @@ struct ers::convert::to_string_backend<utl::internal::NodeType> {
                 return UTL_JSON_NODE_TYPE_LITERAL(None, utl::internal::null_type_impl);
 
             case Object:
-                return UTL_JSON_NODE_TYPE_LITERAL(Object, UTL_IDENTITY(boost::unordered_flat_map<std::string, utl::internal::Node>));
+                return UTL_JSON_NODE_TYPE_LITERAL(Object, UTL_IDENTITY(std::unordered_map<std::string, utl::internal::Node>));
 
             case Array:
                 return UTL_JSON_NODE_TYPE_LITERAL(Array, std::vector<utl::internal::Node>);

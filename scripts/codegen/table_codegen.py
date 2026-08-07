@@ -24,6 +24,7 @@ class TableCodegen(BaseCodegen):
         for field in self.table.fields:
             if not field.has_remark(StatefulRemark) and not field.has_remark(PrimaryKey):
                 includes.add(('header', 'std', 'optional'))
+                includes.add(('source', 'ers', "erslib/core/formatter/optional.hpp"))
 
             match field.type:
                 case 'int16_t' | 'int32_t' | 'int64_t':
@@ -66,7 +67,9 @@ class TableCodegen(BaseCodegen):
             ('header', 'pqxx', "pqxx/pqxx"),
             ('header', 'ers', "erslib/core/type/result.hpp"),
             ('header', 'dbio', "erslib/dbio.hpp"),
-            ('header', 'export', "erslib/export.hpp")
+            ('header', 'export', "erslib/export.hpp"),
+        ] + [
+            ('source', 'std', "format")
         ]
 
     def exec(self) -> list[GeneratedFile]:

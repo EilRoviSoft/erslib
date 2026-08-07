@@ -61,7 +61,7 @@ namespace dbio {
         // Runs each query found in the given store under the provided labels, every one in its own savepoint.
         // Missing labels are skipped.
         // Intended for schema bootstrap (e.g. the generated CREATE TABLE statements).
-        ers::Status init(const QueryStore& queries, std::span<const std::string> query_labels);
+        ers::Status init(pqxx::dbtransaction& tx, const QueryStore& queries, std::string_view label);
 
 
     protected:

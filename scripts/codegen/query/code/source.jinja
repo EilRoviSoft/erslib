@@ -1,7 +1,7 @@
 {% macro fn_params(query) %}{% for param in query.params %}, {{ param.arg_type() }} {{ param.name }}{% endfor %}{% endmacro %}
 {% macro fn_args(query) %}{% for param in query.params %}, {{ param.assignment_expression() }}{% endfor %}{% endmacro %}
-{% macro ret(query) %}{% if query.kind == "rows" %}ers::Result<{{ namespace }}::{{ query.struct_name }}Generator>{% elif query.kind == "row" %}ers::Result<{{ namespace }}::{{ query.struct_name }}Result>{% else %}ers::Status{% endif %}{% endmacro %}
-{% macro ret_def(query) %}{% if query.kind == "rows" %}ers::Result<{{ namespace }}::{{ query.struct_name }}Generator>{% elif query.kind == "row" %}ers::Result<{{ namespace }}::{{ query.struct_name }}Result>{% else %}ers::Status{% endif %}{% endmacro %}
+{% macro ret(query) %}{% if query.kind == "rows" %}ers::Result<{{ namespace }}::{{ query.struct_name }}Generator>{% elif query.kind == "row" %}ers::Result<{{ namespace }}::{{ query.struct_name }}Results>{% else %}ers::Status{% endif %}{% endmacro %}
+{% macro ret_def(query) %}{% if query.kind == "rows" %}ers::Result<{{ namespace }}::{{ query.struct_name }}Generator>{% elif query.kind == "row" %}ers::Result<{{ namespace }}::{{ query.struct_name }}Results>{% else %}ers::Status{% endif %}{% endmacro %}
 #include "{{ linked_header }}.g.hpp"
 
 {% for name, type in include_groups %}
@@ -20,11 +20,11 @@
 // Result structs
 
 {% for query in queries if query.has_result() %}
-{{ namespace }}::{{ query.struct_name }}Result::{{ query.struct_name }}Result(pqxx::row_ref row) {
+{{ namespace }}::{{ query.struct_name }}Results::{{ query.struct_name }}Results(pqxx::row_ref row) {
     init(row);
 }
 
-bool {{ namespace }}::{{ query.struct_name }}Result::init(pqxx::row_ref row) {
+bool {{ namespace }}::{{ query.struct_name }}Results::init(pqxx::row_ref row) {
     {{ rt }}::PqxxRowStream stream(row);
 
 {% for field in query.result %}
@@ -66,9 +66,25 @@ ers::Result<pqxx::result> {{ namespace }}::{{ name }}::{{ query.name }}_fn::_exe
 {% if query.kind == "rows" %}
     return {{ query.struct_name }}Generator(content);
 {% elif query.kind == "row" %}
-    return {{ namespace }}::{{ query.struct_name }}Result(content.one_row_ref());
+    return {{ namespace }}::{{ query.struct_name }}Results(content.one_row_ref());
 {% else %}
     return ers::ok;
 {% endif %}
 }
 {{ "\n\n" if not loop.last else "" }}{% endfor %}
+
+
+// Formatters
+
+{% for query in queries if query.has_result() %}
+std::format_context::iterator std::formatter<{{ namespace }}::{{ fn.to_camel_case(query.name) }}Results>::format(const {{ namespace }}::{{ fn.to_camel_case(query.name) }}Results& v, std::format_context& ctx) const {
+    return std::format_to(
+        ctx.out(),
+        "{{ namespace }}::{{ fn.to_camel_case(query.name) }}Results [{% for param in query.params if param.name %}{{ param.name }} = {{ param.format_str() }}{{ ", " if not loop.last else "" }}{% endfor %}]",
+{% for param in query.params if param.name %}
+        {{ param.format_arg("v.") }}{{ "," if not loop.last else "" }}
+{% endfor %}
+    );
+}
+{{ "\n\n" if not loop.last else "" }}
+{% endfor %}

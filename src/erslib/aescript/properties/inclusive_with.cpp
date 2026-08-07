@@ -21,11 +21,8 @@ ers::Status aescript::InclusiveWithProperty::exec([[maybe_unused]] verify_contex
 
 
     if (!absent.empty()) {
-        return ers::make_error(
-            ers::Severity::Error,
-            "Field '{}' is inclusive with fields {}",
-            field, absent
-        );
+        return ers::make_error("Field '{}' is inclusive with fields {}",
+            field, absent);
     }
 
 

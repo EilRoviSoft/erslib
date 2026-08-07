@@ -165,6 +165,10 @@ class Field:
         'pqxx::bytes': 'pqxx::bytes_view',
     }
 
+    to_str_table = {
+        'pqxx::bytes': 'dbio::bytes_to_string'
+    }
+
     trivial_types = {
         'bool',
         'int16_t', 'int32_t', 'int64_t',
@@ -181,6 +185,7 @@ class Field:
             data['name'],
             data['type'],
             data.get('explicit_type', None),
+            data.get('format', None),
             set(data.get('flags', list())),
             data.get('default', None)
         )
@@ -190,6 +195,7 @@ class Field:
             name: str,
             original_type: str,
             explicit_type: str | None,
+            format: str | None,
             flags: set[str],
             default: "str | dict | None"
             ):
@@ -200,6 +206,8 @@ class Field:
 
         self.original_type = original_type
         self.type = explicit_type if explicit_type else Field.to_cpp_type_table[self.original_type]
+
+        self.format = format
 
         self.flags = flags
 
@@ -274,6 +282,22 @@ class Field:
             expr = f"std::move({expr})"
 
         return expr
+
+    def format_str(self) -> str:
+        if self.format and not self.type:
+            return f"{{:{self.format}}}"
+        else:
+            return "{}"
+
+    def format_arg(self, prefix = "", postfix = "") -> str:
+        name = f"{prefix}{self.name}{postfix}"
+        if self.type in Field.to_str_table:
+            if self.format:
+                return f"{Field.to_str_table[self.type]}({name}, \"{self.format}\")"
+            else:
+                return f"{Field.to_str_table[self.type]}({name})"
+        else:
+            return name
 
 
 # Layout --------------------------------------------------------------------------------------------------------------
@@ -458,25 +482,32 @@ class Table:
         seen: set[str] = set()
         for entry in raw_params:
             if 'field' in entry:
-                fname = entry['field']
-                if fname not in self.fields_by_name:
-                    raise ValueError(f"Layout '{name}': unknown field '{fname}' in params")
-                field = self.fields_by_name[fname]
-                pname = fname
+                field_name = entry['field']
+                if field_name not in self.fields_by_name:
+                    raise ValueError(f"Layout '{name}': unknown field '{field_name}' in params")
+                field = self.fields_by_name[field_name]
+                param_name = field_name
             else:
-                field = Field(entry['name'], entry['type'], entry.get('explicit_type'), set(), None)
-                pname = entry['name']
+                field = Field(
+                    entry['name'],
+                    entry['type'],
+                    entry.get('explicit_type'),
+                    entry.get('formatter_arg'),
+                    set(),
+                    None
+                )
+                param_name = entry['name']
 
-            if pname in seen:
-                raise ValueError(f"Layout '{name}': duplicate parameter '{pname}'")
-            seen.add(pname)
+            if param_name in seen:
+                raise ValueError(f"Layout '{name}': duplicate parameter '{param_name}'")
+            seen.add(param_name)
             params.append(field)
 
         if 'get' in layout:
             requested = set(layout['get'])
-            for gname in requested:
-                if gname not in self.fields_by_name:
-                    raise ValueError(f"Layout '{name}': unknown field '{gname}' in get")
+            for get_name in requested:
+                if get_name not in self.fields_by_name:
+                    raise ValueError(f"Layout '{name}': unknown field '{get_name}' in get")
             get = [field.name for field in self.fields if field.name in requested]
         else:
             get = [field.name for field in self.fields]

@@ -28,11 +28,8 @@ namespace {
 
         for (const auto& obj : array) {
             if (!obj.is_string()) {
-                return ers::make_error(
-                    ers::Severity::Error,
-                    "Expected '{}' got '{}'.",
-                    ers::meta::type_name_v<utl::Json::string_type>, ers::convert::to_str(obj.type())
-                );
+                return ers::make_error("Expected '{}' got '{}'.",
+                    ers::meta::type_name_v<utl::Json::string_type>, ers::convert::to_str(obj.type()));
             }
 
             auto r = ers::convert::from_str<aengine::dependency_t>(obj.as_string());

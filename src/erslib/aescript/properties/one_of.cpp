@@ -18,19 +18,13 @@ ers::Status aescript::OneOfProperty::verify(sol::table table) const {
     }
 
     if (present.size() > 1) {
-        return ers::make_error(
-            ers::Severity::Error,
-            "Exactly one of fields {} must be defined, but several are: {}",
-            _names, present
-        );
+        return ers::make_error("Exactly one of fields {} must be defined, but several are: {}",
+            _names, present);
     }
 
     if (present.empty()) {
-        return ers::make_error(
-            ers::Severity::Error,
-            "Exactly one of fields {} must be defined, but none is",
-            _names
-        );
+        return ers::make_error("Exactly one of fields {} must be defined, but none is",
+            _names);
     }
 
     return ers::ok;

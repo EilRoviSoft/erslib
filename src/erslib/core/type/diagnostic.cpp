@@ -1,4 +1,4 @@
-#include "erslib/core/type/error.hpp"
+#include "erslib/core/type/diagnostic.hpp"
 
 // ers
 #include <erslib/core/exception/internal.hpp>
@@ -6,7 +6,7 @@
 
 #ifdef _HAS_CPPTRACE
 
-ers::Error::Error(Severity severity, std::string message, timestamp_t timestamp, cpptrace::raw_trace trace) :
+ers::Diagnostic::Diagnostic(Severity severity, std::string message, timestamp_t timestamp, cpptrace::raw_trace trace) :
     m_severity(severity),
     m_message(std::move(message)),
     m_timestamp(timestamp),
@@ -14,7 +14,7 @@ ers::Error::Error(Severity severity, std::string message, timestamp_t timestamp,
 }
 
 
-std::string ers::Error::to_string(bool trim) const {
+std::string ers::Diagnostic::to_string(bool trim) const {
     return trim
         ? internal::extend_with_trace(m_message, m_trace)
         : std::format(
@@ -26,21 +26,21 @@ std::string ers::Error::to_string(bool trim) const {
 }
 
 
-ers::Error&& ers::Error::extend(std::string_view message) && {
+ers::Diagnostic&& ers::Diagnostic::extend(std::string_view message) && {
     m_message += message;
     return std::move(*this);
 }
 
 #else
 
-ers::Error::Error(Severity severity, std::string message, timestamp_t timestamp) :
+ers::Diagnostic::Diagnostic(Severity severity, std::string message, timestamp_t timestamp) :
     m_severity(severity),
     m_message(std::move(message)),
     m_timestamp(timestamp) {
 }
 
 
-std::string ers::Error::to_string(bool trim) const {
+std::string ers::Diagnostic::to_string(bool trim) const {
     return trim
         ? m_message
         : std::format(
@@ -52,7 +52,7 @@ std::string ers::Error::to_string(bool trim) const {
 }
 
 
-ers::Error&& ers::Error::extend(std::string_view message) && {
+ers::Diagnostic&& ers::Diagnostic::extend(std::string_view message) && {
     m_message += message;
     return std::move(*this);
 }

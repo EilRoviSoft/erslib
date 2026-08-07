@@ -101,7 +101,7 @@ namespace ers {
 
     protected:
         const utl::Json& m_json;
-        std::optional<Error> m_error;
+        std::optional<Diagnostic> m_error;
         std::list<std::function<void()>> m_assignments;
 
 
@@ -111,19 +111,13 @@ namespace ers {
             auto it = object.find(name);
 
             if (it == object.end()) {
-                return make_error(
-                    Severity::Error,
-                    "Json doesn't have field with name \"{}\"",
-                    name
-                );
+                return make_error("Json doesn't have field with name \"{}\"",
+                    name);
             }
 
             if (!it->second.is<T>()) {
-                return make_error(
-                    Severity::Error,
-                    "Field with name \"{}\" has mismatched type \"{}\"",
-                    name, meta::type_name_v<T>
-                );
+                return make_error("Field with name \"{}\" has mismatched type \"{}\"",
+                    name, meta::type_name_v<T>);
             }
 
             return it;

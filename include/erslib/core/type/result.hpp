@@ -4,7 +4,7 @@
 #include <variant>
 
 // ers
-#include <erslib/core/type/error.hpp>
+#include <erslib/core/type/diagnostic.hpp>
 #include <erslib/core/type/optional.hpp>
 #include <erslib/core/type/ref.hpp>
 
@@ -24,7 +24,7 @@ namespace ers {
     class [[nodiscard]] Result {
     public:
         using value_type = T;
-        using error_type = Error;
+        using error_type = Diagnostic;
 
 
         static_assert(!std::is_rvalue_reference_v<value_type>,
@@ -124,7 +124,7 @@ namespace ers {
     class [[nodiscard]] Result<T&> {
     public:
         using value_type = T;
-        using error_type = Error;
+        using error_type = Diagnostic;
 
 
         // Constructors
@@ -249,7 +249,7 @@ namespace ers {
     class [[nodiscard]] Result<void> {
     public:
         using value_type = void;
-        using error_type = Error;
+        using error_type = Diagnostic;
 
 
         Result(const ok_t) noexcept :

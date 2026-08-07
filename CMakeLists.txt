@@ -114,7 +114,7 @@ target_sources(erslib_core
         "src/erslib/core/splitting/regular.cpp"
         "src/erslib/core/splitting/smart.cpp"
 
-        "src/erslib/core/type/error.cpp"
+        "src/erslib/core/type/diagnostic.cpp"
 
         "src/erslib/core/util/file.cpp"
         "src/erslib/core/util/string.cpp"
@@ -194,6 +194,7 @@ if(ERSLIB_BUILD_DBIO)
     target_sources(erslib_dbio
         PRIVATE
             "src/erslib/dbio/database.cpp"
+            "src/erslib/dbio/formatter.cpp"
             "src/erslib/dbio/query_store.cpp"
     )
 

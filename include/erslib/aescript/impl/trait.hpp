@@ -32,19 +32,11 @@ namespace aescript::internal {
     ers::Status check_type(sol::object obj) {
         static constexpr sol::type expected_type = internal::sol_type_for<T>();
 
-        if (!obj.valid()) {
-            return ers::make_error(
-                ers::Severity::Error,
-                "Object is not valid or nil"
-            );
-        }
+        if (!obj.valid())
+            return ers::make_error("Object is not valid or nil");
 
-        if (obj.get_type() != expected_type) {
-            return ers::make_error(
-                ers::Severity::Error,
-                "Object has unexpected type"
-            );
-        }
+        if (obj.get_type() != expected_type)
+            return ers::make_error("Object has unexpected type");
 
         return ers::ok;
     }

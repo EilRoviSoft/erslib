@@ -21,11 +21,8 @@ ers::Status aescript::ExclusiveWithProperty::exec([[maybe_unused]] verify_contex
 
 
     if (!intersection.empty()) {
-        return ers::make_error(
-            ers::Severity::Error,
-            "Field '{}' is exclusive with fields {}",
-            field, intersection
-        );
+        return ers::make_error("Field '{}' is exclusive with fields {}",
+            field, intersection);
     }
 
 

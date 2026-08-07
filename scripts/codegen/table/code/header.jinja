@@ -94,6 +94,7 @@ namespace  {{ namespace }}::{{ name }} {
     }
 }
 
+
 // {{ fn.to_camel_case(name) }}
 
 namespace {{ namespace }} {
@@ -131,7 +132,6 @@ struct dbio::entity_traits<{{ namespace }}::{{ fn.to_camel_case(name) }}> {
 
 // Database interactions
 
-
 namespace {{ namespace }} {
     using {{ fn.to_camel_case(name) }}Generator = dbio::EntityGenerator<{{ fn.to_camel_case(name) }}>;
 }
@@ -153,3 +153,15 @@ namespace {{ namespace }}::{{ name }} {
     static constexpr {{ layout.name }}_fn {{ layout.name }};
 {{ "\n\n" if not loop.last else "" }}{% endfor %}
 }
+
+
+// Formatter
+
+template<>
+struct std::formatter<{{ namespace }}::{{ fn.to_camel_case(name) }}Values> {
+    constexpr auto parse(std::format_parse_context& ctx) {
+        return ctx.begin();
+    }
+
+    std::format_context::iterator format(const {{ namespace }}::{{ fn.to_camel_case(name) }}Values& v, std::format_context& ctx) const;
+};

@@ -53,7 +53,7 @@ class QueriesCodegen(BaseCodegen):
             ("pqxx", "library"),
             ("ers", "library"),
             ("dbio", "library"),
-            ("export", "library")
+            ("export", "library"),
         ]
 
     @staticmethod
@@ -63,7 +63,9 @@ class QueriesCodegen(BaseCodegen):
             ('header', 'pqxx', "pqxx/pqxx"),
             ('header', 'ers', "erslib/core/type/result.hpp"),
             ('header', 'dbio', "erslib/dbio.hpp"),
-            ('header', 'export', "erslib/export.hpp")
+            ('header', 'export', "erslib/export.hpp"),
+        ] + [
+            ('source', 'std', "format")
         ]
 
     def exec(self) -> list[GeneratedFile]:

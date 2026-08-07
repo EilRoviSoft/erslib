@@ -16,7 +16,7 @@ namespace {
 
     ers::Result<double> safe_divide(double l, double r) {
         if (equals(r, 0.0))
-            return ers::make_error(ers::Severity::Error, "Division by zero: {} / {}", l, r);
+            return ers::make_error("Division by zero: {} / {}", l, r);
         return l / r;
     }
 }

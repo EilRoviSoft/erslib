@@ -20,13 +20,13 @@
 
 namespace {{ namespace }} {
 {% for query in queries if query.has_result() %}
-    struct ERSLIB_EXPORT {{ query.struct_name }}Result {
+    struct ERSLIB_EXPORT {{ query.struct_name }}Results {
 {% for field in query.result %}
         {{ field.class_type() }} {{ field.name }}{% if field.default %} = {{ field.default }}{% endif %};
 {% endfor %}
 
-        {{ query.struct_name }}Result() = default;
-        explicit {{ query.struct_name }}Result(pqxx::row_ref row);
+        {{ query.struct_name }}Results() = default;
+        explicit {{ query.struct_name }}Results(pqxx::row_ref row);
 
         bool init(pqxx::row_ref row);
     };
@@ -39,13 +39,13 @@ namespace {{ namespace }} {
 
 namespace {{ namespace }} {
 {% for query in queries if query.is_bulk() %}
-    using {{ query.struct_name }}Generator = {{ rt }}::RowGenerator<{{ query.struct_name }}Result>;
+    using {{ query.struct_name }}Generator = {{ rt }}::RowGenerator<{{ query.struct_name }}Results>;
 {% endfor %}
 }
 
 
 namespace {{ namespace }}::{{ name }} {
-{% for query in queries if query.is_bulk() %}
+{% for query in queries %}
     struct ERSLIB_EXPORT {{ query.name }}_fn {
         static constexpr std::string_view label = "{{ fn.to_camel_case(name) }}/{{ fn.to_camel_case(query.name) }}";
 
@@ -60,3 +60,18 @@ namespace {{ namespace }}::{{ name }} {
     static constexpr {{ query.name }}_fn {{ query.name }};
 {{ "\n\n" if not loop.last else "" }}{% endfor %}
 }
+
+
+// Formatters
+
+{% for query in queries if query.has_result() %}
+template<>
+struct std::formatter<{{ namespace }}::{{ fn.to_camel_case(query.name) }}Results> {
+    constexpr auto parse(std::format_parse_context& ctx) {
+        return ctx.begin();
+    }
+
+    std::format_context::iterator format(const {{ namespace }}::{{ fn.to_camel_case(query.name) }}Results& v, std::format_context& ctx) const;
+};
+{{ "\n\n" if not loop.last else "" }}
+{% endfor %}

@@ -4,7 +4,7 @@
 #include <format>
 
 // ers
-#include <erslib/core/type/error.hpp>
+#include <erslib/core/type/diagnostic.hpp>
 #include <erslib/dbio/query_store.hpp>
 
 
@@ -25,23 +25,18 @@ dbio::Database::Database(const std::string& connection_string) :
 }
 
 
-ers::Status dbio::Database::init(const QueryStore& queries, std::span<const std::string> query_labels) try {
-    pqxx::work tnx(m_connection);
+ers::Status dbio::Database::init(pqxx::dbtransaction& tx, const QueryStore& queries, std::string_view label) try {
+    auto query = queries.get(label);
+    if (!query)
+        return ers::make_warning("Query '{}' doesn't exist.", label);
 
-    for (const auto& label : query_labels) {
-        auto query = queries.get(label);
-        if (!query)
-            continue;
+    pqxx::subtransaction subtx(tx);
+    subtx.exec(*query);
+    subtx.commit();
 
-        pqxx::subtransaction subtnx(tnx);
-        subtnx.exec(*query);
-        subtnx.commit();
-    }
-
-    tnx.commit();
     return ers::ok;
 } catch (const pqxx::sql_error& e) {
-    return ers::make_error(ers::Severity::Error, "dbio: schema init failed: {}", e.what());
+    return ers::make_error("dbio: schema init failed: {}", e.what());
 } catch (const pqxx::usage_error& e) {
-    return ers::make_error(ers::Severity::Error, "dbio: schema init failed: {}", e.what());
+    return ers::make_error("dbio: schema init failed: {}", e.what());
 }

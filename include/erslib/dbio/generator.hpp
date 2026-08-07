@@ -16,13 +16,11 @@
 // Traits
 
 namespace dbio {
-    // Specialize for every generated entity.
-    // The generated header provides a specialization exposing field/layout/config types and a make_config().
     template<typename T>
     struct entity_traits;
 
     template<typename T>
-    concept ValidEntityTraits =
+    concept ValidEntity =
         requires {
             typename entity_traits<T>::field_type;
             typename entity_traits<T>::layout_type;
@@ -35,17 +33,18 @@ namespace dbio {
             requires std::same_as<decltype(entity_traits<T>::template make_config<In>(layout)), typename entity_traits<T>::config_type>;
             requires std::same_as<decltype(entity_traits<T>::template make_config<Out>(layout)), typename entity_traits<T>::config_type>;
         };
+
+
+    template<typename T>
+    concept ValidRow = std::constructible_from<T, pqxx::row_ref>;
 }
 
 
 // EntityGenerator
 
 namespace dbio {
-    // Owning lazy view over a pqxx::result that materializes one entity per row.
-    // Iterators do not support operator->, and operator* produces a
-    // freshly constructed entity from the underlying pqxx::row (i.e. a copy).
     template<typename T>
-        requires ValidEntityTraits<T>
+        requires ValidEntity<T>
     class EntityGenerator : public std::ranges::view_interface<EntityGenerator<T>> {
         using traits = entity_traits<T>;
 
@@ -61,35 +60,35 @@ namespace dbio {
 
             Iterator() = default;
             Iterator(pqxx::result::const_iterator it, traits::layout_type layout) :
-                m_it(it),
-                m_layout(layout) {
+                _inner_it(it),
+                _layout(layout) {
             }
 
             
             T operator*() const {
-                return T(*m_it, traits::template make_config<In>(m_layout));
+                return T(*_inner_it, traits::template make_config<In>(_layout));
             }
 
             
             Iterator& operator++() {
-                m_it++;
+                _inner_it++;
                 return *this;
             }
             Iterator operator++(int) {
                 auto copy = *this;
-                m_it++;
+                _inner_it++;
                 return copy;
             }
 
 
             bool operator==(const Iterator& other) const {
-                return m_it == other.m_it;
+                return _inner_it == other._inner_it;
             }
 
 
         private:
-            pqxx::result::const_iterator m_it;
-            traits::layout_type m_layout {};
+            pqxx::result::const_iterator _inner_it;
+            traits::layout_type _layout {};
         };
 
 
@@ -98,26 +97,26 @@ namespace dbio {
 
         EntityGenerator() = default;
         EntityGenerator(pqxx::result content, traits::layout_type layout) :
-            m_content(std::move(content)),
-            m_layout(layout) {
+            _content(std::move(content)),
+            _layout(layout) {
         }
 
 
         // Iterators for CRTP
 
-        Iterator begin() const { return Iterator(m_content.begin(), m_layout); }
-        Iterator end() const { return Iterator(m_content.end(), m_layout); }
+        Iterator begin() const { return Iterator(_content.begin(), _layout); }
+        Iterator end() const { return Iterator(_content.end(), _layout); }
 
 
         // Accessors
 
         [[nodiscard]]
-        size_t size() const { return m_content.size(); }
+        size_t size() const { return _content.size(); }
 
 
     private:
-        pqxx::result m_content;
-        traits::layout_type m_layout {};
+        pqxx::result _content;
+        traits::layout_type _layout {};
     };
 }
 
@@ -126,15 +125,7 @@ namespace dbio {
 
 namespace dbio {
     template<typename T>
-    concept RowConstructible = std::constructible_from<T, pqxx::row_ref>;
-
-    // Owning lazy view over a pqxx::result that materializes one lightweight row struct per row.
-    // Unlike EntityGenerator it needs no entity_traits:
-    // T only has to be constructible from a pqxx::row (used by generated custom-query results).
-    // Iterators do not support operator->, and operator* produces a freshly constructed T
-    // from the underlying pqxx::row (i.e. a copy).
-    template<typename T>
-        requires RowConstructible<T>
+        requires ValidRow<T>
     class RowGenerator : public std::ranges::view_interface<RowGenerator<T>> {
     public:
         // Member types
@@ -147,33 +138,33 @@ namespace dbio {
 
             Iterator() = default;
             explicit Iterator(pqxx::result::const_iterator it) :
-                m_it(it) {
+                _inner_it(it) {
             }
 
 
             T operator*() const {
-                return T(*m_it);
+                return T(*_inner_it);
             }
 
 
             Iterator& operator++() {
-                m_it++;
+                _inner_it++;
                 return *this;
             }
             Iterator operator++(int) {
                 auto copy = *this;
-                m_it++;
+                _inner_it++;
                 return copy;
             }
 
 
             bool operator==(const Iterator& other) const {
-                return m_it == other.m_it;
+                return _inner_it == other._inner_it;
             }
 
 
         private:
-            pqxx::result::const_iterator m_it;
+            pqxx::result::const_iterator _inner_it;
         };
 
 
@@ -182,23 +173,23 @@ namespace dbio {
 
         RowGenerator() = default;
         explicit RowGenerator(pqxx::result content) :
-            m_content(std::move(content)) {
+            _content(std::move(content)) {
         }
 
 
         // Iterators for CRTP
 
-        Iterator begin() const { return Iterator(m_content.begin()); }
-        Iterator end() const { return Iterator(m_content.end()); }
+        Iterator begin() const { return Iterator(_content.begin()); }
+        Iterator end() const { return Iterator(_content.end()); }
 
 
         // Accessors
 
         [[nodiscard]]
-        size_t size() const { return m_content.size(); }
+        size_t size() const { return _content.size(); }
 
 
     private:
-        pqxx::result m_content;
+        pqxx::result _content;
     };
 }

@@ -28,22 +28,14 @@ struct ers::convert::from_string_backend<ers::version_t> {
 
         auto dot1 = source.find('.');
         if (dot1 == std::string_view::npos) {
-            return make_error(
-                Severity::Error,
-                "parse_error",
-                "Can't convert string \"{}\" to type [T = version_t]",
-                source
-            );
+            return make_error("Can't convert string \"{}\" to type [T = version_t]",
+                source);
         }
 
         auto dot2 = source.find('.', dot1 + 1);
         if (dot2 == std::string_view::npos) {
-            return make_error(
-                Severity::Error,
-                "parse_error",
-                "Can't convert string \"{}\" to type [T = version_t]",
-                source
-            );
+            return make_error("Can't convert string \"{}\" to type [T = version_t]",
+                source);
         }
 
 

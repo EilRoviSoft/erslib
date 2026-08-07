@@ -56,11 +56,11 @@ struct ers::convert::to_string_backend<ers::Severity> {
 
 
 namespace ers {
-    class ERSLIB_EXPORT Error {
+    class ERSLIB_EXPORT Diagnostic {
     public:
         // Member functions
 
-        Error(
+        Diagnostic(
             Severity severity,
             std::string message,
             timestamp_t timestamp = std::chrono::system_clock::now(),
@@ -81,11 +81,11 @@ namespace ers {
 
         // Modifiers
 
-        Error&& extend(std::string_view message) &&;
+        Diagnostic&& extend(std::string_view message) &&;
 
         template<typename... Args>
             requires (sizeof...(Args) >= 1)
-        Error&& extend(std::format_string<Args...> fmt, Args&&... args) && {
+        Diagnostic&& extend(std::format_string<Args...> fmt, Args&&... args) && {
             m_message += std::format(fmt, std::forward<Args>(args)...);
             return std::move(*this);
         }
@@ -102,11 +102,11 @@ namespace ers {
 #else
 
 namespace ers {
-    class ERSLIB_EXPORT Error {
+    class ERSLIB_EXPORT Diagnostic {
     public:
         // Member functions
 
-        Error(
+        Diagnostic(
             Severity severity,
             std::string message,
             timestamp_t timestamp = std::chrono::system_clock::now()
@@ -125,11 +125,11 @@ namespace ers {
 
         // Modifiers
 
-        Error&& extend(std::string_view message) &&;
+        Diagnostic&& extend(std::string_view message) &&;
 
         template<typename... Args>
             requires (sizeof...(Args) >= 1)
-        Error&& extend(std::format_string<Args...> fmt, Args&&... args) && {
+        Diagnostic&& extend(std::format_string<Args...> fmt, Args&&... args) && {
             m_message += std::format(fmt, std::forward<Args>(args)...);
             return std::move(*this);
         }
@@ -145,14 +145,23 @@ namespace ers {
 #endif
 
 
-namespace ers {
-    template<typename... Args>
-        requires (sizeof...(Args) >= 1)
-    Error make_error(Severity severity, std::format_string<Args...> fmt, Args&&... args) {
-        return Error(severity, std::format(fmt, std::forward<Args>(args)...));
+#define DEFINE_DIAGNOSTIC(NAME, SEVERITY) \
+    template<typename... Args> \
+        requires (sizeof...(Args) >= 1) \
+    Diagnostic make_##NAME(std::format_string<Args...> fmt, Args&&... args) { \
+        return Diagnostic(ers::Severity::SEVERITY, std::format(fmt, std::forward<Args>(args)...)); \
+    } \
+    \
+    inline Diagnostic make_##NAME(std::string message) { \
+        return Diagnostic(ers::Severity::SEVERITY, std::move(message)); \
     }
 
-    inline Error make_error(Severity severity, std::string message) {
-        return Error(severity, std::move(message));
-    }
+namespace ers {
+    DEFINE_DIAGNOSTIC(debug, Debug);
+    DEFINE_DIAGNOSTIC(info, Info);
+    DEFINE_DIAGNOSTIC(warning, Warning);
+    DEFINE_DIAGNOSTIC(error, Error);
+    DEFINE_DIAGNOSTIC(crit, Crit);
 }
+
+#undef DEFINE_DIAGNOSTIC
