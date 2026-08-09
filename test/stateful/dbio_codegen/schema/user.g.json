@@ -20,8 +20,12 @@
             "type": "select",
             "name": "select_adults",
             "params": [ { "name": "min_age", "type": "INT" } ],
-            "condition": "age >= $1",
-            "order_by": "age DESC, name"
+            "sql": [
+                "SELECT id, name, age",
+                "FROM users",
+                "WHERE age >= $1",
+                "ORDER BY age DESC, name"
+            ]
         }
     ]
 }

@@ -28,3 +28,17 @@ def load_templates(dir: str):
 
 def to_camel_case(s: str):
     return ''.join(word.capitalize() for word in s.split('_'))
+
+
+def resolve_sql(data: dict, source_dir: Path, owner: str, generated_filename: str) -> tuple[str, str]:
+    sql = data.get('sql')
+    sql_file = data.get('sql_file')
+    if (sql is None) == (sql_file is None):
+        raise ValueError(f"{owner}: exactly one of 'sql' or 'sql_file' is required")
+
+    if sql is not None:
+        content = sql if isinstance(sql, str) else '\n'.join(sql)
+        return content + '\n', generated_filename
+
+    path = source_dir / sql_file
+    return path.read_text(), path.name

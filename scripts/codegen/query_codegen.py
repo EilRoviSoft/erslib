@@ -102,4 +102,13 @@ class QueriesCodegen(BaseCodegen):
             )
         )
 
-        return [header, source]
+        sql_files = [
+            GeneratedFile(
+                filename = query.sql_filename,
+                type = "sql",
+                content = query.sql
+            )
+            for query in self.queries
+        ]
+
+        return sql_files + [header, source]

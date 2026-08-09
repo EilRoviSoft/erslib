@@ -5,11 +5,11 @@ It reads `*.g.json` descriptors and emits, per descriptor:
 
 - a header (`<name>.g.hpp`) - the entity struct, field/layout enums, `entity_traits` specialization, and the data-access function declarations;
 - a source (`<name>.g.cpp`) - the data-access function definitions;
-- SQL queries (`<name>/<layout>.g.sql`) - the same statements as standalone files, for migrations / `CREATE TABLE` (loadable via `dbio::QueryStore::load_directory`).
+- SQL queries (`<name>/<layout>.g.sql`, or `<name>/<original-filename>` when sourced from `sql_file`) - the same statements as standalone files, for migrations / `CREATE TABLE` (loadable via `dbio::QueryStore::load_directory`).
 
-`--dir`/`IMPORT_DIR` and `--query-dir`/`QUERY_DIR` are both scanned recursively for `*.g.json` descriptors of any type (`table`, `enum`, `queries`) - a descriptor can live under either, there's no restriction on which type goes where. `--query-dir`/`QUERY_DIR` additionally doubles as output: every descriptor's generated SQL is written there, grouped by descriptor name. In practice, `table`/`enum` descriptors usually live under `--dir` and `queries` descriptors (especially ones with `sql_file` references) are often kept under `--query-dir` for organization, but that's a convention, not a requirement.
+`--dir`/`IMPORT_DIR` is scanned recursively for `*.g.json` descriptors of any type (`table`, `enum`, `queries`); `--query-dir` is where every descriptor's generated SQL is written, grouped by descriptor name - the generator itself doesn't scan it for descriptors. `queries` descriptors (especially ones with `sql_file` references) are conventionally kept under `--dir` too, alongside `table`/`enum` ones; there's no restriction on where a given type lives.
 
-Generated SQL files always use the **`.g.sql`** extension, never plain `.sql` - that's what lets `--query-dir`/`QUERY_DIR` safely serve as both input and output: hand-authored `.sql` files (e.g. `sql_file` references) can live in the same directory tree without ever being confused for, or overwritten by, generated output. `dbio::QueryStore::load_directory` only loads `*.g.sql` files for exactly this reason.
+A layout/query written inline (`"sql": ...`) is emitted as `<name>.g.sql`. One sourced from `"sql_file": ...` is emitted as a byte-identical copy under the source file's own name and extension (so a hand-authored `rename_user.sql` is copied out as `rename_user.sql`, never renamed) - this way generated output can never collide with, or be confused for, the hand-authored file it was copied from, even if both end up reachable from the same directory tree. `dbio::QueryStore::load_directory` loads any `*.sql` file it finds, `.g.sql` or not.
 
 The generated code targets the `dbio` runtime (`#include <erslib/dbio.hpp>`).
 
@@ -24,7 +24,7 @@ Each data-access function takes an open `pqxx::dbtransaction&` and returns `ers:
 auto status = app::user::save(dbio::transaction_tag, tnx, entity);
 ```
 
-The standalone `.g.sql` files carry the exact same statement text (rendered once, so they can never drift from the embedded literals) and are emitted for migrations and schema setup; load them via `dbio::QueryStore::load_directory` under labels like `sql.user.save`.
+The standalone `.g.sql` files carry the exact same statement text (rendered once, so they can never drift from the embedded literals) and are emitted for migrations and schema setup; load them via `dbio::QueryStore::load_directory` under labels like `user.save`.
 
 ## CLI
 
@@ -35,7 +35,6 @@ python scripts codegen \
     --cpp-dir
     --query-dir
     --runtime-namespace
-    --use-query-store
 ```
 
 ## CMake
@@ -46,20 +45,19 @@ It works like `protobuf_generate`:
 
 ```cmake
 dbio_generate(
-    TARGET     my_app
-    IMPORT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src"
-    HPP_DIR    "${CMAKE_CURRENT_BINARY_DIR}/generated/include"
-    CPP_DIR    "${CMAKE_CURRENT_BINARY_DIR}/generated/src"
-    QUERY_DIR  "${CMAKE_CURRENT_SOURCE_DIR}/src/query"
-    # OUT_VAR   GENERATED_SOURCES  # optional: receive the .cpp list
+    TARGET        my_app
+    IMPORT_DIR    "${CMAKE_CURRENT_SOURCE_DIR}/src"
+    HPP_DIR       "${CMAKE_CURRENT_BINARY_DIR}/generated/include"
+    CPP_DIR       "${CMAKE_CURRENT_BINARY_DIR}/generated/src"
+    IN_QUERY_DIR  "${CMAKE_CURRENT_SOURCE_DIR}/res/query"
+    OUT_QUERY_DIR "${CMAKE_CURRENT_BINARY_DIR}/res/query"
+    # OUT_VAR     GENERATED_SOURCES  # optional: receive the .cpp list
 )
 ```
 
 With `TARGET`, the generated sources are added to it, `HPP_DIR` is added to its include path, and it is linked against `dbio`. Generation runs at configure time, so re-run CMake after adding or removing descriptors.
 
-`IMPORT_DIR` and `QUERY_DIR` are both scanned for descriptors of any type - `table`, `enum`, and `queries` can live under either, mixed freely. `QUERY_DIR` must be a real directory (not just a build path) since it's scanned as input too; it also receives every descriptor's generated SQL (as `*.g.sql`), grouped by descriptor name.
-
-Pass `USE_QUERY_STORE` to switch the generated code from embedded SQL literals to `dbio::QueryStore` lookups (see below); it requires `erslib::dbio` to have been built with `ERSLIB_DBIO_OWN_QUERY_STORE=ON`, otherwise `dbio_generate()` fails at configure time.
+`IMPORT_DIR` is scanned for descriptors of any type - `table`, `enum`, and `queries` can live under it, mixed freely. `IN_QUERY_DIR` and `OUT_QUERY_DIR` split what used to be a single `QUERY_DIR`: `IN_QUERY_DIR` is a read-only companion directory (typically the source-tree home of hand-authored `sql_file` content, e.g. `res/query`) that's globbed only so editing it triggers a reconfigure - it's never passed to the generator as an input. `OUT_QUERY_DIR` is where the generator actually writes every descriptor's generated SQL (grouped by descriptor name); it's typically a build-tree path and doesn't need to exist beforehand. Keeping them separate means generated output never lands in, or gets confused with, the directory your hand-authored SQL lives in.
 
 ## Descriptor example
 
@@ -99,15 +97,12 @@ A table descriptor may carry a `layouts` array of hand-written **`select`** quer
         "type": "select",
         "name": "select_adults",
         "params": [ { "name": "min_age", "type": "INT" } ],
-        "condition": "age >= $1",
-        "order_by": "age DESC, name",
-        "limit": 100
-    },
-    {
-        "type": "select",
-        "name": "select_namesakes",
-        "params": [ { "field": "name" } ],
-        "condition": "name = $1"
+        "sql": [
+            "SELECT id, name, age",
+            "FROM users",
+            "WHERE age >= $1",
+            "ORDER BY age DESC, name"
+        ]
     },
     {
         "type": "select",
@@ -121,9 +116,8 @@ A table descriptor may carry a `layouts` array of hand-written **`select`** quer
 
 - **`name`** - the generated function / layout name; must not collide with the built-in layouts (`select_all`, `save`, `update`, `load_by_*`).
 - **`params`** - ordered bind parameters, referenced positionally as `$1..$N`. An entry is either `{ "field": "<column>" }` (reuses that column's C++ type) or `{ "name": "...", "type": "<SQL type>", "explicit_type"?: "..." }` (a free parameter, e.g. a `min_age` that is not a column). They become the function arguments in order.
-- **Builder mode** - any of `condition` / `order_by` / `limit` (all optional), emitted verbatim as `WHERE` / `ORDER BY` / `LIMIT`.
-- **Raw mode** - `sql` (a string or an array of lines) or `sql_file` (a path relative to the descriptor). Mutually exclusive with builder mode.
-- **`get`** - optional subset of columns to select (default: all columns). Always re-ordered to the field declaration order; in raw mode the hand-written `SELECT` list must match that order.
+- **`sql`** / **`sql_file`** - exactly one is required: `sql` is a string or an array of lines, `sql_file` is a path relative to the descriptor. The hand-written statement is embedded verbatim; there is no query-builder mode.
+- **`get`** - optional subset of columns to select (default: all columns). Always re-ordered to the field declaration order; the hand-written `SELECT` list must match that order.
 
 ## Standalone queries (`type: queries`)
 
@@ -167,7 +161,7 @@ For queries that are not a projection of a single table (joins, aggregates, bare
                 { "name": "id",       "type": "BIGINT", "explicit_type": "uint32_t" },
                 { "name": "new_name", "type": "VARCHAR" }
             ],
-            "sql_file": "sql/rename_user.sql"
+            "sql_file": "rename_user.sql"
         }
     ]
 }
@@ -182,48 +176,25 @@ For queries that are not a projection of a single table (joins, aggregates, bare
 - **`result_name`** - optional struct name (default: the query name in CamelCase, e.g. `age_histogram` -> `AgeHistogram`).
 - **`sql` / `sql_file`** - exactly one, same as raw-mode layouts.
 
-The `namespace` places the result structs in `<namespace>` and the functions in `<namespace>::<descriptor-name>` (e.g. `app::AgeHistogram` and `app::stats::age_histogram`). Standalone `.g.sql` files are emitted under `sql.<descriptor>.<query>` for the query store, exactly like table layouts.
+The `namespace` places the result structs in `<namespace>` and the functions in `<namespace>::<descriptor-name>` (e.g. `app::AgeHistogram` and `app::stats::age_histogram`). Standalone SQL files are emitted under label `<descriptor>.<query>` for the query store, exactly like table layouts (see "Custom table layouts" above for the `.g.sql` vs. `sql_file`-original-name naming rule).
 
-## Embedded SQL vs. `dbio::QueryStore` (`--use-query-store`)
+## `dbio::QueryStore`
 
-By default every generated data-access function embeds its SQL as a `static constexpr std::string_view` literal in the `.cpp` file. Passing **`--use-query-store`** to the generator changes what gets emitted: the literal is omitted entirely and the function instead reads its SQL from the global `dbio::queries` store, by the same label the standalone `.g.sql` files use (e.g. `sql.user.save`, `sql.stats.age_histogram`):
+Every generated data-access function reads its SQL at call time from the global `dbio::queries` store, by the same label the standalone `.g.sql` files use (e.g. `user.save`, `stats.age_histogram`):
 
 ```cpp
-// --use-query-store off (default)
-static constexpr std::string_view sql_save = R"__sql(...)__sql";
-...
-    return tnx.exec(sql_save, pqxx::params { ... });
+const std::string_view sql_save = dbio::queries["user.save"];
+return tnx.exec(sql_save, pqxx::params { ... });
 ```
-```cpp
-// --use-query-store on
-...
-    const std::string_view sql_save = dbio::queries["sql.user.save"];
-    return tnx.exec(sql_save, pqxx::params { ... });
-```
-
-This is a **codegen-time** decision, not a compile-time `#ifdef` - the generator renders exactly one of the two forms into the `.cpp`, so a given generated tree always uses one mode. Regenerate (with or without the flag) to switch a target. The simplest way to turn it on is the `USE_QUERY_STORE` flag on `dbio_generate()`:
-
-```cmake
-dbio_generate(
-    TARGET     my_app
-    IMPORT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src"
-    HPP_DIR    "${CMAKE_CURRENT_BINARY_DIR}/generated/include"
-    CPP_DIR    "${CMAKE_CURRENT_BINARY_DIR}/generated/src"
-    QUERY_DIR  "${CMAKE_CURRENT_SOURCE_DIR}/res/query"
-    USE_QUERY_STORE
-)
-```
-
-which just passes `--use-query-store` through to the generator.
 
 **Prerequisites**, since `dbio::queries` is itself conditionally compiled:
 
-- `erslib::dbio` must be built with `-DERSLIB_DBIO_OWN_QUERY_STORE=ON`, which makes the library define `ERS_DBIO_GLOBAL_QUERY_STORE` as a `PUBLIC` compile definition (so every consumer sees `extern dbio::QueryStore queries;`) and, together with `ERS_DBIO_GLOBAL_QUERY_STORE_INIT`, auto-populates it from `./res/query` (relative to the process's working directory) at static-init time. `dbio_generate(... USE_QUERY_STORE ...)` checks this option and fails the configure early if it's off.
-- If your `QUERY_DIR` differs from `./res/query` (it usually does), the auto-populated store won't have your labels. Load your own directory once at startup, before any generated function runs:
+- `erslib::dbio` must be built with `-DERSLIB_DBIO_OWN_QUERY_STORE=ON`, which makes the library define `ERS_DBIO_GLOBAL_QUERY_STORE` as a `PUBLIC` compile definition (so every consumer sees `extern dbio::QueryStore queries;`) and, together with `ERS_DBIO_GLOBAL_QUERY_STORE_INIT`, auto-populates it from `./res/query` (relative to the process's working directory) at static-init time.
+- If your `OUT_QUERY_DIR` differs from `./res/query` (it usually does), the auto-populated store won't have your labels. Load your own directory once at startup, before any generated function runs:
   ```cpp
   dbio::queries.load_directory(query_dir);
   ```
-- Looking up a label that isn't loaded is undefined behavior (`QueryStore::operator[]` does not bounds-check) - make sure every `QUERY_DIR` a `USE_QUERY_STORE`-enabled target generates into gets loaded before use.
+- Looking up a label that isn't loaded is undefined behavior (`QueryStore::operator[]` does not bounds-check) - make sure every `OUT_QUERY_DIR` a target generates into gets loaded before use.
 
 ## Errors
 

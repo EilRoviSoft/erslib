@@ -13,21 +13,29 @@ endif()
 
 
 # dbio_generate(
-#   IMPORT_DIR <dir>
-#   HPP_DIR    <dir>
-#   CPP_DIR    <dir>
-#   QUERY_DIR  <dir>
+#   IMPORT_DIR    <dir>
+#   HPP_DIR       <dir>
+#   CPP_DIR       <dir>
+#   IN_QUERY_DIR  <dir>
+#   OUT_QUERY_DIR <dir>
 #   [TARGET    <target>]
 #   [OUT_VAR   <var>]
 #   [NAMESPACE <ns>]
 #   [WORKING_DIRECTORY <dir>]
+#   [FILE_LIST <file>]
 # )
+#
+# IN_QUERY_DIR is scanned (read-only) alongside IMPORT_DIR so that hand-authored *.sql / *.g.json
+# content living there (e.g. sql_file references) triggers a reconfigure when edited. OUT_QUERY_DIR
+# is where codegen actually writes generated SQL and is passed through as --query-dir. The two are
+# almost always different directories (source tree vs. build tree) - keeping them separate avoids
+# mixing hand-authored and generated content under the same path.
 function(dbio_generate)
-    set(one_value_args TARGET OUT_VAR IMPORT_DIR HPP_DIR CPP_DIR QUERY_DIR NAMESPACE WORKING_DIRECTORY)
+    set(one_value_args TARGET OUT_VAR IMPORT_DIR HPP_DIR CPP_DIR IN_QUERY_DIR OUT_QUERY_DIR NAMESPACE WORKING_DIRECTORY FILE_LIST)
     set(multi_value_args "")
-    cmake_parse_arguments(ARG "${options}" "${one_value_args}" "${multi_value_args}" ${ARGN})
+    cmake_parse_arguments(ARG "" "${one_value_args}" "${multi_value_args}" ${ARGN})
 
-    foreach(required IMPORT_DIR HPP_DIR CPP_DIR QUERY_DIR)
+    foreach(required IMPORT_DIR HPP_DIR CPP_DIR IN_QUERY_DIR OUT_QUERY_DIR)
         if(NOT ARG_${required})
             message(FATAL_ERROR "dbio_generate: ${required} is required")
         endif()
@@ -53,7 +61,7 @@ function(dbio_generate)
         "${_dbio_import_abs}/*.g.json"
         "${_dbio_import_abs}/*.sql")
 
-    get_filename_component(_dbio_query_abs "${ARG_QUERY_DIR}" ABSOLUTE BASE_DIR "${ARG_WORKING_DIRECTORY}")
+    get_filename_component(_dbio_query_abs "${ARG_IN_QUERY_DIR}" ABSOLUTE BASE_DIR "${ARG_WORKING_DIRECTORY}")
     file(GLOB_RECURSE _dbio_query_gen_inputs CONFIGURE_DEPENDS
         "${_dbio_query_abs}/*.g.json"
         "${_dbio_query_abs}/*.sql")
@@ -70,13 +78,17 @@ function(dbio_generate)
 
     set(_dbio_extra_args "")
 
+    if(ARG_FILE_LIST)
+        list(APPEND _dbio_extra_args --file-list "${ARG_FILE_LIST}")
+    endif()
+
     execute_process(
         WORKING_DIRECTORY "${ARG_WORKING_DIRECTORY}"
         COMMAND "${Python3_EXECUTABLE}" "${ERSLIB_DBIO_SCRIPTS_DIR}" codegen
             --dir "${ARG_IMPORT_DIR}"
             --hpp-dir "${ARG_HPP_DIR}"
             --cpp-dir "${ARG_CPP_DIR}"
-            --query-dir "${ARG_QUERY_DIR}"
+            --query-dir "${ARG_OUT_QUERY_DIR}"
             --runtime-namespace "${ARG_NAMESPACE}"
             ${_dbio_extra_args}
         OUTPUT_VARIABLE dbio_sources

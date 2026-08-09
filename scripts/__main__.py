@@ -18,7 +18,7 @@ def add_codegen_subparser(subparsers):
     codegen_parser.add_argument("--cpp-dir", type = str, required = True, dest = "cpp_dir")
     codegen_parser.add_argument("--query-dir", type = str, required = True, dest = "query_dir")
     codegen_parser.add_argument("--runtime-namespace", type = str, default = "dbio", dest = "runtime_namespace")
-    codegen_parser.add_argument("--use-query-store", action = "store_true", dest = "use_query_store")
+    codegen_parser.add_argument("--file-list", type = str, default = None, dest = "file_list")
 
 def main():
     parser = argparse.ArgumentParser(prog = "dbio")

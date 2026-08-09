@@ -94,7 +94,7 @@ class TableCodegen(BaseCodegen):
                 continue
 
             if layout.raw_sql is not None:
-                rendered[layout.name] = layout.raw_sql + '\n'
+                rendered[layout.name] = layout.raw_sql
             else:
                 rendered[layout.name] = templates[layout.type].render(layout = layout, **ctx)
 
@@ -112,7 +112,7 @@ class TableCodegen(BaseCodegen):
         for layout in self.table.layouts:
             if layout.type:
                 queries.append(GeneratedFile(
-                    filename = layout.name + ".g.sql",
+                    filename = layout.sql_filename or (layout.name + ".g.sql"),
                     type = "sql",
                     content = rendered[layout.name]
                 ))

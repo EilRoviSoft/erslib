@@ -35,7 +35,8 @@ def _output_path(args: argparse.Namespace, file: GeneratedFile, relative_dir: Pa
 def _process_descriptor(
         args: argparse.Namespace,
         item: Path,
-        generated_sources: list[str]
+        generated_sources: list[str],
+        all_generated_files: list[str]
         ):
     config: dict
     with open(item, 'r') as file:
@@ -51,7 +52,7 @@ def _process_descriptor(
         if descriptor_type not in variants:
             raise ValueError(f"unknown descriptor type '{descriptor_type}'")
 
-        generator = variants[descriptor_type](name, config, Path(args.query_dir))
+        generator = variants[descriptor_type](name, config, item.parent)
         generated_files = generator.exec()
     except Exception as error:
         raise RuntimeError(f"{item}: {error}") from error
@@ -63,17 +64,30 @@ def _process_descriptor(
         with open(file_path, 'w') as file:
             file.write(generated.content)
 
+        abs_path = os.path.abspath(file_path).replace('\\', '/')
+
         if generated.type == "source":
-            generated_sources.append(os.path.abspath(file_path).replace('\\', '/'))
+            generated_sources.append(abs_path)
+
+        all_generated_files.append(abs_path)
 
 
 def execute(args: argparse.Namespace) -> str:
     generated_sources: list[str] = []
+    all_generated_files: list[str] = []
 
     for item in Path(args.dir).rglob("*.g.json"):
         if not item.is_file():
             continue
 
-        _process_descriptor(args, item, generated_sources)
+        _process_descriptor(args, item, generated_sources, all_generated_files)
+
+    file_list = getattr(args, 'file_list', None)
+    if file_list:
+        os.makedirs(os.path.dirname(os.path.abspath(file_list)) or '.', exist_ok = True)
+        with open(file_list, 'w') as file:
+            file.write('\n'.join(all_generated_files))
+            if all_generated_files:
+                file.write('\n')
 
     return ';'.join(generated_sources)

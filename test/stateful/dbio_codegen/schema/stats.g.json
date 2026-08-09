@@ -29,7 +29,7 @@
                 { "name": "id",       "type": "BIGINT", "explicit_type": "uint32_t" },
                 { "name": "new_name", "type": "VARCHAR" }
             ],
-            "sql_file": "sql/rename_user.sql"
+            "sql_file": "../res/query/rename_user.sql"
         }
     ]
 }

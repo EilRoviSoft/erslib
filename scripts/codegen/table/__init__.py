@@ -1,3 +1,6 @@
+from ..util import resolve_sql
+
+
 # Remarks -------------------------------------------------------------------------------------------------------------
 
 
@@ -311,18 +314,16 @@ class Layout:
             type: str | None = None,
             persistency: str | None = None,
             params: "list[Field] | None" = None,
-            order_by: str | None = None,
-            limit: "int | str | None" = None,
-            raw_sql: str | None = None
+            raw_sql: str | None = None,
+            sql_filename: str | None = None
             ):
         self.name = name
         self._content = content
         self.type = type
         self.persistency = persistency
         self.params = params if params is not None else []
-        self.order_by = order_by
-        self.limit = limit
         self.raw_sql = raw_sql
+        self.sql_filename = sql_filename
 
     def __getitem__(self, index: str):
         return self._content[index]
@@ -512,21 +513,17 @@ class Table:
         else:
             get = [field.name for field in self.fields]
 
-        has_builder = any(key in layout for key in ('condition', 'order_by', 'limit'))
-        has_raw = 'sql' in layout or 'sql_file' in layout
-        if has_builder and has_raw:
-            raise ValueError(f"Layout '{name}': cannot mix condition/order_by/limit with sql/sql_file")
+        raw_sql, sql_filename = resolve_sql(layout, source_dir, f"Layout '{name}'", name + ".g.sql")
 
         return Layout(
             name = name,
             content = {
                 "put": list(),
-                "get": get,
-                "condition": layout.get('condition')
+                "get": get
             },
             type = "select",
             persistency = "in",
             params = params,
-            order_by = layout.get('order_by'),
-            limit = layout.get('limit')
+            raw_sql = raw_sql,
+            sql_filename = sql_filename
         )

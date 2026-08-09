@@ -18,18 +18,18 @@ namespace {
     }
 
     // "user/save.g.sql" -> "user.save"
-    std::string make_label(const fs::path& relative) {
+    // "player/create.sql" -> "player.create"
+    std::string make_label(const fs::path& path) {
+        fs::path name = path.filename();
+        while (name.has_extension())
+            name = name.stem();
+
         std::string result;
+        for (const auto& part : path.parent_path())
+            result += part.string() + '.';
+        result += name.string();
 
-        for (const auto& part : relative.parent_path())
-            result += result.empty() ? part.generic_string() : '.' + part.generic_string();
-
-        result += '.' + relative.stem().stem().generic_string();
         return result;
-    }
-
-    bool is_generated_sql(const fs::path& path) {
-        return path.extension() == ".sql" && path.stem().extension() == ".g";
     }
 }
 
@@ -41,7 +41,7 @@ size_t dbio::QueryStore::load_directory(const fs::path& root) {
     size_t count = 0;
 
     for (const auto& entry : fs::recursive_directory_iterator(root)) {
-        if (!entry.is_regular_file() || !is_generated_sql(entry.path()))
+        if (!entry.is_regular_file() || entry.path().extension() != ".sql")
             continue;
 
         const fs::path relative = fs::relative(entry.path(), root);

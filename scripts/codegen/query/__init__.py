@@ -1,7 +1,7 @@
 from pathlib import Path
 
 
-from ..util import to_camel_case
+from ..util import to_camel_case, resolve_sql
 from ..table import Field
 
 
@@ -64,6 +64,8 @@ class Query:
             raise ValueError(f"Query '{self.name}': '{self.kind}' kind cannot have a 'result'")
 
         self.struct_name = data.get('result_name', to_camel_case(self.name))
+
+        self.sql, self.sql_filename = resolve_sql(data, search_dir, f"Query '{self.name}'", self.name + ".g.sql")
 
     def is_bulk(self) -> bool:
         return self.kind == "rows"

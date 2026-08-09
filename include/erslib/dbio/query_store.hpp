@@ -26,7 +26,7 @@ namespace dbio {
 
         // Modifiers
 
-        // Recursively loads every "*.g.sql" file under root (hand-authored ".sql" files are ignored)
+        // Recursively loads every "*.sql" file under root
         // as "sql.<relative/path/without-ext>" with '/' replaced by '.'.
         size_t load_directory(const std::filesystem::path& root);
 
