@@ -1,5 +1,26 @@
 #pragma once
 
+#ifdef ERSLIB_HAS_REFLECTION
+
+
+// std
+#include <meta>
+#include <string_view>
+
+
+namespace ers::internal {
+    template<typename T>
+    constexpr auto funcsig() {
+        constexpr auto name = std::meta::display_string_of(^^T);
+        constexpr auto* storage = std::define_static_string(name);
+        return std::string_view { storage };
+    }
+}
+
+
+#else
+
+
 // std
 #include <string_view>
 
@@ -16,7 +37,7 @@ namespace ers::internal {
         constexpr auto suffix = std::string_view { "]" };
         constexpr auto function = std::string_view { __PRETTY_FUNCTION__ };
 #elifdef _MSC_VER
-        constexpr auto prefix = std::string_view { "type_name_array<" };
+        constexpr auto prefix = std::string_view { "funcsig<" };
         constexpr auto suffix = std::string_view { ">(void)" };
         constexpr auto function = std::string_view { __FUNCSIG__ };
 #else
@@ -33,3 +54,6 @@ namespace ers::internal {
         return function.substr(start, end - start);
     }
 }
+
+
+#endif

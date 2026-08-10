@@ -24,6 +24,9 @@ namespace dbio::internal {
         std::string_view separator;
     };
 
+
+    ERSLIB_EXPORT section_format_t section_format(Section section);
+
     ERSLIB_EXPORT bool is_singular(Section section);
     ERSLIB_EXPORT bool is_identifier(std::string_view name);
 }

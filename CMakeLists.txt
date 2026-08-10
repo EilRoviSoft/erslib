@@ -44,33 +44,6 @@ if(NOT DEFINED CMAKE_BUILD_TYPE AND NOT DEFINED CMAKE_CONFIGURATION_TYPES)
     set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif()
 
-if(ERSLIB_ENABLE_REFLECTION)
-    include(CheckCXXSourceCompiles)
-    set(CMAKE_REQUIRED_FLAGS "-std=c++26 -freflection")
-    check_cxx_source_compiles("
-        #include <meta>
-        struct S { int x; };
-        constexpr auto r = ^^S;
-        static_assert(std::meta::is_type(r));
-        int main() {}
-    " ERSLIB_HAVE_P2996)
-    unset(CMAKE_REQUIRED_FLAGS)
-
-    if(NOT ERSLIB_HAVE_P2996)
-        message(FATAL_ERROR
-            "ERSLIB_ENABLE_REFLECTION requires GCC >= 16.1 with -freflection. "
-            "Configure with the gcc16.2 preset."
-        )
-    endif()
-
-    target_compile_options(erslib
-        PUBLIC
-            $<$<COMPILE_LANG_AND_ID:CXX,GNU>:-freflection>
-    )
-    target_compile_definitions(erslib PUBLIC ERSLIB_HAS_REFLECTION)
-endif()
-
-
 #----------------------------------------------------------------------------------------------------------------------
 # helper functions
 #----------------------------------------------------------------------------------------------------------------------
@@ -154,6 +127,29 @@ erslib_optional_package(erslib_core boost_optional Boost::optional _HAS_BOOST_OP
 erslib_optional_package(erslib_core boost_smart_ptr Boost::smart_ptr _HAS_BOOST_SMART_PTR)
 erslib_optional_package(erslib_core boost_thread Boost::thread _HAS_BOOST_THREAD)
 erslib_optional_package(erslib_core cpptrace cpptrace::cpptrace _HAS_CPPTRACE)
+
+if(ERSLIB_ENABLE_REFLECTION)
+    include(CheckCXXSourceCompiles)
+    set(CMAKE_REQUIRED_FLAGS "-std=c++26 -freflection")
+    check_cxx_source_compiles("
+        #include <meta>
+        struct S { int x; };
+        constexpr auto r = ^^S;
+        static_assert(std::meta::is_type(r));
+        int main() {}
+    " ERSLIB_HAVE_P2996)
+    unset(CMAKE_REQUIRED_FLAGS)
+
+    if(NOT ERSLIB_HAVE_P2996)
+        message(FATAL_ERROR "ERSLIB_ENABLE_REFLECTION requires GCC >= 16.1 with -freflection.")
+    endif()
+
+    target_compile_options(erslib_core
+        PUBLIC
+            $<$<COMPILE_LANG_AND_ID:CXX,GNU>:-freflection>
+    )
+    target_compile_definitions(erslib_core PUBLIC ERSLIB_HAS_REFLECTION)
+endif()
 
 if(IS_TOP_LEVEL)
     target_compile_definitions(erslib_core
