@@ -7,7 +7,7 @@
 #include <sol/table.hpp>
 
 // ers
-#include "erslib/core/type/result.hpp"
+#include <erslib/core/type/result.hpp>
 
 
 namespace aescript {

@@ -26,7 +26,7 @@ def _output_path(args: argparse.Namespace, file: GeneratedFile, relative_dir: Pa
             return os.path.join(args.cpp_dir, relative_dir, file.filename)
 
         case 'sql':
-            return os.path.join(args.query_dir, name, file.filename)
+            return os.path.join(args.out_query_dir, name, file.filename)
 
         case _:
             raise ValueError(f"Handling of type '{file.type}' doesn't exist")
@@ -52,7 +52,7 @@ def _process_descriptor(
         if descriptor_type not in variants:
             raise ValueError(f"unknown descriptor type '{descriptor_type}'")
 
-        generator = variants[descriptor_type](name, config, item.parent)
+        generator = variants[descriptor_type](name, config, Path(args.in_query_dir))
         generated_files = generator.exec()
     except Exception as error:
         raise RuntimeError(f"{item}: {error}") from error

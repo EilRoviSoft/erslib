@@ -463,7 +463,7 @@ class Table:
 
         for layout in data:
             match layout.get('type'):
-                case "select" | "select_by":
+                case "select":
                     self.layouts.append(self._make_select_layout(layout, source_dir, reserved))
 
                 case _:

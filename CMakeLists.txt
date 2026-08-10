@@ -193,6 +193,19 @@ if(ERSLIB_BUILD_DBIO)
 
     target_sources(erslib_dbio
         PRIVATE
+            "src/erslib/dbio/impl/clause.cpp"
+            "src/erslib/dbio/impl/context.cpp"
+            "src/erslib/dbio/impl/query.cpp"
+            "src/erslib/dbio/impl/section.cpp"
+
+            "src/erslib/dbio/clauses/bound.cpp"
+            "src/erslib/dbio/clauses/column.cpp"
+            "src/erslib/dbio/clauses/condition.cpp"
+            "src/erslib/dbio/clauses/in.cpp"
+            "src/erslib/dbio/clauses/null.cpp"
+            "src/erslib/dbio/clauses/order.cpp"
+            "src/erslib/dbio/clauses/raw.cpp"
+
             "src/erslib/dbio/connection_pool.cpp"
             "src/erslib/dbio/database.cpp"
             "src/erslib/dbio/formatter.cpp"

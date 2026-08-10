@@ -16,7 +16,8 @@ def add_codegen_subparser(subparsers):
     codegen_parser.add_argument("--dir", type = str, required = True, dest = "dir")
     codegen_parser.add_argument("--hpp-dir", type = str, required = True, dest = "hpp_dir")
     codegen_parser.add_argument("--cpp-dir", type = str, required = True, dest = "cpp_dir")
-    codegen_parser.add_argument("--query-dir", type = str, required = True, dest = "query_dir")
+    codegen_parser.add_argument("--out-query-dir", type = str, required = True, dest = "out_query_dir")
+    codegen_parser.add_argument("--in-query-dir", type = str, required = True, dest = "in_query_dir")
     codegen_parser.add_argument("--runtime-namespace", type = str, default = "dbio", dest = "runtime_namespace")
     codegen_parser.add_argument("--file-list", type = str, default = None, dest = "file_list")
 

@@ -88,7 +88,8 @@ function(dbio_generate)
             --dir "${ARG_IMPORT_DIR}"
             --hpp-dir "${ARG_HPP_DIR}"
             --cpp-dir "${ARG_CPP_DIR}"
-            --query-dir "${ARG_OUT_QUERY_DIR}"
+            --in-query-dir "${ARG_IN_QUERY_DIR}"
+            --out-query-dir "${ARG_OUT_QUERY_DIR}"
             --runtime-namespace "${ARG_NAMESPACE}"
             ${_dbio_extra_args}
         OUTPUT_VARIABLE dbio_sources

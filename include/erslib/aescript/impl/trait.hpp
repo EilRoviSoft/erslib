@@ -4,6 +4,12 @@
 #include <concepts>
 #include <string>
 
+// sol
+#include <sol/sol.hpp>
+
+// ers
+#include <erslib/core/type/result.hpp>
+
 
 namespace aescript::internal {
     template<typename T>
