@@ -12,9 +12,15 @@
                 "CMAKE_CXX_STANDARD_REQUIRED": "ON",
                 "CMAKE_CXX_EXTENSIONS": "OFF",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-                "ERSLIB_BUILD_TESTS": "OFF",
+
+                "ERS_TRACE_VERBOSITY": "2",
+                "ERS_TRACE_MAX_DEPTH": "3",
+                "ERSLIB_BUILD_TESTS": "ON",
                 "ERSLIB_BUILD_CONTRIB": "ON",
-                "ERSLIB_BUILD_DBIO": "ON"
+                "ERSLIB_BUILD_DBIO": "ON",
+                "ERSLIB_BUILD_AENGINE": "ON",
+                "ERSLIB_BUILD_EASY_ECS": "ON",
+                "ERSLIB_BUILD_AESCRIPT": "ON"
             }
         },
         {
@@ -27,23 +33,34 @@
                 "CMAKE_CXX_FLAGS_DEBUG": "-g -O0",
                 "CMAKE_CXX_FLAGS_RELEASE": "-O2 -DNDEBUG -march=x86-64-v3"
             },
+            "environment": {
+                "VCPKG_ROOT": "$penv{HOME}/vcpkg"
+            },
             "condition": {
                 "type": "equals",
                 "lhs": "${hostSystemName}",
                 "rhs": "Linux"
             }
         },
+        
         {
-            "name": "linux-gcc-16",
+            "name": "linux-gcc16",
+            "displayName": "dbg-gcc16",
             "inherits": "linux-base",
-            "hidden": true,
-            "environment": {
-                "CC": "gcc-16",
-                "CXX": "g++-16"
-            },
             "cacheVariables": {
                 "CMAKE_C_COMPILER": "gcc-16",
                 "CMAKE_CXX_COMPILER": "g++-16"
+            }
+        },
+        {
+            "name": "linux-gcc16.2",
+            "displayName": "dbg-gcc16.2",
+            "inherits": "linux-base",
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "/opt/gcc-16.2/bin/gcc-16.2",
+                "CMAKE_CXX_COMPILER": "/opt/gcc-16.2/bin/g++-16.2",
+                "CMAKE_EXE_LINKER_FLAGS": "-Wl,-rpath,/opt/gcc-16.2/lib64",
+                "CMAKE_SHARED_LINKER_FLAGS": "-Wl,-rpath,/opt/gcc-16.2/lib64"
             }
         }
     ]

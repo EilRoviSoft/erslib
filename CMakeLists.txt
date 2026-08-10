@@ -18,6 +18,7 @@ include(GNUInstallDirs)
 
 string(COMPARE EQUAL "${CMAKE_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}" IS_TOP_LEVEL)
 
+
 option(ERSLIB_SHARED_LIBS "Build as .dll/.so" OFF)
 option(ERSLIB_BUILD_TESTS "Build erslib tests" OFF)
 option(ERSLIB_INSTALL "Generate target for installing erslib" ${IS_TOP_LEVEL})
@@ -29,6 +30,9 @@ option(ERSLIB_BUILD_AENGINE "Build erslib::aengine target" OFF)
 option(ERSLIB_BUILD_EASY_ECS "Build erslib::easy_ecs target" OFF)
 option(ERSLIB_BUILD_AESCRIPT "Build erslib::aescript target" OFF)
 
+option(ERSLIB_ENABLE_REFLECTION "Use C++26 static reflection (P2996)" OFF)
+
+
 set_if_undefined(ERSLIB_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/erslib"
     CACHE STRING "Install path for erslib package-related CMake files"
 )
@@ -38,6 +42,32 @@ option(ERSLIB_DBIO_OWN_QUERY_STORE "Init own 'QueryStore queries' for sql" OFF)
 if(NOT DEFINED CMAKE_BUILD_TYPE AND NOT DEFINED CMAKE_CONFIGURATION_TYPES)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
     set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+endif()
+
+if(ERSLIB_ENABLE_REFLECTION)
+    include(CheckCXXSourceCompiles)
+    set(CMAKE_REQUIRED_FLAGS "-std=c++26 -freflection")
+    check_cxx_source_compiles("
+        #include <meta>
+        struct S { int x; };
+        constexpr auto r = ^^S;
+        static_assert(std::meta::is_type(r));
+        int main() {}
+    " ERSLIB_HAVE_P2996)
+    unset(CMAKE_REQUIRED_FLAGS)
+
+    if(NOT ERSLIB_HAVE_P2996)
+        message(FATAL_ERROR
+            "ERSLIB_ENABLE_REFLECTION requires GCC >= 16.1 with -freflection. "
+            "Configure with the gcc16.2 preset."
+        )
+    endif()
+
+    target_compile_options(erslib
+        PUBLIC
+            $<$<COMPILE_LANG_AND_ID:CXX,GNU>:-freflection>
+    )
+    target_compile_definitions(erslib PUBLIC ERSLIB_HAS_REFLECTION)
 endif()
 
 
@@ -193,7 +223,6 @@ if(ERSLIB_BUILD_DBIO)
 
     target_sources(erslib_dbio
         PRIVATE
-            "src/erslib/dbio/impl/clause.cpp"
             "src/erslib/dbio/impl/context.cpp"
             "src/erslib/dbio/impl/query.cpp"
             "src/erslib/dbio/impl/section.cpp"
