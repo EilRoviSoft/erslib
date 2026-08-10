@@ -113,17 +113,35 @@ namespace {
         // And attached benchmarks:
         // https://github.com/Sqeaky/CppFileToStringExperiments
 
-        std::fstream file(path, std::ios::in | std::ios::ate); // open file and immediately seek to the end
+        std::fstream file(path, std::ios::in | std::ios::binary | std::ios::ate); // open file and immediately seek to the end
 
-        auto file_size = file.tellg();      // returns cursor pos, which is the end of file
-        file.seekg(std::ios::beg);          // seek to the beginning
-        std::string chars(file_size, 0);    // allocate string of appropriate size
-        file.read(chars.data(), file_size); // read into the string
+        // opening as binary skips OS-specific newline re-encoding, which is what would otherwise
+        // leave trailing garbage/short reads relative to the size reported by 'tellg()'
 
-        size_t decrement = 0;
-        while (chars[chars.size() - decrement - 1] == '\0')
-            decrement++;
-        chars.resize(chars.size() - decrement);
+        if (!file.good()) {
+            throw ers::make_path_error("Could not open file '{}'.",
+                path.string());
+        }
+
+        // returns cursor pos, which is the end of file
+        
+        const auto file_size = file.tellg();
+        if (file_size < 0) {
+            throw ers::make_path_error("Could not determine size of file '{}'.",
+                path.string());
+        }
+
+        // seek to the beginning
+        
+        file.seekg(std::ios::beg);
+        
+        // allocate string of appropriate size
+        
+        std::string chars(file_size, 0);
+        
+        // read into the string
+        
+        file.read(chars.data(), file_size);
 
         return chars;
     }
@@ -381,12 +399,11 @@ namespace utl::internal {
         return buffer;
     }
 
-    void Node::to_file(const std::string& filepath, Format format) const {
+    void Node::to_file(const fs::path& filepath, Format format) const {
         const auto chars = to_string(format);
 
-        const fs::path path = filepath;
-        if (path.has_parent_path() && fs::exists(path.parent_path()))
-            fs::create_directories(fs::path(filepath).parent_path());
+        if (filepath.has_parent_path() && !fs::exists(filepath.parent_path()))
+            fs::create_directories(filepath.parent_path());
 
         // no need to do an OS call in a trivial case, some systems might also have limited permissions
         // on directory creation and calling 'create_directories()' straight up will cause them to error
@@ -562,7 +579,7 @@ namespace utl::internal {
 
         cursor = skip_nonsignificant_whitespace(cursor);
         if (chars[cursor] != ':') {
-            throw ers::make_parse_error("JSON object node encountered unexpected symbol {} after the pair key at pos (should be ':'). {}",
+            throw ers::make_parse_error("JSON object node encountered unexpected symbol '{}' after the pair key at pos (should be ':'). {}",
                 chars[cursor], cursor, pretty_error(cursor, chars));
         }
 
@@ -763,7 +780,7 @@ namespace utl::internal {
 
         const auto make_surrogate_error = [&](std::string_view hex) {
             return ers::make_parse_error("JSON string node encountered invalid unicode escape sequence in second half of "
-                "UTF-16 surrogate pair starting at '{}' while parsing an escape sequence at pos. {}",
+                "UTF-16 surrogate pair starting at '{}' while parsing an escape sequence at pos {}. {}",
                 hex, cursor, pretty_error(cursor, chars));
         };
 
@@ -924,18 +941,25 @@ namespace utl::internal {
     std::pair<std::size_t, std::variant<Integral, Floating>> parser::parse_number(std::size_t cursor) const {
         using namespace std::string_literals;
 
-        std::variant<Integral, Floating> number_value;
+        // Numbers have no closing delimiter, so before calling 'std::from_chars()' we scan ahead just far
+        // enough to tell integral from floating-point: seeing '.', 'e' or 'E' anywhere in the token means
+        // floating-point (JSON grammar disallows them anywhere else in a number). We stop at the first
+        // non-numeric character either way - 'std::from_chars()' does the real, bounds-checked parse below.
 
-        std::size_t offset = 0;
         bool is_floating = false;
-        char c;
-        do {
-            c = chars[cursor + offset];
-            offset++;
+        for (std::size_t offset = 0; cursor + offset < chars.size(); ++offset) {
+            const char c = chars[cursor + offset];
 
-            if (c == '.')
+            if (c == '.' || c == 'e' || c == 'E') {
                 is_floating = true;
-        } while ((c >= '0' && c <= '9') || c == '-');
+                break;
+            }
+
+            if (!((c >= '0' && c <= '9') || c == '-' || c == '+'))
+                break;
+        }
+
+        std::variant<Integral, Floating> number_value;
 
         std::from_chars_result result;
         if (is_floating) {
@@ -1015,9 +1039,8 @@ namespace utl::internal {
             && chars[cursor + 4] == 'e';
 
         if (!parsed_correctly) {
-            throw ers::make_parse_error(
-                "JSON bool node could not parse 'false' at pos {}. {}",
-                pretty_error(cursor, chars), cursor);
+            throw ers::make_parse_error("JSON bool node could not parse 'false' at pos {}. {}",
+                cursor, pretty_error(cursor, chars));
         }
 
         return { cursor + token_length, false };
@@ -1039,7 +1062,7 @@ namespace utl::internal {
 
         if (!parsed_correctly) {
             throw ers::make_parse_error("JSON null node could not parse 'null' at pos {}. {}",
-                pretty_error(cursor, chars), cursor);
+                cursor, pretty_error(cursor, chars));
         }
 
         return { cursor + token_length, Null() };
@@ -1082,192 +1105,19 @@ namespace utl::internal {
     // 'std::ostringstream' is painfully slow compared to regular appends
     // so it's out of the question.
 
-    void serialize_json_recursion_minimized(
+    template<bool Prettify>
+    void serialize_json_recursion(
         const Node& node,
         std::string& chars,
-        size_t indent_level
-    ) {
-        using namespace std::string_literals;
-
-        // JSON Object
-
-        if (auto* obj_ptr = node.get_if<Object>()) {
-            const auto& object_value = *obj_ptr;
-
-            // Skip all logic for empty objects
-
-            if (object_value.empty()) {
-                chars += "{}";
-                return;
-            }
-
-            chars += '{';
-
-            for (auto it = object_value.cbegin();;) {
-                // Key
-
-                chars += '"';
-                chars += it->first;
-                chars += "\":";
-
-                // Value
-
-                serialize_json_recursion_minimized(it->second, chars, indent_level + 1);
-
-                // Comma
-
-                if (++it != object_value.cend()) {
-                    // prevents trailing comma
-
-                    chars += ',';
-                } else
-                    break;
-            }
-
-            chars += '}';
-        }
-
-        // JSON Array
-
-        else if (auto* array_ptr = node.get_if<Array>()) {
-            const auto& array_value = *array_ptr;
-
-            // Skip all logic for empty arrays
-
-            if (array_value.empty()) {
-                chars += "[]";
-                return;
-            }
-
-            chars += '[';
-
-            for (auto it = array_value.cbegin();;) {
-                //Node
-
-                serialize_json_recursion_minimized(*it, chars, indent_level + 1);
-
-                // Comma
-
-                if (++it != array_value.cend()) {
-                    // prevents trailing comma
-                    chars += ',';
-                } else {
-                    break;
-                }
-            }
-            chars += ']';
-        }
-
-        // String
-
-        else if (auto* string_ptr = node.get_if<String>()) {
-            const auto& string_value = *string_ptr;
-
-            chars += '"';
-
-            // Serialize string while handling escape sequences.
-            /// Without escape sequences we could just do 'chars += string_value'.
-            //
-            // Since appending individual characters is ~twice as slow as appending the whole string, we use a
-            // "buffered" way of appending, appending whole segments up to the currently escaped char.
-            // Strings with no escaped chars get appended in a single call.
-
-            std::size_t segment_start = 0;
-            for (std::size_t i = 0; i < string_value.size(); ++i) {
-                if (const char escaped_char_replacement = lookup_serialized_escaped_chars[to_u8(string_value[i])]) {
-                    chars.append(string_value.data() + segment_start, i - segment_start);
-                    chars += '\\';
-                    chars += escaped_char_replacement;
-
-                    // skip over the "actual" technical character in the string
-
-                    segment_start = i + 1;
-                }
-            }
-            chars.append(string_value.data() + segment_start, string_value.size() - segment_start);
-
-            chars += '"';
-        }
-
-        // Integral
-
-        else if (auto* integral_ptr = node.get_if<Integral>()) {
-            const auto& integral_value = *integral_ptr;
-
-            // "-9223372036854775808".size()
-
-            std::array<char, 20> buffer;
-
-            const auto [number_end_ptr, error_code] =
-                std::to_chars(buffer.data(), buffer.data() + buffer.size(), integral_value);
-
-            if (error_code != std::errc {}) {
-                throw ers::make_parse_error("JSON serializing encountered std::to_chars() formatting error while serializing value ''.",
-                    integral_value);
-            }
-
-            chars.append(buffer.data(), number_end_ptr - buffer.data());
-        }
-
-        // Floating
-
-        else if (auto* floating_ptr = node.get_if<Floating>()) {
-            const auto& floating_value = *floating_ptr;
-
-            constexpr int max_exponent = std::numeric_limits<Floating>::max_exponent10;
-            constexpr int max_digits =
-                4 + std::numeric_limits<Floating>::max_digits10 + std::max(2, log_10_ceil(max_exponent));
-
-            // should be the smallest buffer size to account for all possible 'std::to_chars()' outputs,
-            // see [https://stackoverflow.com/questions/68472720/stdto-chars-minimal-floating-point-buffer-size]
-
-            std::array<char, max_digits> buffer;
-
-            const auto [number_end_ptr, error_code] =
-                std::to_chars(buffer.data(), buffer.data() + buffer.size(), floating_value);
-
-            if (error_code != std::errc {}) {
-                throw ers::make_parse_error("JSON serializing encountered std::to_chars() formatting error while serializing value '{}'.",
-                    floating_value);
-            }
-
-            // Save NaN/Inf cases as strings, since JSON spec doesn't include IEEE 754.
-            // (!) May result in non-homogenous arrays like [1.0, "inf" , 3.0, 4.0, "nan"]
-
-            if (std::isfinite(floating_value)) {
-                chars.append(buffer.data(), number_end_ptr - buffer.data());
-            } else {
-                chars += '"';
-                chars.append(buffer.data(), number_end_ptr - buffer.data());
-                chars += '"';
-            }
-        }
-
-        // Bool
-
-        else if (auto* bool_ptr = node.get_if<Bool>()) {
-            const auto& bool_value = *bool_ptr;
-            chars += (bool_value ? "true" : "false");
-        }
-
-        // Null
-
-        else if (node.is<Null>()) {
-            chars += "null";
-        }
-    }
-
-    void serialize_json_recursion_pretty(
-        const Node& node,
-        std::string& chars,
-        size_t indent_level,
+        std::size_t indent_level,
         bool skip_first_indent
     ) {
         using namespace std::string_literals;
         constexpr std::size_t indent_level_size = 4;
         const std::size_t indent_size = indent_level_size * indent_level;
 
-        if (!skip_first_indent) chars.append(indent_size, ' ');
+        if constexpr (Prettify)
+            if (!skip_first_indent) chars.append(indent_size, ' ');
 
         // JSON Object
 
@@ -1282,20 +1132,21 @@ namespace utl::internal {
             }
 
             chars += '{';
-            chars += '\n';
+            if constexpr (Prettify) chars += '\n';
 
             for (auto it = object_value.cbegin();;) {
-                chars.append(indent_size + indent_level_size, ' ');
+                if constexpr (Prettify) chars.append(indent_size + indent_level_size, ' ');
 
                 // Key
 
                 chars += '"';
                 chars += it->first;
-                chars += "\": ";
+                if constexpr (Prettify) chars += "\": ";
+                else chars += "\":";
 
                 // Value
 
-                serialize_json_recursion_pretty(it->second, chars, indent_level + 1, true);
+                serialize_json_recursion<Prettify>(it->second, chars, indent_level + 1, true);
 
                 // Comma
 
@@ -1303,14 +1154,14 @@ namespace utl::internal {
                     // prevents trailing comma
 
                     chars += ',';
-                    chars += '\n';
+                    if constexpr (Prettify) chars += '\n';
                 } else {
-                    chars += '\n';
+                    if constexpr (Prettify) chars += '\n';
                     break;
                 }
             }
 
-            chars.append(indent_size, ' ');
+            if constexpr (Prettify) chars.append(indent_size, ' ');
             chars += '}';
         }
 
@@ -1327,12 +1178,12 @@ namespace utl::internal {
             }
 
             chars += '[';
-            chars += '\n';
+            if constexpr (Prettify) chars += '\n';
 
             for (auto it = array_value.cbegin();;) {
                 // Node
 
-                serialize_json_recursion_pretty(*it, chars, indent_level + 1);
+                serialize_json_recursion<Prettify>(*it, chars, indent_level + 1);
 
                 // Comma
 
@@ -1340,13 +1191,14 @@ namespace utl::internal {
                     // prevents trailing comma
 
                     chars += ',';
-                    chars += '\n';
+                    if constexpr (Prettify) chars += '\n';
                 } else {
-                    chars += '\n';
+                    if constexpr (Prettify) chars += '\n';
                     break;
                 }
             }
-            chars.append(indent_size, ' ');
+
+            if constexpr (Prettify) chars.append(indent_size, ' ');
             chars += ']';
         }
 
@@ -1415,8 +1267,7 @@ namespace utl::internal {
 
             std::array<char, max_digits> buffer;
 
-            const auto [number_end_ptr, error_code] =
-                std::to_chars(buffer.data(), buffer.data() + buffer.size(), floating_value);
+            const auto [number_end_ptr, error_code] = std::to_chars(buffer.data(), buffer.data() + buffer.size(), floating_value);
 
             if (error_code != std::errc {}) {
                 throw ers::make_parse_error("JSON serializing encountered std::to_chars() formatting error while serializing value '{}'.",
@@ -1448,6 +1299,9 @@ namespace utl::internal {
             chars += "null";
         }
     }
+
+    template void serialize_json_recursion<true>(const Node&, std::string&, std::size_t, bool);
+    template void serialize_json_recursion<false>(const Node&, std::string&, std::size_t, bool);
 }
 
 // ===============================
@@ -1471,7 +1325,7 @@ namespace utl {
         for (auto cursor = end_cursor; cursor < chars.size(); ++cursor)
             if (!lookup_whitespace_chars[to_u8(chars[cursor])]) {
                 throw ers::make_parse_error("Invalid trailing symbols encountered after the root JSON node at pos {}. {}",
-                    pretty_error(cursor, chars), cursor);
+                    cursor, pretty_error(cursor, chars));
             }
 
         // implicit tuple blocks copy elision, we have to move() manually

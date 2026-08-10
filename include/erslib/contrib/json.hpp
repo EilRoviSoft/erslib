@@ -162,16 +162,53 @@ namespace utl::internal {
     UTL_JSON_TYPE_TRAIT_CONJUNCTION(is_null_like, std::is_same<T, null_type_impl>);
 
 
-    UTL_JSON_TYPE_TRAIT_CONJUNCTION(is_json_convertible,
-        is_object_like<T>,
-        is_array_like<T>,
+    struct dummy_type {};
+
+
+    template<class T, class = void>
+    struct possible_value_type {
+        using type = dummy_type;
+    };
+
+    template<class T>
+    struct possible_value_type<T, std::void_t<decltype(std::declval<typename std::decay_t<T>::value_type>())>> {
+        using type = typename T::value_type;
+    };
+
+    template<class T, class = void>
+    struct possible_mapped_type {
+        using type = dummy_type;
+    };
+
+    template<class T>
+    struct possible_mapped_type<T, std::void_t<decltype(std::declval<typename std::decay_t<T>::mapped_type>())>> {
+        using type = typename T::mapped_type;
+    };
+
+#define UTL_JSON_TYPE_TRAIT_DISJUNCTION(TRAIT_NAME, ...)                                                               \
+    template<class T>                                                                                                  \
+    struct TRAIT_NAME : std::disjunction<__VA_ARGS__> {};                                                              \
+                                                                                                                       \
+    template<class T>                                                                                                  \
+    constexpr bool TRAIT_NAME##_v = TRAIT_NAME<T>::value
+
+    UTL_JSON_TYPE_TRAIT_DISJUNCTION(is_directly_json_convertible,
         is_string_like<T>,
         is_integral_like<T>,
         is_floating_like<T>,
         is_bool_like<T>,
         is_null_like<T>);
 
+    UTL_JSON_TYPE_TRAIT_CONJUNCTION(
+        is_json_convertible,
+        std::disjunction<
+        is_directly_json_convertible<T>,
+        std::conjunction<is_array_like<T>, is_json_convertible<typename possible_value_type<T>::type>>,
+        std::conjunction<is_object_like<T>, is_json_convertible<typename possible_mapped_type<T>::type>>>,
+        std::negation<std::is_same<T, dummy_type>>);
+
 #undef UTL_JSON_TYPE_TRAIT_CONJUNCTION
+#undef UTL_JSON_TYPE_TRAIT_DISJUNCTION
 
     // Workaround for 'static_assert(false)' making program ill-formed even
     // when placed inside an 'if constexpr' branch that never compiles.
@@ -191,9 +228,15 @@ namespace utl::internal {
     // which makes 'sizeof(Container)' independent of 'T'.
     //
     // This requirement was only standardized for 'std::vector' and 'std::list' due to ABI breaking concerns.
-    // 'std::map' is not required to support incomplete types by the standard, however in practice it does support them
-    // on all compilers that I know of. Several other JSON libraries seem to rely on the same behaviour without any issues.
-    // The same cannot be said about 'std::unordered_map', which is why we don't use it.
+    // Neither 'std::unordered_map' nor 'boost::unordered_flat_map' are required to support incomplete types by
+    // the standard/library docs, but both work here in practice: on libstdc++, libc++ and MSVC STL,
+    // 'std::unordered_map' is bucket-chained (node-based), same as 'std::map', so it never needs 'sizeof(Node)'
+    // for its own layout. 'boost::unordered_flat_map' is genuinely open-addressed (elements live in one
+    // contiguous heap-allocated table), but that table is reached through a pointer member rather than stored
+    // inline, so instantiating the class template still doesn't require 'Node' to be complete - only calling
+    // an actual member function (insert, find, the destructor, ...) does, and by then 'Node' is fully defined.
+    // This is implementation-defined behaviour, not a language guarantee - a hash map that stores its table
+    // inline instead of through a pointer would break this.
     //
     // We could make a more pedantic choice and add a redundant level of indirection, but that both complicates
     // implementation needlessly and reduces performance. A perfect solution would be to write our own map implementation
@@ -387,6 +430,18 @@ namespace utl::internal {
             return *this;
         }
 
+        template<class T>
+            requires (
+                !std::is_same_v<std::decay_t<T>, Node>
+                && !std::is_same_v<std::decay_t<T>, object_type>
+                && !std::is_same_v<std::decay_t<T>, array_type>
+                && !std::is_same_v<std::decay_t<T>, string_type>
+                && is_json_convertible_v<T>
+            )
+        Node(const T& value) {
+            *this = value;
+        }
+
         // "native" copy/move semantics for types that support it
         Node& operator=(const object_type& value);
         Node& operator=(object_type&& value);
@@ -444,26 +499,7 @@ namespace utl::internal {
 
         [[nodiscard]] std::string to_string(Format format = Format::Pretty) const;
 
-        void to_file(const std::string& filepath, Format format = Format::Pretty) const;
-
-        // --- Reflection ---
-        // ------------------
-
-        template<class T>
-        [[nodiscard]] T to_struct() const {
-            static_assert(
-                always_false_v<T>,
-                "Provided type doesn't have a defined JSON reflection. Use 'UTL_JSON_REFLECT' macro to define one.");
-            // compile-time protection against calling 'to_struct()' on types that don't have reflection,
-            // we can also provide a proper error message here
-            return {};
-            // this is needed to silence "no return in a function" warning that appears even if this specialization
-            // (which by itself should cause a compile error) doesn't get compiled
-
-            // specializations of this template that will actually perform the conversion will be defined by
-            // macros outside the class body, this is a perfectly legal thing to do, even if unintuitive compared
-            // to non-template members, see https://en.cppreference.com/w/cpp/language/member_template
-        }
+        void to_file(const fs::path& filepath, Format format = Format::Pretty) const;
 
         // --- Type Information ---
         // ------------------------
@@ -534,30 +570,16 @@ namespace utl::internal {
     // --- JSON Serializing impl. ---
     // ==============================
 
-    void ERSLIB_EXPORT serialize_json_recursion_minimized(
-        const Node& node,
-        std::string& chars,
-        size_t indent_level = 0
-    );
-    void ERSLIB_EXPORT serialize_json_recursion_pretty(
-        const Node& node,
-        std::string& chars,
-        size_t indent_level = 0,
-        bool skip_first_indent = false
-    );
-
     template<bool Prettify>
-    void ERSLIB_EXPORT serialize_json_recursion(
+    void serialize_json_recursion(
         const Node& node,
         std::string& chars,
         std::size_t indent_level = 0,
         bool skip_first_indent = false
-    ) {
-        if constexpr (Prettify)
-            return serialize_json_recursion_pretty(node, chars, indent_level, skip_first_indent);
-        else
-            return serialize_json_recursion_minimized(node, chars, indent_level);
-    }
+    );
+
+    extern template ERSLIB_EXPORT void serialize_json_recursion<true>(const Node&, std::string&, std::size_t, bool);
+    extern template ERSLIB_EXPORT void serialize_json_recursion<false>(const Node&, std::string&, std::size_t, bool);
 }
 
 namespace utl {
@@ -585,9 +607,6 @@ namespace utl {
         [[nodiscard]]
         Json ERSLIB_EXPORT operator""_json(const char* cstr, std::size_t size);
     } // namespace literals
-
-
-    ERS_MAKE_EXCEPTION_TYPE(json_field_error, std::runtime_error);
 }
 
 
