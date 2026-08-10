@@ -3,8 +3,8 @@
 
 // ConnectionPool
 
-dbio::ConnectionPool::ConnectionPool(std::string db_opts, pool_options_t pool_opts) :
-    _db_connection_string(std::move(db_opts)),
+dbio::ConnectionPool::ConnectionPool(std::string db_connection_string, pool_options_t pool_opts) :
+    _db_connection_string(std::move(db_connection_string)),
     _pool_opts(std::move(pool_opts)) {
     _init();
 }
@@ -76,7 +76,7 @@ void dbio::ConnectionPool::_discard(pqxx::connection* conn) noexcept {
 }
 
 pqxx::connection* dbio::ConnectionPool::_spawn() {
-    auto conn = std::make_unique<pqxx::connection>(static_cast<std::string>(_db_connection_string));
+    auto conn = std::make_unique<pqxx::connection>(_db_connection_string);
     pqxx::connection* raw = conn.get();
     _all.emplace_back(std::move(conn));
     return raw;

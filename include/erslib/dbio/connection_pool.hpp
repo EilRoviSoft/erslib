@@ -10,18 +10,18 @@
 #include <vector>
 
 // pqxx
-#include <pqxx/connection>
+#include <pqxx/transaction>
 
 // ers
 #include <erslib/core/trait/fn.hpp>
 #include <erslib/core/trait/result.hpp>
 #include <erslib/core/type/result.hpp>
 #include <erslib/core/type/time.hpp>
-#include <erslib/dbio/database.hpp>
-#include <erslib/dbio/fwd.hpp>
+#include <erslib/dbio/options.hpp>
 
 
 namespace dbio {
+    struct pool_options_t;
     template<typename Fn>
     concept ConnectionHandler = std::invocable<Fn, pqxx::connection&>;
 
@@ -41,14 +41,6 @@ namespace dbio {
 
 
 namespace dbio {
-    struct pool_options_t {
-        size_t min_size = 1;
-        size_t max_size = 4;
-        ms_t acquire_timeout { 5000 };
-        ms_t idle_timeout { 1000 };
-    };
-
-
     class ConnectionPool : public std::enable_shared_from_this<ConnectionPool> {
         friend class Connection;
 
@@ -58,7 +50,7 @@ namespace dbio {
 
         // Member functions
 
-        ConnectionPool(std::string db_opts, pool_options_t pool_opts);
+        ConnectionPool(std::string db_connection_string, pool_options_t pool_opts);
 
 
         // Modifiers
@@ -98,7 +90,7 @@ namespace dbio {
         pqxx::connection* _spawn();
 
 
-        std::string_view _db_connection_string;
+        std::string _db_connection_string;
         pool_options_t _pool_opts;
 
         mutable std::mutex _mutex;

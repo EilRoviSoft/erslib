@@ -9,32 +9,15 @@
 
 // ers
 #include <erslib/core/type/result.hpp>
-#include <erslib/dbio/query_store.hpp>
 #include <erslib/dbio/connection_pool.hpp>
+#include <erslib/dbio/options.hpp>
+#include <erslib/dbio/query_store.hpp>
 
 // export
 #include <erslib/export.hpp>
 
 
 namespace fs = std::filesystem;
-
-
-// db_options_t
-
-namespace dbio {
-    struct ERSLIB_EXPORT db_options_t {
-        std::string host = "localhost";
-        std::uint16_t port = 5432;
-        std::string dbname;
-        std::string username;
-        std::string password;
-
-
-        // libpqxx key/value connection string built from the fields above.
-        [[nodiscard]]
-        std::string connection_string() const;
-    };
-}
 
 
 // Database
@@ -79,7 +62,7 @@ namespace dbio {
         // Runs each query found in the given store under the provided labels, every one in its own savepoint.
         // Missing labels are skipped.
         // Intended for schema bootstrap (e.g. the generated CREATE TABLE statements).
-        ers::Status init(pqxx::dbtransaction& tx, const QueryStore& queries, std::string_view label);
+        ers::Status init(const QueryStore& queries, std::string_view label);
 
 
         // Modifiers
