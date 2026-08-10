@@ -4,7 +4,7 @@
 #include <memory>
 
 // sol
-#include "sol/table.hpp"
+#include <sol/table.hpp>
 
 // ers
 #include "erslib/core/type/result.hpp"

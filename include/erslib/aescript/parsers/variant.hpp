@@ -3,7 +3,7 @@
 // std
 #include <variant>
 
-// aescript
+// ers
 #include <erslib/aescript/impl/context.hpp>
 #include <erslib/aescript/impl/parser.hpp>
 #include <erslib/aescript/parsers/innate.hpp>
@@ -15,7 +15,7 @@ struct aescript::parser_t<std::variant<Ts...>> {
     ers::Status exec(parser_context& ctx, sol::object obj, std::variant<Ts...>& dst) const {
         bool matched = (_try_one<Ts>(ctx, obj, dst) || ...);
         if (!matched)
-            return ers::make_error(ers::Severity::Error, "No variant alternative matched");
+            return ers::make_error("No variant alternative matched");
         return ers::ok;
     }
 

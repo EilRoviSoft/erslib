@@ -1,6 +1,6 @@
 #pragma once
 
-// aescript
+// ers
 #include <erslib/aescript/impl/trait.hpp>
 #include <erslib/aescript/impl/verifier.hpp>
 

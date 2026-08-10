@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-// aescript
+// ers
 #include <erslib/aescript/impl/descriptor.hpp>
 
 

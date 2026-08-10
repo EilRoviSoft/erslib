@@ -1,15 +1,13 @@
 #pragma once
 
 // ers
+#include <erslib/aengine/fwd.hpp>
 #include <erslib/core/exception.hpp>
 #include <erslib/core/adaptor/transparent/string.hpp>
 #include <erslib/core/convert/string.hpp>
 #include <erslib/core/hashing/rapid.hpp>
 #include <erslib/core/type/result.hpp>
 #include <erslib/core/type/version.hpp>
-
-// aengine
-#include <erslib/aengine/fwd.hpp>
 
 
 namespace aengine {

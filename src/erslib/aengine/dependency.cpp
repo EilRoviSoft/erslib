@@ -1,11 +1,9 @@
 #include "erslib/aengine/dependency.hpp"
 
 // ers
+#include <erslib/aengine/mod.hpp>
 #include <erslib/core/formatter/include.hpp>
 #include <erslib/core/splitting/regular.hpp>
-
-// aengine
-#include <erslib/aengine/mod.hpp>
 
 
 // Dependency

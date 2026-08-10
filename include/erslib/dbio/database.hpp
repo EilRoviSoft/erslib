@@ -2,7 +2,6 @@
 
 // std
 #include <filesystem>
-#include <span>
 #include <string>
 
 // pqxx
@@ -10,9 +9,8 @@
 
 // ers
 #include <erslib/core/type/result.hpp>
-
-// dbio
 #include <erslib/dbio/query_store.hpp>
+#include <erslib/dbio/connection_pool.hpp>
 
 // export
 #include <erslib/export.hpp>
@@ -45,15 +43,35 @@ namespace dbio {
     // Thin owning wrapper around a pqxx::connection.
     class ERSLIB_EXPORT Database {
     public:
+        using Connection = ConnectionPool::Connection;
+
+
         // Member functions
 
-        explicit Database(const std::string& connection_string);
+        explicit Database(std::string connection_string, pool_options_t pool_opts = {});
 
 
         // Accessors
 
-        pqxx::connection& connection() noexcept { return m_connection; }
-        const pqxx::connection& connection() const noexcept { return m_connection; }
+        ers::Result<Connection> acquire();
+
+
+        template<typename Fn>
+            requires ConnectionHandler<Fn>
+        auto with_connection(Fn&& fn) {
+            return _pool->with_connection(std::forward<Fn>(fn));
+        }
+
+        template<typename Fn>
+            requires TransactionCallable<Fn>
+        auto with_transaction(Fn&& fn, std::string_view name = {}) {
+            return _pool->with_transaction(std::forward<Fn>(fn), name);
+        }
+
+        template<typename Tx = pqxx::work, typename DbioFn, typename... Args>
+        auto call(DbioFn&& fn, Args&&... args) {
+            return _pool->call<Tx>(std::forward<DbioFn>(fn), std::forward<Args>(args)...);
+        }
 
 
         // Initializers
@@ -64,7 +82,12 @@ namespace dbio {
         ers::Status init(pqxx::dbtransaction& tx, const QueryStore& queries, std::string_view label);
 
 
-    protected:
-        pqxx::connection m_connection;
+        // Modifiers
+
+        void maintain();
+
+
+    private:
+        std::shared_ptr<ConnectionPool> _pool;
     };
 }

@@ -4,10 +4,8 @@
 #include <sol/sol.hpp>
 
 // ers
-#include <erslib/core/type/result.hpp>
-
-// aescript
 #include <erslib/aescript/impl/context.hpp>
+#include <erslib/core/type/result.hpp>
 
 
 namespace aescript {

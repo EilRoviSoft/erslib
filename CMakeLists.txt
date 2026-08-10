@@ -193,6 +193,7 @@ if(ERSLIB_BUILD_DBIO)
 
     target_sources(erslib_dbio
         PRIVATE
+            "src/erslib/dbio/connection_pool.cpp"
             "src/erslib/dbio/database.cpp"
             "src/erslib/dbio/formatter.cpp"
             "src/erslib/dbio/query_store.cpp"

@@ -5,13 +5,13 @@
 // std
 #include <chrono>
 
-// ers
-#include <erslib/core/type/result.hpp>
-#include <erslib/core/type/expiring.hpp>
-
 // boost
 #include <boost/thread/locks.hpp>
 #include <boost/thread/shared_mutex.hpp>
+
+// ers
+#include <erslib/core/type/result.hpp>
+#include <erslib/core/type/expiring.hpp>
 
 
 namespace ers {

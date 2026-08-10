@@ -6,8 +6,6 @@
 
 // contrib
 #include <erslib/contrib/json.hpp>
-
-// ers
 #include <erslib/core/concept/json.hpp>
 #include <erslib/core/meta/type_name.hpp>
 #include <erslib/core/trait/fn.hpp>

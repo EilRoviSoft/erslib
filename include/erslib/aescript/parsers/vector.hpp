@@ -3,7 +3,7 @@
 // std
 #include <vector>
 
-// aescript
+// ers
 #include <erslib/aescript/impl/context.hpp>
 #include <erslib/aescript/impl/parser.hpp>
 #include <erslib/aescript/parsers/innate.hpp>

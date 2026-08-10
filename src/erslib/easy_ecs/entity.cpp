@@ -2,8 +2,6 @@
 
 // ers
 #include <erslib/core/exception.hpp>
-
-// ecs
 #include <erslib/easy_ecs/registry.hpp>
 
 

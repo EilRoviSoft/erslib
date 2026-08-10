@@ -8,14 +8,10 @@
 #include <frozen/unordered_set.h>
 
 // ers
+#include <erslib/aengine/fwd.hpp>
 #include <erslib/core/macro.hpp>
 #include <erslib/core/hashing/algorithm.hpp>
 #include <erslib/core/util/tuple.hpp>
-
-// aengine
-#include <erslib/aengine/fwd.hpp>
-
-// ecs
 #include <erslib/easy_ecs/component.hpp>
 #include <erslib/easy_ecs/entity.hpp>
 

@@ -3,7 +3,7 @@
 // std
 #include <tuple>
 
-// aescript
+// ers
 #include <erslib/aescript/impl/context.hpp>
 #include <erslib/aescript/impl/parser.hpp>
 #include <erslib/aescript/parsers/innate.hpp>
@@ -14,7 +14,7 @@ struct aescript::parser_t<std::variant<Ts...>> {
     [[nodiscard]]
     ers::Status exec(parser_context& ctx, sol::object obj, std::variant<Ts...>& dst) const {
         if (!obj.is<sol::table>())
-            return ers::make_error(ers::Severity::Error, "Expected array table for tuple");
+            return ers::make_error("Expected array table for tuple");
         return _impl(ctx, obj.as<sol::table>(), dst, std::index_sequence_for<Ts...> {});
     }
 

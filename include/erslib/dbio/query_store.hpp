@@ -6,8 +6,6 @@
 
 // ers
 #include <erslib/core/thread_safe/map.hpp>
-
-// dbio
 #include <erslib/dbio/fwd.hpp>
 
 // export

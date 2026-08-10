@@ -1,5 +1,8 @@
 #pragma once
 
+// std
+#include <chrono>
+
 // boost
 #include <boost/unordered/unordered_flat_map.hpp>
 
@@ -14,4 +17,9 @@ namespace dbio::internal {
         ers::string_hash_adaptor<ers::RapidHash>,
         ers::equal_adaptor<std::string>
     >;
+}
+
+
+namespace dbio {
+    using ms_t = std::chrono::milliseconds;
 }

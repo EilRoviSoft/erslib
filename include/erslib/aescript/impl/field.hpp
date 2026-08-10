@@ -9,11 +9,9 @@
 #include <sol/table.hpp>
 
 // ers
-#include <erslib/core/type/result.hpp>
-
-// aescript
 #include <erslib/aescript/impl/parser.hpp>
 #include <erslib/aescript/impl/verifier.hpp>
+#include <erslib/core/type/result.hpp>
 
 
 // Field

@@ -20,10 +20,13 @@ namespace dbio {
 
 // Database
 
-dbio::Database::Database(const std::string& connection_string) :
-    m_connection(connection_string) {
+dbio::Database::Database(std::string connection_string, pool_options_t pool_opts) :
+    _pool(std::make_shared<ConnectionPool>(std::move(connection_string), std::move(pool_opts))) {
 }
 
+ers::Result<dbio::Database::Connection> dbio::Database::acquire() {
+    return _pool->acquire();
+}
 
 ers::Status dbio::Database::init(pqxx::dbtransaction& tx, const QueryStore& queries, std::string_view label) try {
     auto query = queries.get(label);
@@ -39,4 +42,8 @@ ers::Status dbio::Database::init(pqxx::dbtransaction& tx, const QueryStore& quer
     return ers::make_error("dbio: schema init failed: {}", e.what());
 } catch (const pqxx::usage_error& e) {
     return ers::make_error("dbio: schema init failed: {}", e.what());
+}
+
+void dbio::Database::maintain() {
+    _pool->maintain();
 }

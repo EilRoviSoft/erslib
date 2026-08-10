@@ -3,17 +3,13 @@
 // std
 #include <ranges>
 
-// contrib
-#include <erslib/contrib/json.hpp>
-
 // ers
+#include <erslib/aescript/error.hpp>
+#include <erslib/aescript/exception.hpp>
+#include <erslib/contrib/json.hpp>
 #include <erslib/core/io/json_schema.hpp>
 #include <erslib/core/util/file.hpp>
 #include <erslib/core/util/string.hpp>
-
-// aescript
-#include <erslib/aescript/error.hpp>
-#include <erslib/aescript/exception.hpp>
 
 
 using std::string_literals::operator ""s;

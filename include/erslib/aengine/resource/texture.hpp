@@ -4,7 +4,7 @@
 //#include <SFML/Graphics/Texture.hpp>
 
 // aengine
-#include <erslib/aengine/resource.hpp>
+//#include <erslib/aengine/resource.hpp>
 
 
 // TextureResource

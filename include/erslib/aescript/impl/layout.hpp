@@ -9,14 +9,10 @@
 #include <sol/table.hpp>
 
 // ers
-#include <erslib/core/type/result.hpp>
-
-// aengine
 #include <erslib/aengine/fwd.hpp>
-
-// aescript
-#include <erslib/aescript/impl/field.hpp>
 #include <erslib/aescript/impl/descriptor.hpp>
+#include <erslib/aescript/impl/field.hpp>
+#include <erslib/core/type/result.hpp>
 
 
 namespace aescript {

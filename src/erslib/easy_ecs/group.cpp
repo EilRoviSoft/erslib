@@ -1,6 +1,6 @@
 #include "erslib/easy_ecs/group.hpp"
 
-// ecs
+// ers
 #include <erslib/easy_ecs/registry.hpp>
 
 

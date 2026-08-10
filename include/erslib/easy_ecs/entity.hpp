@@ -7,8 +7,6 @@
 // ers
 #include <erslib/core/meta/type_name.hpp>
 #include <erslib/core/pattern/counter.hpp>
-
-// ecs
 #include <erslib/easy_ecs/fwd.hpp>
 
 

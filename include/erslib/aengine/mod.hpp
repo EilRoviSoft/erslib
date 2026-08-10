@@ -13,11 +13,9 @@
 #include <sol/state_view.hpp>
 
 // ers
-#include <erslib/core/type/version.hpp>
-
-// aengine
-#include <erslib/aengine/fwd.hpp>
 #include <erslib/aengine/dependency.hpp>
+#include <erslib/aengine/fwd.hpp>
+#include <erslib/core/type/version.hpp>
 
 
 namespace fs = std::filesystem;

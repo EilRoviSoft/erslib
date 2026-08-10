@@ -1,9 +1,7 @@
 #pragma once
 
-// aengine
+// ers
 #include <erslib/aengine/fwd.hpp>
-
-// ecs
 #include <erslib/easy_ecs/component.hpp>
 #include <erslib/easy_ecs/entity.hpp>
 #include <erslib/easy_ecs/group.hpp>
