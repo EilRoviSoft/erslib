@@ -7,7 +7,7 @@
 #include <erslib/easy_ecs/group.hpp>
 
 
-namespace ecs {
+namespace ecs::impl {
     class Registry {
     public:
         // Tracking
@@ -61,4 +61,11 @@ namespace ecs {
             return static_cast<TGroup<Tags...>&>(*ptr);
         }
     };
+}
+
+
+// Exports
+
+namespace ecs {
+    using impl::Registry;
 }

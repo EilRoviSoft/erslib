@@ -10,7 +10,7 @@
 #include <erslib/easy_ecs/fwd.hpp>
 
 
-namespace ecs {
+namespace ecs::impl {
     template<typename T>
     std::string make_canonical_name() {
         return std::format("{}:{}", ers::meta::type_name_v<T>, ers::pattern::tagged_counter<T>());
@@ -52,4 +52,12 @@ namespace ecs {
         std::string _name;
         size_t _id = 0;
     };
+}
+
+
+// Exports
+
+namespace ecs {
+    using impl::make_canonical_name;
+    using impl::IEntity;
 }

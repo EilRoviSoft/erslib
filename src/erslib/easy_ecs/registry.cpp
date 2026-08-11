@@ -11,13 +11,13 @@
 
 // Tracking
 
-size_t ecs::Registry::track_entity(IEntity& entity) {
+size_t ecs::impl::Registry::track_entity(IEntity& entity) {
     size_t id = ers::RapidHash<std::string_view> {}(entity.name());
     m_entities.emplace(id, &entity);
     return id;
 }
 
-void ecs::Registry::track_component(size_t eid, size_t cid, void* component) {
+void ecs::impl::Registry::track_component(size_t eid, size_t cid, void* component) {
     size_t key = ers::hashing::combine<ers::RapidHash>(eid, cid);
 
     auto [it, inserted] = m_components.try_emplace(key, component);
@@ -28,7 +28,7 @@ void ecs::Registry::track_component(size_t eid, size_t cid, void* component) {
     }
 }
 
-void ecs::Registry::finalize_entity_groups(size_t eid) {
+void ecs::impl::Registry::finalize_entity_groups(size_t eid) {
     auto& entity = m_entities.at(eid);
 
     for (auto& group : m_groups | std::views::values)
@@ -38,10 +38,10 @@ void ecs::Registry::finalize_entity_groups(size_t eid) {
 
 // Queries
 
-bool ecs::Registry::has_component(size_t eid, size_t cid) const {
+bool ecs::impl::Registry::has_component(size_t eid, size_t cid) const {
     return m_components.contains(ers::hashing::combine<ers::RapidHash>(eid, cid));
 }
 
-void* ecs::Registry::get_component(size_t eid, size_t cid) const {
+void* ecs::impl::Registry::get_component(size_t eid, size_t cid) const {
     return m_components.at(ers::hashing::combine<ers::RapidHash>(eid, cid));
 }

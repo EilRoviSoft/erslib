@@ -4,7 +4,7 @@
 #include <erslib/core/meta/type_hash.hpp>
 
 
-namespace ecs {
+namespace ecs::impl {
     template<typename T>
     concept ComponentTag = requires { typename T::value_type; };
 
@@ -17,4 +17,13 @@ namespace ecs {
     size_t component_id() {
         return ers::meta::type_hash_v<Tag>;
     }
+}
+
+
+// Exports
+
+namespace ecs {
+    using impl::ComponentTag;
+    using impl::component_value_t;
+    using impl::component_id;
 }

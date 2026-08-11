@@ -7,7 +7,7 @@
 
 // IEntity
 
-void ecs::IEntity::init(Registry& registry) {
+void ecs::impl::IEntity::init(Registry& registry) {
     if (_id) {
         throw ers::make_runtime_error_with_trace("Id for entity '{}' can't be set twice, you probably called 'init' twice",
             _name);
@@ -20,6 +20,6 @@ void ecs::IEntity::init(Registry& registry) {
     registry.finalize_entity_groups(id());
 }
 
-ecs::IEntity::IEntity(std::string name) :
+ecs::impl::IEntity::IEntity(std::string name) :
     _name(std::move(name)) {
 }

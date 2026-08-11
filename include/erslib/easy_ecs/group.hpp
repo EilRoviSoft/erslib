@@ -18,7 +18,7 @@
 
 // Forward declaration
 
-namespace ecs {
+namespace ecs::impl {
     template<typename Iterator, typename... Tags>
     class TGroupView;
 
@@ -34,7 +34,7 @@ namespace ecs {
 
 // It's needed to avoid errors with calling forward-declared types.
 
-namespace ecs::internal {
+namespace ecs::impl {
     [[nodiscard]]
     bool is_valid(const Registry& registry, size_t eid, size_t cid);
 
@@ -45,7 +45,7 @@ namespace ecs::internal {
 
 // IGroup
 
-namespace ecs {
+namespace ecs::impl {
     class IGroup {
     public:
         // Member functions
@@ -74,7 +74,7 @@ namespace ecs {
 
 // TGroup
 
-namespace ecs {
+namespace ecs::impl {
     template<ComponentTag... Tags>
     class TGroup final : public IGroup {
         template<typename, typename...>
@@ -91,7 +91,7 @@ namespace ecs {
 
         [[nodiscard]]
         bool is_valid(const Registry& registry, const IEntity& entity) const override {
-            return (internal::is_valid(registry, entity.id(), component_id<Tags>()) && ...);
+            return (impl::is_valid(registry, entity.id(), component_id<Tags>()) && ...);
         }
 
         [[nodiscard]]
@@ -101,7 +101,7 @@ namespace ecs {
 
         void add(const Registry& registry, IEntity& entity) override {
             auto components = std::make_tuple(static_cast<component_value_t<Tags>* ERS_RESTRICT>(
-                internal::get_component(registry, entity.id(), component_id<Tags>()))...);
+                impl::get_component(registry, entity.id(), component_id<Tags>()))...);
 
             m_storage.emplace(entity.id(), std::move(components));
         }
@@ -129,7 +129,7 @@ namespace ecs {
 
 // View
 
-namespace ecs {
+namespace ecs::impl {
     template<typename T, typename... Ts>
     class TGroupView : public std::ranges::view_interface<TGroupView<T, Ts...>> {
         using iterator = T;
@@ -157,7 +157,7 @@ namespace ecs {
 
 // Iterators
 
-namespace ecs {
+namespace ecs::impl {
     template<typename T, typename R, typename... Ts>
     class TGroupIterator {
     protected:
@@ -229,7 +229,7 @@ namespace ecs {
 
 // Iterators implementation
 
-namespace ecs {
+namespace ecs::impl {
     template<typename... Ts>
     class GroupIterator : public TGroupIterator<GroupIterator<Ts...>, void, Ts...> {
         using base_type = TGroupIterator<GroupIterator, void, Ts...>;
@@ -255,7 +255,7 @@ namespace ecs {
 }
 
 
-namespace ecs {
+namespace ecs::impl {
     template<typename... Ts>
     class GroupWithEntityIdIterator : public TGroupIterator<GroupWithEntityIdIterator<Ts...>, size_t, Ts...> {
         using base_type = TGroupIterator<GroupWithEntityIdIterator, size_t, Ts...>;
@@ -279,4 +279,18 @@ namespace ecs {
 
     template<typename... Ts>
     using GroupWithEntityIdView = TGroupView<GroupWithEntityIdIterator<Ts...>, Ts...>;
+}
+
+
+// Exports
+
+namespace ecs {
+    using impl::IGroup;
+    using impl::GroupPtr;
+    using impl::make_group;
+
+    using impl::GroupIterator;
+    using impl::GroupView;
+    using impl::GroupWithEntityIdIterator;
+    using impl::GroupWithEntityIdView;
 }
