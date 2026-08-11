@@ -8,7 +8,7 @@
 #include <erslib/export.hpp>
 
 
-namespace dbio {
+namespace dbio::impl {
     using Section = uint32_t;
 
     namespace section {
@@ -22,9 +22,8 @@ namespace dbio {
         inline constexpr Section limit = 800;       // "LIMIT <n>"
         inline constexpr Section offset = 900;      // "OFFSET <n>"
     }
-}
 
-namespace dbio::internal {
+
     struct section_format_t {
         std::string_view prefix;
         std::string_view separator;

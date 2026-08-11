@@ -10,14 +10,14 @@
 #include <erslib/export.hpp>
 
 
-namespace dbio {
+namespace dbio::impl {
     // Verbatim SQL with '?' value markers.
     // Nothing in the text is validated, so keep untrusted input in the markers, never in the text itself.
     class ERSLIB_EXPORT RawClause : public IClause {
     public:
         // Member functions
 
-        RawClause(Section section, std::string sql, std::vector<internal::binder_t> binders);
+        RawClause(Section section, std::string sql, std::vector<binder_t> binders);
 
 
         // Executors
@@ -34,17 +34,17 @@ namespace dbio {
 
     private:
         std::string _sql;
-        std::vector<internal::binder_t> _binders;
+        std::vector<binder_t> _binders;
     };
 
 
     namespace clauses {
         template<typename... Args>
         ClausePtr raw(Section section, std::string sql, Args&&... args) {
-            std::vector<internal::binder_t> binders;
+            std::vector<binder_t> binders;
             binders.reserve(sizeof...(Args));
 
-            (binders.emplace_back(internal::make_binder(std::forward<Args>(args))), ...);
+            (binders.emplace_back(make_binder(std::forward<Args>(args))), ...);
 
             return std::make_unique<RawClause>(section, std::move(sql), std::move(binders));
         }

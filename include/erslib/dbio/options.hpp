@@ -11,7 +11,7 @@
 #include <erslib/export.hpp>
 
 
-namespace dbio {
+namespace dbio::impl {
     struct ERSLIB_EXPORT db_options_t {
         std::string host = "localhost";
         std::uint16_t port = 5432;
@@ -31,4 +31,12 @@ namespace dbio {
         ms_t acquire_timeout { 5000 };
         ms_t idle_timeout { 1000 };
     };
+}
+
+
+// Exports
+
+namespace dbio {
+    using impl::db_options_t;
+    using impl::pool_options_t;
 }

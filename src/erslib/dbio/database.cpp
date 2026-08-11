@@ -8,15 +8,15 @@
 #include <erslib/dbio/query_store.hpp>
 
 
-dbio::Database::Database(std::string connection_string, pool_options_t pool_opts) :
+dbio::impl::Database::Database(std::string connection_string, pool_options_t pool_opts) :
     _pool(std::make_shared<ConnectionPool>(std::move(connection_string), std::move(pool_opts))) {
 }
 
-ers::Result<dbio::Database::Connection> dbio::Database::acquire() {
+ers::Result<dbio::impl::Database::Connection> dbio::impl::Database::acquire() {
     return _pool->acquire();
 }
 
-ers::Status dbio::Database::init(const QueryStore& queries, std::string_view label) {
+ers::Status dbio::impl::Database::init(const QueryStore& queries, std::string_view label) {
     auto query = queries.get(label);
     if (!query)
         return ers::make_warning("Query '{}' doesn't exist.", label);
@@ -28,6 +28,6 @@ ers::Status dbio::Database::init(const QueryStore& queries, std::string_view lab
     }, "Init");
 }
 
-void dbio::Database::maintain() {
+void dbio::impl::Database::maintain() {
     _pool->maintain();
 }

@@ -5,7 +5,7 @@
 #include <erslib/dbio/clauses/target.hpp>
 
 
-dbio::Query dbio::clauses::select_from(std::string table) {
+dbio::impl::Query dbio::impl::clauses::select_from(std::string table) {
     Query q;
 
     q |= raw(section::select, "SELECT ");

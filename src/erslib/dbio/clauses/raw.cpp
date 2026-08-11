@@ -1,13 +1,13 @@
 #include "erslib/dbio/clauses/raw.hpp"
 
 
-dbio::RawClause::RawClause(Section section, std::string sql, std::vector<internal::binder_t> binders) :
+dbio::impl::RawClause::RawClause(Section section, std::string sql, std::vector<binder_t> binders) :
     IClause(section),
     _sql(std::move(sql)),
     _binders(std::move(binders)) {
 }
 
-ers::Status dbio::RawClause::render(build_context_t& ctx) const {
+ers::Status dbio::impl::RawClause::render(build_context_t& ctx) const {
     size_t index = 0;
 
     for (const char c : _sql) {
@@ -28,6 +28,6 @@ ers::Status dbio::RawClause::render(build_context_t& ctx) const {
     return ers::ok;
 }
 
-dbio::ClausePtr dbio::RawClause::clone() const {
+dbio::impl::ClausePtr dbio::impl::RawClause::clone() const {
     return std::make_unique<RawClause>(section(), _sql, _binders);
 }

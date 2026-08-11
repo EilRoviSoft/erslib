@@ -11,15 +11,19 @@
 #include <erslib/core/hashing/rapid.hpp>
 
 
-namespace dbio::internal {
+namespace dbio::impl {
     using kv_container_type = boost::unordered_flat_map<
         std::string, std::string,
         ers::string_hash_adaptor<ers::RapidHash>,
         ers::equal_adaptor<std::string>
     >;
+
+    using ms_t = std::chrono::milliseconds;
 }
 
 
+// Exports
+
 namespace dbio {
-    using ms_t = std::chrono::milliseconds;
+    using impl::ms_t;
 }

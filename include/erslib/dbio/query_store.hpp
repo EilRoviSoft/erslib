@@ -12,10 +12,10 @@
 #include <erslib/export.hpp>
 
 
-namespace dbio {
+namespace dbio::impl {
     // Thread-safe registry mapping query labels to their SQL text.
     // Generated code looks queries up by label, e.g. queries["user.save"].
-    class ERSLIB_EXPORT QueryStore : public ers::thread_safe::Map<internal::kv_container_type> {
+    class ERSLIB_EXPORT QueryStore : public ers::thread_safe::Map<kv_container_type> {
     public:
         // Member functions
 
@@ -33,4 +33,12 @@ namespace dbio {
 
 
     extern QueryStore queries;
+}
+
+
+// Exports
+
+namespace dbio {
+    using impl::QueryStore;
+    using impl::queries;
 }

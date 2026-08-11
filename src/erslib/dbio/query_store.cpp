@@ -34,7 +34,7 @@ namespace {
 }
 
 
-size_t dbio::QueryStore::load_directory(const fs::path& root) {
+size_t dbio::impl::QueryStore::load_directory(const fs::path& root) {
     if (!fs::is_directory(root))
         return 0;
 
@@ -52,7 +52,7 @@ size_t dbio::QueryStore::load_directory(const fs::path& root) {
     return count;
 }
 
-void dbio::QueryStore::add(std::string_view label, std::string_view query) {
+void dbio::impl::QueryStore::add(std::string_view label, std::string_view query) {
     std::unique_lock lock(m_mutex);
     m_data.emplace(label, query);
 }
@@ -61,15 +61,15 @@ void dbio::QueryStore::add(std::string_view label, std::string_view query) {
 #ifdef ERS_DBIO_GLOBAL_QUERY_STORE_INIT
 namespace {
     auto make_queries() try {
-        dbio::QueryStore result;
+        dbio::impl::QueryStore result;
         result.load_directory("./res/query");
         return result;
     } catch (...) {
-        return dbio::QueryStore();
+        return dbio::impl::QueryStore();
     }
 }
 
-namespace dbio {
+namespace dbio::impl {
     QueryStore queries = make_queries(); // NOLINT(bugprone-throwing-static-initialization)
 }
 #endif

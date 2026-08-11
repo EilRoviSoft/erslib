@@ -1,17 +1,24 @@
 #pragma once
 
 
-namespace dbio::tag {
+namespace dbio::impl::tag {
     struct transaction_t {};
 }
 
-namespace dbio {
+namespace dbio::impl {
     constexpr tag::transaction_t transaction_tag;
 }
 
 
-// Optional exception-to-Error translation around the raw pqxx calls in generated _dbio() bodies.
-// Enabled by defining ERS_DBIO_SAFE; otherwise pqxx exceptions are propagated as usual.
+// Exports
+
+namespace dbio {
+    namespace tag = impl::tag;
+    using impl::transaction_tag;
+}
+
+
+// Defines
 
 #ifdef ERS_DBIO_SAFE
 #define ERS_DBIO_TRY_EVAL try

@@ -1,11 +1,11 @@
 #include "erslib/dbio/impl/context.hpp"
 
 
-dbio::build_context_t::build_context_t(const pqxx::dbtransaction& tx) :
+dbio::impl::build_context_t::build_context_t(const pqxx::dbtransaction& tx) :
     params(tx) {
 }
 
-std::string dbio::build_context_t::bind(const internal::binder_t& binder) {
+std::string dbio::impl::build_context_t::bind(const binder_t& binder) {
     binder(params);
 
     auto result = counter.get();
@@ -13,7 +13,7 @@ std::string dbio::build_context_t::bind(const internal::binder_t& binder) {
 
     return result;
 }
-std::string dbio::build_context_t::bind_null() {
+std::string dbio::impl::build_context_t::bind_null() {
     params.append();
 
     auto result = counter.get();

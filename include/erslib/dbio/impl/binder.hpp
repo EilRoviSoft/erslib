@@ -9,7 +9,7 @@
 #include <pqxx/params>
 
 
-namespace dbio::internal {
+namespace dbio::impl {
     using binder_t = std::function<void(pqxx::params&)>;
 
     template<typename T>
@@ -17,9 +17,9 @@ namespace dbio::internal {
         std::convertible_to<T, std::string_view>,
         std::string,
         std::conditional_t<
-        std::convertible_to<T, pqxx::bytes_view>,
-        pqxx::bytes,
-        std::remove_cvref_t<T>
+            std::convertible_to<T, pqxx::bytes_view>,
+            pqxx::bytes,
+            std::remove_cvref_t<T>
         >
     >;
 

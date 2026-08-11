@@ -12,12 +12,12 @@
 #include <erslib/export.hpp>
 
 
-namespace dbio {
+namespace dbio::impl {
     class ERSLIB_EXPORT InClause : public IClause {
     public:
         // Member functions
 
-        InClause(std::string column, std::vector<internal::binder_t> binders, bool negated);
+        InClause(std::string column, std::vector<binder_t> binders, bool negated);
 
 
         // Executors
@@ -34,7 +34,7 @@ namespace dbio {
 
     private:
         std::string _column;
-        std::vector<internal::binder_t> _binders;
+        std::vector<binder_t> _binders;
         bool _negated;
     };
 
@@ -42,13 +42,13 @@ namespace dbio {
     namespace clauses {
         template<std::ranges::input_range R>
         ClausePtr where_in(std::string column, R&& values, bool negated = false) {
-            std::vector<internal::binder_t> binders;
+            std::vector<binder_t> binders;
 
             if constexpr (std::ranges::sized_range<R>)
                 binders.reserve(std::ranges::size(values));
 
             for (auto&& value : values)
-                binders.emplace_back(internal::make_binder(std::forward<decltype(value)>(value)));
+                binders.emplace_back(make_binder(std::forward<decltype(value)>(value)));
 
             return std::make_unique<InClause>(std::move(column), std::move(binders), negated);
         }

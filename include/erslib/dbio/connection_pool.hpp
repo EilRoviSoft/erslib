@@ -20,8 +20,9 @@
 #include <erslib/dbio/options.hpp>
 
 
-namespace dbio {
+namespace dbio::impl {
     struct pool_options_t;
+
     template<typename Fn>
     concept ConnectionHandler = std::invocable<Fn, pqxx::connection&>;
 
@@ -40,7 +41,7 @@ namespace dbio {
 }
 
 
-namespace dbio {
+namespace dbio::impl {
     class ConnectionPool : public std::enable_shared_from_this<ConnectionPool> {
         friend class Connection;
 
@@ -133,7 +134,7 @@ namespace dbio {
 }
 
 
-namespace dbio {
+namespace dbio::impl {
     template<typename Fn>
         requires ConnectionHandler<Fn>
     auto ConnectionPool::with_connection(Fn&& fn) -> ers::Result<std::invoke_result_t<Fn, pqxx::connection&>> {
@@ -193,4 +194,13 @@ namespace dbio {
             return fn(tx, args...);
         });
     }
+}
+
+
+// Exports
+
+namespace dbio {
+    using impl::ConnectionHandler;
+    using impl::TransactionCallable;
+    using impl::ConnectionPool;
 }

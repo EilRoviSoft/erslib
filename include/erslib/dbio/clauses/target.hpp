@@ -13,7 +13,7 @@
 #include <erslib/export.hpp>
 
 
-namespace dbio {
+namespace dbio::impl {
     class ERSLIB_EXPORT StClause : public IClause {
     public:
         // Member functions
@@ -62,33 +62,37 @@ namespace dbio {
     };
 
 
-    namespace impl {
-        template<bool Wrap, typename... Args>
-            requires (std::convertible_to<Args, std::string> && ...)
-        auto make_mt_clause(Args&&... args) {
-            std::vector<std::string> names;
-            names.reserve(sizeof...(Args));
-            ((names.emplace_back(std::forward<Args>(args))), ...);
-            return std::make_unique<MtClause>(section::column, std::move(names), Wrap);
-        }
+    template<typename... Args>
+        requires (std::convertible_to<Args, std::string> && ...)
+    auto make_names_from_args(Args&&... args) {
+        std::vector<std::string> names;
+        names.reserve(sizeof...(Args));
+        ((names.emplace_back(std::forward<Args>(args))), ...);
+        return names;
+    }
+
+    template<bool Wrap, typename... Args>
+        requires (std::convertible_to<Args, std::string> && ...)
+    auto make_mt_clause(Args&&... args) {
+        return std::make_unique<MtClause>(section::column, make_names_from_args<Args...>(std::forward<Args>(args)...), Wrap);
     }
 
 
     namespace clauses {
         ClausePtr column(std::string name);
-        
+
         ClausePtr all_columns();
 
         template<typename... Args>
             requires (std::convertible_to<Args, std::string> && ...)
         ClausePtr source(Args&&... args) {
-            return impl::make_mt_clause<false, Args...>(std::forward<Args>(args)...);
+            return make_mt_clause<false, Args...>(std::forward<Args>(args)...);
         }
 
         template<typename... Args>
             requires (std::convertible_to<Args, std::string> && ...)
         ClausePtr dest(Args&&... args) {
-            return impl::make_mt_clause<true, Args...>(std::forward<Args>(args)...);
+            return make_mt_clause<true, Args...>(std::forward<Args>(args)...);
         }
     }
 }

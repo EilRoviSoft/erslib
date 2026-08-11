@@ -14,7 +14,7 @@
 #include <erslib/export.hpp>
 
 
-namespace dbio {
+namespace dbio::impl {
     struct ERSLIB_EXPORT build_context_t {
         std::string query;
         pqxx::params params;
@@ -38,7 +38,7 @@ namespace dbio {
 
         // Modifiers
 
-        std::string bind(const internal::binder_t& binder);
+        std::string bind(const binder_t& binder);
 
         std::string bind_null();
     };

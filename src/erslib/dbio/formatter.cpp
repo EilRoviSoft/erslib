@@ -1,7 +1,7 @@
 #include "erslib/dbio/formatter.hpp"
 
 
-std::string dbio::bytes_to_string(const pqxx::bytes& bytes, std::string_view args) {
+std::string dbio::impl::bytes_to_string(const pqxx::bytes& bytes, std::string_view args) {
     auto it = args.begin();
     auto mode = Mode::HexLower;
 

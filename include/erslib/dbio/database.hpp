@@ -22,7 +22,7 @@ namespace fs = std::filesystem;
 
 // Database
 
-namespace dbio {
+namespace dbio::impl {
     // Thin owning wrapper around a pqxx::connection.
     class ERSLIB_EXPORT Database {
     public:
@@ -73,4 +73,11 @@ namespace dbio {
     private:
         std::shared_ptr<ConnectionPool> _pool;
     };
+}
+
+
+// Exports
+
+namespace dbio {
+    using impl::Database;
 }

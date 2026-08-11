@@ -13,12 +13,15 @@
 #include <erslib/dbio/persistency.hpp>
 
 
-// Traits
-
 namespace dbio {
     template<typename T>
     struct entity_traits;
+}
 
+
+// Concepts
+
+namespace dbio::impl {
     template<typename T>
     concept ValidEntity =
         requires {
@@ -42,7 +45,7 @@ namespace dbio {
 
 // EntityGenerator
 
-namespace dbio {
+namespace dbio::impl {
     template<typename T>
         requires ValidEntity<T>
     class EntityGenerator : public std::ranges::view_interface<EntityGenerator<T>> {
@@ -64,12 +67,12 @@ namespace dbio {
                 _layout(layout) {
             }
 
-            
+
             T operator*() const {
                 return T(*_inner_it, traits::template make_config<In>(_layout));
             }
 
-            
+
             Iterator& operator++() {
                 _inner_it++;
                 return *this;
@@ -123,7 +126,7 @@ namespace dbio {
 
 // RowGenerator
 
-namespace dbio {
+namespace dbio::impl {
     template<typename T>
         requires ValidRow<T>
     class RowGenerator : public std::ranges::view_interface<RowGenerator<T>> {
@@ -192,4 +195,15 @@ namespace dbio {
     private:
         pqxx::result _content;
     };
+}
+
+
+// Exports
+
+namespace dbio {
+    using impl::ValidEntity;
+    using impl::ValidRow;
+
+    using impl::EntityGenerator;
+    using impl::RowGenerator;
 }

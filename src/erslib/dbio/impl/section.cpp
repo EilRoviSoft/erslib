@@ -14,7 +14,7 @@ namespace {
 }
 
 
-dbio::internal::section_format_t dbio::internal::section_format(Section sec) {
+dbio::impl::section_format_t dbio::impl::section_format(Section sec) {
     switch (sec) {
         case section::select:
             return { .prefix = "", .separator = "", .suffix = "" };
@@ -39,7 +39,7 @@ dbio::internal::section_format_t dbio::internal::section_format(Section sec) {
     }
 }
 
-bool dbio::internal::is_singular(Section sec) {
+bool dbio::impl::is_singular(Section sec) {
     switch (sec) {
         case section::select:
         case section::insert_into:
@@ -51,7 +51,7 @@ bool dbio::internal::is_singular(Section sec) {
             return false;
     }
 }
-bool dbio::internal::is_identifier(std::string_view name) {
+bool dbio::impl::is_identifier(std::string_view name) {
     if (name.empty())
         return false;
 

@@ -7,7 +7,7 @@
 #include <pqxx/row>
 
 
-namespace dbio {
+namespace dbio::impl {
     // Sequential reader over a pqxx::row_ref.
     // Keeps an internal cursor so generated entity code can pull fields one after another in declaration order.
     class PqxxRow {
@@ -84,4 +84,12 @@ namespace dbio {
     };
 
     using PqxxRowStream = PqxxRow;
+}
+
+
+// Exports
+
+namespace dbio {
+    using impl::PqxxRow;
+    using impl::PqxxRowStream;
 }

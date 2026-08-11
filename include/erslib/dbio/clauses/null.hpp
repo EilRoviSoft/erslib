@@ -7,7 +7,7 @@
 #include <erslib/export.hpp>
 
 
-namespace dbio {
+namespace dbio::impl {
     class ERSLIB_EXPORT NullClause : public IClause {
     public:
         // Member functions

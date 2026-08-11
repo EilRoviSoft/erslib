@@ -12,7 +12,7 @@
 #include <erslib/export.hpp>
 
 
-namespace dbio {
+namespace dbio::impl {
     using ClausePtr = std::unique_ptr<class IClause>;
 
     class ERSLIB_EXPORT IClause {

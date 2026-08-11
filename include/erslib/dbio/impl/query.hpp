@@ -15,7 +15,7 @@
 
 // Query
 
-namespace dbio {
+namespace dbio::impl {
     class ERSLIB_EXPORT Query {
     public:
         // Member functions
@@ -90,7 +90,7 @@ namespace dbio {
 
 // Operators
 
-namespace dbio {
+namespace dbio::impl {
     Query& operator|(Query& lhs, ClausePtr rhs);
     Query&& operator|(Query&& lhs, ClausePtr rhs);
     Query& operator|=(Query& lhs, ClausePtr rhs);

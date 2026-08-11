@@ -7,7 +7,7 @@
 #include <erslib/export.hpp>
 
 
-namespace dbio {
+namespace dbio::impl {
     enum class Order : uint8_t { Asc, Desc };
 
 

@@ -7,7 +7,7 @@
 #include <erslib/export.hpp>
 
 
-namespace dbio {
+namespace dbio::impl {
     enum class Op : uint8_t {
         Eq, // ==
         Ne, // !=
@@ -24,7 +24,7 @@ namespace dbio {
     public:
         // Member functions
 
-        ConditionClause(std::string column, Op op, internal::binder_t binder);
+        ConditionClause(std::string column, Op op, binder_t binder);
 
 
         // Executors
@@ -42,14 +42,14 @@ namespace dbio {
     private:
         std::string _column;
         Op _op;
-        internal::binder_t _binder;
+        binder_t _binder;
     };
 
 
     namespace clauses {
         template<typename T>
         ClausePtr where(std::string column, Op op, T&& value) {
-            return std::make_unique<ConditionClause>(std::move(column), op, internal::make_binder(std::forward<T>(value)));
+            return std::make_unique<ConditionClause>(std::move(column), op, make_binder(std::forward<T>(value)));
         }
 
         template<typename T>

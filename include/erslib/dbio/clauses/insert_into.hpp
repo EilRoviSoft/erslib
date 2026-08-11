@@ -7,8 +7,6 @@
 #include <erslib/dbio/impl/query.hpp>
 
 
-namespace dbio {
-    namespace clauses {
-        Query insert_into(std::string table);
-    }
+namespace dbio::impl::clauses {
+    Query insert_into(std::string table);
 }

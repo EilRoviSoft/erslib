@@ -9,10 +9,10 @@
 // ).exec_as<User>(tx);
 //
 // auto status = (insert_into("images")
-//     | targets("url", "path")
+//     | dest("url", "path")
 //     | values(url_a, path_a)
 //     | values(url_b, path_b)
-// ).exec(tx);
+// ).exec_and_discard(tx);
 
 
 // Main implementation
@@ -32,3 +32,26 @@
 #include <erslib/dbio/clauses/select_from.hpp>
 #include <erslib/dbio/clauses/target.hpp>
 #include <erslib/dbio/clauses/values.hpp>
+
+
+// Exports
+
+namespace dbio {
+    namespace clauses = impl::clauses;
+    namespace section = impl::section;
+
+
+    using impl::binder_t;
+    using impl::make_binder;
+
+    using impl::ClausePtr;
+    using impl::IClause;
+
+    using impl::build_context_t;
+
+    using impl::Query;
+
+    using impl::Section;
+
+    using impl::Op;
+}
