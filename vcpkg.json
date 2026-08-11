@@ -2,19 +2,20 @@
   "dependencies": [
     "boost-container",
     "boost-optional",
+    "boost-preprocessor",
     "boost-regex",
     "boost-smart-ptr",
     "boost-thread",
     "boost-unordered",
     "cpptrace",
+    "doctest",
     "frozen",
     "libpqxx",
     "luajit",
     "pkgconf",
     "quill",
     "rmlui",
-    "sol2",
     "sdl3",
-    "doctest"
+    "sol2"
   ]
 }

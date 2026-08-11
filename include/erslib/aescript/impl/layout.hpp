@@ -51,7 +51,7 @@ namespace aescript {
 
 
     private:
-        aengine::HashSet<
+        ers::HashSet<
             Field,
             ers::member_string_hash_adaptor<ers::RapidHash, &Field::name>,
             ers::member_equal_adaptor<&Field::name>
@@ -61,5 +61,5 @@ namespace aescript {
     };
 
 
-    using LayoutContainer = aengine::StringMap<Layout>;
+    using LayoutContainer = ers::StringMap<Layout>;
 }

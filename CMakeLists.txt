@@ -123,6 +123,8 @@ target_sources(erslib_core
         "src/erslib/core/util/string.cpp"
 )
 
+erslib_required_package(erslib_core boost_preprocessor Boost::preprocessor)
+
 erslib_optional_package(erslib_core boost_optional Boost::optional _HAS_BOOST_OPTIONAL)
 erslib_optional_package(erslib_core boost_smart_ptr Boost::smart_ptr _HAS_BOOST_SMART_PTR)
 erslib_optional_package(erslib_core boost_thread Boost::thread _HAS_BOOST_THREAD)
@@ -224,12 +226,15 @@ if(ERSLIB_BUILD_DBIO)
             "src/erslib/dbio/impl/section.cpp"
 
             "src/erslib/dbio/clauses/bound.cpp"
-            "src/erslib/dbio/clauses/column.cpp"
             "src/erslib/dbio/clauses/condition.cpp"
             "src/erslib/dbio/clauses/in.cpp"
+            "src/erslib/dbio/clauses/insert_into.cpp"
             "src/erslib/dbio/clauses/null.cpp"
             "src/erslib/dbio/clauses/order.cpp"
             "src/erslib/dbio/clauses/raw.cpp"
+            "src/erslib/dbio/clauses/select_from.cpp"
+            "src/erslib/dbio/clauses/target.cpp"
+            "src/erslib/dbio/clauses/values.cpp"
 
             "src/erslib/dbio/connection_pool.cpp"
             "src/erslib/dbio/database.cpp"

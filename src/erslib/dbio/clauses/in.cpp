@@ -1,7 +1,7 @@
 #include "erslib/dbio/clauses/in.hpp"
 
 dbio::InClause::InClause(std::string column, std::vector<internal::binder_t> binders, bool negated) :
-    IClause(Section::Where),
+    IClause(section::where),
     _column(std::move(column)),
     _binders(std::move(binders)),
     _negated(negated) {

@@ -82,7 +82,7 @@ namespace ecs {
 
 
     public:
-        using storage_type = aengine::TrivialMap<
+        using storage_type = ers::TrivialMap<
             std::tuple<component_value_t<Tags>*...>
         >;
 

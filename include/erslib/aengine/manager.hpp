@@ -11,7 +11,7 @@
 
 namespace aengine {
     class ResourceManager {
-        using underlying_container_type = HashMap<
+        using underlying_container_type = ers::HashMap<
             std::string, Object,
             ers::string_hash_adaptor<ers::RapidHash>,
             ers::equal_adaptor<std::string>

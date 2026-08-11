@@ -12,8 +12,8 @@
 std::vector<std::string> aengine::resolve_mods_order(const ModContainer& mods, std::string_view initial_mod) {
     // Step 0: preparing
 
-    StringMap<std::vector<std::string>> outgoing;
-    StringMap<size_t> indegree;
+    ers::StringMap<std::vector<std::string>> outgoing;
+    ers::StringMap<size_t> indegree;
 
 
     // Step 1: registering every mod
@@ -66,7 +66,7 @@ std::vector<std::string> aengine::resolve_mods_order(const ModContainer& mods, s
     // Step 3: Kahn queue
 
     std::deque<std::string> ready;
-    StringSet queued;
+    ers::StringSet queued;
 
     {
         auto it = indegree.find(initial_mod);
@@ -138,7 +138,7 @@ std::vector<aengine::internal::stage_order_info_t> aengine::resolve_stages_order
     std::span<const std::string> mods_order,
     std::span<const std::string> phases_order
 ) {
-    StringMap<StringMap<OrderedSet<size_t>>> indexes_per_mod;
+    ers::StringMap<ers::StringMap<ers::OrderedSet<size_t>>> indexes_per_mod;
     size_t stages_count = 0;
 
     for (const auto& mod : mods) {

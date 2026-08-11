@@ -19,7 +19,7 @@ namespace {
 
 
 dbio::ConditionClause::ConditionClause(std::string column, Op op, internal::binder_t binder) :
-    IClause(Section::Where),
+    IClause(section::where),
     _column(std::move(column)),
     _op(op),
     _binder(std::move(binder)) {

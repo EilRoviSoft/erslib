@@ -2,7 +2,7 @@
 
 
 dbio::NullClause::NullClause(std::string column, bool is_null) :
-    IClause(Section::Where),
+    IClause(section::where),
     _column(std::move(column)),
     _is_null(is_null) {
 }

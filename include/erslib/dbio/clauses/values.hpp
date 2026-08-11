@@ -11,13 +11,11 @@
 
 
 namespace dbio {
-    // Verbatim SQL with '?' value markers.
-    // Nothing in the text is validated, so keep untrusted input in the markers, never in the text itself.
-    class ERSLIB_EXPORT RawClause : public IClause {
+    class ERSLIB_EXPORT ValuesClause : public IClause {
     public:
         // Member functions
 
-        RawClause(Section section, std::string sql, std::vector<internal::binder_t> binders);
+        explicit ValuesClause(std::vector<internal::binder_t> binders);
 
 
         // Executors
@@ -33,25 +31,17 @@ namespace dbio {
 
 
     private:
-        std::string _sql;
         std::vector<internal::binder_t> _binders;
     };
 
 
     namespace clauses {
         template<typename... Args>
-        ClausePtr raw(Section section, std::string sql, Args&&... args) {
+        ClausePtr values(Args&&... args) {
             std::vector<internal::binder_t> binders;
             binders.reserve(sizeof...(Args));
-
             (binders.emplace_back(internal::make_binder(std::forward<Args>(args))), ...);
-
-            return std::make_unique<RawClause>(section, std::move(sql), std::move(binders));
-        }
-
-        template<typename... Args>
-        ClausePtr where_raw(std::string sql, Args&&... args) {
-            return raw(section::where, std::move(sql), std::forward<Args>(args)...);
+            return std::make_unique<ValuesClause>(std::move(binders));
         }
     }
 }

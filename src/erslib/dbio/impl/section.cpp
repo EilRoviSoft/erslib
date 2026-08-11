@@ -14,25 +14,42 @@ namespace {
 }
 
 
-dbio::internal::section_format_t dbio::internal::section_format(Section section) {
-    switch (section) {
-        case Section::Column:
-            return { .prefix = "", .separator = ", " };
-        case Section::Where:
-            return { .prefix = "\nWHERE ", .separator = " AND " };
-        case Section::OrderBy:
-            return { .prefix = "\nORDER BY ", .separator = ", " };
-        case Section::Limit:
-            return { .prefix = "\nLIMIT ", .separator = " " };
-        case Section::Offset:
-            return { .prefix = "\nOFFSET ", .separator = " " };
+dbio::internal::section_format_t dbio::internal::section_format(Section sec) {
+    switch (sec) {
+        case section::select:
+            return { .prefix = "", .separator = "", .suffix = "" };
+        case section::insert_into:
+            return { .prefix = "INSERT INTO ", .separator = "", .suffix = "" };
+        case section::column:
+            return { .prefix = "", .separator = ", ", .suffix = "" };
+        case section::source:
+            return { .prefix = "\nFROM ", .separator = "", .suffix = "" };
+        case section::where:
+            return { .prefix = "\nWHERE ", .separator = " AND ", .suffix = "" };
+        case section::order_by:
+            return { .prefix = "\nORDER BY ", .separator = ", ", .suffix = "" };
+        case section::values:
+            return { .prefix = "\nVALUES ", .separator = ", ", .suffix = "" };
+        case section::limit:
+            return { .prefix = "\nLIMIT ", .separator = " ", .suffix = "" };
+        case section::offset:
+            return { .prefix = "\nOFFSET ", .separator = " ", .suffix = "" };
         default:
-            return { .prefix = "", .separator = " " };
+            return { .prefix = "", .separator = " ", .suffix = "" };
     }
 }
 
-bool dbio::internal::is_singular(Section section) {
-    return section == Section::Limit || section == Section::Offset;
+bool dbio::internal::is_singular(Section sec) {
+    switch (sec) {
+        case section::select:
+        case section::insert_into:
+        case section::source:
+        case section::limit:
+        case section::offset:
+            return true;
+        default:
+            return false;
+    }
 }
 bool dbio::internal::is_identifier(std::string_view name) {
     if (name.empty())

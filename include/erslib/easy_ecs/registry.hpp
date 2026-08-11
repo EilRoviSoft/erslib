@@ -49,9 +49,9 @@ namespace ecs {
 
 
     protected:
-        aengine::TrivialMap<IEntity*> m_entities;
-        aengine::TrivialMap<void*> m_components;
-        aengine::TrivialMap<std::unique_ptr<IGroup>> m_groups;
+        ers::TrivialMap<IEntity*> m_entities;
+        ers::TrivialMap<void*> m_components;
+        ers::TrivialMap<std::unique_ptr<IGroup>> m_groups;
 
 
     private:

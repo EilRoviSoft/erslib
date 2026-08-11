@@ -20,10 +20,10 @@ dbio::ClausePtr dbio::BoundClause::clone() const {
 }
 
 
-dbio::ClausePtr dbio::clauses::limit(int64_t amount) {
-    return std::make_unique<BoundClause>(Section::Limit, amount);
+dbio::ClausePtr dbio::clauses::with_limit(int64_t amount) {
+    return std::make_unique<BoundClause>(section::limit, amount);
 }
 
-dbio::ClausePtr dbio::clauses::offset(int64_t amount) {
-    return std::make_unique<BoundClause>(Section::Offset, amount);
+dbio::ClausePtr dbio::clauses::with_offset(int64_t amount) {
+    return std::make_unique<BoundClause>(section::offset, amount);
 }

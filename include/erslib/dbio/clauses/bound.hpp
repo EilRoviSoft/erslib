@@ -8,7 +8,6 @@
 
 
 namespace dbio {
-    // Backs both LIMIT and OFFSET: same shape, different section.
     class ERSLIB_EXPORT BoundClause : public IClause {
     public:
         // Member functions
@@ -34,7 +33,7 @@ namespace dbio {
 
 
     namespace clauses {
-        ClausePtr limit(int64_t amount);
-        ClausePtr offset(int64_t amount);
+        ClausePtr with_limit(int64_t amount);
+        ClausePtr with_offset(int64_t amount);
     }
 }

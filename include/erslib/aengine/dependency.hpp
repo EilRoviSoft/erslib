@@ -33,7 +33,7 @@ namespace aengine {
     };
 
 
-    using DependencyContainer = HashSet<
+    using DependencyContainer = ers::HashSet<
         dependency_t,
         ers::member_string_hash_adaptor<ers::RapidHash, &dependency_t::name>,
         ers::member_equal_adaptor<&dependency_t::name>

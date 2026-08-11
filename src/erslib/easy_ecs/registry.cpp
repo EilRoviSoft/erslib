@@ -22,7 +22,8 @@ void ecs::Registry::track_component(size_t eid, size_t cid, void* component) {
 
     auto [it, inserted] = m_components.try_emplace(key, component);
     if (!inserted) {
-        throw ers::make_runtime_error("Component (id: {}) already exist. It's either key collision, or entity (id: {}) already has this component.",
+        throw ers::make_runtime_error("Component (id: {}) already exist. "
+            "It's either key collision, or entity (id: {}) already has this component.",
             cid, eid);
     }
 }

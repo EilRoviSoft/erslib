@@ -1,0 +1,83 @@
+#pragma once
+
+// std
+#include <string>
+
+// boost
+#include <boost/container/flat_map.hpp>
+#include <boost/container/flat_set.hpp>
+#include <boost/unordered/unordered_flat_map.hpp>
+#include <boost/unordered/unordered_flat_set.hpp>
+
+// ers
+#include <erslib/core/adaptor/transparent/string.hpp>
+#include <erslib/core/hashing/direct.hpp>
+#include <erslib/core/hashing/rapid.hpp>
+
+
+namespace ers {
+    template<
+        typename K,
+        typename Compare = std::less<K>,
+        typename AllocatorOrContainer = std::allocator<K>>
+    using OrderedSet = boost::container::flat_set<K, Compare, AllocatorOrContainer>;
+
+    template<
+        typename K,
+        typename V,
+        typename Compare = std::less<K>,
+        typename AllocatorOrContainer = std::allocator<std::pair<K, V>>>
+    using OrderedMap = boost::container::flat_map<K, V, Compare, AllocatorOrContainer>;
+}
+
+
+namespace ers {
+    template<
+        typename K,
+        typename Hasher = RapidHash<K>,
+        typename EqualTo = std::equal_to<K>,
+        typename Alloc = std::allocator<K>>
+    using HashSet = boost::unordered_flat_set<K, Hasher, EqualTo, Alloc>;
+
+    template<
+        typename K,
+        typename V,
+        typename Hasher = RapidHash<K>,
+        typename EqualTo = std::equal_to<K>,
+        typename Alloc = std::allocator<std::pair<K, V>>>
+    using HashMap = boost::unordered_flat_map<K, V, Hasher, EqualTo, Alloc>;
+
+
+    using TrivialSet = HashSet<size_t, DirectHash<size_t>>;
+
+    template<typename V>
+    using TrivialMap = HashMap<size_t, V, DirectHash<size_t>>;
+
+
+    using StringSet = HashSet<
+        std::string,
+        string_hash_adaptor<RapidHash>,
+        equal_adaptor<std::string>
+    >;
+
+    template<typename V>
+    using StringMap = HashMap<
+        std::string, V,
+        string_hash_adaptor<RapidHash>,
+        equal_adaptor<std::string>
+    >;
+
+
+    using StringViewSet = HashSet<
+        std::string_view,
+        string_hash_adaptor<RapidHash>,
+        equal_adaptor<std::string_view>
+    >;
+
+    template<typename V>
+    using StringViewMap = HashMap<
+        std::string_view, V,
+        string_hash_adaptor<RapidHash>,
+        equal_adaptor<std::string_view>
+    >;
+}

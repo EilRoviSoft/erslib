@@ -4,6 +4,7 @@
 #include <string>
 
 // pqxx
+#include <pqxx/dbtransaction>
 #include <pqxx/params>
 
 // ers

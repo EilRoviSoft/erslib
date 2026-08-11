@@ -1,14 +1,14 @@
 #include "erslib/dbio/impl/query.hpp"
 
+// std
+#include <algorithm>
+
 // ers
+#include <erslib/dbio/clauses/target.hpp>
 #include <erslib/dbio/eval.hpp>
 
 
 // Query
-
-dbio::Query::Query(std::string table) :
-    _table(std::move(table)) {
-}
 
 dbio::Query::Query(const Query& other) {
     _copy_from(other);
@@ -18,10 +18,6 @@ dbio::Query& dbio::Query::operator=(const Query& other) {
     return *this;
 }
 
-
-void dbio::Query::set_table(std::string table) {
-    _table = std::move(table);
-}
 
 void dbio::Query::add(ClausePtr clause) {
     if (!clause)
@@ -37,26 +33,21 @@ void dbio::Query::add(ClausePtr clause) {
 }
 
 ers::Status dbio::Query::build(build_context_t& ctx) const {
-    if (!internal::is_identifier(_table))
-        return ers::make_error("dbio::Query: invalid table name '{}'", _table);
+    std::vector<Section> sections;
+    
+    for (const auto& clause : _clauses) {
+        if (std::ranges::find(sections, clause->section()) == sections.end())
+            sections.push_back(clause->section());
+    }
 
-    ctx.query += "SELECT ";
 
-    if (_has(Section::Column)) {
-        if (auto s = _render(ctx, Section::Column); !s)
-            return s;
-    } else
-        ctx.query += '*';
+    std::ranges::sort(sections);
 
-    ctx.query += "\nFROM ";
-    ctx.query += _table;
-
-    static constexpr std::array tail = { Section::Where, Section::OrderBy, Section::Limit, Section::Offset };
-
-    for (const Section section : tail) {
-        if (auto s = _render(ctx, section); !s)
+    for (const Section sec : sections) {
+        if (auto s = _render(ctx, sec); !s)
             return s;
     }
+
 
     return ers::ok;
 }
@@ -80,12 +71,14 @@ ers::Result<pqxx::result> dbio::Query::exec(pqxx::dbtransaction& tx) const ERS_D
 }
 ERS_DBIO_CATCH_EVAL_ERRORS
 
+ers::Status dbio::Query::exec_and_discard(pqxx::dbtransaction& tx) const {
+    auto r = exec(tx);
+    if (!r)
+        return r.error();
 
-bool dbio::Query::_has(Section section) const {
-    return std::ranges::any_of(_clauses, [&](const ClausePtr& it) {
-        return it->section() == section;
-    });
+    return ers::ok;
 }
+
 
 ers::Status dbio::Query::_render(build_context_t& ctx, Section section) const {
     auto format = internal::section_format(section);
@@ -102,22 +95,18 @@ ers::Status dbio::Query::_render(build_context_t& ctx, Section section) const {
             return s;
     }
 
+    if (!first)
+        ctx.query += format.suffix;
+
     return ers::ok;
 }
 
 void dbio::Query::_copy_from(const Query& other) {
-    _table = other._table;
-
     _clauses.clear();
     _clauses.reserve(other._clauses.size());
 
     for (const auto& it : other._clauses)
         _clauses.emplace_back(it->clone());
-}
-
-
-dbio::Query dbio::from(std::string table) {
-    return Query(std::move(table));
 }
 
 
@@ -131,4 +120,8 @@ dbio::Query& dbio::operator|(Query& lhs, ClausePtr rhs) {
 dbio::Query&& dbio::operator|(Query&& lhs, ClausePtr rhs) {
     lhs.add(std::move(rhs));
     return std::move(lhs);
+}
+
+dbio::Query& dbio::operator|=(Query& lhs, ClausePtr rhs) {
+    return lhs | std::move(rhs);
 }

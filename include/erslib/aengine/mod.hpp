@@ -40,13 +40,13 @@ namespace aengine::internal {
 
 
     struct ModContent {
-        StringMap<std::string> packages;
-        StringMap<std::string> stages;
+        ers::StringMap<std::string> packages;
+        ers::StringMap<std::string> stages;
     };
 
 
     struct ModRuntime {
-        StringMap<sol::object> modules_cache;
+        ers::StringMap<sol::object> modules_cache;
         sol::protected_function main;
         sol::environment env;
         std::exception_ptr pending_exception = nullptr;

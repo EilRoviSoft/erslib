@@ -18,7 +18,7 @@ namespace aengine::internal {
     };
 
     template<typename T>
-    using allowed_values_t = OrderedSet<T>;
+    using allowed_values_t = ers::OrderedSet<T>;
 
 
     template<typename T>
