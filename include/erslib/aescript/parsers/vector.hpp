@@ -12,7 +12,7 @@
 template<typename T>
 struct aescript::parser_t<std::vector<T>> {
     [[nodiscard]]
-    ers::Status exec(parser_context& ctx, sol::object obj, std::vector<T>& dst) const {
+    ers::Status exec(impl::parser_context& ctx, sol::object obj, std::vector<T>& dst) const {
         if (!obj.is<sol::table>())
             return ers::make_error("Expected array table");
 

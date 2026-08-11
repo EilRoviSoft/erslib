@@ -9,7 +9,7 @@ template<typename T>
     requires aescript::impl::HasLayoutDescriptor<T>
 struct aescript::parser_t<T> {
     [[nodiscard]]
-    ers::Status exec([[maybe_unused]] parser_context& ctx, sol::object obj, T& dst) const {
+    ers::Status exec([[maybe_unused]] impl::parser_context& ctx, sol::object obj, T& dst) const {
         if (!obj.is<sol::table>())
             return ers::make_error("Expected table");
 

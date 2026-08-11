@@ -9,7 +9,7 @@ template<aescript::impl::SolInnateType T>
 struct aescript::parser_t<T> {
     [[nodiscard]]
     ers::Status exec(
-        [[maybe_unused]] parser_context& ctx,
+        [[maybe_unused]] impl::parser_context& ctx,
         sol::object obj,
         T& dst
     ) const {

@@ -12,7 +12,7 @@
 template<typename... Ts>
 struct aescript::parser_t<std::variant<Ts...>> {
     [[nodiscard]]
-    ers::Status exec(parser_context& ctx, sol::object obj, std::variant<Ts...>& dst) const {
+    ers::Status exec(impl::parser_context& ctx, sol::object obj, std::variant<Ts...>& dst) const {
         if (!obj.is<sol::table>())
             return ers::make_error("Expected array table for tuple");
         return _impl(ctx, obj.as<sol::table>(), dst, std::index_sequence_for<Ts...> {});
@@ -22,7 +22,7 @@ struct aescript::parser_t<std::variant<Ts...>> {
 private:
     template<size_t... Is>
     static ers::Status _impl(
-        parser_context& ctx,
+        impl::parser_context& ctx,
         sol::table arr,
         std::tuple<Ts...>& dst, std::index_sequence<Is...>
     ) {

@@ -9,7 +9,7 @@
 
 template<typename T>
 struct aescript::verifier_t<std::vector<T>> {
-    ers::Status exec(verify_context& ctx, sol::object obj) const {
+    ers::Status exec(impl::verify_context& ctx, sol::object obj) const {
         if (!obj.is<sol::table>())
             return ers::make_error("Expected array table");
 

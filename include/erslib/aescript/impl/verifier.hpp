@@ -50,6 +50,6 @@ namespace aescript::impl {
 namespace aescript {
     template<typename T>
     struct verifier_t {
-        ers::Status exec(verify_context& ctx, sol::object obj) const = delete("no verifier_t specialization for T");
+        ers::Status exec(impl::verify_context& ctx, sol::object obj) const = delete("no verifier_t specialization for T");
     };
 }

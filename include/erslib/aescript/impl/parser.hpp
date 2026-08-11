@@ -37,7 +37,7 @@ namespace aescript {
     template<typename T>
     struct parser_t {
         ers::Status exec(
-            [[maybe_unused]] parser_context& ctx,
+            [[maybe_unused]] impl::parser_context& ctx,
             sol::object obj,
             T& dst
         ) const = delete("generic specialization");

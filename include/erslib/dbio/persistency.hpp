@@ -15,4 +15,6 @@ namespace dbio::impl {
 
 namespace dbio {
     using impl::PersistencyFlag;
+    using impl::In;
+    using impl::Out;
 }
