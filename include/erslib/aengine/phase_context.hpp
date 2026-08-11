@@ -7,7 +7,7 @@
 #include <erslib/aengine/mod.hpp>
 
 
-namespace aengine {
+namespace aengine::impl {
     class IPhaseContext {
     public:
         // Member functions
@@ -22,4 +22,11 @@ namespace aengine {
 
         virtual void cleanup(sol::state_view& lua) = 0;
     };
+}
+
+
+// Exports
+
+namespace aengine {
+    using impl::IPhaseContext;
 }

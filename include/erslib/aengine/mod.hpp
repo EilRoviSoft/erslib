@@ -23,7 +23,7 @@ namespace fs = std::filesystem;
 
 // Internal
 
-namespace aengine::internal {
+namespace aengine::impl {
     struct ModIdentity {
         std::string name;
         std::string title;
@@ -56,15 +56,15 @@ namespace aengine::internal {
 
 // Mod
 
-namespace aengine {
+namespace aengine::impl {
     class Mod {
     public:
         // Types definition
 
-        using identity_type = internal::ModIdentity;
-        using metadata_type = internal::ModMetadata;
-        using content_type = internal::ModContent;
-        using runtime_type = internal::ModRuntime;
+        using identity_type = ModIdentity;
+        using metadata_type = ModMetadata;
+        using content_type = ModContent;
+        using runtime_type = ModRuntime;
 
 
         // Constructor
@@ -95,7 +95,7 @@ namespace aengine {
         const metadata_type& metadata() const { return *m_metadata; }
 
         const content_type& content() const { return *m_content; }
-        
+
         const runtime_type& runtime() const { return *m_runtime; }
 
 
@@ -117,4 +117,12 @@ namespace aengine {
         ers::member_string_hash_adaptor<ers::RapidHash, &Mod::name>,
         ers::member_equal_adaptor<&Mod::name>
     >;
+}
+
+
+// Exports
+
+namespace aengine {
+    using impl::Mod;
+    using impl::ModContainer;
 }

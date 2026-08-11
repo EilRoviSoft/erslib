@@ -9,7 +9,7 @@
 #include <erslib/core/views.hpp>
 
 
-std::vector<std::string> aengine::resolve_mods_order(const ModContainer& mods, std::string_view initial_mod) {
+std::vector<std::string> aengine::impl::resolve_mods_order(const ModContainer& mods, std::string_view initial_mod) {
     // Step 0: preparing
 
     ers::StringMap<std::vector<std::string>> outgoing;
@@ -133,7 +133,7 @@ std::vector<std::string> aengine::resolve_mods_order(const ModContainer& mods, s
     return mods_order;
 }
 
-std::vector<aengine::internal::stage_order_info_t> aengine::resolve_stages_order(
+std::vector<aengine::impl::stage_order_info_t> aengine::impl::resolve_stages_order(
     const ModContainer& mods,
     std::span<const std::string> mods_order,
     std::span<const std::string> phases_order
@@ -150,13 +150,13 @@ std::vector<aengine::internal::stage_order_info_t> aengine::resolve_stages_order
     }
 
 
-    std::vector<internal::stage_order_info_t> stages_order;
+    std::vector<stage_order_info_t> stages_order;
     stages_order.reserve(stages_count);
 
     for (const auto& phase : phases_order) {
         for (const auto& mod : mods_order) {
             for (const auto& index : indexes_per_mod[mod][phase]) {
-                stages_order.emplace_back(internal::stage_order_info_t {
+                stages_order.emplace_back(stage_order_info_t {
                     .mod   = mod,
                     .phase = phase,
                     .index = index

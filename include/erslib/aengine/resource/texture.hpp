@@ -9,7 +9,7 @@
 
 // TextureResource
 
-//namespace aengine {
+//namespace aengine::impl {
 //    class TextureResource : public TResource<sf::Texture> {
 //    public:
 //        // Constructor

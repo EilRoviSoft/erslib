@@ -9,7 +9,7 @@
 #include <erslib/aengine/mod.hpp>
 
 
-namespace aengine::internal {
+namespace aengine::impl {
     struct stage_order_info_t {
         std::string mod;
         std::string phase;
@@ -17,12 +17,20 @@ namespace aengine::internal {
     };
 }
 
-
-namespace aengine {
+namespace aengine::impl {
     std::vector<std::string> resolve_mods_order(const ModContainer& mods, std::string_view initial_mod);
-    std::vector<internal::stage_order_info_t> resolve_stages_order(
+    std::vector<stage_order_info_t> resolve_stages_order(
         const ModContainer& mods,
         std::span<const std::string> mods_order,
         std::span<const std::string> phases_order
     );
+}
+
+
+// Exports
+
+namespace aengine {
+    using impl::stage_order_info_t;
+    using impl::resolve_mods_order;
+    using impl::resolve_stages_order;
 }

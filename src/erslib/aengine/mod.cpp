@@ -47,8 +47,8 @@ namespace {
 
 
     auto extract_info(const fs::path& m_dir) {
-        aengine::internal::ModIdentity identity;
-        aengine::internal::ModMetadata metadata;
+        aengine::impl::ModIdentity identity;
+        aengine::impl::ModMetadata metadata;
 
 
         fs::path info_path = m_dir / "info.json";
@@ -101,19 +101,19 @@ namespace {
 
 // Mod
 
-aengine::Mod::Mod(fs::path dir) :
+aengine::impl::Mod::Mod(fs::path dir) :
     m_dir(std::move(dir)) {
 }
 
 
-void aengine::Mod::init_info() {
+void aengine::impl::Mod::init_info() {
     auto [identity, metadata] = extract_info(m_dir);
 
     m_identity = std::move(identity);
-    m_metadata = std::make_unique<internal::ModMetadata>(std::move(metadata));
+    m_metadata = std::make_unique<ModMetadata>(std::move(metadata));
 }
 
-void aengine::Mod::init_content(const std::function<bool(std::string_view)>& stage_filter) const {
+void aengine::impl::Mod::init_content(const std::function<bool(std::string_view)>& stage_filter) const {
     content_type content;
 
     for (const auto& it : fs::recursive_directory_iterator(m_dir)) {
@@ -135,7 +135,7 @@ void aengine::Mod::init_content(const std::function<bool(std::string_view)>& sta
     m_content = std::make_unique<content_type>(std::move(content));
 }
 
-void aengine::Mod::init_runtime(sol::state_view& lua) const {
+void aengine::impl::Mod::init_runtime(sol::state_view& lua) const {
     runtime_type runtime;
 
     {
@@ -156,7 +156,7 @@ void aengine::Mod::init_runtime(sol::state_view& lua) const {
     m_runtime = std::make_unique<runtime_type>(std::move(runtime));
 }
 
-void aengine::Mod::load_runtime(std::string_view stage_name) const {
+void aengine::impl::Mod::load_runtime(std::string_view stage_name) const {
     auto it = content().stages.find(stage_name);
     if (it == content().stages.end())
         throw make_lua_stage_error("Stage {} is not found", stage_name);
@@ -195,11 +195,11 @@ void aengine::Mod::load_runtime(std::string_view stage_name) const {
 }
 
 
-std::function<sol::object(sol::this_state, std::string_view)> aengine::Mod::_make_require_fn() const {
+std::function<sol::object(sol::this_state, std::string_view)> aengine::impl::Mod::_make_require_fn() const {
     return [this](sol::this_state ts, std::string_view package_name) -> sol::object {
         sol::state_view lua = ts.lua_state();
 
-        
+
         auto& content = *m_content;
         auto& runtime = *m_runtime;
 

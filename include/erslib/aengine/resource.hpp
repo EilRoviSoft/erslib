@@ -14,7 +14,7 @@
 
 // Forward declaration
 
-namespace aengine {
+namespace aengine::impl {
     template<typename T>
     class TResource;
 }
@@ -22,7 +22,7 @@ namespace aengine {
 
 // Control block
 
-namespace aengine::internal {
+namespace aengine::impl {
     template<typename T>
     struct control_block_t {
         using ctor_fn = std::function<ers::Status(control_block_t& cb)>;
@@ -49,7 +49,7 @@ namespace aengine::internal {
 
 // Handle
 
-namespace aengine {
+namespace aengine::impl {
     template<typename T>
     class Handle {
         friend TResource<T>;
@@ -99,16 +99,16 @@ namespace aengine {
 
 
     protected:
-        internal::control_block_t<T>* m_cb = nullptr;
+        control_block_t<T>* m_cb = nullptr;
 
 
     private:
-        explicit Handle(internal::control_block_t<T>& cb) :
+        explicit Handle(control_block_t<T>& cb) :
             m_cb(&cb) {
             _acquire();
         }
-        
-        
+
+
         void _acquire() {
             m_cb->refs.fetch_add(1, std::memory_order_release);
         }
@@ -123,7 +123,7 @@ namespace aengine {
 
 // Control block helper functions
 
-namespace aengine::internal {
+namespace aengine::impl {
     template<typename T>
     void default_dtor(control_block_t<T>& cb) {
         std::scoped_lock lock(cb.mutex);
@@ -134,17 +134,17 @@ namespace aengine::internal {
 
 // TResource
 
-namespace aengine {
+namespace aengine::impl {
     template<typename T>
     class TResource {
     public:
         using value_type = T;
-        using control_block_type = internal::control_block_t<T>;
+        using control_block_type = control_block_t<T>;
 
 
         // Constructor
 
-        explicit TResource(control_block_type::ctor_fn ctor, control_block_type::dtor_fn dtor = internal::default_dtor<T>) :
+        explicit TResource(control_block_type::ctor_fn ctor, control_block_type::dtor_fn dtor = default_dtor<T>) :
             m_cb(ers::make_holder<control_block_type>(std::move(ctor), std::move(dtor))) {
         }
 
@@ -175,7 +175,12 @@ namespace aengine {
 }
 
 
-// TResource helper types
+// Exports
+
+namespace aengine {
+    using impl::Handle;
+    using impl::TResource;
+}
 
 namespace aengine {
     template<typename T>

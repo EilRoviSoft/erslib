@@ -5,6 +5,13 @@
 #include <erslib/core/memory/any.hpp>
 
 
-namespace aengine {
+namespace aengine::impl {
     using Object = ers::Any;
+}
+
+
+// Exports
+
+namespace aengine {
+    using impl::Object;
 }

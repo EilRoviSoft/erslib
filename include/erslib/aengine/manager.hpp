@@ -9,7 +9,7 @@
 #include <erslib/aengine/fwd.hpp>
 
 
-namespace aengine {
+namespace aengine::impl {
     class ResourceManager {
         using underlying_container_type = ers::HashMap<
             std::string, Object,
@@ -63,4 +63,11 @@ namespace aengine {
     protected:
         container_type m_data;
     };
+}
+
+
+// Exports
+
+namespace aengine {
+    using impl::ResourceManager;
 }

@@ -8,7 +8,7 @@
 
 // Dependency
 
-ers::Result<aengine::dependency_t> ers::convert::from_string_backend<aengine::dependency_t>::runtime_value(
+ers::Result<aengine::impl::dependency_t> ers::convert::from_string_backend<aengine::impl::dependency_t>::runtime_value(
     std::string_view source
 ) const {
     using namespace aengine;

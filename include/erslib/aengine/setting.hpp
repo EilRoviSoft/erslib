@@ -10,7 +10,7 @@
 #include <erslib/core/type/none.hpp>
 
 
-namespace aengine::internal {
+namespace aengine::impl {
     template<typename T>
     struct value_bounds_t {
         T min;
@@ -32,7 +32,7 @@ namespace aengine::internal {
     template<typename T>
     struct check_state_visitor {
         bool operator()(const T&, ers::none_t) const { return true; }
-        
+
         bool operator()(const T& value, const value_bounds_t<T>& value_bounds) const {
             return value >= value_bounds.min && value <= value_bounds.max;
         }
@@ -44,7 +44,7 @@ namespace aengine::internal {
 }
 
 
-namespace aengine::internal {
+namespace aengine::impl {
     template<typename T, typename ViewT = T>
     class BaseSetting {
     public:
@@ -80,8 +80,8 @@ namespace aengine::internal {
 }
 
 
-namespace aengine {
-    class BoolSetting : internal::BaseSetting<bool> {
+namespace aengine::impl {
+    class BoolSetting : BaseSetting<bool> {
     public:
         BoolSetting(ViewType default_value, ViewType forced_value);
 
@@ -89,25 +89,35 @@ namespace aengine {
         Type m_forced_value;
     };
 
-    class IntSetting : internal::BaseSetting<i64> {
+    class IntSetting : BaseSetting<i64> {
     public:
 
     protected:
-        internal::check_states_t<Type> m_check_states;
+        check_states_t<Type> m_check_states;
     };
 
-    class DoubleSetting : internal::BaseSetting<f64> {
+    class DoubleSetting : BaseSetting<f64> {
     public:
 
     protected:
-        internal::check_states_t<Type> m_check_states;
+        check_states_t<Type> m_check_states;
     };
 
-    class StringSetting : internal::BaseSetting<std::string, std::string_view> {
+    class StringSetting : BaseSetting<std::string, std::string_view> {
     public:
 
     protected:
         bool m_allow_blank, m_auto_trim;
-        internal::allowed_values_t<Type> m_allowed_values;
+        allowed_values_t<Type> m_allowed_values;
     };
+}
+
+
+// Exports
+
+namespace aengine {
+    using impl::BoolSetting;
+    using impl::IntSetting;
+    using impl::DoubleSetting;
+    using impl::StringSetting;
 }

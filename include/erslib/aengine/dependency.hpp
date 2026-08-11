@@ -10,7 +10,7 @@
 #include <erslib/core/type/version.hpp>
 
 
-namespace aengine {
+namespace aengine::impl {
     enum class DependencyType : uint8_t {
         None = 0,
         Incompatible,
@@ -44,7 +44,23 @@ namespace aengine {
 }
 
 
+// Exports
+
+namespace aengine {
+    using impl::DependencyType;
+    using impl::DependencyLimit;
+    using impl::dependency_t;
+    using impl::DependencyContainer;
+
+    using impl::dependency_error;
+    using impl::make_dependency_error;
+    using impl::make_dependency_error_with_trace;
+}
+
+
+// Specialization
+
 template<>
-struct ers::convert::from_string_backend<aengine::dependency_t> {
-    Result<aengine::dependency_t> runtime_value(std::string_view source) const;
+struct ers::convert::from_string_backend<aengine::impl::dependency_t> {
+    Result<aengine::impl::dependency_t> runtime_value(std::string_view source) const;
 };

@@ -12,12 +12,12 @@ namespace {
 }
 
 
-bool aengine::util::is_stage_naming_scheme(std::string_view sv) {
+bool aengine::impl::util::is_stage_naming_scheme(std::string_view sv) {
     boost::regex regex(stage_name_pattern);
     return boost::regex_match(sv.begin(), sv.end(), regex);
 }
 
-std::tuple<std::string, size_t> aengine::util::extract_stage_info(std::string_view sv) {
+std::tuple<std::string, size_t> aengine::impl::util::extract_stage_info(std::string_view sv) {
     boost::regex regex(stage_name_pattern);
     boost::match_results<std::string_view::const_iterator> match;
 
