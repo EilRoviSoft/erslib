@@ -1,13 +1,13 @@
 #include "erslib/aescript/properties/inclusive_with.hpp"
 
 
-aescript::InclusiveWithProperty::InclusiveWithProperty(std::vector<std::string> mandatory_fields) :
+aescript::impl::InclusiveWithProperty::InclusiveWithProperty(std::vector<std::string> mandatory_fields) :
     IVerifier(1),
     _mandatory_fields(std::move(mandatory_fields)) {
 }
 
 
-ers::Status aescript::InclusiveWithProperty::exec([[maybe_unused]] verify_context& ctx, sol::table table, std::string_view field) const {
+ers::Status aescript::impl::InclusiveWithProperty::exec([[maybe_unused]] verify_context& ctx, sol::table table, std::string_view field) const {
     if (!table.get<std::optional<sol::object>>(field))
         return ers::ok;
 
@@ -29,16 +29,16 @@ ers::Status aescript::InclusiveWithProperty::exec([[maybe_unused]] verify_contex
     return ers::ok;
 }
 
-aescript::VerifierPtr aescript::InclusiveWithProperty::clone() const {
+aescript::impl::VerifierPtr aescript::impl::InclusiveWithProperty::clone() const {
     return std::make_unique<InclusiveWithProperty>(_mandatory_fields);
 }
 
 
-aescript::VerifierPtr aescript::properties::inclusive_with(std::string_view field) {
+aescript::impl::VerifierPtr aescript::impl::properties::inclusive_with(std::string_view field) {
     return inclusive_with({ field });
 }
 
-aescript::VerifierPtr aescript::properties::inclusive_with(std::initializer_list<std::string_view> il) {
+aescript::impl::VerifierPtr aescript::impl::properties::inclusive_with(std::initializer_list<std::string_view> il) {
     std::vector<std::string> mandatory_fields;
 
     mandatory_fields.reserve(il.size());

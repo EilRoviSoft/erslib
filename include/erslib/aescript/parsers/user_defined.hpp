@@ -6,7 +6,7 @@
 
 
 template<typename T>
-    requires aescript::internal::HasLayoutDescriptor<T>
+    requires aescript::impl::HasLayoutDescriptor<T>
 struct aescript::parser_t<T> {
     [[nodiscard]]
     ers::Status exec([[maybe_unused]] parser_context& ctx, sol::object obj, T& dst) const {

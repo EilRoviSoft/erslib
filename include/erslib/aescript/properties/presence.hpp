@@ -4,7 +4,7 @@
 #include <erslib/aescript/impl/verifier.hpp>
 
 
-namespace aescript {
+namespace aescript::impl {
     class PresenceProperty : public IVerifier {
     public:
         // Member functions

@@ -44,3 +44,32 @@
 #include <erslib/aescript/properties/parse_into_with_index.hpp>
 #include <erslib/aescript/properties/presence.hpp>
 #include <erslib/aescript/properties/with_types.hpp>
+
+
+// Exports
+
+namespace aescript {
+    namespace properties = impl::properties;
+
+
+    using impl::verify_context;
+    using impl::parser_context;
+
+    using impl::IVerifier;
+    using impl::VerifierPtr;
+
+    using impl::IParser;
+    using impl::ParserPtr;
+
+    using impl::IDescriptor;
+    using impl::DescriptorPtr;
+
+    using impl::Field;
+
+    using impl::Layout;
+    using impl::LayoutContainer;
+
+
+    using impl::required_field;
+    using impl::optional_field;
+}

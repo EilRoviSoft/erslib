@@ -7,7 +7,7 @@
 #include <erslib/aescript/impl/parser.hpp>
 
 
-namespace aescript {
+namespace aescript::impl {
     template<typename Owner, typename Element, typename Member>
     class ParseIntoWithIndex : public IParser {
     public:

@@ -4,12 +4,12 @@
 #include <erslib/aescript/impl/parser.hpp>
 
 
-namespace aescript {
+namespace aescript::impl {
     template<typename Owner, typename Member>
     class ParseIntoParser : public IParser {
     public:
         // Member functions
-        
+
         explicit ParseIntoParser(Member Owner::* member) :
             _member(member) {
         }

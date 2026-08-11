@@ -8,7 +8,7 @@
 #include <erslib/core/type/result.hpp>
 
 
-namespace aescript {
+namespace aescript::impl {
     // TODO: add 'make_verifier' instead of 'make_unique<DerivedFromVerifier>'
     using VerifierPtr = std::unique_ptr<class IVerifier>;
 
@@ -41,8 +41,13 @@ namespace aescript {
     private:
         size_t _precedence;
     };
+}
 
 
+// verifier_t<T> is a customization point, same rationale as parser_t<T> in impl/parser.hpp:
+// every file under aescript/verifiers/ explicitly specializes it, so it stays in aescript::.
+
+namespace aescript {
     template<typename T>
     struct verifier_t {
         ers::Status exec(verify_context& ctx, sol::object obj) const = delete("no verifier_t specialization for T");

@@ -11,7 +11,7 @@
 #include <erslib/core/type/result.hpp>
 
 
-namespace aescript::internal {
+namespace aescript::impl {
     template<typename T>
     concept SolInnateType =
         std::same_as<T, std::string>
@@ -36,7 +36,7 @@ namespace aescript::internal {
     template<SolInnateType T>
     [[nodiscard]]
     ers::Status check_type(sol::object obj) {
-        static constexpr sol::type expected_type = internal::sol_type_for<T>();
+        static constexpr sol::type expected_type = impl::sol_type_for<T>();
 
         if (!obj.valid())
             return ers::make_error("Object is not valid or nil");
@@ -49,7 +49,7 @@ namespace aescript::internal {
 }
 
 
-namespace aescript::internal {
+namespace aescript::impl {
     template<typename T>
     concept HasLayoutDescriptor = requires() {
         { T::get_layout() } -> std::same_as<const Layout&>;

@@ -1,7 +1,7 @@
 #pragma once
 
 
-namespace aescript {
+namespace aescript::impl {
     struct verify_context {
         bool skip : 1 = false;
     };

@@ -8,7 +8,7 @@
 #include <erslib/aescript/impl/descriptor.hpp>
 
 
-namespace aescript {
+namespace aescript::impl {
     class OneOfProperty : public IDescriptor {
     public:
         // Member functions

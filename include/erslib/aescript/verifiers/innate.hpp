@@ -5,9 +5,9 @@
 #include <erslib/aescript/impl/verifier.hpp>
 
 
-template<aescript::internal::SolInnateType T>
+template<aescript::impl::SolInnateType T>
 struct aescript::verifier_t<T> {
     ers::Status exec(verify_context&, sol::object obj) const {
-        return internal::check_type<T>(obj);
+        return impl::check_type<T>(obj);
     }
 };

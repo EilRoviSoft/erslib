@@ -15,7 +15,7 @@
 #include <erslib/core/type/result.hpp>
 
 
-namespace aescript {
+namespace aescript::impl {
     class Layout {
     public:
         using possible_property_t = std::variant<Field, DescriptorPtr>;

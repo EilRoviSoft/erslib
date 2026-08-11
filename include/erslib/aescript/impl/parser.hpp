@@ -8,7 +8,7 @@
 #include <erslib/core/type/result.hpp>
 
 
-namespace aescript {
+namespace aescript::impl {
     using ParserPtr = std::unique_ptr<class IParser>;
 
     class IParser {
@@ -30,8 +30,10 @@ namespace aescript {
         [[nodiscard]]
         virtual ParserPtr clone() const = 0;
     };
+}
 
 
+namespace aescript {
     template<typename T>
     struct parser_t {
         ers::Status exec(

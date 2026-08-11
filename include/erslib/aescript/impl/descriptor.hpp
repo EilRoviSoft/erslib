@@ -10,7 +10,7 @@
 #include <erslib/core/type/result.hpp>
 
 
-namespace aescript {
+namespace aescript::impl {
     using DescriptorPtr = std::unique_ptr<class IDescriptor>;
 
     class IDescriptor {

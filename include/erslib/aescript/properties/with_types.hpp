@@ -5,14 +5,14 @@
 #include <erslib/aescript/impl/verifier.hpp>
 
 
-namespace aescript::internal {
+namespace aescript::impl {
     template<typename T>
     concept FieldType = HasLayoutDescriptor<T> || SolInnateType<T> || HasVerifier<T>;
 }
 
 
-namespace aescript {
-    template<internal::FieldType... Ts>
+namespace aescript::impl {
+    template<FieldType... Ts>
     class WithTypesProperty : public IVerifier {
     public:
         // Member functions
@@ -40,12 +40,12 @@ namespace aescript {
 
 
     namespace properties {
-        template<internal::FieldType T>
+        template<FieldType T>
         VerifierPtr with_type() {
             return std::make_unique<WithTypesProperty<T>>();
         }
 
-        template<internal::FieldType... Ts>
+        template<FieldType... Ts>
         VerifierPtr with_types() {
             return std::make_unique<WithTypesProperty<Ts...>>();
         }

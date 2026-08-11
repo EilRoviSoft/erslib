@@ -5,7 +5,7 @@
 #include <erslib/aescript/impl/parser.hpp>
 
 
-template<aescript::internal::SolInnateType T>
+template<aescript::impl::SolInnateType T>
 struct aescript::parser_t<T> {
     [[nodiscard]]
     ers::Status exec(
@@ -13,7 +13,7 @@ struct aescript::parser_t<T> {
         sol::object obj,
         T& dst
     ) const {
-        if (auto s = internal::check_type<T>(obj); !s)
+        if (auto s = impl::check_type<T>(obj); !s)
             return s;
 
         dst = obj.as<T>();

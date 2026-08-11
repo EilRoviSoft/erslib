@@ -16,7 +16,7 @@
 
 // Field
 
-namespace aescript {
+namespace aescript::impl {
     class Field {
         using storage_iterator = std::list<VerifierPtr>::const_iterator;
 
@@ -70,7 +70,7 @@ namespace aescript {
 
 // Operators
 
-namespace aescript {
+namespace aescript::impl {
     Field& operator|(Field& lhs, VerifierPtr rhs);
     Field&& operator|(Field&& lhs, VerifierPtr rhs);
 

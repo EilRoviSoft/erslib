@@ -9,7 +9,7 @@
 #include <erslib/aescript/impl/verifier.hpp>
 
 
-namespace aescript {
+namespace aescript::impl {
     class InclusiveWithProperty : public IVerifier {
     public:
         // Member functions

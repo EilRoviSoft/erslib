@@ -4,11 +4,11 @@
 #include <erslib/core/formatter/range.hpp>
 
 
-aescript::OneOfProperty::OneOfProperty(std::vector<std::string> names) :
+aescript::impl::OneOfProperty::OneOfProperty(std::vector<std::string> names) :
     _names(std::move(names)) {
 }
 
-ers::Status aescript::OneOfProperty::verify(sol::table table) const {
+ers::Status aescript::impl::OneOfProperty::verify(sol::table table) const {
     std::vector<std::string_view> present;
 
     present.reserve(_names.size());
@@ -30,11 +30,11 @@ ers::Status aescript::OneOfProperty::verify(sol::table table) const {
     return ers::ok;
 }
 
-aescript::DescriptorPtr aescript::OneOfProperty::clone() const {
+aescript::impl::DescriptorPtr aescript::impl::OneOfProperty::clone() const {
     return std::make_unique<OneOfProperty>(_names);
 }
 
-aescript::DescriptorPtr aescript::properties::one_of(std::initializer_list<std::string_view> il) {
+aescript::impl::DescriptorPtr aescript::impl::properties::one_of(std::initializer_list<std::string_view> il) {
     std::vector<std::string> names;
 
     names.reserve(il.size());

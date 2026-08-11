@@ -4,7 +4,7 @@
 #include <erslib/aescript/impl/field.hpp>
 
 
-aescript::Layout::Layout(std::initializer_list<possible_property_t> il) {
+aescript::impl::Layout::Layout(std::initializer_list<possible_property_t> il) {
     for (auto& it : il) {
         std::visit([this]<typename T>(const T& v) {
             if constexpr (std::is_same_v<std::decay_t<T>, Field>)
@@ -16,16 +16,16 @@ aescript::Layout::Layout(std::initializer_list<possible_property_t> il) {
 }
 
 
-void aescript::Layout::add_field(Field field) {
+void aescript::impl::Layout::add_field(Field field) {
     _fields.emplace(std::move(field));
 }
 
-void aescript::Layout::add_property(DescriptorPtr property) {
+void aescript::impl::Layout::add_property(DescriptorPtr property) {
     _descriptors.emplace_back(std::move(property));
 }
 
 
-ers::Status aescript::Layout::verify(sol::table table) const {
+ers::Status aescript::impl::Layout::verify(sol::table table) const {
     for (const auto& field : _fields) {
         if (auto r = field.verify(table); !r)
             return r;
@@ -34,7 +34,7 @@ ers::Status aescript::Layout::verify(sol::table table) const {
     return ers::ok;
 }
 
-ers::Status aescript::Layout::parse(sol::table table, void* where) const {
+ers::Status aescript::impl::Layout::parse(sol::table table, void* where) const {
     for (const auto& field : _fields) {
         if (auto s = field.parse(table, where); !s) {
             return s;
