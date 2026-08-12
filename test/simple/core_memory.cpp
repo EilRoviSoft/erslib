@@ -7,7 +7,7 @@
 #include <memory>
 
 // ers
-#include <erslib/core/memory/holder.hpp>
+#include <erslib/core/memory.hpp>
 #include <erslib/core/type/general.hpp>
 
 

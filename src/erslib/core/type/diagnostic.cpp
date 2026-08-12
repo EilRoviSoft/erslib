@@ -1,7 +1,7 @@
 #include "erslib/core/type/diagnostic.hpp"
 
 // ers
-#include <erslib/core/exception/internal.hpp>
+#include <erslib/core/exception/impl.hpp>
 
 
 #ifdef _HAS_CPPTRACE

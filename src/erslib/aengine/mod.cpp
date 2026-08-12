@@ -7,7 +7,7 @@
 #include <erslib/aescript/error.hpp>
 #include <erslib/aescript/exception.hpp>
 #include <erslib/contrib/json.hpp>
-#include <erslib/core/io/json_schema.hpp>
+#include <erslib/core/filesystem.hpp>
 #include <erslib/core/util/file.hpp>
 #include <erslib/core/util/string.hpp>
 
@@ -74,7 +74,7 @@ namespace {
         }
 
 
-        ers::JsonSchema schema(json);
+        utl::JsonSchema schema(json);
 
         schema.require_and_write("name", identity.name);
         schema.require_and_write("title", identity.title);

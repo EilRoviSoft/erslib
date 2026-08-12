@@ -6,7 +6,7 @@
 
 // ers
 #include <erslib/aengine/util/stage.hpp>
-#include <erslib/core/views.hpp>
+#include <erslib/core/ranges.hpp>
 
 
 std::vector<std::string> aengine::impl::resolve_mods_order(const ModContainer& mods, std::string_view initial_mod) {

@@ -5,8 +5,8 @@
 #include <string>
 
 // ers
-#include <erslib/core/meta/type_name.hpp>
-#include <erslib/core/pattern/counter.hpp>
+#include <erslib/core/meta.hpp>
+#include <erslib/core/pattern.hpp>
 #include <erslib/easy_ecs/fwd.hpp>
 
 

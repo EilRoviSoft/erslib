@@ -4,7 +4,7 @@
 #include <exception>
 
 // ers
-#include <erslib/core/exception/internal.hpp>
+#include <erslib/core/exception.hpp>
 
 
 // Exception types
@@ -23,10 +23,7 @@ namespace aescript {
     using impl::lua_package_error;
     using impl::lua_stage_error;
 
-    using impl::make_lua_error;
-    using impl::make_lua_error_with_trace;
-    using impl::make_lua_package_error;
-    using impl::make_lua_package_error_with_trace;
-    using impl::make_lua_stage_error;
-    using impl::make_lua_stage_error_with_trace;
+    ERS_MAKE_EXCEPTION_EXPORTS(impl, lua_error);
+    ERS_MAKE_EXCEPTION_EXPORTS(impl, lua_package_error);
+    ERS_MAKE_EXCEPTION_EXPORTS(impl, lua_stage_error);
 }

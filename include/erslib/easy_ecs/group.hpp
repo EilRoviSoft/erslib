@@ -10,7 +10,7 @@
 // ers
 #include <erslib/aengine/fwd.hpp>
 #include <erslib/core/macro.hpp>
-#include <erslib/core/hashing/algorithm.hpp>
+#include <erslib/core/algorithm.hpp>
 #include <erslib/core/util/tuple.hpp>
 #include <erslib/easy_ecs/component.hpp>
 #include <erslib/easy_ecs/entity.hpp>
@@ -108,7 +108,7 @@ namespace ecs::impl {
 
         [[nodiscard]]
         static size_t get_id() {
-            return ers::hashing::combine<ers::RapidHash>(component_id<Tags>()...);
+            return ers::algo::combine<ers::RapidHash>(component_id<Tags>()...);
         }
 
         [[nodiscard]]

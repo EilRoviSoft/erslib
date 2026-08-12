@@ -53,8 +53,8 @@ namespace aescript::impl {
     private:
         ers::HashSet<
             Field,
-            ers::member_string_hash_adaptor<ers::RapidHash, &Field::name>,
-            ers::member_equal_adaptor<&Field::name>
+            ers::adaptor::member_string_hash<ers::RapidHash, &Field::name>,
+            ers::adaptor::member_equal<&Field::name>
         > _fields;
 
         std::vector<DescriptorPtr> _descriptors;

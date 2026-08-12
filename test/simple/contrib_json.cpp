@@ -5,7 +5,7 @@
 #include <erslib/contrib/json.hpp>
 
 // ers
-#include <erslib/core/io/json_schema.hpp>
+#include <erslib/contrib/json.hpp>
 
 
 using integral = utl::Json::integral_type;
@@ -29,7 +29,7 @@ TEST_CASE("require_field") {
 
 
     SUBCASE("Require") {
-        ers::JsonSchema schema(obj);
+        utl::JsonSchema schema(obj);
 
         schema.require<integral>("int");
         schema.require<floating>("float");
@@ -39,7 +39,7 @@ TEST_CASE("require_field") {
     }
 
     SUBCASE("Require and Write") {
-        ers::JsonSchema schema(obj);
+        utl::JsonSchema schema(obj);
 
         integral i;
         floating f;

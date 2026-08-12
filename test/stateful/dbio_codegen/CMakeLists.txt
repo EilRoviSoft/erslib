@@ -3,6 +3,12 @@ if(NOT TARGET erslib::dbio)
     return()
 endif()
 
+target_compile_definitions(erslib_dbio
+    PUBLIC
+        ERS_DBIO_GLOBAL_QUERY_STORE
+        ERS_DBIO_GLOBAL_QUERY_STORE_INIT
+)
+
 add_executable(test_stateful_dbio_codegen dbio_codegen.cpp)
 
 if(MSVC)

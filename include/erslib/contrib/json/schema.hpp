@@ -79,7 +79,7 @@ namespace utl::impl {
                     if (auto r = writer(value.template as<json_type>()); r)
                         out = *r;
                     else
-                        throw conversion_error(r.error().to_string(true));
+                        throw ers::conversion_error(r.error().to_string(true));
                 });
             } else
                 m_error = r.error();
@@ -115,7 +115,7 @@ namespace utl::impl {
             }
 
             if (!it->second.is<T>()) {
-                return make_error("Field with name \"{}\" has mismatched type \"{}\"",
+                return ers::make_error("Field with name \"{}\" has mismatched type \"{}\"",
                     name, ers::meta::type_name_v<T>);
             }
 

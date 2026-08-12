@@ -2,7 +2,7 @@
 #include <doctest/doctest.h>
 
 // ers
-#include <erslib/core/meta/type_name.hpp>
+#include <erslib/core/meta.hpp>
 
 
 template<typename T>

@@ -7,8 +7,7 @@
 #include <vector>
 
 // ers
-#include <erslib/core/splitting/regular.hpp>
-#include <erslib/core/splitting/smart.hpp>
+#include <erslib/core/algorithm.hpp>
 
 
 namespace {
@@ -36,13 +35,13 @@ namespace {
 
 
 TEST_CASE("regular") {
-    REQUIRE(process<ers::RegularSplitter>("hello world") == make_vector("hello", "world"));
-    REQUIRE(process<ers::RegularSplitter>("I love Isaac Iwasaki") == make_vector("I", "love", "Isaac", "Iwasaki"));
-    REQUIRE(process<ers::RegularSplitter>("I hate \"Sir Isaac Westcott\"") == make_vector("I", "hate", "\"Sir", "Isaac", "Westcott\""));
+    REQUIRE(process<ers::algo::RegularSplitter>("hello world") == make_vector("hello", "world"));
+    REQUIRE(process<ers::algo::RegularSplitter>("I love Isaac Iwasaki") == make_vector("I", "love", "Isaac", "Iwasaki"));
+    REQUIRE(process<ers::algo::RegularSplitter>("I hate \"Sir Isaac Westcott\"") == make_vector("I", "hate", "\"Sir", "Isaac", "Westcott\""));
 }
 
 TEST_CASE("smart") {
-    REQUIRE(process<ers::SmartSplitter>("hello world") == make_vector("hello", "world"));
-    REQUIRE(process<ers::SmartSplitter>("I love Isaac Iwasaki") == make_vector("I", "love", "Isaac", "Iwasaki"));
-    REQUIRE(process<ers::SmartSplitter>("I hate \"Sir Isaac Westcott\"") == make_vector("I", "hate", "Sir Isaac Westcott"));
+    REQUIRE(process<ers::algo::SmartSplitter>("hello world") == make_vector("hello", "world"));
+    REQUIRE(process<ers::algo::SmartSplitter>("I love Isaac Iwasaki") == make_vector("I", "love", "Isaac", "Iwasaki"));
+    REQUIRE(process<ers::algo::SmartSplitter>("I hate \"Sir Isaac Westcott\"") == make_vector("I", "hate", "Sir Isaac Westcott"));
 }

@@ -1,7 +1,7 @@
 #pragma once
 
 // ers
-#include <erslib/core/algorithm/splitting/base.hpp>
+#include <erslib/core/algorithm/split/base.hpp>
 
 // export
 #include <erslib/export.hpp>
@@ -11,7 +11,7 @@ namespace ers::impl::algo {
     extern template class TSplitIterator<class RegularSplitIterator>;
 
     class ERSLIB_EXPORT RegularSplitIterator : public TSplitIterator<RegularSplitIterator> {
-        friend class TIterator;
+        friend class TSplitIterator;
 
 
     public:

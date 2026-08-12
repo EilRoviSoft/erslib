@@ -159,5 +159,6 @@ namespace ers::impl {
     ERS_MAKE_EXCEPTION_FUNCTOR(NAME, NAME)
 
 #define ERS_MAKE_EXCEPTION_EXPORTS(ROOT_NS, NAME) \
+    using ROOT_NS::NAME; \
     using ROOT_NS::make_##NAME; \
-    using ROOT_NS::make_##NAME##_with_trace;
+    using ROOT_NS::make_##NAME##_with_trace

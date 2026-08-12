@@ -114,8 +114,8 @@ namespace aengine::impl {
 
     using ModContainer = boost::unordered_set<
         Mod,
-        ers::member_string_hash_adaptor<ers::RapidHash, &Mod::name>,
-        ers::member_equal_adaptor<&Mod::name>
+        ers::adaptor::member_string_hash<ers::RapidHash, &Mod::name>,
+        ers::adaptor::member_equal<&Mod::name>
     >;
 }
 

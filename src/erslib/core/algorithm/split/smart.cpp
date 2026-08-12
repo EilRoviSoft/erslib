@@ -1,4 +1,4 @@
-#include "erslib/core/algorithm/splitting/smart.hpp"
+#include "erslib/core/algorithm/split/smart.hpp"
 
 // Forward declaration
 

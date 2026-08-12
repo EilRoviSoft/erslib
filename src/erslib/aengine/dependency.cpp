@@ -2,8 +2,8 @@
 
 // ers
 #include <erslib/aengine/mod.hpp>
-#include <erslib/core/formatter/include.hpp>
-#include <erslib/core/splitting/regular.hpp>
+#include <erslib/core/formatter.hpp>
+#include <erslib/core/algorithm.hpp>
 
 
 // Dependency
@@ -32,7 +32,7 @@ ers::Result<aengine::impl::dependency_t> ers::convert::from_string_backend<aengi
         source = source.substr(1);
 
 
-    RegularSplitter splitter(source, " ");
+    algo::RegularSplitter splitter(source, " ");
     auto it = splitter.begin();
 
     if (has_short_type) {

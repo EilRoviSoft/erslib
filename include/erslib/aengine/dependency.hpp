@@ -2,8 +2,8 @@
 
 // ers
 #include <erslib/aengine/fwd.hpp>
+#include <erslib/core/adaptor.hpp>
 #include <erslib/core/exception.hpp>
-#include <erslib/core/adaptor/transparent/string.hpp>
 #include <erslib/core/convert/string.hpp>
 #include <erslib/core/hashing/rapid.hpp>
 #include <erslib/core/type/result.hpp>
@@ -35,8 +35,8 @@ namespace aengine::impl {
 
     using DependencyContainer = ers::HashSet<
         dependency_t,
-        ers::member_string_hash_adaptor<ers::RapidHash, &dependency_t::name>,
-        ers::member_equal_adaptor<&dependency_t::name>
+        ers::adaptor::member_string_hash<ers::RapidHash, &dependency_t::name>,
+        ers::adaptor::member_equal<&dependency_t::name>
     >;
 
 

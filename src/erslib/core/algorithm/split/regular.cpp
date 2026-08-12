@@ -1,4 +1,4 @@
-#include "erslib/core/algorithm/splitting/regular.hpp"
+#include "erslib/core/algorithm/split/regular.hpp"
 
 // Forward declaration
 

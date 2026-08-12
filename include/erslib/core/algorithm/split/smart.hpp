@@ -1,7 +1,7 @@
 #pragma once
 
 // ers
-#include <erslib/core/algorithm/splitting/base.hpp>
+#include <erslib/core/algorithm/split/base.hpp>
 
 // export
 #include <erslib/export.hpp>
@@ -9,7 +9,7 @@
 
 namespace ers::impl::algo {
     class ERSLIB_EXPORT SmartSplitIterator : public TSplitIterator<SmartSplitIterator> {
-        friend class TIterator;
+        friend class TSplitIterator;
 
 
     public:

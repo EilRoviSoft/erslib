@@ -13,9 +13,9 @@
 #include <boost/unordered/unordered_flat_map.hpp>
 
 // ers
-#include <erslib/core/adaptor/transparent/string.hpp>
+#include <erslib/core/adaptor.hpp>
+#include <erslib/core/thread_safe.hpp>
 #include <erslib/core/hashing/rapid.hpp>
-#include <erslib/core/thread_safe/map.hpp>
 #include <erslib/core/type/time.hpp>
 #include <erslib/core/type/timed_object.hpp>
 
@@ -53,8 +53,8 @@ namespace {
 
 
     using Map = ers::thread_safe::Map<boost::unordered_flat_map<std::string, AutoRng,
-        ers::string_hash_adaptor<ers::RapidHash>,
-        ers::equal_adaptor<std::string>>>;
+        ers::adaptor::string_hash<ers::RapidHash>,
+        ers::adaptor::equal<std::string>>>;
 }
 
 
