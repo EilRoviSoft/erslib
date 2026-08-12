@@ -7,7 +7,7 @@
 
 // Definition
 
-namespace ers {
+namespace ers::impl {
     template<size_t N>
     struct fixed_string {
         char value[N];
@@ -34,6 +34,13 @@ namespace ers {
 
     template <size_t N>
     fixed_string(const char(&)[N]) -> fixed_string<N>;
+}
+
+
+// Exports
+
+namespace ers {
+    using impl::fixed_string;
 }
 
 

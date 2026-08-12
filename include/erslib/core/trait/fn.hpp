@@ -7,7 +7,7 @@
 #include <erslib/core/concept/callable.hpp>
 
 
-namespace ers {
+namespace ers::impl {
     template<typename T>
     struct fn_traits;
 
@@ -36,4 +36,11 @@ namespace ers {
     template<typename T>
         requires Callable<T>
     struct fn_traits<T> : fn_traits<decltype(&T::operator())> {};
+}
+
+
+// Exports
+
+namespace ers {
+    using impl::fn_traits;
 }

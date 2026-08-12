@@ -6,27 +6,32 @@
 
 // Implementation
 
-#include "rapid-impl.hpp"
+#include "impl/rapid.hpp"
 
 
 // Algos usage
 
-namespace ers {
+namespace ers::impl {
     struct rapid_hash_policy {};
 }
 
 
 template<>
-struct ers::hashing::backend<ers::rapid_hash_policy> {
+struct ers::hashing::backend<ers::impl::rapid_hash_policy> {
     static constexpr size_t process_raw_bytes(std::span<const std::byte> what, size_t seed) noexcept {
-        return internal::rapidhash_micro(what.data(), what.size(), seed, internal::rapid_secret);
+        return impl::hashing::rapidhash_micro(what.data(), what.size(), seed, impl::hashing::rapid_secret);
     }
 };
 
 
 // Declaration
 
-namespace ers {
+namespace ers::impl {
     template<typename T>
     using RapidHash = THashBase<T, rapid_hash_policy>;
+}
+
+namespace ers {
+    using impl::rapid_hash_policy;
+    using impl::RapidHash;
 }

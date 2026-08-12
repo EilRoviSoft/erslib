@@ -8,7 +8,7 @@
 
 // filer_view
 
-namespace ers::internal {
+namespace ers::impl::views {
     template<std::ranges::forward_range R, typename F>
         requires std::ranges::view<R> && std::predicate<F, std::ranges::range_reference_t<R>>
     struct filter_view : std::ranges::view_interface<filter_view<R, F>> {
@@ -46,7 +46,7 @@ namespace ers::internal {
 
 // filter_closure
 
-namespace ers::internal {
+namespace ers::impl::views {
     template<typename F>
     struct filter_closure : std::ranges::range_adaptor_closure<filter_closure<F>> {
         constexpr explicit filter_closure(F fn) :
@@ -68,7 +68,7 @@ namespace ers::internal {
 
 // filter_fn
 
-namespace ers::internal {
+namespace ers::impl::views {
     struct filter_fn {
         template<typename F>
         constexpr auto operator()(F&& fn) const {
@@ -86,6 +86,13 @@ namespace ers::internal {
 }
 
 
-namespace ers::views {
-    inline constexpr internal::filter_fn filter;
+namespace ers::impl::views {
+    inline constexpr filter_fn filter;
+}
+
+
+// Exports
+
+namespace ers {
+    namespace views = impl::views;
 }

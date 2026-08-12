@@ -4,7 +4,7 @@
 #include <tuple>
 
 
-namespace ers::util {
+namespace ers::impl::util {
     template<typename... Ts>
     std::tuple<Ts&...> pointers_to_references(const std::tuple<Ts*...>& what) {
         auto&& [...args] = what;
@@ -17,4 +17,11 @@ namespace ers::util {
         auto&& [...args] = rest;
         return { std::forward<T>(value), std::forward<Ts>(args)... };
     }
+}
+
+
+// Exports
+
+namespace ers {
+    namespace util = impl::util;
 }

@@ -11,7 +11,7 @@
 
 // Alias declaration
 
-namespace ers {
+namespace ers::impl {
     template<typename T>
     using shared_ptr = boost::shared_ptr<T>;
 
@@ -22,7 +22,7 @@ namespace ers {
 
 // Function inclusion
 
-namespace ers {
+namespace ers::impl {
     using boost::make_shared;
 
     using boost::static_pointer_cast;
@@ -42,7 +42,7 @@ namespace ers {
 
 // Alias declaration
 
-namespace ers {
+namespace ers::impl {
     template<typename T>
     using shared_ptr = std::shared_ptr<T>;
 
@@ -53,7 +53,7 @@ namespace ers {
 
 // Function inclusion
 
-namespace ers {
+namespace ers::impl {
     using std::make_shared;
 
     using std::static_pointer_cast;
@@ -68,3 +68,18 @@ namespace ers {
 #error "Clang compiler doesn't support atomic_shared_ptr, can't fallback to std implementation"
 
 #endif
+
+
+// Exports
+
+namespace ers {
+    using impl::shared_ptr;
+    using impl::atomic_shared_ptr;
+
+    using impl::make_shared;
+
+    using impl::static_pointer_cast;
+    using impl::dynamic_pointer_cast;
+    using impl::const_pointer_cast;
+    using impl::reinterpret_pointer_cast;
+}

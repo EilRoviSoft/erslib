@@ -4,7 +4,7 @@
 #include <bitset>
 
 
-namespace ers::util {
+namespace ers::impl::util {
     template<typename T>
     concept BitIndex = std::unsigned_integral<T> || std::is_enum_v<T>;
 
@@ -14,4 +14,11 @@ namespace ers::util {
         ((result.set(static_cast<size_t>(indexes))), ...);
         return result;
     }
+}
+
+
+// Exports
+
+namespace ers {
+    namespace util = impl::util;
 }

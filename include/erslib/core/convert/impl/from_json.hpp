@@ -11,6 +11,10 @@
 
 
 // From json definitions
+//
+// from_json_backend/from_json_options are customization points: specialize them to teach
+// ers::convert::from_json how to parse a new type from JSON. Explicit specializations must live in the
+// template's true namespace, so they stay directly in ers::convert:: rather than moving to ers::impl.
 
 namespace ers::convert {
     template<typename T>
@@ -24,17 +28,17 @@ namespace ers::convert {
 
 // Traits
 
-namespace ers::internal {
+namespace ers::impl::convert {
     template<typename T>
-    concept FromJsonHasValue = requires(convert::from_json_backend<T> backend, const utl::Json& source) {
+    concept FromJsonHasValue = requires(ers::convert::from_json_backend<T> backend, const utl::Json& source) {
         { backend.value(source) } -> std::convertible_to<Result<T>>;
     };
 
     template<typename T>
     concept FromJsonWithOptionsHasValue = requires(
-        convert::from_json_backend<T> backend,
+        ers::convert::from_json_backend<T> backend,
         const utl::Json& source,
-        convert::from_json_options<T> options
+        ers::convert::from_json_options<T> options
     ) {
         { backend.value(source, options) } -> std::convertible_to<Result<T>>;
     };
@@ -43,21 +47,28 @@ namespace ers::internal {
 
 // Utility functions
 
-namespace ers::convert {
+namespace ers::impl::convert {
     template<typename T>
     [[nodiscard]]
-    Result<T> from_json(const utl::Json& source, const from_json_options<T>& options = {}) {
-        static_assert(internal::FromJsonWithOptionsHasValue<T> || internal::FromJsonHasValue<T>, "'from_json' doesn't have implementation for 'T'.");
+    Result<T> from_json(const utl::Json& source, const ers::convert::from_json_options<T>& options = {}) {
+        static_assert(FromJsonWithOptionsHasValue<T> || FromJsonHasValue<T>, "'from_json' doesn't have implementation for 'T'.");
 
 
-        from_json_backend<T> backend;
+        ers::convert::from_json_backend<T> backend;
 
-        if constexpr (internal::FromJsonWithOptionsHasValue<T>) {
+        if constexpr (FromJsonWithOptionsHasValue<T>) {
             return backend.value(source, options);
         } else {
             return backend.value(source);
         }
     }
+}
+
+
+// Exports
+
+namespace ers::convert {
+    using impl::convert::from_json;
 }
 
 

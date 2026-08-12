@@ -5,6 +5,10 @@
 
 
 // Declaration
+//
+// string_traits_impl is a customization point: specialize it to teach the string utilities how to
+// size/append/index a new string-like type. Explicit specializations must live in the template's true
+// namespace, so it stays directly in ers:: rather than moving to ers::impl.
 
 namespace ers {
     template<typename T>
@@ -13,9 +17,19 @@ namespace ers {
         static void append(std::string& dest, T&& source) = delete("non-specialized template");
         static constexpr char index(const T& source, size_t i) = delete("non-specialized template");
     };
+}
 
+
+namespace ers::impl {
     template<typename T>
     struct string_traits : string_traits_impl<std::remove_cvref_t<T>> {};
+}
+
+
+// Exports
+
+namespace ers {
+    using impl::string_traits;
 }
 
 

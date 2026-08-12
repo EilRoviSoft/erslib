@@ -6,7 +6,7 @@
 
 // Definition
 
-namespace ers {
+namespace ers::impl {
     struct version_t {
         size_t major;
         size_t minor;
@@ -15,6 +15,10 @@ namespace ers {
 
         constexpr auto operator<=>(const version_t& other) const noexcept = default;
     };
+}
+
+namespace ers {
+    using impl::version_t;
 }
 
 

@@ -14,6 +14,10 @@ static_assert(requires { typename ers::meta::type_name<int>; }, "type_info.hpp n
 
 
 // From string definitions
+//
+// from_string_backend is a customization point: specialize it to teach ers::convert::from_str how to
+// parse a new type from a string. Explicit specializations must live in the template's true namespace,
+// so it stays directly in ers::convert:: rather than moving to ers::impl.
 
 namespace ers::convert {
     template<typename T>
@@ -23,15 +27,15 @@ namespace ers::convert {
 
 // Traits
 
-namespace ers::internal {
+namespace ers::impl::convert {
     template<typename T>
-    concept FromStringHasConstexprValue = requires(convert::from_string_backend<T> backend, std::string_view source) {
+    concept FromStringHasConstexprValue = requires(ers::convert::from_string_backend<T> backend, std::string_view source) {
         { backend.constexpr_value(source) } -> std::convertible_to<optional<T>>;
     };
 
 
     template<typename T>
-    concept FromStringHasRuntimeValue = requires(convert::from_string_backend<T> backend, std::string_view source) {
+    concept FromStringHasRuntimeValue = requires(ers::convert::from_string_backend<T> backend, std::string_view source) {
         { backend.runtime_value(source) } -> std::convertible_to<Result<T>>;
     };
 }
@@ -39,21 +43,21 @@ namespace ers::internal {
 
 // Utility functions
 
-namespace ers::convert {
-    template<internal::FromStringHasConstexprValue T>
+namespace ers::impl::convert {
+    template<FromStringHasConstexprValue T>
     [[nodiscard]]
     constexpr optional<T> from_str_constexpr(std::string_view source) noexcept {
-        return from_string_backend<T> {}.constexpr_value(source);
+        return ers::convert::from_string_backend<T> {}.constexpr_value(source);
     }
 
     template<typename T>
     [[nodiscard]]
     Result<T> from_str(std::string_view source) {
-        from_string_backend<T> backend;
+        ers::convert::from_string_backend<T> backend;
 
-        if constexpr (internal::FromStringHasConstexprValue<T>) {
+        if constexpr (FromStringHasConstexprValue<T>) {
             return backend.constexpr_value(source);
-        } else if constexpr (internal::FromStringHasRuntimeValue<T>) {
+        } else if constexpr (FromStringHasRuntimeValue<T>) {
             auto r = backend.runtime_value(source);
             if (!r) {
                 return make_error("Can't convert string \"{}\" to type [T = {}]",
@@ -65,6 +69,14 @@ namespace ers::convert {
             throw std::runtime_error("Non-specialized implementation");
         }
     }
+}
+
+
+// Exports
+
+namespace ers::convert {
+    using impl::convert::from_str_constexpr;
+    using impl::convert::from_str;
 }
 
 
@@ -95,7 +107,11 @@ namespace ers::convert {
 
 // Concept
 
-namespace ers {
+namespace ers::impl {
     template<typename T>
-    concept FromStringConvertible = internal::FromStringHasConstexprValue<T> || internal::FromStringHasRuntimeValue<T>;
+    concept FromStringConvertible = convert::FromStringHasConstexprValue<T> || convert::FromStringHasRuntimeValue<T>;
+}
+
+namespace ers {
+    using impl::FromStringConvertible;
 }

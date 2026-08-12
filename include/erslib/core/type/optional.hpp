@@ -7,7 +7,7 @@
 #include <optional>
 
 
-namespace ers {
+namespace ers::impl {
     using std::optional;
 
 
@@ -23,10 +23,10 @@ namespace ers {
 #include <boost/optional.hpp>
 
 
-namespace ers {
+namespace ers::impl {
     using boost::optional;
 
-    
+
     using nullopt_t = boost::none_t;
     static constexpr nullopt_t nullopt { nullopt_t::init_tag {} };
 }
@@ -37,3 +37,13 @@ namespace ers {
 #error "Your dependency inclusion doesn't support optional in required way (with T&)"
 
 #endif
+
+
+// Exports
+
+namespace ers {
+    using impl::optional;
+
+    using impl::nullopt_t;
+    using impl::nullopt;
+}

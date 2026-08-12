@@ -6,7 +6,7 @@
 #include <unordered_set>
 
 
-namespace ers::splitting {
+namespace ers::impl::splitting {
     template<typename T>
     class TIterator;
 
@@ -117,4 +117,11 @@ namespace ers::splitting {
         T& _interface() { return static_cast<T&>(*this); }
         const T& _interface() const { return static_cast<const T&>(*this); }
     };
+}
+
+
+// Exports
+
+namespace ers {
+    namespace splitting = impl::splitting;
 }

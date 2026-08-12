@@ -4,9 +4,16 @@
 #include <erslib/core/type/fixed_string.hpp>
 
 
-namespace ers::util {
+namespace ers::impl::util {
     template<typename T, size_t... Is>
     constexpr auto elems_as_string_literal(T v, std::index_sequence<Is...>) {
         return fixed_string<sizeof...(Is) + 1>({ v[Is]..., '\0' });
     }
+}
+
+
+// Exports
+
+namespace ers {
+    namespace util = impl::util;
 }

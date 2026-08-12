@@ -4,10 +4,10 @@
 #include <stdexcept>
 
 // ers
-#include <erslib/core/exception/internal.hpp>
+#include <erslib/core/exception/impl.hpp>
 
 
-namespace ers {
+namespace ers::impl {
     ERS_MAKE_EXCEPTION_TYPE(runtime_error, std::runtime_error);
     ERS_MAKE_EXCEPTION_TYPE(range_error, std::range_error);
     ERS_MAKE_EXCEPTION_TYPE(overflow_error, std::overflow_error);

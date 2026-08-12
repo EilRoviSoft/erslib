@@ -12,7 +12,7 @@
 #include <erslib/export.hpp>
 
 
-namespace ers::util {
+namespace ers::impl::util {
     template<char... Args>
     constexpr std::string_view concat_chars() {
         static constexpr std::array<char, sizeof...(Args)> arr = { Args... };
@@ -54,7 +54,7 @@ namespace ers::util {
 }
 
 
-namespace ers::internal {
+namespace ers::impl {
     template<typename S, typename... Args>
     bool string_parts_compare(const S& s, size_t offset, Args&&... args) {
         if constexpr (sizeof...(args) == 0)
@@ -77,19 +77,26 @@ namespace ers::internal {
     }
 }
 
-namespace ers::util {
+namespace ers::impl::util {
     template<typename S, typename... Args>
     bool starts_with_seq(const S& s, Args&&... args) {
-        return internal::string_parts_compare(s, 0, std::forward<Args>(args)...);
+        return string_parts_compare(s, 0, std::forward<Args>(args)...);
     }
 
     template<typename S, typename... Args>
     bool ends_with_seq(const S& s, Args&&... args) {
-        return internal::string_parts_compare(s, string_traits<S>::size(s) - (string_traits<Args>::size(args) + ...), std::forward<Args>(args)...);
+        return string_parts_compare(s, string_traits<S>::size(s) - (string_traits<Args>::size(args) + ...), std::forward<Args>(args)...);
     }
 }
 
 
-namespace ers::util {
+namespace ers::impl::util {
     std::string ERSLIB_EXPORT replace(std::string_view where, std::string_view from, std::string_view to, size_t estimated_replacements = 4);
+}
+
+
+// Exports
+
+namespace ers {
+    namespace util = impl::util;
 }

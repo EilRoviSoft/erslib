@@ -13,7 +13,7 @@
 #include <erslib/core/type/result.hpp>
 
 
-namespace ers {
+namespace ers::impl {
     class JsonSchema {
         using json_iterator = utl::Json::object_type::const_iterator;
 
@@ -121,4 +121,11 @@ namespace ers {
             return it;
         }
     };
+}
+
+
+// Exports
+
+namespace ers {
+    using impl::JsonSchema;
 }

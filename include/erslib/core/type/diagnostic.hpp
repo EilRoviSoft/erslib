@@ -16,7 +16,7 @@
 
 // Severity
 
-namespace ers {
+namespace ers::impl {
     enum class Severity {
         Debug,
         Info,
@@ -24,6 +24,10 @@ namespace ers {
         Error,
         Crit
     };
+}
+
+namespace ers {
+    using impl::Severity;
 }
 
 template<>
@@ -55,7 +59,7 @@ struct ers::convert::to_string_backend<ers::Severity> {
 #include <cpptrace/cpptrace.hpp>
 
 
-namespace ers {
+namespace ers::impl {
     class ERSLIB_EXPORT Diagnostic {
     public:
         // Member functions
@@ -64,7 +68,7 @@ namespace ers {
             Severity severity,
             std::string message,
             timestamp_t timestamp = std::chrono::system_clock::now(),
-            cpptrace::raw_trace trace = internal::get_trace({ .skip = 1 })
+            cpptrace::raw_trace trace = get_trace({ .skip = 1 })
         );
 
 
@@ -101,7 +105,7 @@ namespace ers {
 
 #else
 
-namespace ers {
+namespace ers::impl {
     class ERSLIB_EXPORT Diagnostic {
     public:
         // Member functions
@@ -144,6 +148,10 @@ namespace ers {
 
 #endif
 
+namespace ers {
+    using impl::Diagnostic;
+}
+
 
 #define DEFINE_DIAGNOSTIC(NAME, SEVERITY) \
     template<typename... Args> \
@@ -156,7 +164,7 @@ namespace ers {
         return Diagnostic(ers::Severity::SEVERITY, std::move(message)); \
     }
 
-namespace ers {
+namespace ers::impl {
     DEFINE_DIAGNOSTIC(debug, Debug);
     DEFINE_DIAGNOSTIC(info, Info);
     DEFINE_DIAGNOSTIC(warning, Warning);
@@ -165,3 +173,14 @@ namespace ers {
 }
 
 #undef DEFINE_DIAGNOSTIC
+
+
+// Exports
+
+namespace ers {
+    using impl::make_debug;
+    using impl::make_info;
+    using impl::make_warning;
+    using impl::make_error;
+    using impl::make_crit;
+}

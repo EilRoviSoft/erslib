@@ -14,7 +14,7 @@
 #include <erslib/core/type/expiring.hpp>
 
 
-namespace ers {
+namespace ers::impl {
     template<typename T, typename Clock = std::chrono::system_clock>
     class ITimedObject {
     public:
@@ -85,6 +85,10 @@ namespace ers {
     private:
         mutable boost::upgrade_mutex _mutex;
     };
+}
+
+namespace ers {
+    using impl::ITimedObject;
 }
 
 #else

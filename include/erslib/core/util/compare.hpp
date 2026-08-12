@@ -4,7 +4,7 @@
 #include <concepts>
 
 
-namespace ers::util {
+namespace ers::impl::util {
     // v ∈ (a, b)
     template<std::integral V, std::integral A, std::integral B>
     bool between(V v, A a, B b) {
@@ -25,4 +25,11 @@ namespace ers::util {
     bool between_lr(V v, A a, B b) {
         return v >= a && v <= b;
     }
+}
+
+
+// Exports
+
+namespace ers {
+    namespace util = impl::util;
 }

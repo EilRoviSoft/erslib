@@ -15,7 +15,7 @@
 #include <erslib/core/hashing/rapid.hpp>
 
 
-namespace ers {
+namespace ers::impl {
     template<
         typename K,
         typename Compare = std::less<K>,
@@ -31,7 +31,7 @@ namespace ers {
 }
 
 
-namespace ers {
+namespace ers::impl {
     template<
         typename K,
         typename Hasher = RapidHash<K>,
@@ -80,4 +80,24 @@ namespace ers {
         string_hash_adaptor<RapidHash>,
         equal_adaptor<std::string_view>
     >;
+}
+
+
+// Exports
+
+namespace ers {
+    using impl::OrderedSet;
+    using impl::OrderedMap;
+
+    using impl::HashSet;
+    using impl::HashMap;
+
+    using impl::TrivialSet;
+    using impl::TrivialMap;
+
+    using impl::StringSet;
+    using impl::StringMap;
+
+    using impl::StringViewSet;
+    using impl::StringViewMap;
 }

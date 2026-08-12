@@ -88,7 +88,7 @@
 #endif
 
 
-namespace ers::internal {
+namespace ers::impl::hashing {
     /*
      *  Default secret parameters.
      */

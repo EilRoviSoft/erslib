@@ -4,7 +4,7 @@
 #include <erslib/core/type/result.hpp>
 
 
-namespace ers {
+namespace ers::impl {
     template<typename T>
     struct is_result : std::false_type {};
 
@@ -16,11 +16,21 @@ namespace ers {
 }
 
 
-namespace ers {
+namespace ers::impl {
     template<typename T>
         requires is_result_v<T>
     struct result_traits {
         using value_type = T::value_type;
         using error_type = T::error_type;
     };
+}
+
+
+// Exports
+
+namespace ers {
+    using impl::is_result;
+    using impl::is_result_v;
+
+    using impl::result_traits;
 }

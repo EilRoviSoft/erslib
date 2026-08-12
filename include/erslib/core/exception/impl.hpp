@@ -9,7 +9,7 @@
 #include <erslib/export.hpp>
 
 
-namespace ers::internal {
+namespace ers::impl {
 #if !defined(ERS_TRACE_VERBOSITY) || ERS_TRACE_VERBOSITY == 0
 
 #elif ERS_TRACE_VERBOSITY == 1
@@ -32,11 +32,15 @@ namespace ers::internal {
 }
 
 
-namespace ers {
+namespace ers::impl {
     struct trace_config_t {
         size_t skip = 2;
-        size_t max_depth = internal::max_depth_default;
+        size_t max_depth = max_depth_default;
     };
+}
+
+namespace ers {
+    using impl::trace_config_t;
 }
 
 
@@ -46,7 +50,7 @@ namespace ers {
 #include <cpptrace/cpptrace.hpp>
 
 
-namespace ers::internal {
+namespace ers::impl {
     cpptrace::raw_trace ERSLIB_EXPORT get_trace(trace_config_t config = {});
 
     std::string ERSLIB_EXPORT extend_with_trace(std::string_view message, const cpptrace::raw_trace& raw_trace);
@@ -54,7 +58,7 @@ namespace ers::internal {
 }
 
 
-namespace ers::internal {
+namespace ers::impl {
     template<bool IncludeTrace, typename Type>
     struct exception_fn;
 
@@ -62,11 +66,11 @@ namespace ers::internal {
     struct exception_fn<true, Type> {
         template<typename... Args>
         Type operator()(trace_config_t config, std::format_string<Args...> fmt, Args&&... args) const {
-            return Type(internal::extend_with_trace(std::format(fmt, std::forward<Args>(args)...), config));
+            return Type(extend_with_trace(std::format(fmt, std::forward<Args>(args)...), config));
         }
         template<typename... Args>
         Type operator()(std::format_string<Args...> fmt, Args&&... args) const {
-            return Type(internal::extend_with_trace(std::format(fmt, std::forward<Args>(args)...), trace_config_t {}));
+            return Type(extend_with_trace(std::format(fmt, std::forward<Args>(args)...), trace_config_t {}));
         }
 
         Type operator()(trace_config_t config, std::string_view what_arg) const {
@@ -91,7 +95,7 @@ namespace ers::internal {
 
 #else
 
-namespace ers::internal {
+namespace ers::impl {
     template<bool IncludeTrace, typename Type>
     struct exception_fn;
 
@@ -131,8 +135,8 @@ namespace ers::internal {
 
 #define ERS_MAKE_EXCEPTION_FUNCTOR(NAME, TYPE) \
     template<bool IncludeTrace> \
-    struct NAME##_fn : ers::internal::exception_fn<IncludeTrace, TYPE> { \
-        using base_type = ers::internal::exception_fn<IncludeTrace, TYPE>; \
+    struct NAME##_fn : ers::impl::exception_fn<IncludeTrace, TYPE> { \
+        using base_type = ers::impl::exception_fn<IncludeTrace, TYPE>; \
         using base_type::operator(); \
     }; \
     static constexpr NAME##_fn<false> make_##NAME; \
@@ -153,3 +157,7 @@ namespace ers::internal {
     }; \
     \
     ERS_MAKE_EXCEPTION_FUNCTOR(NAME, NAME)
+
+#define ERS_MAKE_EXCEPTION_EXPORTS(ROOT_NS, NAME) \
+    using ROOT_NS::make_##NAME; \
+    using ROOT_NS::make_##NAME##_with_trace;

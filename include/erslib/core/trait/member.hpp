@@ -4,7 +4,7 @@
 #include <utility>
 
 
-namespace ers {
+namespace ers::impl {
     template<typename T>
     struct member_ptr_traits {};
 
@@ -23,7 +23,7 @@ namespace ers {
 }
 
 
-namespace ers {
+namespace ers::impl {
     template<auto Member>
     struct projected {
         template<typename T>
@@ -34,4 +34,15 @@ namespace ers {
                 return std::forward<T>(v);
         }
     };
+}
+
+
+// Exports
+
+namespace ers {
+    using impl::member_ptr_traits;
+    using impl::member_class_t;
+    using impl::member_type_t;
+
+    using impl::projected;
 }

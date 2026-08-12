@@ -10,7 +10,7 @@
 // In case we have information about assertions
 
 #ifdef ERS_ASSERT_INFO
-namespace ers::internal {
+namespace ers::impl {
     class AssertTool {
         AssertTool() = default;
 

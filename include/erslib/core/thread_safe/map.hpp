@@ -9,7 +9,7 @@
 #include <erslib/core/type/optional.hpp>
 
 
-namespace ers::thread_safe {
+namespace ers::impl::thread_safe {
     template<typename Container>
         requires HashMapConcept<Container>
     class Map {
@@ -106,4 +106,11 @@ namespace ers::thread_safe {
         mutable std::shared_mutex m_mutex;
         container_type m_data;
     };
+}
+
+
+// Exports
+
+namespace ers {
+    namespace thread_safe = impl::thread_safe;
 }

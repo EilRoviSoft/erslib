@@ -5,7 +5,7 @@
 #include <erslib/core/util/fixed_string.hpp>
 
 
-namespace ers::internal {
+namespace ers::impl::meta {
     template<typename T>
     constexpr auto type_name_literal() {
         constexpr auto name = funcsig<T>();
@@ -14,12 +14,19 @@ namespace ers::internal {
 }
 
 
-namespace ers::meta {
+namespace ers::impl::meta {
     template<typename T>
     struct type_literal {
-        static constexpr auto value = internal::type_name_literal<T>();
+        static constexpr auto value = type_name_literal<T>();
     };
 
     template<typename T>
     constexpr auto type_literal_v = type_literal<T>::value;
+}
+
+
+// Exports
+
+namespace ers {
+    namespace meta = impl::meta;
 }

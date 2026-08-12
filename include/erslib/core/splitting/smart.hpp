@@ -7,7 +7,7 @@
 #include <erslib/export.hpp>
 
 
-namespace ers::splitting {
+namespace ers::impl::splitting {
     class ERSLIB_EXPORT SmartIterator : public TIterator<SmartIterator> {
         friend class TIterator;
 
@@ -23,6 +23,10 @@ namespace ers::splitting {
 }
 
 
-namespace ers {
+namespace ers::impl {
     using SmartSplitter = splitting::Processor<splitting::SmartIterator>;
+}
+
+namespace ers {
+    using impl::SmartSplitter;
 }

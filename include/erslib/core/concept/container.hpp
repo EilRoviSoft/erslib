@@ -5,7 +5,7 @@
 #include <type_traits>
 
 
-namespace ers {
+namespace ers::impl {
     template<typename T>
     concept ContiguousContainer = requires(T t) {
         { t.data() } -> std::convertible_to<const typename T::value_type*>;

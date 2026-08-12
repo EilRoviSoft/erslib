@@ -1,7 +1,7 @@
 #pragma once
 
 
-namespace ers::pattern {
+namespace ers::impl::pattern {
     template<typename T>
     class TProxy {
     public:
@@ -46,4 +46,11 @@ namespace ers::pattern {
     private:
         T* _value;
     };
+}
+
+
+// Exports
+
+namespace ers {
+    namespace pattern = impl::pattern;
 }

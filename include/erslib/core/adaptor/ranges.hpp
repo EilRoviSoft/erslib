@@ -4,7 +4,7 @@
 #include <ranges>
 
 
-namespace ers::adaptor {
+namespace ers::impl {
     template<typename MemPtr, typename ViewFn>
     struct member_range {
         member_range(MemPtr mem_ptr, ViewFn view_fn) :

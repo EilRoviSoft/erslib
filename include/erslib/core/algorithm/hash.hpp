@@ -1,7 +1,7 @@
 #pragma once
 
 
-namespace ers::hashing {
+namespace ers::impl {
     template<template<typename> typename HashEngine, typename... Args>
     constexpr size_t combine(const Args&... args) noexcept {
         size_t r = 0;

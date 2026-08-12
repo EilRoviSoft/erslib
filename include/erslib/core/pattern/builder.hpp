@@ -1,7 +1,7 @@
 #pragma once
 
 
-namespace ers::pattern {
+namespace ers::impl::pattern {
     template<typename T>
     class IBuilder {
     public:
@@ -15,4 +15,11 @@ namespace ers::pattern {
 
         virtual T build() && = 0;
     };
+}
+
+
+// Exports
+
+namespace ers {
+    namespace pattern = impl::pattern;
 }

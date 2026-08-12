@@ -5,7 +5,7 @@
 #include <erslib/core/util/array.hpp>
 
 
-namespace ers::internal {
+namespace ers::impl::meta {
     template<typename T>
     constexpr auto type_name_array() {
         constexpr auto name = funcsig<T>();

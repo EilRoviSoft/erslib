@@ -8,7 +8,7 @@
 #include <string_view>
 
 
-namespace ers::internal {
+namespace ers::impl::meta {
     template<typename T>
     constexpr auto funcsig() {
         constexpr auto name = std::meta::display_string_of(^^T);
@@ -25,7 +25,7 @@ namespace ers::internal {
 #include <string_view>
 
 
-namespace ers::internal {
+namespace ers::impl::meta {
     template<typename T>
     constexpr auto funcsig() {
 #ifdef __clang__

@@ -8,7 +8,7 @@
 #include <erslib/core/util/string.hpp>
 
 
-namespace ers::internal {
+namespace ers::impl {
 #ifdef ERS_ASSERT_INFO
     void print_message(std::string_view text);
 
@@ -28,10 +28,10 @@ namespace ers::internal {
 
 
 #define ERS_FMT_ASSERT(CONDITION, FMT, ...) \
-	ers::internal::custom_assert(CONDITION, FMT, __VA_ARGS__)
+	ers::impl::custom_assert(CONDITION, FMT, __VA_ARGS__)
 
 #define ERS_MSR_ASSERT(CONDITION, MESSAGE) \
-	ers::internal::custom_assert(CONDITION, ers::util::concat_literals<#CONDITION, " is violated. {}">().to_sv())
+	ers::impl::custom_assert(CONDITION, ers::util::concat_literals<#CONDITION, " is violated. {}">().to_sv())
 
 #define ERS_ASSERT(CONDITION) \
-	ers::internal::custom_assert(CONDITION, ers::util::concat_literals<#CONDITION, " is violated.">().to_sv())
+	ers::impl::custom_assert(CONDITION, ers::util::concat_literals<#CONDITION, " is violated.">().to_sv())

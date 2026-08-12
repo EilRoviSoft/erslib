@@ -45,7 +45,7 @@ namespace {
 }
 
 
-cpptrace::raw_trace ers::internal::get_trace(trace_config_t config) {
+cpptrace::raw_trace ers::impl::get_trace(trace_config_t config) {
 #if !defined(ERS_TRACE_VERBOSITY) || ERS_TRACE_VERBOSITY == 0
 
     return cpptrace::raw_trace();
@@ -58,7 +58,7 @@ cpptrace::raw_trace ers::internal::get_trace(trace_config_t config) {
 }
 
 
-std::string ers::internal::extend_with_trace(std::string_view message, const cpptrace::raw_trace& raw_trace) {
+std::string ers::impl::extend_with_trace(std::string_view message, const cpptrace::raw_trace& raw_trace) {
 #if !defined(ERS_TRACE_VERBOSITY) || ERS_TRACE_VERBOSITY == 0
 
     return static_cast<std::string>(message);
@@ -70,7 +70,7 @@ std::string ers::internal::extend_with_trace(std::string_view message, const cpp
 #endif
 }
 
-std::string ers::internal::extend_with_trace(std::string_view message, trace_config_t config) {
+std::string ers::impl::extend_with_trace(std::string_view message, trace_config_t config) {
 #if !defined(ERS_TRACE_VERBOSITY) || ERS_TRACE_VERBOSITY == 0
 
     return static_cast<std::string>(message);

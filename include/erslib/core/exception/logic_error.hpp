@@ -4,10 +4,10 @@
 #include <stdexcept>
 
 // core
-#include <erslib/core/exception/internal.hpp>
+#include <erslib/core/exception/impl.hpp>
 
 
-namespace ers {
+namespace ers::impl {
     ERS_MAKE_EXCEPTION_TYPE(logic_error, std::logic_error);
     ERS_MAKE_EXCEPTION_TYPE(invalid_argument_error, std::invalid_argument);
     ERS_MAKE_EXCEPTION_TYPE(domain_error, std::domain_error);

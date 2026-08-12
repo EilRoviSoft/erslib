@@ -7,7 +7,7 @@
 #include <erslib/core/type/general.hpp>
 
 
-namespace ers::internal {
+namespace ers::impl {
     template<typename T, size_t Size, size_t Align>
     constexpr bool check_sbo() {
         return Size != 0
@@ -17,9 +17,9 @@ namespace ers::internal {
     }
 }
 
-namespace ers {
+namespace ers::impl {
     template<typename T, size_t Size, size_t Align = alignof(T)>
-    struct is_sbo_applicable : std::bool_constant<internal::check_sbo<T, Size, Align>()> {};
+    struct is_sbo_applicable : std::bool_constant<check_sbo<T, Size, Align>()> {};
 
     template<typename T, size_t Size, size_t Align = alignof(T)>
     constexpr bool is_sbo_applicable_v = is_sbo_applicable<T, Size, Align>::value;

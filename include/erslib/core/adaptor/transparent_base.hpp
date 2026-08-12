@@ -11,7 +11,7 @@
 
 // Helpers
 
-namespace ers::internal {
+namespace ers::impl {
     template<auto Member>
     concept MemberOrNull = std::same_as<decltype(Member), std::nullptr_t> || std::is_member_pointer_v<decltype(Member)>;
 
@@ -119,7 +119,7 @@ namespace ers::internal {
     };
 }
 
-namespace ers::internal {
+namespace ers::impl {
     template<template<typename> typename Hash, auto Member, typename... Ts>
     struct hash_base;
 
@@ -160,36 +160,36 @@ namespace ers::internal {
 
 // Generic implementations
 
-namespace ers::adaptor {
+namespace ers::impl {
     template<typename T, typename Fn>
-    using unary_op = internal::op_base<1, T, Fn, nullptr>;
+    using unary_op = op_base<1, T, Fn, nullptr>;
 
     template<auto Member, typename Fn>
-    using member_unary_op = internal::op_base<1, std::remove_cvref_t<member_class_t<Member>>, Fn, Member>;
+    using member_unary_op = op_base<1, std::remove_cvref_t<member_class_t<Member>>, Fn, Member>;
 
 
     template<typename T, typename Fn>
-    using binary_op = internal::op_base<2, T, Fn, nullptr>;
+    using binary_op = op_base<2, T, Fn, nullptr>;
 
     template<auto Member, typename Fn>
-    using member_binary_op = internal::op_base<2, std::remove_cvref_t<member_class_t<Member>>, Fn, Member>;
+    using member_binary_op = op_base<2, std::remove_cvref_t<member_class_t<Member>>, Fn, Member>;
 }
 
 
 // Specialized implementations
 
-namespace ers {
+namespace ers::impl {
     template<template<typename> typename Hash, typename... Ts>
-    using hash_adaptor = internal::hash_base<Hash, nullptr, Ts...>;
+    using hash = hash_base<Hash, nullptr, Ts...>;
 
     template<template<typename> typename Hash, auto Member, typename... Ts>
-    using member_hash_adaptor = internal::hash_base<Hash, Member, std::remove_cvref_t<member_class_t<Member>>, Ts...>;
+    using member_hash = hash_base<Hash, Member, std::remove_cvref_t<member_class_t<Member>>, Ts...>;
 }
 
-namespace ers {
+namespace ers::impl {
     template<typename T>
-    using equal_adaptor = adaptor::binary_op<T, std::equal_to<>>;
+    using equal = binary_op<T, std::equal_to<>>;
 
     template<auto Member>
-    using member_equal_adaptor = adaptor::member_binary_op<Member, std::equal_to<>>;
+    using member_equal = member_binary_op<Member, std::equal_to<>>;
 }

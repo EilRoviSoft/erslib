@@ -13,7 +13,7 @@
 
 // Forward declaration
 
-namespace ers {
+namespace ers::impl {
     template<size_t Size, size_t Align>
     class TAny;
 }
@@ -21,7 +21,7 @@ namespace ers {
 
 // Details
 
-namespace ers::internal {
+namespace ers::impl {
     template<size_t Size, size_t Align>
     struct TAnyStorage {
         union {
@@ -164,11 +164,11 @@ namespace ers::internal {
 
 // Implementation
 
-namespace ers {
+namespace ers::impl {
     template<size_t Size, size_t Align>
     class TAny {
-        using storage_type = internal::TAnyStorage<Size, Align>;
-        using vtable_type = internal::TAnyVtable<Size, Align>;
+        using storage_type = TAnyStorage<Size, Align>;
+        using vtable_type = TAnyVtable<Size, Align>;
 
         friend vtable_type;
 
@@ -464,6 +464,14 @@ namespace ers {
 
 // General use-case
 
-namespace ers {
+namespace ers::impl {
     using Any = TAny<32, alignof(std::max_align_t)>;
+}
+
+
+// Exports
+
+namespace ers {
+    using impl::TAny;
+    using impl::Any;
 }

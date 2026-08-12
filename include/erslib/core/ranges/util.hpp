@@ -7,7 +7,7 @@
 #include <erslib/core/adaptor/ranges.hpp>
 
 
-namespace ers::views {
+namespace ers::impl::views {
     template<typename MemPtr>
     auto mem_filter(MemPtr mem_ptr) {
         return adaptor::member_range(mem_ptr, []<typename T>(T&& range, auto&& fn) {
@@ -21,4 +21,11 @@ namespace ers::views {
             return std::views::transform(std::forward<T>(range), fn);
         });
     }
+}
+
+
+// Exports
+
+namespace ers {
+    namespace views = impl::views;
 }

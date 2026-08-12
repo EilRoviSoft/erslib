@@ -4,12 +4,19 @@
 #include <erslib/core/meta/impl/type_name_array.hpp>
 
 
-namespace ers::meta {
+namespace ers::impl::meta {
     template<typename T>
     struct type_name {
-        static constexpr auto value = internal::funcsig<T>();
+        static constexpr auto value = funcsig<T>();
     };
 
     template<typename T>
     constexpr std::string_view type_name_v = type_name<T>::value;
+}
+
+
+// Exports
+
+namespace ers {
+    namespace meta = impl::meta;
 }

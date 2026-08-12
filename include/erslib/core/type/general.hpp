@@ -5,7 +5,7 @@
 #include <cstdint>
 
 
-namespace ers::type {
+namespace ers::impl::type {
     using u8 = uint8_t;
     using u16 = uint16_t;
     using u32 = uint32_t;
@@ -18,6 +18,13 @@ namespace ers::type {
 
     using f32 = float_t;
     using f64 = double_t;
+}
+
+
+// Exports
+
+namespace ers {
+    namespace type = impl::type;
 }
 
 

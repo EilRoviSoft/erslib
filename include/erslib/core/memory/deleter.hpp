@@ -4,7 +4,7 @@
 #include <memory_resource>
 
 
-namespace ers {
+namespace ers::impl {
     template<class T>
     struct deleter {
         std::pmr::memory_resource* mr;
@@ -22,4 +22,11 @@ namespace ers {
             mr->deallocate(ptr, 1);
         }
     };
+}
+
+
+// Exports
+
+namespace ers {
+    using impl::deleter;
 }

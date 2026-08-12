@@ -1,7 +1,7 @@
 #include "erslib/core/util/string.hpp"
 
 
-std::string ers::util::replace(std::string_view where, std::string_view from, std::string_view to, size_t estimated_replacements) {
+std::string ers::impl::util::replace(std::string_view where, std::string_view from, std::string_view to, size_t estimated_replacements) {
     std::string result;
 
 

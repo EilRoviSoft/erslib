@@ -1,17 +1,17 @@
 #pragma once
 
 
-namespace ers::internal {
+namespace ers::impl {
     template<int>
     struct consteval_helper {};
 }
 
 
-namespace ers {
+namespace ers::impl {
     template<typename F>
     consteval bool is_constexpr_friendly() {
         return requires {
-            typename internal::consteval_helper<(F{}(), 1)>;
+            typename consteval_helper<(F{}(), 1)>;
         };
     }
 

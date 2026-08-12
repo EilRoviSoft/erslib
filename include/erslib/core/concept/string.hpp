@@ -8,7 +8,7 @@
 #include <erslib/core/convert/impl/from_str.hpp>
 
 
-namespace ers {
+namespace ers::impl {
     template<typename T>
     concept StringConvertible =
         std::is_convertible_v<T, std::string_view>

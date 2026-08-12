@@ -10,7 +10,7 @@
 
 // Generic implementations
 
-namespace ers {
+namespace ers::impl {
     template<typename Fn, typename T, typename E>
     concept UnaryWith = requires(T&& v) {
         { Fn {}(std::forward<T>(v)) } -> std::convertible_to<E>;
@@ -30,7 +30,7 @@ namespace ers {
 
 // Specialized implementations
 
-namespace ers {
+namespace ers::impl {
     template<typename Policy, typename T>
     concept HashableWith = ExecutableWith<THashBase<T, Policy>, T, size_t, size_t>;
 
@@ -38,4 +38,3 @@ namespace ers {
     template<typename Equal, typename L, typename R>
     concept EqualWith = BinaryWith<Equal, L, R, bool>;
 }
-

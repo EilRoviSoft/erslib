@@ -11,7 +11,7 @@
 
 // Forward decl
 
-namespace ers {
+namespace ers::impl {
     template<typename T>
     class Result;
 }
@@ -19,7 +19,7 @@ namespace ers {
 
 // Result<T>
 
-namespace ers {
+namespace ers::impl {
     template<typename T>
     class [[nodiscard]] Result {
     public:
@@ -119,7 +119,7 @@ namespace ers {
 
 // Result<T&>
 
-namespace ers {
+namespace ers::impl {
     template<typename T>
     class [[nodiscard]] Result<T&> {
     public:
@@ -216,7 +216,7 @@ namespace ers {
 
 // Template deduction
 
-namespace ers {
+namespace ers::impl {
     template<typename T>
     Result(T) -> Result<T>;
 
@@ -240,7 +240,7 @@ namespace ers {
 
 // Result<void, ...>
 
-namespace ers {
+namespace ers::impl {
     struct ok_t {};
 
     constexpr ok_t ok;
@@ -287,4 +287,19 @@ namespace ers {
     };
 
     using Status = Result<void>;
+}
+
+
+// Exports
+
+namespace ers {
+    using impl::Result;
+
+    using impl::swap;
+    using impl::operator==;
+
+    using impl::ok_t;
+    using impl::ok;
+
+    using impl::Status;
 }

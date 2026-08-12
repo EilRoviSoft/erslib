@@ -9,13 +9,13 @@
 #include <erslib/core/memory/deleter.hpp>
 
 
-namespace ers {
+namespace ers::impl {
     template<typename T>
     using Holder = std::unique_ptr<T, deleter<T>>;
 
 
     template<typename T, typename... Args>
-        requires (sizeof...(Args) == 0 || !ers::ConvertibleToIn<std::pmr::memory_resource*, 0, Args...>)
+        requires (sizeof...(Args) == 0 || !ConvertibleToIn<std::pmr::memory_resource*, 0, Args...>)
     Holder<T> make_holder(Args&&... args) {
         return Holder<T>(new T(std::forward<Args>(args)...), deleter<T>{});
     }
@@ -55,4 +55,13 @@ namespace ers {
 
         return Holder<T>(static_cast<T*>(p), deleter<T>(mr));
     }
+}
+
+
+// Exports
+
+namespace ers {
+    using impl::Holder;
+    using impl::make_holder;
+    using impl::make_polymorphic_holder;
 }

@@ -9,7 +9,7 @@
 #include <erslib/core/concept/pair.hpp>
 
 
-namespace ers::algo {
+namespace ers::impl {
     template<std::ranges::range R, typename OutIt, typename Compare = std::less<>>
         requires PairLike<std::ranges::range_reference_t<R>>
     void keys_sorted_by_value(const R& range, OutIt out) {

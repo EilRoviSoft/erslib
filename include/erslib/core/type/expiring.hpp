@@ -4,7 +4,7 @@
 #include <chrono>
 
 
-namespace ers {
+namespace ers::impl {
     template<typename T, typename Clock = std::chrono::system_clock>
     struct expiring_t {
         T value;
@@ -37,4 +37,11 @@ namespace ers {
         constexpr T* operator->() { return value; }
         constexpr const T* operator->() const { return value; }
     };
+}
+
+
+// Exports
+
+namespace ers {
+    using impl::expiring_t;
 }

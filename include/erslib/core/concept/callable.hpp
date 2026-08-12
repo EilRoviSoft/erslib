@@ -1,7 +1,7 @@
 #pragma once
 
 
-namespace ers {
+namespace ers::impl {
     template<typename T>
     concept Callable = requires { &T::operator(); };
 }

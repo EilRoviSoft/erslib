@@ -7,6 +7,6 @@
 namespace fs = std::filesystem;
 
 
-namespace ers {
+namespace ers::impl {
     constexpr char path_separator = fs::path::preferred_separator;
 }

@@ -2,18 +2,18 @@
 
 // Forward declaration
 
-namespace ers::splitting {
+namespace ers::impl::splitting {
     template class TIterator<SmartIterator>;
 }
 
 
 // Implementation
 
-ers::splitting::SmartIterator::SmartIterator(const Processor<SmartIterator>& parent, std::size_t offset) :
+ers::impl::splitting::SmartIterator::SmartIterator(const Processor<SmartIterator>& parent, std::size_t offset) :
     TIterator(parent, offset) {
 }
 
-void ers::splitting::SmartIterator::_advance() {
+void ers::impl::splitting::SmartIterator::_advance() {
     if (!m_parent || m_offset >= m_parent->m_storage.size()) {
         m_length = 0;
         return;

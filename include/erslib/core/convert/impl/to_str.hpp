@@ -7,6 +7,10 @@
 
 
 // ToStringBackend
+//
+// to_string_backend is a customization point: specialize it to teach ers::convert::to_str how to
+// render a new type to a string. Explicit specializations must live in the template's true namespace,
+// so it stays directly in ers::convert:: rather than moving to ers::impl.
 
 namespace ers::convert {
     template<typename T>
@@ -16,15 +20,15 @@ namespace ers::convert {
 
 // Traits
 
-namespace ers::internal {
+namespace ers::impl::convert {
     template<typename T>
-    concept ToStringHasConstexprValue = requires(convert::to_string_backend<T> backend, const T& value) {
+    concept ToStringHasConstexprValue = requires(ers::convert::to_string_backend<T> backend, const T& value) {
         { backend.constexpr_value(value) } -> std::convertible_to<std::string_view>;
     };
 
 
     template<typename T>
-    concept ToStringHasRuntimeValue = requires(convert::to_string_backend<T> backend, const T& value) {
+    concept ToStringHasRuntimeValue = requires(ers::convert::to_string_backend<T> backend, const T& value) {
         { backend.runtime_value(value) } -> std::convertible_to<std::string>;
     };
 }
@@ -32,24 +36,32 @@ namespace ers::internal {
 
 // Utility functions
 
-namespace ers::convert {
-    template<internal::ToStringHasConstexprValue T>
+namespace ers::impl::convert {
+    template<ToStringHasConstexprValue T>
     constexpr std::string_view to_sv(const T& value) noexcept {
-        return to_string_backend<T> {}.constexpr_value(value);
+        return ers::convert::to_string_backend<T> {}.constexpr_value(value);
     }
 
     template<typename T>
     std::string to_str(const T& value) {
-        to_string_backend<T> backend;
+        ers::convert::to_string_backend<T> backend;
 
-        if constexpr (internal::ToStringHasConstexprValue<T>) {
+        if constexpr (ToStringHasConstexprValue<T>) {
             return static_cast<std::string>(backend.constexpr_value(value));
-        } else if constexpr (internal::ToStringHasRuntimeValue<T>) {
+        } else if constexpr (ToStringHasRuntimeValue<T>) {
             return backend.runtime_value(value);
         } else {
             throw std::runtime_error("Non-specialized implementation");
         }
     }
+}
+
+
+// Exports
+
+namespace ers::convert {
+    using impl::convert::to_sv;
+    using impl::convert::to_str;
 }
 
 
@@ -78,7 +90,11 @@ namespace ers::convert {
 
 // Concept
 
-namespace ers {
+namespace ers::impl {
     template<typename T>
-    concept ToStringConvertible = internal::ToStringHasConstexprValue<T> || internal::ToStringHasRuntimeValue<T>;
+    concept ToStringConvertible = convert::ToStringHasConstexprValue<T> || convert::ToStringHasRuntimeValue<T>;
+}
+
+namespace ers {
+    using impl::ToStringConvertible;
 }

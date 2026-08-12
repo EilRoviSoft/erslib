@@ -7,7 +7,7 @@
 
 // TODO: make API more versatile
 
-namespace ers {
+namespace ers::impl {
     template<typename T>
     struct variant_traits;
 
@@ -41,4 +41,11 @@ namespace ers {
             return result;
         }
     };
+}
+
+
+// Exports
+
+namespace ers {
+    using impl::variant_traits;
 }
