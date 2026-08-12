@@ -6,13 +6,13 @@
 #include <unordered_set>
 
 
-namespace ers::impl::splitting {
+namespace ers::impl::algo {
     template<typename T>
-    class TIterator;
+    class TSplitIterator;
 
     template<typename T>
-    class Processor : public std::ranges::view_interface<Processor<T>> {
-        friend class TIterator<T>;
+    class SplitProcessor : public std::ranges::view_interface<SplitProcessor<T>> {
+        friend class TSplitIterator<T>;
         friend T;
 
 
@@ -23,7 +23,7 @@ namespace ers::impl::splitting {
     public:
         // Constructor
 
-        explicit Processor(std::string_view content, std::string_view delims = " ") :
+        explicit SplitProcessor(std::string_view content, std::string_view delims = " ") :
             m_storage(content),
             m_delims(delims.begin(), delims.end()) {
         }
@@ -52,12 +52,12 @@ namespace ers::impl::splitting {
     };
 
     template<typename T>
-    class TIterator {
+    class TSplitIterator {
     public:
         using iterator_concept = std::forward_iterator_tag;
         using iterator_category = std::forward_iterator_tag;
 
-        using parent_type = Processor<T>;
+        using parent_type = SplitProcessor<T>;
         using value_type = std::string_view;
         using difference_type = std::ptrdiff_t;
 
@@ -65,8 +65,8 @@ namespace ers::impl::splitting {
     public:
         // Constructors
 
-        TIterator() = default;
-        explicit TIterator(const parent_type& parent, size_t offset) :
+        TSplitIterator() = default;
+        explicit TSplitIterator(const parent_type& parent, size_t offset) :
             m_parent(&parent),
             m_offset(offset) {
             _interface()._advance();
@@ -102,7 +102,7 @@ namespace ers::impl::splitting {
 
         // Comparing
 
-        bool operator==(const TIterator& other) const {
+        bool operator==(const TSplitIterator& other) const {
             return m_parent == other.m_parent && m_offset == other.m_offset;
         }
 
@@ -117,11 +117,4 @@ namespace ers::impl::splitting {
         T& _interface() { return static_cast<T&>(*this); }
         const T& _interface() const { return static_cast<const T&>(*this); }
     };
-}
-
-
-// Exports
-
-namespace ers {
-    namespace splitting = impl::splitting;
 }

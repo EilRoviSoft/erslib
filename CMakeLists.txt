@@ -112,10 +112,10 @@ target_sources(erslib_core
 
         "src/erslib/core/assert.cpp"
 
-        "src/erslib/core/exception/internal.cpp"
+        "src/erslib/core/algorithm/split/regular.cpp"
+        "src/erslib/core/algorithm/split/smart.cpp"
 
-        "src/erslib/core/splitting/regular.cpp"
-        "src/erslib/core/splitting/smart.cpp"
+        "src/erslib/core/exception/internal.cpp"
 
         "src/erslib/core/type/diagnostic.cpp"
 

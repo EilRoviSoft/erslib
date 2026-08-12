@@ -20,5 +20,6 @@ namespace ers::impl::util {
 // Exports
 
 namespace ers {
-    namespace util = impl::util;
+    using impl::util::BitIndex;
+    using impl::util::from_numbers;
 }

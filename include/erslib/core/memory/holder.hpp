@@ -11,17 +11,17 @@
 
 namespace ers::impl {
     template<typename T>
-    using Holder = std::unique_ptr<T, deleter<T>>;
+    using holder_ptr = std::unique_ptr<T, deleter<T>>;
 
 
     template<typename T, typename... Args>
         requires (sizeof...(Args) == 0 || !ConvertibleToIn<std::pmr::memory_resource*, 0, Args...>)
-    Holder<T> make_holder(Args&&... args) {
-        return Holder<T>(new T(std::forward<Args>(args)...), deleter<T>{});
+    holder_ptr<T> make_holder(Args&&... args) {
+        return holder_ptr<T>(new T(std::forward<Args>(args)...), deleter<T> {});
     }
     
     template<typename T, typename... Args>
-    Holder<T> make_holder(std::pmr::memory_resource* mr, Args&&... args) {
+    holder_ptr<T> make_holder(std::pmr::memory_resource* mr, Args&&... args) {
         std::pmr::polymorphic_allocator<T> alloc(mr);
 
 
@@ -34,13 +34,13 @@ namespace ers::impl {
         }
 
 
-        return Holder<T>(p, deleter<T>(mr));
+        return holder_ptr<T>(p, deleter<T>(mr));
     }
 
 
     template<typename T, typename Derived, typename... Args>
         requires std::derived_from<Derived, T>
-    Holder<T> make_polymorphic_holder(std::pmr::memory_resource* mr, Args&&... args) {
+    holder_ptr<T> make_polymorphic_holder(std::pmr::memory_resource* mr, Args&&... args) {
         std::pmr::polymorphic_allocator<Derived> alloc(mr);
 
 
@@ -53,15 +53,6 @@ namespace ers::impl {
         }
 
 
-        return Holder<T>(static_cast<T*>(p), deleter<T>(mr));
+        return holder_ptr<T>(static_cast<T*>(p), deleter<T>(mr));
     }
-}
-
-
-// Exports
-
-namespace ers {
-    using impl::Holder;
-    using impl::make_holder;
-    using impl::make_polymorphic_holder;
 }

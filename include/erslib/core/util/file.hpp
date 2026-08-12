@@ -13,10 +13,3 @@ namespace fs = std::filesystem;
 namespace ers::impl::util {
     std::string ERSLIB_EXPORT read_file(const fs::path& path);
 }
-
-
-// Exports
-
-namespace ers {
-    namespace util = impl::util;
-}

@@ -8,10 +8,3 @@ namespace ers::impl::pattern {
         return i++;
     }
 }
-
-
-// Exports
-
-namespace ers {
-    namespace pattern = impl::pattern;
-}

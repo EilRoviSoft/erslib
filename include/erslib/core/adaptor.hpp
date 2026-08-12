@@ -11,24 +11,24 @@
 // Exports
 
 namespace ers::adaptor {
-    using impl::hash;
-    using impl::member_hash;
+    using impl::adaptor::hash;
+    using impl::adaptor::member_hash;
 
-    using impl::equal;
-    using impl::member_equal;
+    using impl::adaptor::equal;
+    using impl::adaptor::member_equal;
 
-    using impl::unary_op;
-    using impl::member_unary_op;
+    using impl::adaptor::unary_op;
+    using impl::adaptor::member_unary_op;
 
-    using impl::binary_op;
-    using impl::member_binary_op;
+    using impl::adaptor::binary_op;
+    using impl::adaptor::member_binary_op;
 }
 
 namespace ers::adaptor {
-    using impl::string_hash;
-    using impl::member_string_hash;
+    using impl::adaptor::string_hash;
+    using impl::adaptor::member_string_hash;
 }
 
 namespace ers::adaptor {
-    using impl::member_range;
+    using impl::adaptor::member_range;
 }

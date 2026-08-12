@@ -7,7 +7,7 @@
 
 // ers
 #include <erslib/core/convert/impl/to_str.hpp>
-#include <erslib/core/exception/internal.hpp>
+#include <erslib/core/exception/impl.hpp>
 #include <erslib/core/type/time.hpp>
 
 // export

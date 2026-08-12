@@ -5,7 +5,7 @@
 #include <string>
 
 // ers
-#include <erslib/core/meta/type_name.hpp>
+#include <erslib/core/meta.hpp>
 #include <erslib/core/type/optional.hpp>
 #include <erslib/core/type/result.hpp>
 
@@ -13,11 +13,7 @@
 static_assert(requires { typename ers::meta::type_name<int>; }, "type_info.hpp not included");
 
 
-// From string definitions
-//
-// from_string_backend is a customization point: specialize it to teach ers::convert::from_str how to
-// parse a new type from a string. Explicit specializations must live in the template's true namespace,
-// so it stays directly in ers::convert:: rather than moving to ers::impl.
+// from string backend
 
 namespace ers::convert {
     template<typename T>
@@ -110,8 +106,4 @@ namespace ers::convert {
 namespace ers::impl {
     template<typename T>
     concept FromStringConvertible = convert::FromStringHasConstexprValue<T> || convert::FromStringHasRuntimeValue<T>;
-}
-
-namespace ers {
-    using impl::FromStringConvertible;
 }

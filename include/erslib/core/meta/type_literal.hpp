@@ -23,10 +23,3 @@ namespace ers::impl::meta {
     template<typename T>
     constexpr auto type_literal_v = type_literal<T>::value;
 }
-
-
-// Exports
-
-namespace ers {
-    namespace meta = impl::meta;
-}

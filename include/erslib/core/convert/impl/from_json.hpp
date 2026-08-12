@@ -10,11 +10,7 @@
 #include <erslib/core/type/result.hpp>
 
 
-// From json definitions
-//
-// from_json_backend/from_json_options are customization points: specialize them to teach
-// ers::convert::from_json how to parse a new type from JSON. Explicit specializations must live in the
-// template's true namespace, so they stay directly in ers::convert:: rather than moving to ers::impl.
+// from json backend
 
 namespace ers::convert {
     template<typename T>
@@ -62,13 +58,6 @@ namespace ers::impl::convert {
             return backend.value(source);
         }
     }
-}
-
-
-// Exports
-
-namespace ers::convert {
-    using impl::convert::from_json;
 }
 
 

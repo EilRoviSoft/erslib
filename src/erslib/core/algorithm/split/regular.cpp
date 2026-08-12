@@ -1,19 +1,19 @@
-#include "erslib/core/splitting/regular.hpp"
+#include "erslib/core/algorithm/splitting/regular.hpp"
 
 // Forward declaration
 
-namespace ers::impl::splitting {
-    template class TIterator<RegularIterator>;
+namespace ers::impl::algo {
+    template class TSplitIterator<RegularSplitIterator>;
 }
 
 
 // Implementation
 
-ers::impl::splitting::RegularIterator::RegularIterator(const Processor<RegularIterator>& parent, size_t offset) :
-    TIterator(parent, offset) {
+ers::impl::algo::RegularSplitIterator::RegularSplitIterator(const SplitProcessor<RegularSplitIterator>& parent, size_t offset) :
+    TSplitIterator(parent, offset) {
 }
 
-void ers::impl::splitting::RegularIterator::_advance() {
+void ers::impl::algo::RegularSplitIterator::_advance() {
     if (!m_parent || m_offset >= m_parent->m_storage.size()) {
         m_length = 0;
         return;

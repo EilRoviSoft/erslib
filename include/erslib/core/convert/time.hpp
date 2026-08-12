@@ -8,7 +8,9 @@
 #include <erslib/core/type/time.hpp>
 
 
-namespace ers::impl {
+// Implementation
+
+namespace ers::impl::convert {
     template<typename Clock>
     Result<timestamp_t> from_chars(std::string_view sv, std::string_view fmt) {
         typename Clock::time_point result;
@@ -24,6 +26,6 @@ namespace ers::impl {
 
 // Exports
 
-namespace ers {
-    using impl::from_chars;
+namespace ers::convert {
+    using impl::convert::from_chars;
 }

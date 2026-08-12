@@ -97,6 +97,13 @@ namespace ers::impl::util {
 
 // Exports
 
-namespace ers {
-    namespace util = impl::util;
+namespace ers::util {
+    using impl::util::concat_chars;
+    using impl::util::concat_literals;
+    using impl::util::concat_strings;
+
+    using impl::util::starts_with_seq;
+    using impl::util::ends_with_seq;
+
+    using impl::util::replace;
 }

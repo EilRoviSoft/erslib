@@ -22,6 +22,7 @@ namespace ers::impl::util {
 
 // Exports
 
-namespace ers {
-    namespace util = impl::util;
+namespace ers::util {
+    using impl::util::pointers_to_references;
+    using impl::util::prepend;
 }

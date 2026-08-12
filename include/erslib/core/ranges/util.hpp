@@ -10,22 +10,15 @@
 namespace ers::impl::views {
     template<typename MemPtr>
     auto mem_filter(MemPtr mem_ptr) {
-        return adaptor::member_range(mem_ptr, []<typename T>(T&& range, auto&& fn) {
+        return member_range(mem_ptr, []<typename T>(T&& range, auto&& fn) {
             return std::views::filter(std::forward<T>(range), fn);
         });
     }
 
     template<typename MemPtr>
     auto mem_transform(MemPtr mem_ptr) {
-        return adaptor::member_range(mem_ptr, []<typename T>(T&& range, auto&& fn) {
+        return member_range(mem_ptr, []<typename T>(T&& range, auto&& fn) {
             return std::views::transform(std::forward<T>(range), fn);
         });
     }
-}
-
-
-// Exports
-
-namespace ers {
-    namespace views = impl::views;
 }

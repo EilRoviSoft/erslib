@@ -31,5 +31,8 @@ namespace ers::impl::util {
 // Exports
 
 namespace ers {
-    namespace util = impl::util;
+    using impl::util::between;
+    using impl::util::between_li;
+    using impl::util::between_ri;
+    using impl::util::between_lr;
 }

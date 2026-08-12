@@ -10,14 +10,7 @@
 #include <boost/preprocessor/variadic/to_seq.hpp>
 
 
-namespace ers::impl::util {
-    template<typename T, typename... Ts>
-    constexpr auto coalesce(T v, Ts... rest) {
-        std::common_type_t<T, Ts...> result = v;
-        ((result || ((result = rest))), ...);
-        return result;
-    }
-
+namespace ers::impl {
     template<class T, class... Fs>
     constexpr auto coalesce_lazy(T v, Fs... fs) {
         std::common_type_t<T, std::invoke_result_t<Fs&>...> result = v;
@@ -28,10 +21,6 @@ namespace ers::impl::util {
 
 
 // Exports
-
-namespace ers {
-    namespace util = impl::util;
-}
 
 #define ERS_CO_WRAP(S, DATA, ELEM) [&]{ return (ELEM); }
 

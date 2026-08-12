@@ -6,11 +6,7 @@
 #include <string>
 
 
-// ToStringBackend
-//
-// to_string_backend is a customization point: specialize it to teach ers::convert::to_str how to
-// render a new type to a string. Explicit specializations must live in the template's true namespace,
-// so it stays directly in ers::convert:: rather than moving to ers::impl.
+// to string backend
 
 namespace ers::convert {
     template<typename T>
@@ -93,8 +89,4 @@ namespace ers::convert {
 namespace ers::impl {
     template<typename T>
     concept ToStringConvertible = convert::ToStringHasConstexprValue<T> || convert::ToStringHasRuntimeValue<T>;
-}
-
-namespace ers {
-    using impl::ToStringConvertible;
 }

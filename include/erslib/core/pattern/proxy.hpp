@@ -47,10 +47,3 @@ namespace ers::impl::pattern {
         T* _value;
     };
 }
-
-
-// Exports
-
-namespace ers {
-    namespace pattern = impl::pattern;
-}

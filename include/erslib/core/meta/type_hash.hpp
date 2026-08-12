@@ -16,10 +16,3 @@ namespace ers::impl::meta {
     template<typename T, typename Policy = rapid_hash_policy>
     constexpr auto type_hash_v = type_hash<T, Policy>::value;
 }
-
-
-// Exports
-
-namespace ers {
-    namespace meta = impl::meta;
-}

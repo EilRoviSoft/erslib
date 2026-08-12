@@ -7,8 +7,8 @@
 
 // ers
 #include <erslib/core/assert.hpp>
+#include <erslib/core/meta.hpp>
 #include <erslib/core/concept/sbo.hpp>
-#include <erslib/core/meta/type_hash.hpp>
 
 
 // Forward declaration
@@ -466,12 +466,4 @@ namespace ers::impl {
 
 namespace ers::impl {
     using Any = TAny<32, alignof(std::max_align_t)>;
-}
-
-
-// Exports
-
-namespace ers {
-    using impl::TAny;
-    using impl::Any;
 }

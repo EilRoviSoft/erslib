@@ -102,15 +102,9 @@ namespace ers::impl::thread_safe {
             return this->m_data;
         }
 
+
     protected:
         mutable std::shared_mutex m_mutex;
         container_type m_data;
     };
-}
-
-
-// Exports
-
-namespace ers {
-    namespace thread_safe = impl::thread_safe;
 }

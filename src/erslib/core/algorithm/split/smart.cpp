@@ -1,19 +1,19 @@
-#include "erslib/core/splitting/smart.hpp"
+#include "erslib/core/algorithm/splitting/smart.hpp"
 
 // Forward declaration
 
-namespace ers::impl::splitting {
-    template class TIterator<SmartIterator>;
+namespace ers::impl::algo {
+    template class TSplitIterator<SmartSplitIterator>;
 }
 
 
 // Implementation
 
-ers::impl::splitting::SmartIterator::SmartIterator(const Processor<SmartIterator>& parent, std::size_t offset) :
-    TIterator(parent, offset) {
+ers::impl::algo::SmartSplitIterator::SmartSplitIterator(const SplitProcessor<SmartSplitIterator>& parent, std::size_t offset) :
+    TSplitIterator(parent, offset) {
 }
 
-void ers::impl::splitting::SmartIterator::_advance() {
+void ers::impl::algo::SmartSplitIterator::_advance() {
     if (!m_parent || m_offset >= m_parent->m_storage.size()) {
         m_length = 0;
         return;

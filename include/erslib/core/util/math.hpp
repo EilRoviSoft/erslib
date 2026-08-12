@@ -22,6 +22,7 @@ namespace ers::impl::util {
 
 // Exports
 
-namespace ers {
-    namespace util = impl::util;
+namespace ers::util {
+    using impl::util::equals;
+    using impl::util::log10_ceil;
 }

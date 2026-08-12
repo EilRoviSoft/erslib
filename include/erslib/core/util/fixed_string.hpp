@@ -15,5 +15,5 @@ namespace ers::impl::util {
 // Exports
 
 namespace ers {
-    namespace util = impl::util;
+    using impl::util::elems_as_string_literal;
 }

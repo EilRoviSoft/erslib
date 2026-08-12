@@ -160,7 +160,7 @@ namespace ers::impl {
 
 // Generic implementations
 
-namespace ers::impl {
+namespace ers::impl::adaptor {
     template<typename T, typename Fn>
     using unary_op = op_base<1, T, Fn, nullptr>;
 
@@ -178,7 +178,7 @@ namespace ers::impl {
 
 // Specialized implementations
 
-namespace ers::impl {
+namespace ers::impl::adaptor {
     template<template<typename> typename Hash, typename... Ts>
     using hash = hash_base<Hash, nullptr, Ts...>;
 
@@ -186,7 +186,7 @@ namespace ers::impl {
     using member_hash = hash_base<Hash, Member, std::remove_cvref_t<member_class_t<Member>>, Ts...>;
 }
 
-namespace ers::impl {
+namespace ers::impl::adaptor {
     template<typename T>
     using equal = binary_op<T, std::equal_to<>>;
 

@@ -16,10 +16,3 @@ namespace ers::impl::pattern {
         virtual T build() && = 0;
     };
 }
-
-
-// Exports
-
-namespace ers {
-    namespace pattern = impl::pattern;
-}

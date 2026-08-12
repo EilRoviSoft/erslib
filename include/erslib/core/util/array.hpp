@@ -14,6 +14,6 @@ namespace ers::impl::util {
 
 // Exports
 
-namespace ers {
-    namespace util = impl::util;
+namespace ers::util {
+    using impl::util::elems_as_array;
 }

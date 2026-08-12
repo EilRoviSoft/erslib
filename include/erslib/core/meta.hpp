@@ -1,0 +1,22 @@
+#pragma once
+
+
+// Includes
+
+#include <erslib/core/meta/type_hash.hpp>
+#include <erslib/core/meta/type_literal.hpp>
+#include <erslib/core/meta/type_name.hpp>
+
+
+// Exports
+
+namespace ers::meta {
+    using impl::meta::type_hash;
+    using impl::meta::type_hash_v;
+
+    using impl::meta::type_literal;
+    using impl::meta::type_literal_v;
+
+    using impl::meta::type_name;
+    using impl::meta::type_name_v;
+}

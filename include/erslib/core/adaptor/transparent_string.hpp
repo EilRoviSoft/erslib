@@ -10,7 +10,7 @@
 #define ERS_STRING_LIKE_TYPES_PACK std::string, std::string_view, const char*
 
 
-namespace ers::impl {
+namespace ers::impl::adaptor {
     template<template<typename> typename Hash>
     using string_hash = hash<Hash, ERS_STRING_LIKE_TYPES_PACK>;
 

@@ -23,10 +23,3 @@ namespace ers::impl {
         }
     };
 }
-
-
-// Exports
-
-namespace ers {
-    using impl::deleter;
-}
