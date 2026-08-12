@@ -189,7 +189,7 @@ if(ERSLIB_BUILD_CONTRIB)
 
     target_sources(erslib_contrib
         PRIVATE
-            "src/erslib/contrib/json.cpp"
+            "src/erslib/contrib/json/impl.cpp"
     )
 
     target_link_libraries(erslib_contrib

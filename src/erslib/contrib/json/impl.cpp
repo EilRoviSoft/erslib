@@ -1,4 +1,4 @@
-#include "erslib/contrib/json.hpp"
+#include "erslib/contrib/json/impl.hpp"
 
 // _______________________ INCLUDES _______________________
 
@@ -12,8 +12,8 @@
 #include <limits>
 #include <string>
 
-namespace fs = std::filesystem;
-using namespace utl::internal;
+// ers
+#include <erslib/core/filesystem.hpp>
 
 
 // ===================
@@ -124,7 +124,7 @@ namespace {
         }
 
         // returns cursor pos, which is the end of file
-        
+
         const auto file_size = file.tellg();
         if (file_size < 0) {
             throw ers::make_path_error("Could not determine size of file '{}'.",
@@ -132,15 +132,15 @@ namespace {
         }
 
         // seek to the beginning
-        
+
         file.seekg(std::ios::beg);
-        
+
         // allocate string of appropriate size
-        
+
         std::string chars(file_size, 0);
-        
+
         // read into the string
-        
+
         file.read(chars.data(), file_size);
 
         return chars;
@@ -219,11 +219,11 @@ namespace {
         return res;
     }
 
-    void serialize_json_to_buffer(std::string& chars, const Node& node, Format format) {
-        if (format == Format::Pretty)
-            utl::internal::serialize_json_recursion<true>(node, chars);
+    void serialize_json_to_buffer(std::string& chars, const utl::impl::Node& node, utl::impl::Format format) {
+        if (format == utl::impl::Format::Pretty)
+            utl::impl::serialize_json_recursion<true>(node, chars);
         else
-            serialize_json_recursion<false>(node, chars);
+            utl::impl::serialize_json_recursion<false>(node, chars);
     }
 }
 
@@ -231,7 +231,7 @@ namespace {
 // --- Node class ---
 // ==================
 
-namespace utl::internal {
+namespace utl::impl {
     // -- Getters --
     // -------------
 
@@ -507,7 +507,7 @@ namespace {
 // --- JSON Parsing impl. ---
 // ==========================
 
-namespace utl::internal {
+namespace utl::impl {
     parser::parser(std::string_view chars, std::size_t recursion_limit) :
         chars(chars),
         recursion_limit(recursion_limit) {
@@ -1073,7 +1073,7 @@ namespace utl::internal {
 // --- JSON Serializing impl. ---
 // ==============================
 
-namespace utl::internal {
+namespace utl::impl {
     // First indent should be skipped when printing after a key
     //
     // Example:
@@ -1308,7 +1308,7 @@ namespace utl::internal {
 // --- JSON Parsing public API ---
 // ===============================
 
-namespace utl {
+namespace utl::impl {
     Node from_string(const std::string& chars, std::size_t recursion_limit) {
         parser parser(chars, recursion_limit);
 

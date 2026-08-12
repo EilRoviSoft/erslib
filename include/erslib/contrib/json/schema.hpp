@@ -4,8 +4,9 @@
 #include <functional>
 #include <list>
 
-// contrib
-#include <erslib/contrib/json.hpp>
+// ers
+#include <erslib/contrib/json/concept.hpp>
+#include <erslib/contrib/json/impl.hpp>
 #include <erslib/core/concept/json.hpp>
 #include <erslib/core/meta/type_name.hpp>
 #include <erslib/core/trait/fn.hpp>
@@ -13,17 +14,17 @@
 #include <erslib/core/type/result.hpp>
 
 
-namespace ers::impl {
+namespace utl::impl {
     class JsonSchema {
-        using json_iterator = utl::Json::object_type::const_iterator;
+        using json_iterator = Node::object_type::const_iterator;
 
 
         template<typename F>
-        using extract_return_type = result_traits<typename fn_traits<F>::return_type>::value_type;
+        using extract_return_type = ers::result_traits<typename ers::fn_traits<F>::return_type>::value_type;
 
 
     public:
-        explicit JsonSchema(const utl::Json& json) :
+        explicit JsonSchema(const Node& json) :
             m_json(json) {
         }
 
@@ -63,12 +64,12 @@ namespace ers::impl {
 
         template<typename F>
         void require_and_convert(std::string_view name, extract_return_type<F>& out, F&& writer) {
-            using arg_type = fn_traits<F>::template arg_type<0>;
-            using json_type = utl::internal::json_conversion<arg_type>::original_type;
+            using arg_type = ers::fn_traits<F>::template arg_type<0>;
+            using json_type = json_conversion<arg_type>::original_type;
 
 
-            static_assert(fn_traits<F>::arity == 1, "'F' should have only 1 argument");
-            static_assert(ers::is_result_v<typename fn_traits<F>::return_type>, "Return type of 'F' should be 'ers::Result'");
+            static_assert(ers::fn_traits<F>::arity == 1, "'F' should have only 1 argument");
+            static_assert(ers::is_result_v<typename ers::fn_traits<F>::return_type>, "Return type of 'F' should be 'ers::Result'");
 
 
             const auto& object = m_json.as_object();
@@ -86,46 +87,39 @@ namespace ers::impl {
 
 
         [[nodiscard]]
-        Status finalize() const {
+        ers::Status finalize() const {
             if (m_error)
                 return *m_error;
 
             for (const auto& assign : m_assignments)
                 assign();
 
-            return ok;
+            return ers::ok;
         }
 
 
     protected:
-        const utl::Json& m_json;
-        std::optional<Diagnostic> m_error;
+        const Node& m_json;
+        std::optional<ers::Diagnostic> m_error;
         std::list<std::function<void()>> m_assignments;
 
 
     private:
         template<JsonCompatible T>
-        static Result<json_iterator> _check(const utl::Json::object_type& object, std::string_view name) {
+        static ers::Result<json_iterator> _check(const Node::object_type& object, std::string_view name) {
             auto it = object.find(name);
 
             if (it == object.end()) {
-                return make_error("Json doesn't have field with name \"{}\"",
+                return ers::make_error("Json doesn't have field with name \"{}\"",
                     name);
             }
 
             if (!it->second.is<T>()) {
                 return make_error("Field with name \"{}\" has mismatched type \"{}\"",
-                    name, meta::type_name_v<T>);
+                    name, ers::meta::type_name_v<T>);
             }
 
             return it;
         }
     };
-}
-
-
-// Exports
-
-namespace ers {
-    using impl::JsonSchema;
 }

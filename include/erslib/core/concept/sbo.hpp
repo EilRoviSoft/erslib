@@ -1,10 +1,8 @@
 #pragma once
 
 // cpp
+#include <cstdint>
 #include <type_traits>
-
-// ers
-#include <erslib/core/type/general.hpp>
 
 
 namespace ers::impl {
@@ -25,7 +23,7 @@ namespace ers::impl {
     constexpr bool is_sbo_applicable_v = is_sbo_applicable<T, Size, Align>::value;
 
 
-    enum class SboPolicy : u8 {
+    enum class SboPolicy : uint8_t {
         Empty = 0,
         Dynamic,
         Embedded

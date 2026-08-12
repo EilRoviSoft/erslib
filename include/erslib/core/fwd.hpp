@@ -10,7 +10,7 @@
 #include <boost/unordered/unordered_flat_set.hpp>
 
 // ers
-#include <erslib/core/adaptor/transparent/string.hpp>
+#include <erslib/core/adaptor.hpp>
 #include <erslib/core/hashing/direct.hpp>
 #include <erslib/core/hashing/rapid.hpp>
 
@@ -56,29 +56,29 @@ namespace ers::impl {
 
     using StringSet = HashSet<
         std::string,
-        string_hash_adaptor<RapidHash>,
-        equal_adaptor<std::string>
+        adaptor::string_hash<RapidHash>,
+        adaptor::equal<std::string>
     >;
 
     template<typename V>
     using StringMap = HashMap<
         std::string, V,
-        string_hash_adaptor<RapidHash>,
-        equal_adaptor<std::string>
+        adaptor::string_hash<RapidHash>,
+        adaptor::equal<std::string>
     >;
 
 
     using StringViewSet = HashSet<
         std::string_view,
-        string_hash_adaptor<RapidHash>,
-        equal_adaptor<std::string_view>
+        adaptor::string_hash<RapidHash>,
+        adaptor::equal<std::string_view>
     >;
 
     template<typename V>
     using StringViewMap = HashMap<
         std::string_view, V,
-        string_hash_adaptor<RapidHash>,
-        equal_adaptor<std::string_view>
+        adaptor::string_hash<RapidHash>,
+        adaptor::equal<std::string_view>
     >;
 }
 
