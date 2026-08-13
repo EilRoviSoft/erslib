@@ -1,5 +1,8 @@
 #pragma once
 
+// std
+#include <memory>
+
 // sol
 #include <sol/sol.hpp>
 

@@ -82,9 +82,7 @@ namespace ecs::impl {
 
 
     public:
-        using storage_type = ers::TrivialMap<
-            std::tuple<component_value_t<Tags>*...>
-        >;
+        using storage_type = ers::TrivialMap<std::tuple<component_value_t<Tags>*...>>;
 
 
         // IGroup interface

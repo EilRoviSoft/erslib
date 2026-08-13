@@ -1,5 +1,12 @@
 #include "erslib/dbio/connection_pool.hpp"
 
+// std
+#include <cstdio>
+#include <cstdlib>
+
+// ers
+#include <erslib/core/filesystem.hpp>
+
 
 // ConnectionPool
 
@@ -77,6 +84,19 @@ void dbio::impl::ConnectionPool::_discard(pqxx::connection* conn) noexcept {
 
 pqxx::connection* dbio::impl::ConnectionPool::_spawn() {
     auto conn = std::make_unique<pqxx::connection>(_db_connection_string);
+
+    if (!_trace_file) {
+        if (const char* trace_env = std::getenv("DBIO_TRACE_FILE")) {
+            fs::path trace_path(trace_env);
+            if (trace_path.has_parent_path())
+                fs::create_directories(trace_path.parent_path());
+            _trace_file.reset(std::fopen(trace_path.string().c_str(), "w"));
+        }
+    }
+
+    if (_trace_file)
+        conn->trace(_trace_file.get());
+
     pqxx::connection* raw = conn.get();
     _all.emplace_back(std::move(conn));
     return raw;
@@ -85,7 +105,7 @@ pqxx::connection* dbio::impl::ConnectionPool::_spawn() {
 
 // ConnectionPool::Connection
 
-dbio::impl::ConnectionPool::Connection::Connection(std::shared_ptr<ConnectionPool> pool, pqxx::connection* conn) noexcept :
+dbio::impl::ConnectionPool::Connection::Connection(ers::shared_ptr<ConnectionPool> pool, pqxx::connection* conn) noexcept :
     _pool(pool),
     _conn(conn) {
 }

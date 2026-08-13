@@ -8,7 +8,7 @@
 dbio::impl::Query dbio::impl::clauses::select_from(std::string table) {
     Query q;
 
-    q |= raw(section::select, "SELECT ");
+    q |= raw(section::select_from, "SELECT ");
     q |= std::make_unique<StClause>(section::source, std::move(table));
 
     return q;

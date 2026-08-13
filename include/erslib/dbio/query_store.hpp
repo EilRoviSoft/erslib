@@ -2,7 +2,6 @@
 
 // std
 #include <filesystem>
-#include <string_view>
 
 // ers
 #include <erslib/core/thread_safe.hpp>
@@ -20,6 +19,9 @@ namespace dbio::impl {
         // Member functions
 
         QueryStore() = default;
+
+
+        static QueryStore make_from_path(const std::filesystem::path& path);
 
 
         // Modifiers

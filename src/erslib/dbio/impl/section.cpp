@@ -16,7 +16,7 @@ namespace {
 
 dbio::impl::section_format_t dbio::impl::section_format(Section sec) {
     switch (sec) {
-        case section::select:
+        case section::select_from:
             return { .prefix = "", .separator = "", .suffix = "" };
         case section::insert_into:
             return { .prefix = "INSERT INTO ", .separator = "", .suffix = "" };
@@ -41,7 +41,7 @@ dbio::impl::section_format_t dbio::impl::section_format(Section sec) {
 
 bool dbio::impl::is_singular(Section sec) {
     switch (sec) {
-        case section::select:
+        case section::select_from:
         case section::insert_into:
         case section::source:
         case section::limit:

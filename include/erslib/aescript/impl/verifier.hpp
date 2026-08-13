@@ -1,5 +1,8 @@
 #pragma once
 
+// std
+#include <memory>
+
 // sol
 #include <sol/sol.hpp>
 
@@ -9,7 +12,6 @@
 
 
 namespace aescript::impl {
-    // TODO: add 'make_verifier' instead of 'make_unique<DerivedFromVerifier>'
     using VerifierPtr = std::unique_ptr<class IVerifier>;
 
     class IVerifier {

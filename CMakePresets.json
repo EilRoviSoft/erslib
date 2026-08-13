@@ -31,7 +31,11 @@
                 "CMAKE_BUILD_TYPE": "Debug",
                 "CMAKE_CXX_FLAGS": "-Wall -Wextra -Wpedantic",
                 "CMAKE_CXX_FLAGS_DEBUG": "-g -O0",
-                "CMAKE_CXX_FLAGS_RELEASE": "-O2 -DNDEBUG -march=x86-64-v3"
+                "CMAKE_CXX_FLAGS_RELEASE": "-O2 -DNDEBUG -march=x86-64-v3",
+
+                "VCPKG_TARGET_TRIPLET": "x64-linux-app",
+                "VCPKG_HOST_TRIPLET": "x64-linux-app",
+                "VCPKG_OVERLAY_TRIPLETS": "${sourceDir}/triplets"
             },
             "environment": {
                 "VCPKG_ROOT": "$penv{HOME}/vcpkg"
@@ -48,8 +52,12 @@
             "displayName": "dbg-gcc16",
             "inherits": "linux-base",
             "cacheVariables": {
-                "CMAKE_C_COMPILER": "gcc-16",
-                "CMAKE_CXX_COMPILER": "g++-16"
+                "CMAKE_C_COMPILER": "/usr/bin/gcc-16",
+                "CMAKE_CXX_COMPILER": "/usr/bin/g++-16"
+            },
+            "environment": {
+                "VCPKG_APP_C_COMPILER": "/usr/bin/gcc-16",
+                "VCPKG_APP_CXX_COMPILER": "/usr/bin/g++-16"
             }
         },
         {
@@ -63,6 +71,10 @@
                 "CMAKE_SHARED_LINKER_FLAGS": "-Wl,-rpath,/opt/gcc-16.2/lib64",
 
                 "ERSLIB_ENABLE_REFLECTION": "ON"
+            },
+            "environment": {
+                "VCPKG_APP_C_COMPILER": "/opt/gcc-16.2/bin/gcc-16.2",
+                "VCPKG_APP_CXX_COMPILER": "/opt/gcc-16.2/bin/g++-16.2"
             }
         }
     ]

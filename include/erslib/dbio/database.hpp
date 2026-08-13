@@ -62,7 +62,7 @@ namespace dbio::impl {
         // Runs each query found in the given store under the provided labels, every one in its own savepoint.
         // Missing labels are skipped.
         // Intended for schema bootstrap (e.g. the generated CREATE TABLE statements).
-        ers::Status init(const QueryStore& queries, std::string_view label);
+        ers::Status init(std::string_view label);
 
 
         // Modifiers
@@ -71,7 +71,7 @@ namespace dbio::impl {
 
 
     private:
-        std::shared_ptr<ConnectionPool> _pool;
+        ers::shared_ptr<ConnectionPool> _pool;
     };
 }
 

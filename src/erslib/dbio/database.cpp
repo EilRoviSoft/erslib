@@ -9,14 +9,14 @@
 
 
 dbio::impl::Database::Database(std::string connection_string, pool_options_t pool_opts) :
-    _pool(std::make_shared<ConnectionPool>(std::move(connection_string), std::move(pool_opts))) {
+    _pool(ers::make_shared<ConnectionPool>(std::move(connection_string), std::move(pool_opts))) {
 }
 
 ers::Result<dbio::impl::Database::Connection> dbio::impl::Database::acquire() {
     return _pool->acquire();
 }
 
-ers::Status dbio::impl::Database::init(const QueryStore& queries, std::string_view label) {
+ers::Status dbio::impl::Database::init(std::string_view label) {
     auto query = queries.get(label);
     if (!query)
         return ers::make_warning("Query '{}' doesn't exist.", label);

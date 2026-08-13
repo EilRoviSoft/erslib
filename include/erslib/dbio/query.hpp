@@ -24,6 +24,7 @@
 
 #include <erslib/dbio/clauses/bound.hpp>
 #include <erslib/dbio/clauses/condition.hpp>
+#include <erslib/dbio/clauses/delete_from.hpp>
 #include <erslib/dbio/clauses/in.hpp>
 #include <erslib/dbio/clauses/insert_into.hpp>
 #include <erslib/dbio/clauses/null.hpp>

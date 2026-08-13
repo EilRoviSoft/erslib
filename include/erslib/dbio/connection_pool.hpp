@@ -4,7 +4,6 @@
 #include <chrono>
 #include <condition_variable>
 #include <deque>
-#include <memory>
 #include <mutex>
 #include <string>
 #include <vector>
@@ -13,6 +12,8 @@
 #include <pqxx/transaction>
 
 // ers
+#include <erslib/core/filesystem.hpp>
+#include <erslib/core/memory.hpp>
 #include <erslib/core/trait/fn.hpp>
 #include <erslib/core/trait/result.hpp>
 #include <erslib/core/type/result.hpp>
@@ -42,7 +43,7 @@ namespace dbio::impl {
 
 
 namespace dbio::impl {
-    class ConnectionPool : public std::enable_shared_from_this<ConnectionPool> {
+    class ConnectionPool : public ers::enable_shared_from_this<ConnectionPool> {
         friend class Connection;
 
     public:
@@ -95,6 +96,7 @@ namespace dbio::impl {
         pool_options_t _pool_opts;
 
         mutable std::mutex _mutex;
+        ers::file_ptr _trace_file;
         std::condition_variable _cv;
         std::vector<std::unique_ptr<pqxx::connection>> _all;
         std::deque<entry_t> _idle;
@@ -122,13 +124,13 @@ namespace dbio::impl {
 
 
     private:
-        Connection(std::shared_ptr<ConnectionPool> pool, pqxx::connection* conn) noexcept;
+        Connection(ers::shared_ptr<ConnectionPool> pool, pqxx::connection* conn) noexcept;
 
 
         void _release() noexcept;
 
 
-        std::shared_ptr<ConnectionPool> _pool;
+        ers::shared_ptr<ConnectionPool> _pool;
         pqxx::connection* _conn;
     };
 }

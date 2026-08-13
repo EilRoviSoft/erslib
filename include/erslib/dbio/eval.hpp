@@ -6,7 +6,7 @@ namespace dbio::impl::tag {
 }
 
 namespace dbio::impl {
-    constexpr tag::transaction_t transaction_tag;
+    constexpr tag::transaction_t tx_tag;
 }
 
 
@@ -14,7 +14,7 @@ namespace dbio::impl {
 
 namespace dbio {
     namespace tag = impl::tag;
-    using impl::transaction_tag;
+    using impl::tx_tag;
 }
 
 

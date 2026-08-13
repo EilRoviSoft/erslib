@@ -12,8 +12,9 @@ namespace dbio::impl {
     using Section = uint32_t;
 
     namespace section {
-        inline constexpr Section select = 100;      // "SELECT <column>, ..."
-        inline constexpr Section insert_into = 150; // "INSERT INTO <table>"
+        inline constexpr Section select_from = 100; // "SELECT <column>, ... FROM <table>"
+        inline constexpr Section insert_into = 110; // "INSERT INTO <table>"
+        inline constexpr Section delete_from = 120; // "DELETE FROM <table>"
         inline constexpr Section column = 300;      // either "*", or "<column>, ..."
         inline constexpr Section source = 400;      // "FROM <source>"
         inline constexpr Section where = 500;       // "WHERE <cond>"

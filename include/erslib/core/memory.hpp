@@ -19,10 +19,10 @@ namespace ers {
 
     using impl::holder_ptr;
     using impl::make_holder;
-    using impl::make_polymorphic_holder;
 
     using impl::shared_ptr;
     using impl::atomic_shared_ptr;
+    using impl::enable_shared_from_this;
     using impl::make_shared;
     using impl::static_pointer_cast;
     using impl::dynamic_pointer_cast;
