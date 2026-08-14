@@ -6,8 +6,7 @@
 
 namespace dbio::impl::slots {
     inline constexpr Slot offset {
-        .name   = "dbio.offset",
-        .prefix = "\nOFFSET ",
-        .arity  = Arity::Single,
+        .name  = "dbio.offset",
+        .arity = Arity::Single,
     };
 }

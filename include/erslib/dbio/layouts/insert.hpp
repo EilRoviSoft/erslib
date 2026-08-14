@@ -14,32 +14,14 @@
 namespace dbio::impl {
     namespace slots {
         inline constexpr Slot insert_into = {
-            .name   = "dbio.insert_into",
-            .prefix = "INSERT INTO ",
-            .arity  = Arity::Single,
+            .name  = "dbio.insert_into",
+            .arity = Arity::Single,
         };
 
         inline constexpr Slot insert_columns {
-            .name      = "dbio.insert_columns",
-            .prefix    = " (",
-            .separator = ", ",
-            .suffix    = ")",
-            .arity     = Arity::Multi,
+            .name  = "dbio.insert_columns",
+            .arity = Arity::Multi,
         };
-    }
-
-
-    namespace clauses {
-        ClausePtr into_column(std::string name);
-
-        template<typename... Args>
-            requires (std::convertible_to<Args, std::string> && ...)
-        ClauseList into_columns(Args&&... args) {
-            ClauseList out;
-            out.reserve(sizeof...(Args));
-            (out.emplace_back(into_column(std::forward<Args>(args))), ...);
-            return out;
-        }
     }
 
 

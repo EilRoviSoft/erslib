@@ -15,17 +15,19 @@
 
 namespace dbio::impl {
     class ERSLIB_EXPORT Layout {
+        using LayoutArray = std::vector<SlotBinding>;
+
     public:
         // Member functions
 
-        constexpr Layout(SlotView fixed) noexcept :
+        constexpr Layout(LayoutView fixed) noexcept :
             _repr(fixed) {
         }
 
 
         // Accessors
 
-        SlotView slots() const noexcept;
+        LayoutView bindings() const noexcept;
 
         ers::optional<size_t> index_of(SlotRef slot) const noexcept;
 
@@ -34,18 +36,18 @@ namespace dbio::impl {
 
         // Modifiers
 
-        ers::Status insert_after(SlotRef anchor, SlotRef slot);
-        ers::Status insert_before(SlotRef anchor, SlotRef slot);
+        ers::Status insert_after(SlotRef anchor, const SlotBinding& binding);
+        ers::Status insert_before(SlotRef anchor, const SlotBinding& binding);
 
-        ers::Status append(SlotRef slot);
+        ers::Status append(SlotBinding slot);
 
 
     private:
-        std::variant<SlotView, std::vector<SlotRef>> _repr;
+        std::variant<LayoutView, LayoutArray> _repr;
 
 
-        std::vector<SlotRef>& _materialize();
+        LayoutArray& _materialize();
 
-        ers::Status _insert_at(SlotRef anchor, SlotRef slot, ptrdiff_t offset);
+        ers::Status _insert_at(SlotRef anchor, const SlotBinding& binding, ptrdiff_t offset);
     };
 }

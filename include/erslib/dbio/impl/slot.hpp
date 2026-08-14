@@ -20,23 +20,29 @@ namespace dbio::impl {
 
     using slot_renderer_t = ers::Status(*)(Context&, std::span<const IClause* const>);
 
-    using SlotRef = const struct Slot*;
-    using SlotView = std::span<const SlotRef>;
 
+    using SlotRef = const struct Slot*;
     struct Slot {
         std::string_view name;
-        std::string_view prefix;
-        std::string_view separator;
-        std::string_view suffix;
-        std::string_view fallback;
-
         Arity arity;
-        slot_renderer_t renderer = nullptr;
 
         constexpr uint64_t id() const noexcept {
             return ers::RapidHash<std::string_view> {}(name);
         }
     };
+
+
+    struct SlotBinding {
+        SlotRef slot = nullptr;
+
+        std::string_view prefix;
+        std::string_view separator;
+        std::string_view suffix;
+        std::string_view fallback;
+
+        slot_renderer_t renderer = nullptr;
+    };
+    using LayoutView = std::span<const SlotBinding>;
 
 
     [[nodiscard]]

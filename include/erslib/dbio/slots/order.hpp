@@ -6,9 +6,7 @@
 
 namespace dbio::impl::slots {
     inline constexpr Slot order {
-        .name      = "dbio.order",
-        .prefix    = "\nORDER BY ",
-        .separator = ", ",
-        .arity     = Arity::Multi,
+        .name  = "dbio.order",
+        .arity = Arity::Multi,
     };
 }

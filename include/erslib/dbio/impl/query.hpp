@@ -21,7 +21,7 @@ namespace dbio::impl {
     public:
         // Member functions
 
-        explicit Query(SlotView layout) :
+        explicit Query(LayoutView layout) :
             _layout(layout) {
         }
 
@@ -86,8 +86,8 @@ namespace dbio::impl {
         ClauseList _clauses;
 
 
-        ers::Status _render_slot(Context& ctx, SlotRef slot) const;
-        ers::Status _render_custom(Context& ctx, SlotRef slot) const;
+        ers::Status _render_slot(Context& ctx, const SlotBinding& binding) const;
+        ers::Status _render_custom(Context& ctx, const SlotBinding& binding) const;
 
 
         ers::Status _validate() const;

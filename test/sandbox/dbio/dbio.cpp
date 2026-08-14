@@ -19,7 +19,7 @@ namespace {
         std::string name = "Bob";
         
         return insert_into("users")
-            | into_columns("id", "name")
+            | columns("id", "name")
             | values(id, name);
     }
 }

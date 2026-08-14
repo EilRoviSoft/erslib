@@ -6,10 +6,7 @@
 
 namespace dbio::impl::slots {
     inline constexpr Slot column {
-        .name      = "dbio.column",
-        .prefix    = "SELECT ",
-        .separator = ", ",
-        .fallback  = "*",
-        .arity     = Arity::Multi
+        .name  = "dbio.column",
+        .arity = Arity::Multi
     };
 }

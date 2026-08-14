@@ -6,9 +6,7 @@
 
 namespace dbio::impl::slots {
     inline constexpr Slot from {
-        .name      = "dbio.from",
-        .prefix    = "\nFROM ",
-        .separator = ", ",
-        .arity     = Arity::Multi,
+        .name  = "dbio.from",
+        .arity = Arity::Multi,
     };
 }

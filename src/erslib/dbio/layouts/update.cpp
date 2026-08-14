@@ -8,13 +8,30 @@
 #include <erslib/dbio/slots/where.hpp>
 
 
+using namespace dbio::impl;
+
+
 // Impl
 
 namespace {
-    constexpr dbio::impl::SlotRef update_layout[] = {
-        &dbio::impl::slots::update,
-        &dbio::impl::slots::set,
-        &dbio::impl::slots::where,
+    ////&slots::from,
+    ////&slots::returning
+
+    constexpr SlotBinding update_layout[] = {
+        {
+            .slot   = &slots::update,
+            .prefix = "UPDATE "
+        },
+        {
+            .slot      = &slots::set,
+            .prefix    = "\nSET ",
+            .separator = ", "
+        },
+        {
+            .slot      = &slots::where,
+            .prefix    = "\nWHERE ",
+            .separator = " AND "
+        },
     };
 }
 

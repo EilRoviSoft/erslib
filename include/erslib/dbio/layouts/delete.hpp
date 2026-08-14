@@ -13,9 +13,8 @@
 namespace dbio::impl {
     namespace slots {
         inline constexpr Slot delete_from = {
-            .name   = "dbio.delete_from",
-            .prefix = "DELETE FROM ",
-            .arity  = Arity::Single,
+            .name  = "dbio.delete_from",
+            .arity = Arity::Single,
         };
     }
 

@@ -66,7 +66,7 @@ namespace dbio {
     using impl::Arity;
     using impl::Slot;
     using impl::SlotRef;
-    using impl::SlotView;
+    using impl::SlotBinding;
 
     using impl::ClauseList;
     using impl::ClausePtr;

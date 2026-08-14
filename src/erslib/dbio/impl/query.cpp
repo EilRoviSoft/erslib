@@ -50,24 +50,24 @@ ers::Status dbio::impl::Query::build(Context& ctx) const {
     if (auto s = _validate(); !s)
         return s;
 
-    for (const SlotRef slot : _layout.slots())
-        if (auto s = _render_slot(ctx, slot); !s)
+    for (const auto& binding : _layout.bindings())
+        if (auto s = _render_slot(ctx, binding); !s)
             return s;
 
     return ers::ok;
 }
 
-ers::Status dbio::impl::Query::_render_slot(Context& ctx, SlotRef slot) const {
-    if (slot->renderer)
-        return _render_custom(ctx, slot);
+ers::Status dbio::impl::Query::_render_slot(Context& ctx, const SlotBinding& binding) const {
+    if (binding.renderer)
+        return _render_custom(ctx, binding);
 
     bool empty = true;
 
     for (const auto& it : _clauses) {
-        if (!same_slot(it->slot(), slot))
+        if (!same_slot(it->slot(), binding.slot))
             continue;
 
-        ctx.query += empty ? slot->prefix : slot->separator;
+        ctx.query += empty ? binding.prefix : binding.separator;
         empty = false;
 
         if (auto s = it->render(ctx); !s)
@@ -75,38 +75,38 @@ ers::Status dbio::impl::Query::_render_slot(Context& ctx, SlotRef slot) const {
     }
 
     if (empty) {
-        if (slot->fallback.empty())
+        if (binding.fallback.empty())
             return ers::ok;
 
-        ctx.query += slot->prefix;
-        ctx.query += slot->fallback;
+        ctx.query += binding.prefix;
+        ctx.query += binding.fallback;
     }
 
-    ctx.query += slot->suffix;
+    ctx.query += binding.suffix;
 
     return ers::ok;
 }
 
-ers::Status dbio::impl::Query::_render_custom(Context& ctx, SlotRef slot) const {
+ers::Status dbio::impl::Query::_render_custom(Context& ctx, const SlotBinding& binding) const {
     std::vector<const IClause*> group;
 
     for (const auto& it : _clauses) {
-        if (same_slot(it->slot(), slot))
+        if (same_slot(it->slot(), binding.slot))
             group.push_back(it.get());
     }
 
     if (group.empty()) {
-        if (slot->fallback.empty())
+        if (binding.fallback.empty())
             return ers::ok;
 
-        ctx.query += slot->prefix;
-        ctx.query += slot->fallback;
-        ctx.query += slot->suffix;
+        ctx.query += binding.prefix;
+        ctx.query += binding.fallback;
+        ctx.query += binding.suffix;
 
         return ers::ok;
     }
 
-    return slot->renderer(ctx, group);
+    return binding.renderer(ctx, group);
 }
 
 ers::Status dbio::impl::Query::_validate() const {

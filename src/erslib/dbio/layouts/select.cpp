@@ -13,28 +13,55 @@
 #include <erslib/dbio/slots/where.hpp>
 
 
+using namespace dbio::impl;
+
+
 // Impl
 
 namespace {
-    constexpr dbio::impl::SlotRef select_layout[] = {
-        &dbio::impl::slots::column,
-        //&dbio::impl::slots::distinct,
-        &dbio::impl::slots::from,
-        &dbio::impl::slots::where,
-        //&dbio::impl::slots::group,
-        //&dbio::impl::slots::having,
-        //&dbio::impl::slots::window,
-        &dbio::impl::slots::order,
-        &dbio::impl::slots::limit,
-        &dbio::impl::slots::offset,
-        //&dbio::impl::slots::locking
+    ////&slots::distinct,
+    ////&slots::group,
+    ////&slots::having,
+    ////&slots::window,
+    ////&slots::locking
+
+    constexpr SlotBinding select_layout[] = {
+        {
+            .slot      = &slots::column,
+            .prefix    = "SELECT ",
+            .separator = ", ",
+            .fallback  = "*"
+        },
+        {
+            .slot      = &slots::from,
+            .prefix    = "\nFROM ",
+            .separator = ", "
+        },
+        {
+            .slot      = &slots::where,
+            .prefix    = "\nWHERE ",
+            .separator = " AND "
+        },
+        {
+            .slot      = &slots::order,
+            .prefix    = "\nORDER BY ",
+            .separator = ", "
+        },
+        {
+            .slot   = &slots::limit,
+            .prefix = "\nLIMIT "
+        },
+        {
+            .slot   = &slots::offset,
+            .prefix = "\nOFFSET "
+        },
     };
 }
 
 
 // Public API
 
-dbio::impl::Query dbio::impl::layouts::select_from(std::string table) {
+Query layouts::select_from(std::string table) {
     Query q(select_layout);
     q |= clauses::from(std::move(table));
     return q;

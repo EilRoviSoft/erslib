@@ -6,12 +6,25 @@
 #include <erslib/dbio/slots/where.hpp>
 
 
+using namespace dbio::impl;
+
+
 // Impl
 
 namespace {
-    constexpr dbio::impl::SlotRef delete_layout[] = {
-        &dbio::impl::slots::delete_from,
-        &dbio::impl::slots::where,
+    ////&slots::using,
+    ////&slots::returning
+
+    constexpr SlotBinding delete_layout[] = {
+        {
+            .slot   = &slots::delete_from,
+            .prefix = "DELETE FROM "
+        },
+        {
+            .slot      = &slots::where,
+            .prefix    = "\nWHERE ",
+            .separator = " AND "
+        },
     };
 }
 

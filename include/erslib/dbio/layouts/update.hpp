@@ -13,9 +13,8 @@
 namespace dbio::impl {
     namespace slots {
         inline constexpr Slot update {
-            .name   = "dbio.update",
-            .prefix = "UPDATE ",
-            .arity  = Arity::Single,
+            .name  = "dbio.update",
+            .arity = Arity::Single,
         };
     }
 

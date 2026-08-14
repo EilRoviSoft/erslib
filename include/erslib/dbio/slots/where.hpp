@@ -6,9 +6,7 @@
 
 namespace dbio::impl::slots {
     inline constexpr Slot where {
-        .name      = "dbio.where",
-        .prefix    = "\nWHERE ",
-        .separator = " AND ",
-        .arity     = Arity::Multi,
+        .name  = "dbio.where",
+        .arity = Arity::Multi,
     };
 }
