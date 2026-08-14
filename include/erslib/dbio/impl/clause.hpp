@@ -25,6 +25,8 @@ namespace dbio::impl {
             _slot(slot) {
         }
 
+        virtual ~IClause() = default;
+
 
         // Accessors
 
