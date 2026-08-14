@@ -60,7 +60,7 @@ function(erslib_add_library target_name alias_name)
 
     set_target_properties(${target_name} PROPERTIES EXPORT_NAME ${alias_name})
 
-    target_compile_features(${target_name} PUBLIC cxx_std_23)
+    target_compile_features(${target_name} PUBLIC cxx_std_26)
 
     target_include_directories(${target_name}
         PUBLIC
@@ -222,19 +222,18 @@ if(ERSLIB_BUILD_DBIO)
     target_sources(erslib_dbio
         PRIVATE
             "src/erslib/dbio/impl/context.cpp"
+            "src/erslib/dbio/impl/identity.cpp"
+            "src/erslib/dbio/impl/layout.cpp"
             "src/erslib/dbio/impl/query.cpp"
-            "src/erslib/dbio/impl/section.cpp"
 
-            "src/erslib/dbio/clauses/bound.cpp"
-            "src/erslib/dbio/clauses/condition.cpp"
-            "src/erslib/dbio/clauses/in.cpp"
-            "src/erslib/dbio/clauses/insert_into.cpp"
-            "src/erslib/dbio/clauses/null.cpp"
-            "src/erslib/dbio/clauses/order.cpp"
-            "src/erslib/dbio/clauses/raw.cpp"
-            "src/erslib/dbio/clauses/select_from.cpp"
+            "src/erslib/dbio/clauses/general.cpp"
             "src/erslib/dbio/clauses/target.cpp"
-            "src/erslib/dbio/clauses/values.cpp"
+
+            "src/erslib/dbio/connection_pool.cpp"
+            "src/erslib/dbio/database.cpp"
+            "src/erslib/dbio/formatter.cpp"
+            "src/erslib/dbio/options.cpp"
+            "src/erslib/dbio/query_store.cpp"
 
             "src/erslib/dbio/connection_pool.cpp"
             "src/erslib/dbio/database.cpp"
