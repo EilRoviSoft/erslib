@@ -2,6 +2,8 @@
 
 // ers
 #include <erslib/dbio/impl/identity.hpp>
+#include <erslib/dbio/slots/column.hpp>
+#include <erslib/dbio/slots/from.hpp>
 
 
 // IdentClause
@@ -31,4 +33,12 @@ dbio::impl::ClausePtr dbio::impl::IdentityClause::clone() const {
 
 dbio::impl::ClausePtr dbio::impl::clauses::identifier(SlotRef slot, std::string name) {
     return std::make_unique<IdentityClause>(slot, std::move(name));
+}
+
+dbio::impl::ClausePtr dbio::impl::clauses::column(std::string name) {
+    return identifier(&slots::column, std::move(name));
+}
+
+dbio::impl::ClausePtr dbio::impl::clauses::from(std::string name) {
+    return identifier(&slots::from, std::move(name));
 }

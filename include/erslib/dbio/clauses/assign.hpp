@@ -1,0 +1,47 @@
+#pragma once
+
+// std
+#include <string>
+
+// ers
+#include <erslib/dbio/impl/clause.hpp>
+#include <erslib/dbio/impl/identity.hpp>
+
+// export
+#include <erslib/export.hpp>
+
+
+namespace dbio::impl {
+    class ERSLIB_EXPORT AssignClause : public IClause {
+    public:
+        // Member functions
+
+        AssignClause(std::string column, binder_t binder);
+
+
+        // Executors
+
+        ers::Status render(Context& ctx) const override;
+
+
+        // Misc
+
+        ClausePtr clone() const override;
+
+
+    private:
+        std::string _column;
+        binder_t _binder;
+    };
+
+
+    namespace clauses {
+        template<typename T>
+        ClausePtr assign(std::string column, T&& value) {
+            return std::make_unique<AssignClause>(std::move(column),
+                make_binder(std::forward<T>(value)));
+        }
+
+        ClausePtr assign_null(std::string column);
+    }
+}

@@ -7,16 +7,20 @@
 
 namespace {
     auto select_users_by_id_and_name() {
-        using namespace dbio::clauses;
+        ERS_QUICK_DBIO_USING;
         return select_from("users")
             | columns("id", "name");
     }
 
-    auto select_users_and_audit_by_id() {
-        using namespace dbio::clauses;
-        return select_from("users")
-            | column("id")
-            | from("audit");
+    auto insert_id_and_name_into_users() {
+        ERS_QUICK_DBIO_USING;
+
+        size_t id = 42;
+        std::string name = "Bob";
+        
+        return insert_into("users")
+            | into_columns("id", "name")
+            | values(id, name);
     }
 }
 
@@ -24,7 +28,7 @@ namespace {
 int main() {
     const dbio::Query queries[] = {
         select_users_by_id_and_name(),
-        select_users_and_audit_by_id(),
+        insert_id_and_name_into_users(),
     };
 
     for (const dbio::Query& it : queries) {

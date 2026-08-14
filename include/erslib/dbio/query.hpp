@@ -18,23 +18,45 @@
 
 // Clauses
 
-#include <erslib/dbio/clauses/general.hpp>
+#include <erslib/dbio/clauses/assign.hpp>
+#include <erslib/dbio/clauses/bound.hpp>
+#include <erslib/dbio/clauses/order.hpp>
+#include <erslib/dbio/clauses/raw.hpp>
 #include <erslib/dbio/clauses/target.hpp>
+#include <erslib/dbio/clauses/values.hpp>
+#include <erslib/dbio/clauses/where.hpp>
+
+// Layouts
+#include <erslib/dbio/layouts/delete.hpp>
+#include <erslib/dbio/layouts/insert.hpp>
+#include <erslib/dbio/layouts/select.hpp>
+#include <erslib/dbio/layouts/update.hpp>
+
+// Slots
+#include <erslib/dbio/slots/column.hpp>
+#include <erslib/dbio/slots/from.hpp>
+#include <erslib/dbio/slots/limit.hpp>
+#include <erslib/dbio/slots/offset.hpp>
+#include <erslib/dbio/slots/order.hpp>
+#include <erslib/dbio/slots/set.hpp>
+#include <erslib/dbio/slots/values.hpp>
+#include <erslib/dbio/slots/where.hpp>
 
 
 // Exports
 
 namespace dbio {
     namespace clauses = impl::clauses;
+    namespace layouts = impl::layouts;
+    namespace slots = impl::slots;
+}
 
+namespace dbio {
+    using impl::binder_t;
+    using impl::make_binder;
 
-    //using impl::binder_t;
-    //using impl::make_binder;
-
-    using impl::ClauseList;
-    using impl::ClausePtr;
-    using impl::IClause;
-    using impl::IdentityClause;
+    using impl::Op;
+    using impl::Order;
 
     using impl::Context;
 
@@ -46,6 +68,25 @@ namespace dbio {
     using impl::SlotRef;
     using impl::SlotView;
 
-    using impl::column_slot;
-    using impl::from_slot;
+    using impl::ClauseList;
+    using impl::ClausePtr;
+    using impl::IClause;
 }
+
+namespace dbio {
+    using impl::AssignClause;
+    using impl::BoundClause;
+    using impl::OrderClause;
+    using impl::RawClause;
+    using impl::IdentityClause;
+    using impl::ValuesClause;
+
+    using impl::IWhereClause;
+    using impl::WhereInClause;
+    using impl::WhereNullClause;
+    using impl::WhereOpClause;
+}
+
+#define ERS_QUICK_DBIO_USING \
+    using namespace dbio::clauses; \
+    using namespace dbio::layouts

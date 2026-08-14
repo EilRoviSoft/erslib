@@ -1,5 +1,9 @@
 #pragma once
 
+// std
+#include <cstdint>
+#include <string>
+
 // ers
 #include <erslib/dbio/impl/clause.hpp>
 

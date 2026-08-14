@@ -27,6 +27,6 @@ namespace dbio::impl {
     binder_t make_binder(T&& value) {
         return [stored = owned_t<T>(std::forward<T>(value))](pqxx::params& out) {
             out.append(stored);
-            };
+        };
     }
 }

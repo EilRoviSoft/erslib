@@ -1,5 +1,8 @@
 #pragma once
 
+// std
+#include <cstdint>
+
 // ers
 #include <erslib/dbio/impl/clause.hpp>
 
@@ -26,7 +29,7 @@ namespace dbio::impl {
 
 
     private:
-        int64_t amount;
+        int64_t _amount;
     };
 
 

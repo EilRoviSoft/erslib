@@ -90,9 +90,10 @@ ers::Status dbio::impl::Query::_render_slot(Context& ctx, SlotRef slot) const {
 ers::Status dbio::impl::Query::_render_custom(Context& ctx, SlotRef slot) const {
     std::vector<const IClause*> group;
 
-    for (const auto& it : _clauses)
+    for (const auto& it : _clauses) {
         if (same_slot(it->slot(), slot))
             group.push_back(it.get());
+    }
 
     if (group.empty()) {
         if (slot->fallback.empty())

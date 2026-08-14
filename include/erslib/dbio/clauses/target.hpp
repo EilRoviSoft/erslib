@@ -1,7 +1,9 @@
 #pragma once
 
 // std
+#include <concepts>
 #include <string>
+#include <utility>
 
 // ers
 #include <erslib/dbio/impl/clause.hpp>
@@ -35,5 +37,20 @@ namespace dbio::impl {
 
     namespace clauses {
         ClausePtr identifier(SlotRef slot, std::string name);
+
+
+        ClausePtr column(std::string name);
+
+        template<typename... Args>
+            requires (std::convertible_to<Args, std::string> && ...)
+        ClauseList columns(Args&&... args) {
+            ClauseList out;
+            out.reserve(sizeof...(Args));
+            (out.emplace_back(column(std::forward<Args>(args))), ...);
+            return out;
+        }
+
+
+        ClausePtr from(std::string name);
     }
 }

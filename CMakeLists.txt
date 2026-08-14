@@ -226,13 +226,18 @@ if(ERSLIB_BUILD_DBIO)
             "src/erslib/dbio/impl/layout.cpp"
             "src/erslib/dbio/impl/query.cpp"
 
+            "src/erslib/dbio/clauses/assign.cpp"
             "src/erslib/dbio/clauses/bound.cpp"
-            "src/erslib/dbio/clauses/general.cpp"
             "src/erslib/dbio/clauses/order.cpp"
             "src/erslib/dbio/clauses/raw.cpp"
             "src/erslib/dbio/clauses/target.cpp"
             "src/erslib/dbio/clauses/values.cpp"
             "src/erslib/dbio/clauses/where.cpp"
+
+            "src/erslib/dbio/layouts/delete.cpp"
+            "src/erslib/dbio/layouts/insert.cpp"
+            "src/erslib/dbio/layouts/select.cpp"
+            "src/erslib/dbio/layouts/update.cpp"
 
             "src/erslib/dbio/connection_pool.cpp"
             "src/erslib/dbio/database.cpp"
