@@ -25,14 +25,6 @@ namespace dbio::impl {
             _layout(layout) {
         }
 
-        Query(const Query& other);
-        Query& operator=(const Query& other);
-
-        Query(Query&&) = default;
-        Query& operator=(Query&&) = default;
-
-        ~Query() = default;
-
 
         // Accessors
 
@@ -91,9 +83,6 @@ namespace dbio::impl {
 
 
         ers::Status _validate() const;
-
-
-        void _copy_from(const Query& other);
     };
 }
 

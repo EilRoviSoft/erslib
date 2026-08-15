@@ -9,16 +9,15 @@
 #include <erslib/core/hashing/rapid.hpp>
 #include <erslib/core/type/result.hpp>
 #include <erslib/dbio/impl/context.hpp>
+#include <erslib/dbio/impl/fwd.hpp>
 
 
 namespace dbio::impl {
-    class IClause;
-
     enum class Arity : bool {
         Single, Multi
     };
 
-    using slot_renderer_t = ers::Status(*)(Context&, std::span<const IClause* const>);
+    using slot_renderer_t = ers::Status(*)(Context&, std::span<const ClausePtr* const>);
 
 
     using SlotRef = const struct Slot*;

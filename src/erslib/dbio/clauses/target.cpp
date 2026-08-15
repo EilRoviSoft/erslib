@@ -6,7 +6,7 @@
 #include <erslib/dbio/slots/from.hpp>
 
 
-// IdentClause
+// IdentityClause
 
 dbio::impl::IdentityClause::IdentityClause(SlotRef slot, std::string name) :
     IClause(slot),
@@ -24,15 +24,11 @@ ers::Status dbio::impl::IdentityClause::render(Context& ctx) const {
     return ers::ok;
 }
 
-dbio::impl::ClausePtr dbio::impl::IdentityClause::clone() const {
-    return std::make_unique<IdentityClause>(slot(), _name);
-}
-
 
 // Shortcuts
 
 dbio::impl::ClausePtr dbio::impl::clauses::identifier(SlotRef slot, std::string name) {
-    return std::make_unique<IdentityClause>(slot, std::move(name));
+    return make_clause<IdentityClause>(slot, std::move(name));
 }
 
 dbio::impl::ClausePtr dbio::impl::clauses::column(std::string name) {

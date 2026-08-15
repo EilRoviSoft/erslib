@@ -28,12 +28,6 @@ namespace dbio::impl {
         ers::Status render(Context& ctx) const override;
 
 
-        // Misc
-
-        [[nodiscard]]
-        ClausePtr clone() const override;
-
-
     private:
         std::string _sql;
         std::vector<binder_t> _binders;
@@ -46,7 +40,7 @@ namespace dbio::impl {
             std::vector<binder_t> binders;
             binders.reserve(sizeof...(Args));
             (binders.emplace_back(make_binder(std::forward<Args>(args))), ...);
-            return std::make_unique<RawClause>(slot, std::move(sql), std::move(binders));
+            return make_clause<RawClause>(slot, std::move(sql), std::move(binders));
         }
     }
 }

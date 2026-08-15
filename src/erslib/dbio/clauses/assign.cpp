@@ -4,6 +4,8 @@
 #include <erslib/dbio/slots/set.hpp>
 
 
+// AssignClause
+
 dbio::impl::AssignClause::AssignClause(std::string column, binder_t binder) :
     IClause(&slots::set),
     _column(std::move(column)),
@@ -23,11 +25,9 @@ ers::Status dbio::impl::AssignClause::render(Context& ctx) const {
     return ers::ok;
 }
 
-dbio::impl::ClausePtr dbio::impl::AssignClause::clone() const {
-    return std::make_unique<AssignClause>(_column, _binder);
-}
 
+// Shortcuts
 
 dbio::impl::ClausePtr dbio::impl::clauses::assign_null(std::string column) {
-    return std::make_unique<AssignClause>(std::move(column), binder_t {});
+    return make_clause<AssignClause>(std::move(column), binder_t {});
 }

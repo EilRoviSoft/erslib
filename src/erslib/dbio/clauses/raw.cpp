@@ -36,7 +36,3 @@ ers::Status dbio::impl::RawClause::render(Context& ctx) const {
 
     return ers::ok;
 }
-
-dbio::impl::ClausePtr dbio::impl::RawClause::clone() const {
-    return std::make_unique<RawClause>(slot(), _sql, _binders);
-}

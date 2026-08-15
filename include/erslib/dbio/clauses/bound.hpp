@@ -23,11 +23,6 @@ namespace dbio::impl {
         ers::Status render(Context& ctx) const override;
 
 
-        // Misc
-
-        ClausePtr clone() const override;
-
-
     private:
         int64_t _amount;
     };

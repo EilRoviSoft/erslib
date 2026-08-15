@@ -28,12 +28,6 @@ namespace dbio::impl {
         ers::Status render(Context& ctx) const override;
 
 
-        // Misc
-
-        [[nodiscard]]
-        ClausePtr clone() const override;
-
-
     private:
         std::string _column;
         Order _order;

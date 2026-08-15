@@ -26,15 +26,11 @@ ers::Status dbio::impl::OrderClause::render(Context& ctx) const {
     return ers::ok;
 }
 
-dbio::impl::ClausePtr dbio::impl::OrderClause::clone() const {
-    return std::make_unique<OrderClause>(_column, _order);
-}
-
 
 // Shortcuts
 
 dbio::impl::ClausePtr dbio::impl::clauses::order_by(std::string column, Order order) {
-    return std::make_unique<OrderClause>(std::move(column), order);
+    return make_clause<OrderClause>(std::move(column), order);
 }
 
 dbio::impl::ClausePtr dbio::impl::clauses::order_by_random() {

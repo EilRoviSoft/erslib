@@ -61,11 +61,6 @@ namespace dbio::impl {
         ers::Status render(Context& ctx) const override;
 
 
-        // Misc
-
-        ClausePtr clone() const override;
-
-
     private:
         std::string _column;
         Op _op;
@@ -76,7 +71,7 @@ namespace dbio::impl {
     namespace clauses {
         template<typename T>
         ClausePtr where(std::string column, Op op, T&& value) {
-            return std::make_unique<WhereOpClause>(std::move(column), op, make_binder(std::forward<T>(value)));
+            return make_clause<WhereOpClause>(std::move(column), op, make_binder(std::forward<T>(value)));
         }
 
         template<typename T>
@@ -103,11 +98,6 @@ namespace dbio::impl {
         ers::Status render(Context& ctx) const override;
 
 
-        // Misc
-
-        ClausePtr clone() const override;
-
-
     private:
         std::string _column;
         std::vector<binder_t> _binders;
@@ -126,7 +116,7 @@ namespace dbio::impl {
             for (auto&& value : values)
                 binders.emplace_back(make_binder(std::forward<decltype(value)>(value)));
 
-            return std::make_unique<WhereInClause>(std::move(column), std::move(binders), negated);
+            return make_clause<WhereInClause>(std::move(column), std::move(binders), negated);
         }
 
         template<typename T>
@@ -150,11 +140,6 @@ namespace dbio::impl {
         // Executors
 
         ers::Status render(Context& ctx) const override;
-
-
-        // Misc
-
-        ClausePtr clone() const override;
 
 
     private:

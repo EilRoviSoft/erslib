@@ -24,11 +24,6 @@ namespace dbio::impl {
         ers::Status render(Context& ctx) const override;
 
 
-        // Misc
-
-        ClausePtr clone() const override;
-
-
     private:
         std::string _column;
         binder_t _binder;
@@ -38,8 +33,7 @@ namespace dbio::impl {
     namespace clauses {
         template<typename T>
         ClausePtr assign(std::string column, T&& value) {
-            return std::make_unique<AssignClause>(std::move(column),
-                make_binder(std::forward<T>(value)));
+            return make_clause<AssignClause>(std::move(column), make_binder(std::forward<T>(value)));
         }
 
         ClausePtr assign_null(std::string column);

@@ -14,7 +14,7 @@
 
 
 namespace dbio::impl {
-    using ClausePtr = std::unique_ptr<class IClause>;
+    using ClausePtr = std::polymorphic<class IClause>;
     using ClauseList = std::vector<ClausePtr>;
 
     class ERSLIB_EXPORT IClause {
@@ -38,12 +38,13 @@ namespace dbio::impl {
         virtual ers::Status render(Context& ctx) const = 0;
 
 
-        // Misc
-
-        virtual ClausePtr clone() const = 0;
-
-
     private:
         SlotRef _slot;
     };
+
+
+    template<typename T, typename... Args>
+    ClausePtr make_clause(Args&&... args) {
+        return ClausePtr(std::in_place_type<T>, std::forward<Args>(args)...);
+    }
 }

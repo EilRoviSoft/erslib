@@ -7,30 +7,9 @@
 #include <erslib/dbio/eval.hpp>
 
 
-// Member functions
-
-dbio::impl::Query::Query(const Query& other) :
-    _layout(other._layout) {
-    _copy_from(other);
-}
-
-dbio::impl::Query& dbio::impl::Query::operator=(const Query& other) {
-    if (this == &other)
-        return *this;
-
-    _layout = other._layout;
-    _copy_from(other);
-
-    return *this;
-}
-
-
 // Modifiers
 
 void dbio::impl::Query::add(ClausePtr clause) {
-    if (!clause)
-        return;
-
     if (clause->slot()->arity == Arity::Single) {
         std::erase_if(_clauses, [&](const ClausePtr& it) {
             return same_slot(it->slot(), clause->slot());
@@ -88,11 +67,11 @@ ers::Status dbio::impl::Query::_render_slot(Context& ctx, const SlotBinding& bin
 }
 
 ers::Status dbio::impl::Query::_render_custom(Context& ctx, const SlotBinding& binding) const {
-    std::vector<const IClause*> group;
+    std::vector<const ClausePtr*> group;
 
     for (const auto& it : _clauses) {
         if (same_slot(it->slot(), binding.slot))
-            group.push_back(it.get());
+            group.push_back(&it);
     }
 
     if (group.empty()) {
@@ -149,17 +128,6 @@ ers::Status dbio::impl::Query::exec_and_discard(pqxx::dbtransaction& tx) const {
         return r.error();
 
     return ers::ok;
-}
-
-
-// Internal
-
-void dbio::impl::Query::_copy_from(const Query& other) {
-    _clauses.clear();
-    _clauses.reserve(other._clauses.size());
-
-    for (const auto& it : other._clauses)
-        _clauses.emplace_back(it->clone());
 }
 
 

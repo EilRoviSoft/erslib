@@ -80,10 +80,6 @@ ers::Status dbio::impl::WhereOpClause::render(Context& ctx) const {
     return ers::ok;
 }
 
-dbio::impl::ClausePtr dbio::impl::WhereOpClause::clone() const {
-    return std::make_unique<WhereOpClause>(_column, _op, _binder);
-}
-
 
 // WhereInClause
 
@@ -117,10 +113,6 @@ ers::Status dbio::impl::WhereInClause::render(Context& ctx) const {
     return ers::ok;
 }
 
-dbio::impl::ClausePtr dbio::impl::WhereInClause::clone() const {
-    return std::make_unique<WhereInClause>(_column, _binders, _negated);
-}
-
 
 // WhereNullClause
 
@@ -142,13 +134,9 @@ ers::Status dbio::impl::WhereNullClause::render(Context& ctx) const {
     return ers::ok;
 }
 
-dbio::impl::ClausePtr dbio::impl::WhereNullClause::clone() const {
-    return std::make_unique<WhereNullClause>(_column, _is_null);
-}
-
 
 // Shortcuts
 
 dbio::impl::ClausePtr dbio::impl::clauses::where_null(std::string column, bool is_null) {
-    return std::make_unique<WhereNullClause>(std::move(column), is_null);
+    return make_clause<WhereNullClause>(std::move(column), is_null);
 }
