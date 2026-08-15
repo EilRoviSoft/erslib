@@ -30,16 +30,13 @@ ers::Status aescript::impl::OneOfProperty::verify(sol::table table) const {
     return ers::ok;
 }
 
-aescript::impl::DescriptorPtr aescript::impl::OneOfProperty::clone() const {
-    return std::make_unique<OneOfProperty>(_names);
-}
 
-aescript::impl::DescriptorPtr aescript::impl::properties::one_of(std::initializer_list<std::string_view> il) {
+aescript::impl::Descriptor aescript::impl::properties::one_of(std::initializer_list<std::string_view> il) {
     std::vector<std::string> names;
 
     names.reserve(il.size());
     for (const auto& it : il)
         names.emplace_back(it);
 
-    return std::make_unique<OneOfProperty>(std::move(names));
+    return make_descriptor<OneOfProperty>(std::move(names));
 }

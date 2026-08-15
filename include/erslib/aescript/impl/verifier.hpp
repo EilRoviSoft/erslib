@@ -12,7 +12,7 @@
 
 
 namespace aescript::impl {
-    using VerifierPtr = std::unique_ptr<class IVerifier>;
+    using Verifier = std::polymorphic<class IVerifier>;
 
     class IVerifier {
     public:
@@ -24,25 +24,23 @@ namespace aescript::impl {
 
         // Checkers
 
-        [[nodiscard]]
         virtual ers::Status exec([[maybe_unused]] verify_context& ctx, sol::table table, std::string_view field) const = 0;
 
 
         // Accessors
 
-        [[nodiscard]]
         size_t precedence() const { return _precedence; }
-
-
-        // Misc
-
-        [[nodiscard]]
-        virtual VerifierPtr clone() const = 0;
 
 
     private:
         size_t _precedence;
     };
+
+
+    template<typename T, typename... Args>
+    Verifier make_verifier(Args&&... args) {
+        return Verifier(std::in_place_type<T>, std::forward<Args>(args)...);
+    }
 }
 
 

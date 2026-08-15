@@ -38,13 +38,6 @@ namespace aescript::impl {
         }
 
 
-        // Misc
-
-        ParserPtr clone() const override {
-            return std::make_unique<ParseIntoWithIndex>(_container, _index, _member);
-        }
-
-
     private:
         std::vector<Element> Owner::* _container;
         size_t _index;
@@ -54,12 +47,12 @@ namespace aescript::impl {
 
     namespace properties {
         template<typename Owner, typename Element, typename Member>
-        ParserPtr parse_into_with_index(std::vector<Element> Owner::* container, size_t index, Member Element::* member) {
-            return std::make_unique<ParseIntoWithIndex<Owner, Element, Member>>(container, index, member);
+        Parser parse_into_with_index(std::vector<Element> Owner::* container, size_t index, Member Element::* member) {
+            return make_parser<ParseIntoWithIndex<Owner, Element, Member>>(container, index, member);
         }
 
         template<typename Owner, typename Element, typename Member>
-        ParserPtr parse_into_front(std::vector<Element> Owner::* container, Member Element::* member) {
+        Parser parse_into_front(std::vector<Element> Owner::* container, Member Element::* member) {
             return parse_into_with_index<Owner, Element, Member>(container, 0, member);
         }
     }

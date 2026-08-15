@@ -18,14 +18,7 @@ namespace aescript::impl {
 
         // Executors
 
-        [[nodiscard]]
         ers::Status verify(sol::table table) const override;
-
-
-        // Misc
-
-        [[nodiscard]]
-        DescriptorPtr clone() const override;
 
 
     private:
@@ -34,6 +27,6 @@ namespace aescript::impl {
 
 
     namespace properties {
-        DescriptorPtr one_of(std::initializer_list<std::string_view> il);
+        Descriptor one_of(std::initializer_list<std::string_view> il);
     }
 }

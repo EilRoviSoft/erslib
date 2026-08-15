@@ -11,7 +11,7 @@
 
 
 namespace aescript::impl {
-    using DescriptorPtr = std::unique_ptr<class IDescriptor>;
+    using Descriptor = std::polymorphic<class IDescriptor>;
 
     class IDescriptor {
     public:
@@ -24,13 +24,12 @@ namespace aescript::impl {
 
         // Executors
 
-        [[nodiscard]]
         virtual ers::Status verify(sol::table table) const = 0;
-
-
-        // Misc
-
-        [[nodiscard]]
-        virtual DescriptorPtr clone() const = 0;
     };
+
+
+    template<typename T, typename... Args>
+    Descriptor make_descriptor(Args&&... args) {
+        return Descriptor(std::in_place_type<T>, std::forward<Args>(args)...);
+    }
 }

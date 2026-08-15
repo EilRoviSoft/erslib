@@ -29,21 +29,17 @@ ers::Status aescript::impl::ExclusiveWithProperty::exec([[maybe_unused]] verify_
     return ers::ok;
 }
 
-aescript::impl::VerifierPtr aescript::impl::ExclusiveWithProperty::clone() const {
-    return std::make_unique<ExclusiveWithProperty>(_incompatible_fields);
-}
 
-
-aescript::impl::VerifierPtr aescript::impl::properties::exclusive_with(std::string_view field) {
+aescript::impl::Verifier aescript::impl::properties::exclusive_with(std::string_view field) {
     return exclusive_with({ field });
 }
 
-aescript::impl::VerifierPtr aescript::impl::properties::exclusive_with(std::initializer_list<std::string_view> il) {
+aescript::impl::Verifier aescript::impl::properties::exclusive_with(std::initializer_list<std::string_view> il) {
     std::vector<std::string> incompatible_fields;
 
     incompatible_fields.reserve(il.size());
     for (const auto& it : il)
         incompatible_fields.emplace_back(it);
 
-    return std::make_unique<ExclusiveWithProperty>(std::move(incompatible_fields));
+    return make_verifier<ExclusiveWithProperty>(std::move(incompatible_fields));
 }

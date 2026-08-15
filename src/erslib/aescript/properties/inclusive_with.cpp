@@ -29,21 +29,17 @@ ers::Status aescript::impl::InclusiveWithProperty::exec([[maybe_unused]] verify_
     return ers::ok;
 }
 
-aescript::impl::VerifierPtr aescript::impl::InclusiveWithProperty::clone() const {
-    return std::make_unique<InclusiveWithProperty>(_mandatory_fields);
-}
 
-
-aescript::impl::VerifierPtr aescript::impl::properties::inclusive_with(std::string_view field) {
+aescript::impl::Verifier aescript::impl::properties::inclusive_with(std::string_view field) {
     return inclusive_with({ field });
 }
 
-aescript::impl::VerifierPtr aescript::impl::properties::inclusive_with(std::initializer_list<std::string_view> il) {
+aescript::impl::Verifier aescript::impl::properties::inclusive_with(std::initializer_list<std::string_view> il) {
     std::vector<std::string> mandatory_fields;
 
     mandatory_fields.reserve(il.size());
     for (const auto& it : il)
         mandatory_fields.emplace_back(it);
 
-    return std::make_unique<InclusiveWithProperty>(std::move(mandatory_fields));
+    return make_verifier<InclusiveWithProperty>(std::move(mandatory_fields));
 }

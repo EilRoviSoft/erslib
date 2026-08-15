@@ -18,7 +18,7 @@
 namespace aescript::impl {
     class Layout {
     public:
-        using possible_property_t = std::variant<Field, DescriptorPtr>;
+        using possible_property_t = std::variant<Field, Descriptor>;
 
         // Member functions
 
@@ -30,7 +30,7 @@ namespace aescript::impl {
 
         void add_field(Field field);
 
-        void add_property(DescriptorPtr property);
+        void add_property(Descriptor property);
 
 
         // Accessors
@@ -57,7 +57,7 @@ namespace aescript::impl {
             ers::adaptor::member_equal<&Field::name>
         > _fields;
 
-        std::vector<DescriptorPtr> _descriptors;
+        std::vector<Descriptor> _descriptors;
     };
 
 

@@ -18,7 +18,7 @@
 
 namespace aescript::impl {
     class Field {
-        using storage_iterator = std::list<VerifierPtr>::const_iterator;
+        using storage_iterator = std::list<Verifier>::const_iterator;
 
 
     public:
@@ -40,8 +40,8 @@ namespace aescript::impl {
 
         // Modifiers
 
-        void add(VerifierPtr ptr);
-        void add(ParserPtr ptr);
+        void add(Verifier verifier);
+        void add(Parser parser);
 
 
         // Executors
@@ -57,10 +57,10 @@ namespace aescript::impl {
     private:
         std::string _name;
 
-        std::list<VerifierPtr> _verifiers;
+        std::list<Verifier> _verifiers;
         std::vector<storage_iterator> _verifiers_order;
 
-        std::list<ParserPtr> _parsers;
+        std::list<Parser> _parsers;
 
 
         void _copy_from(const Field& other);
@@ -71,10 +71,10 @@ namespace aescript::impl {
 // Operators
 
 namespace aescript::impl {
-    Field& operator|(Field& lhs, VerifierPtr rhs);
-    Field&& operator|(Field&& lhs, VerifierPtr rhs);
+    Field& operator|(Field& lhs, Verifier rhs);
+    Field&& operator|(Field&& lhs, Verifier rhs);
 
 
-    Field& operator|(Field& lhs, ParserPtr rhs);
-    Field&& operator|(Field&& lhs, ParserPtr rhs);
+    Field& operator|(Field& lhs, Parser rhs);
+    Field&& operator|(Field&& lhs, Parser rhs);
 }

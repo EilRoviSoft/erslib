@@ -22,8 +22,8 @@ aescript::impl::Field& aescript::impl::Field::operator=(const Field& other) {
 }
 
 
-void aescript::impl::Field::add(VerifierPtr ptr) {
-    _verifiers.emplace_front(std::move(ptr));
+void aescript::impl::Field::add(Verifier verifier) {
+    _verifiers.emplace_front(std::move(verifier));
 
     auto inorder_it = std::ranges::lower_bound(
         _verifiers_order,
@@ -34,8 +34,8 @@ void aescript::impl::Field::add(VerifierPtr ptr) {
 
     _verifiers_order.emplace(inorder_it, _verifiers.begin());
 }
-void aescript::impl::Field::add(ParserPtr ptr) {
-    _parsers.emplace_front(std::move(ptr));
+void aescript::impl::Field::add(Parser parser) {
+    _parsers.emplace_front(std::move(parser));
 }
 
 
@@ -75,30 +75,34 @@ ers::Status aescript::impl::Field::parse(sol::table table, void* where) const {
 void aescript::impl::Field::_copy_from(const Field& other) {
     _name = other._name;
 
+    _verifiers.clear();
+    _verifiers_order.clear();
+    _parsers.clear();
+
     for (const auto& it : other._verifiers)
-        add(it->clone());
+        add(it);
 
     for (const auto& it : other._parsers)
-        add(it->clone());
+        add(it);
 }
 
 
 // Operators
 
-aescript::impl::Field& aescript::impl::operator|(Field& lhs, VerifierPtr rhs) {
+aescript::impl::Field& aescript::impl::operator|(Field& lhs, Verifier rhs) {
     lhs.add(std::move(rhs));
     return lhs;
 }
-aescript::impl::Field&& aescript::impl::operator|(Field&& lhs, VerifierPtr rhs) {
+aescript::impl::Field&& aescript::impl::operator|(Field&& lhs, Verifier rhs) {
     lhs.add(std::move(rhs));
     return std::move(lhs);
 }
 
-aescript::impl::Field& aescript::impl::operator|(Field& lhs, ParserPtr rhs) {
+aescript::impl::Field& aescript::impl::operator|(Field& lhs, Parser rhs) {
     lhs.add(std::move(rhs));
     return lhs;
 }
-aescript::impl::Field&& aescript::impl::operator|(Field&& lhs, ParserPtr rhs) {
+aescript::impl::Field&& aescript::impl::operator|(Field&& lhs, Parser rhs) {
     lhs.add(std::move(rhs));
     return std::move(lhs);
 }

@@ -56,13 +56,13 @@ namespace aescript {
     using impl::parser_context;
 
     using impl::IVerifier;
-    using impl::VerifierPtr;
+    using impl::Verifier;
 
     using impl::IParser;
-    using impl::ParserPtr;
+    using impl::Parser;
 
     using impl::IDescriptor;
-    using impl::DescriptorPtr;
+    using impl::Descriptor;
 
     using impl::Field;
 

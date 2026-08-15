@@ -24,13 +24,6 @@ namespace aescript::impl {
         }
 
 
-        // Misc
-
-        ParserPtr clone() const override {
-            return std::make_unique<ParseIntoParser>(_member);
-        }
-
-
     private:
         Member Owner::* _member;
     };
@@ -38,8 +31,8 @@ namespace aescript::impl {
 
     namespace properties {
         template<typename Owner, typename Member>
-        ParserPtr parse_into(Member Owner::* dst) {
-            return std::make_unique<ParseIntoParser<Owner, Member>>(dst);
+        Parser parse_into(Member Owner::* dst) {
+            return make_parser<ParseIntoParser<Owner, Member>>(dst);
         }
     }
 }

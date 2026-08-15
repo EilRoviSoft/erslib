@@ -19,11 +19,7 @@ ers::Status aescript::impl::PresenceProperty::exec([[maybe_unused]] verify_conte
     return ers::ok;
 }
 
-aescript::impl::VerifierPtr aescript::impl::PresenceProperty::clone() const {
-    return std::make_unique<PresenceProperty>(_is_required);
-}
 
-
-aescript::impl::VerifierPtr aescript::impl::properties::presence(bool flag) {
-    return std::make_unique<PresenceProperty>(flag);
+aescript::impl::Verifier aescript::impl::properties::presence(bool flag) {
+    return make_verifier<PresenceProperty>(flag);
 }

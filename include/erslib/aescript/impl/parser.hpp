@@ -12,7 +12,7 @@
 
 
 namespace aescript::impl {
-    using ParserPtr = std::unique_ptr<class IParser>;
+    using Parser = std::polymorphic<class IParser>;
 
     class IParser {
     public:
@@ -24,15 +24,14 @@ namespace aescript::impl {
 
         // Checkers
 
-        [[nodiscard]]
         virtual ers::Status exec([[maybe_unused]] parser_context& ctx, sol::table table, std::string_view field, void* dst) const = 0;
-
-
-        // Misc
-
-        [[nodiscard]]
-        virtual ParserPtr clone() const = 0;
     };
+
+
+    template<typename T, typename... Args>
+    Parser make_parser(Args&&... args) {
+        return Parser(std::in_place_type<T>, std::forward<Args>(args)...);
+    }
 }
 
 

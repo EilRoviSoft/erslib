@@ -14,12 +14,7 @@ namespace aescript::impl {
 
         // Executors
 
-        [[nodiscard]]
         ers::Status exec([[maybe_unused]] verify_context& ctx, sol::table table, std::string_view field) const override;
-
-        // Misc
-
-        VerifierPtr clone() const override;
 
 
     private:
@@ -28,6 +23,6 @@ namespace aescript::impl {
 
 
     namespace properties {
-        VerifierPtr presence(bool flag);
+        Verifier presence(bool flag);
     }
 }

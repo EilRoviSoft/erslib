@@ -19,13 +19,7 @@ namespace aescript::impl {
 
         // Executors
 
-        [[nodiscard]]
         ers::Status exec([[maybe_unused]] verify_context& ctx, sol::table table, std::string_view field) const override;
-
-
-        // Misc
-
-        VerifierPtr clone() const override;
 
 
     private:
@@ -34,7 +28,7 @@ namespace aescript::impl {
 
 
     namespace properties {
-        VerifierPtr exclusive_with(std::string_view field);
-        VerifierPtr exclusive_with(std::initializer_list<std::string_view> il);
+        Verifier exclusive_with(std::string_view field);
+        Verifier exclusive_with(std::initializer_list<std::string_view> il);
     }
 }
