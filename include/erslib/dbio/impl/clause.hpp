@@ -2,7 +2,6 @@
 
 // std
 #include <memory>
-#include <vector>
 
 // ers
 #include <erslib/core/type/result.hpp>
@@ -14,8 +13,7 @@
 
 
 namespace dbio::impl {
-    using ClausePtr = std::polymorphic<class IClause>;
-    using ClauseList = std::vector<ClausePtr>;
+    using Clause = std::polymorphic<class IClause>;
 
     class ERSLIB_EXPORT IClause {
     public:
@@ -44,7 +42,7 @@ namespace dbio::impl {
 
 
     template<typename T, typename... Args>
-    ClausePtr make_clause(Args&&... args) {
-        return ClausePtr(std::in_place_type<T>, std::forward<Args>(args)...);
+    Clause make_clause(Args&&... args) {
+        return Clause(std::in_place_type<T>, std::forward<Args>(args)...);
     }
 }

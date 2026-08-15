@@ -29,7 +29,7 @@ namespace dbio::impl {
 
 
     namespace clauses {
-        ClausePtr with_limit(int64_t amount);
-        ClausePtr with_offset(int64_t amount);
+        Clause with_limit(int64_t amount);
+        Clause with_offset(int64_t amount);
     }
 }

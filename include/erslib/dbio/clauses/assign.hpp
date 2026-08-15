@@ -32,10 +32,10 @@ namespace dbio::impl {
 
     namespace clauses {
         template<typename T>
-        ClausePtr assign(std::string column, T&& value) {
+        Clause assign(std::string column, T&& value) {
             return make_clause<AssignClause>(std::move(column), make_binder(std::forward<T>(value)));
         }
 
-        ClausePtr assign_null(std::string column);
+        Clause assign_null(std::string column);
     }
 }

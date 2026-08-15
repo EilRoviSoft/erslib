@@ -31,21 +31,21 @@ namespace dbio::impl {
 
 
     namespace clauses {
-        ClausePtr identifier(SlotRef slot, std::string name);
+        Clause identifier(SlotRef slot, std::string name);
 
 
-        ClausePtr column(std::string name);
+        Clause column(std::string name);
 
         template<typename... Args>
             requires (std::convertible_to<Args, std::string> && ...)
-        ClauseList columns(Args&&... args) {
-            ClauseList out;
+        auto columns(Args&&... args) {
+            std::vector<Clause> out;
             out.reserve(sizeof...(Args));
             (out.emplace_back(column(std::forward<Args>(args))), ...);
             return out;
         }
 
 
-        ClausePtr from(std::string name);
+        Clause from(std::string name);
     }
 }

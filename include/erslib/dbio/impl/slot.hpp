@@ -17,7 +17,7 @@ namespace dbio::impl {
         Single, Multi
     };
 
-    using slot_renderer_t = ers::Status(*)(Context&, std::span<const ClausePtr* const>);
+    using slot_renderer_t = ers::Status(*)(Context&, std::span<const Clause* const>);
 
 
     using SlotRef = const struct Slot*;

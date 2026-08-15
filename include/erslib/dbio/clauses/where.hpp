@@ -70,13 +70,13 @@ namespace dbio::impl {
 
     namespace clauses {
         template<typename T>
-        ClausePtr where(std::string column, Op op, T&& value) {
+        Clause where(std::string column, Op op, T&& value) {
             return make_clause<WhereOpClause>(std::move(column), op, make_binder(std::forward<T>(value)));
         }
 
         template<typename T>
             requires (!std::same_as<std::remove_cvref_t<T>, Op>)
-        ClausePtr where(std::string column, T&& value) {
+        Clause where(std::string column, T&& value) {
             return where(std::move(column), Op::Eq, std::forward<T>(value));
         }
     }
@@ -107,7 +107,7 @@ namespace dbio::impl {
 
     namespace clauses {
         template<std::ranges::input_range R>
-        ClausePtr where_in(std::string column, R&& values, bool negated = false) {
+        Clause where_in(std::string column, R&& values, bool negated = false) {
             std::vector<binder_t> binders;
 
             if constexpr (std::ranges::sized_range<R>)
@@ -120,7 +120,7 @@ namespace dbio::impl {
         }
 
         template<typename T>
-        ClausePtr where_in(std::string column, std::initializer_list<T> values, bool negated = false) {
+        Clause where_in(std::string column, std::initializer_list<T> values, bool negated = false) {
             return where_in<std::initializer_list<T>>(std::move(column), values, negated);
         }
     }
@@ -149,6 +149,6 @@ namespace dbio::impl {
 
 
     namespace clauses {
-        ClausePtr where_null(std::string column, bool is_null = true);
+        Clause where_null(std::string column, bool is_null = true);
     }
 }

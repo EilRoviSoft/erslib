@@ -36,7 +36,7 @@ namespace dbio::impl {
 
     namespace clauses {
         template<typename... Args>
-        ClausePtr raw(SlotRef slot, std::string sql, Args&&... args) {
+        Clause raw(SlotRef slot, std::string sql, Args&&... args) {
             std::vector<binder_t> binders;
             binders.reserve(sizeof...(Args));
             (binders.emplace_back(make_binder(std::forward<Args>(args))), ...);

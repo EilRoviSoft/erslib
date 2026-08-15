@@ -7,5 +7,5 @@
 namespace dbio::impl {
     class IClause;
 
-    using ClausePtr = std::polymorphic<IClause>;
+    using Clause = std::polymorphic<IClause>;
 }

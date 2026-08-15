@@ -35,7 +35,7 @@ namespace dbio::impl {
 
 
     namespace clauses {
-        ClausePtr order_by(std::string column, Order order = Order::Asc);
-        ClausePtr order_by_random();
+        Clause order_by(std::string column, Order order = Order::Asc);
+        Clause order_by_random();
     }
 }

@@ -29,10 +29,10 @@ ers::Status dbio::impl::OrderClause::render(Context& ctx) const {
 
 // Shortcuts
 
-dbio::impl::ClausePtr dbio::impl::clauses::order_by(std::string column, Order order) {
+dbio::impl::Clause dbio::impl::clauses::order_by(std::string column, Order order) {
     return make_clause<OrderClause>(std::move(column), order);
 }
 
-dbio::impl::ClausePtr dbio::impl::clauses::order_by_random() {
+dbio::impl::Clause dbio::impl::clauses::order_by_random() {
     return raw(&slots::order, "RANDOM()");
 }

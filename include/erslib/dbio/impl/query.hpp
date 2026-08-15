@@ -34,8 +34,8 @@ namespace dbio::impl {
 
         // Modifiers
 
-        void add(ClausePtr clause);
-        void add(ClauseList clauses);
+        void add(Clause clause);
+        void add(std::vector<Clause> clauses);
 
 
         ers::Status build(Context& ctx) const;
@@ -75,7 +75,7 @@ namespace dbio::impl {
 
     private:
         Layout _layout;
-        ClauseList _clauses;
+        std::vector<Clause> _clauses;
 
 
         ers::Status _render_slot(Context& ctx, const SlotBinding& binding) const;
@@ -90,11 +90,11 @@ namespace dbio::impl {
 // Operators
 
 namespace dbio::impl {
-    Query& operator|(Query& lhs, ClausePtr rhs);
-    Query&& operator|(Query&& lhs, ClausePtr rhs);
-    Query& operator|=(Query& lhs, ClausePtr rhs);
+    Query& operator|(Query& lhs, Clause rhs);
+    Query&& operator|(Query&& lhs, Clause rhs);
+    Query& operator|=(Query& lhs, Clause rhs);
 
-    Query& operator|(Query& lhs, ClauseList rhs);
-    Query&& operator|(Query&& lhs, ClauseList rhs);
-    Query& operator|=(Query& lhs, ClauseList rhs);
+    Query& operator|(Query& lhs, std::vector<Clause> rhs);
+    Query&& operator|(Query&& lhs, std::vector<Clause> rhs);
+    Query& operator|=(Query& lhs, std::vector<Clause> rhs);
 }

@@ -9,9 +9,9 @@
 
 // Modifiers
 
-void dbio::impl::Query::add(ClausePtr clause) {
+void dbio::impl::Query::add(Clause clause) {
     if (clause->slot()->arity == Arity::Single) {
-        std::erase_if(_clauses, [&](const ClausePtr& it) {
+        std::erase_if(_clauses, [&](const Clause& it) {
             return same_slot(it->slot(), clause->slot());
         });
     }
@@ -19,7 +19,7 @@ void dbio::impl::Query::add(ClausePtr clause) {
     _clauses.emplace_back(std::move(clause));
 }
 
-void dbio::impl::Query::add(ClauseList clauses) {
+void dbio::impl::Query::add(std::vector<Clause> clauses) {
     for (auto& it : clauses)
         add(std::move(it));
 }
@@ -67,7 +67,7 @@ ers::Status dbio::impl::Query::_render_slot(Context& ctx, const SlotBinding& bin
 }
 
 ers::Status dbio::impl::Query::_render_custom(Context& ctx, const SlotBinding& binding) const {
-    std::vector<const ClausePtr*> group;
+    std::vector<const Clause*> group;
 
     for (const auto& it : _clauses) {
         if (same_slot(it->slot(), binding.slot))
@@ -133,30 +133,30 @@ ers::Status dbio::impl::Query::exec_and_discard(pqxx::dbtransaction& tx) const {
 
 // Operators
 
-dbio::impl::Query& dbio::impl::operator|(Query& lhs, ClausePtr rhs) {
+dbio::impl::Query& dbio::impl::operator|(Query& lhs, Clause rhs) {
     lhs.add(std::move(rhs));
     return lhs;
 }
 
-dbio::impl::Query&& dbio::impl::operator|(Query&& lhs, ClausePtr rhs) {
+dbio::impl::Query&& dbio::impl::operator|(Query&& lhs, Clause rhs) {
     lhs.add(std::move(rhs));
     return std::move(lhs);
 }
 
-dbio::impl::Query& dbio::impl::operator|=(Query& lhs, ClausePtr rhs) {
+dbio::impl::Query& dbio::impl::operator|=(Query& lhs, Clause rhs) {
     return lhs | std::move(rhs);
 }
 
-dbio::impl::Query& dbio::impl::operator|(Query& lhs, ClauseList rhs) {
+dbio::impl::Query& dbio::impl::operator|(Query& lhs, std::vector<Clause> rhs) {
     lhs.add(std::move(rhs));
     return lhs;
 }
 
-dbio::impl::Query&& dbio::impl::operator|(Query&& lhs, ClauseList rhs) {
+dbio::impl::Query&& dbio::impl::operator|(Query&& lhs, std::vector<Clause> rhs) {
     lhs.add(std::move(rhs));
     return std::move(lhs);
 }
 
-dbio::impl::Query& dbio::impl::operator|=(Query& lhs, ClauseList rhs) {
+dbio::impl::Query& dbio::impl::operator|=(Query& lhs, std::vector<Clause> rhs) {
     return lhs | std::move(rhs);
 }

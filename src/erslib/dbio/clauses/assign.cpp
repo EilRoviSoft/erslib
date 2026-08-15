@@ -28,6 +28,6 @@ ers::Status dbio::impl::AssignClause::render(Context& ctx) const {
 
 // Shortcuts
 
-dbio::impl::ClausePtr dbio::impl::clauses::assign_null(std::string column) {
+dbio::impl::Clause dbio::impl::clauses::assign_null(std::string column) {
     return make_clause<AssignClause>(std::move(column), binder_t {});
 }

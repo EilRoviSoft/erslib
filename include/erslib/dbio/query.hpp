@@ -68,9 +68,8 @@ namespace dbio {
     using impl::SlotRef;
     using impl::SlotBinding;
 
-    using impl::ClauseList;
-    using impl::ClausePtr;
     using impl::IClause;
+    using impl::Clause;
 }
 
 namespace dbio {

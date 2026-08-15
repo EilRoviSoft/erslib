@@ -137,6 +137,6 @@ ers::Status dbio::impl::WhereNullClause::render(Context& ctx) const {
 
 // Shortcuts
 
-dbio::impl::ClausePtr dbio::impl::clauses::where_null(std::string column, bool is_null) {
+dbio::impl::Clause dbio::impl::clauses::where_null(std::string column, bool is_null) {
     return make_clause<WhereNullClause>(std::move(column), is_null);
 }

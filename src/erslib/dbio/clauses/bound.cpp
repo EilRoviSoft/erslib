@@ -22,10 +22,10 @@ ers::Status dbio::impl::BoundClause::render(Context& ctx) const {
 
 // Shortcuts
 
-dbio::impl::ClausePtr dbio::impl::clauses::with_limit(int64_t amount) {
+dbio::impl::Clause dbio::impl::clauses::with_limit(int64_t amount) {
     return make_clause<BoundClause>(&slots::limit, amount);
 }
 
-dbio::impl::ClausePtr dbio::impl::clauses::with_offset(int64_t amount) {
+dbio::impl::Clause dbio::impl::clauses::with_offset(int64_t amount) {
     return make_clause<BoundClause>(&slots::offset, amount);
 }
