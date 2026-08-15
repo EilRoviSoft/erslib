@@ -10,3 +10,10 @@ namespace dbio::impl::slots {
         .arity = Arity::Single,
     };
 }
+
+namespace dbio::impl::bindings {
+    inline constexpr SlotBinding limit {
+        .slot   = &slots::limit,
+        .prefix = "\nLIMIT "
+    };
+}

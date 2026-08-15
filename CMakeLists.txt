@@ -230,6 +230,7 @@ if(ERSLIB_BUILD_DBIO)
             "src/erslib/dbio/clauses/bound.cpp"
             "src/erslib/dbio/clauses/order.cpp"
             "src/erslib/dbio/clauses/raw.cpp"
+            "src/erslib/dbio/clauses/returning.cpp"
             "src/erslib/dbio/clauses/target.cpp"
             "src/erslib/dbio/clauses/values.cpp"
             "src/erslib/dbio/clauses/where.cpp"

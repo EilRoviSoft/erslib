@@ -4,34 +4,24 @@
 #include <erslib/dbio/clauses/assign.hpp>
 #include <erslib/dbio/clauses/target.hpp>
 #include <erslib/dbio/clauses/where.hpp>
+#include <erslib/dbio/slots/returning.hpp>
 #include <erslib/dbio/slots/set.hpp>
 #include <erslib/dbio/slots/where.hpp>
-
-
-using namespace dbio::impl;
 
 
 // Impl
 
 namespace {
     ////&slots::from,
-    ////&slots::returning
 
-    constexpr SlotBinding update_layout[] = {
+    constexpr dbio::impl::SlotBinding update_layout[] = {
         {
-            .slot   = &slots::update,
+            .slot   = &dbio::impl::slots::update,
             .prefix = "UPDATE "
         },
-        {
-            .slot      = &slots::set,
-            .prefix    = "\nSET ",
-            .separator = ", "
-        },
-        {
-            .slot      = &slots::where,
-            .prefix    = "\nWHERE ",
-            .separator = " AND "
-        },
+        dbio::impl::bindings::set,
+        dbio::impl::bindings::where,
+        dbio::impl::bindings::returning,
     };
 }
 

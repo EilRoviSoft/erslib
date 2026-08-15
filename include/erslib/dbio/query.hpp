@@ -49,6 +49,7 @@ namespace dbio {
     namespace clauses = impl::clauses;
     namespace layouts = impl::layouts;
     namespace slots = impl::slots;
+    namespace bindings = impl::bindings;
 }
 
 namespace dbio {

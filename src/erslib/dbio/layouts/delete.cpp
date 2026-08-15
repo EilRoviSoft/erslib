@@ -3,6 +3,7 @@
 // ers
 #include <erslib/dbio/clauses/target.hpp>
 #include <erslib/dbio/clauses/where.hpp>
+#include <erslib/dbio/slots/returning.hpp>
 #include <erslib/dbio/slots/where.hpp>
 
 
@@ -13,18 +14,14 @@ using namespace dbio::impl;
 
 namespace {
     ////&slots::using,
-    ////&slots::returning
 
     constexpr SlotBinding delete_layout[] = {
         {
             .slot   = &slots::delete_from,
             .prefix = "DELETE FROM "
         },
-        {
-            .slot      = &slots::where,
-            .prefix    = "\nWHERE ",
-            .separator = " AND "
-        },
+        bindings::where,
+        bindings::returning,
     };
 }
 

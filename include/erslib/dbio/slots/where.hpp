@@ -10,3 +10,11 @@ namespace dbio::impl::slots {
         .arity = Arity::Multi,
     };
 }
+
+namespace dbio::impl::bindings {
+    inline constexpr SlotBinding where {
+        .slot      = &slots::where,
+        .prefix    = "\nWHERE ",
+        .separator = " AND "
+    };
+}

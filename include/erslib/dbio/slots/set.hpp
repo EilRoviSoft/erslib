@@ -10,3 +10,11 @@ namespace dbio::impl::slots {
         .arity = Arity::Multi,
     };
 }
+
+namespace dbio::impl::bindings {
+    inline constexpr SlotBinding set {
+        .slot      = &slots::set,
+        .prefix    = "\nSET ",
+        .separator = ", "
+    };
+}

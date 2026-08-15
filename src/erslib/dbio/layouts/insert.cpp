@@ -7,36 +7,28 @@
 #include <erslib/dbio/slots/values.hpp>
 
 
-using namespace dbio::impl;
-
-
 // Impl
 
 namespace {
-    constexpr SlotBinding insert_layout[] = {
+    constexpr dbio::impl::SlotBinding insert_layout[] = {
         {
-            .slot   = &slots::insert_into,
+            .slot   = &dbio::impl::slots::insert_into,
             .prefix = "INSERT INTO "
         },
         {
-            .slot      = &slots::column,
+            .slot      = &dbio::impl::slots::column,
             .prefix    = " (",
             .separator = ", ",
             .suffix    = ")"
         },
-        {
-            .slot      = &slots::values,
-            .prefix    = "\nVALUES (",
-            .separator = "), (",
-            .suffix    = ")"
-        },
+        dbio::impl::bindings::values,
     };
 }
 
 
 // Public API
 
-Query layouts::insert_into(std::string table) {
+dbio::impl::Query dbio::impl::layouts::insert_into(std::string table) {
     Query q(insert_layout);
     q |= clauses::identifier(&slots::insert_into, std::move(table));
     return q;

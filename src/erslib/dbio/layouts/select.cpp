@@ -13,9 +13,6 @@
 #include <erslib/dbio/slots/where.hpp>
 
 
-using namespace dbio::impl;
-
-
 // Impl
 
 namespace {
@@ -25,43 +22,25 @@ namespace {
     ////&slots::window,
     ////&slots::locking
 
-    constexpr SlotBinding select_layout[] = {
+    constexpr dbio::impl::SlotBinding select_layout[] = {
         {
-            .slot      = &slots::column,
+            .slot      = &dbio::impl::slots::column,
             .prefix    = "SELECT ",
             .separator = ", ",
             .fallback  = "*"
         },
-        {
-            .slot      = &slots::from,
-            .prefix    = "\nFROM ",
-            .separator = ", "
-        },
-        {
-            .slot      = &slots::where,
-            .prefix    = "\nWHERE ",
-            .separator = " AND "
-        },
-        {
-            .slot      = &slots::order,
-            .prefix    = "\nORDER BY ",
-            .separator = ", "
-        },
-        {
-            .slot   = &slots::limit,
-            .prefix = "\nLIMIT "
-        },
-        {
-            .slot   = &slots::offset,
-            .prefix = "\nOFFSET "
-        },
+        dbio::impl::bindings::from,
+        dbio::impl::bindings::where,
+        dbio::impl::bindings::order,
+        dbio::impl::bindings::limit,
+        dbio::impl::bindings::offset,
     };
 }
 
 
 // Public API
 
-Query layouts::select_from(std::string table) {
+dbio::impl::Query dbio::impl::layouts::select_from(std::string table) {
     Query q(select_layout);
     q |= clauses::from(std::move(table));
     return q;
