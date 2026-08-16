@@ -30,6 +30,19 @@ namespace ers::impl {
         constexpr std::string_view to_sv() const noexcept {
             return { value, size() };
         }
+
+
+        constexpr size_t length() const noexcept {
+            size_t result = 0;
+            while (result < N && value[result] != '\0')
+                result++;
+
+            return result;
+        }
+
+        constexpr std::string_view view() const noexcept {
+            return { value, length() };
+        }
     };
 
     template <size_t N>

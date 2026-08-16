@@ -2,8 +2,10 @@
 
 // std
 #include <concepts>
+#include <ranges>
 #include <string>
 #include <utility>
+#include <vector>
 
 // ers
 #include <erslib/dbio/impl/clause.hpp>
@@ -42,6 +44,20 @@ namespace dbio::impl {
             std::vector<Clause> out;
             out.reserve(sizeof...(Args));
             (out.emplace_back(column(std::forward<Args>(args))), ...);
+            return out;
+        }
+
+        template<std::ranges::input_range R>
+            requires std::constructible_from<std::string, std::ranges::range_reference_t<R>>
+        auto columns(R&& names) {
+            std::vector<Clause> out;
+
+            if constexpr (std::ranges::sized_range<R>)
+                out.reserve(std::ranges::size(names));
+
+            for (auto&& it : names)
+                out.emplace_back(column(std::string(std::forward<decltype(it)>(it))));
+
             return out;
         }
 

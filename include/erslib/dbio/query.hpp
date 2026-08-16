@@ -20,8 +20,10 @@
 
 #include <erslib/dbio/clauses/assign.hpp>
 #include <erslib/dbio/clauses/bound.hpp>
+#include <erslib/dbio/clauses/conflict.hpp>
 #include <erslib/dbio/clauses/order.hpp>
 #include <erslib/dbio/clauses/raw.hpp>
+#include <erslib/dbio/clauses/returning.hpp>
 #include <erslib/dbio/clauses/target.hpp>
 #include <erslib/dbio/clauses/values.hpp>
 #include <erslib/dbio/clauses/where.hpp>
@@ -34,10 +36,12 @@
 
 // Slots
 #include <erslib/dbio/slots/column.hpp>
+#include <erslib/dbio/slots/conflict.hpp>
 #include <erslib/dbio/slots/from.hpp>
 #include <erslib/dbio/slots/limit.hpp>
 #include <erslib/dbio/slots/offset.hpp>
 #include <erslib/dbio/slots/order.hpp>
+#include <erslib/dbio/slots/returning.hpp>
 #include <erslib/dbio/slots/set.hpp>
 #include <erslib/dbio/slots/values.hpp>
 #include <erslib/dbio/slots/where.hpp>

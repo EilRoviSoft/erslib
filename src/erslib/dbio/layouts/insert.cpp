@@ -1,9 +1,12 @@
 #include "erslib/dbio/layouts/insert.hpp"
 
 // ers
+#include <erslib/dbio/clauses/conflict.hpp>
 #include <erslib/dbio/clauses/target.hpp>
 #include <erslib/dbio/clauses/values.hpp>
 #include <erslib/dbio/slots/column.hpp>
+#include <erslib/dbio/slots/conflict.hpp>
+#include <erslib/dbio/slots/returning.hpp>
 #include <erslib/dbio/slots/values.hpp>
 
 
@@ -22,6 +25,9 @@ namespace {
             .suffix    = ")"
         },
         dbio::impl::bindings::values,
+        dbio::impl::bindings::conflict,
+        dbio::impl::bindings::conflict_action,
+        dbio::impl::bindings::returning,
     };
 }
 
