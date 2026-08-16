@@ -70,8 +70,6 @@ TEST_CASE("dbio reflect: definition shape") {
     CHECK(column_names<Item>().size() == 6);
     CHECK(primary_key<Item>().size() == 1);
     CHECK(std::string_view(primary_key<Item>().front()) == "id");
-
-    // Metadata members and Skip never become columns.
     CHECK(std::string_view(column_names<Item>()[4]) == "amount");
     CHECK(std::string_view(column_names<Item>()[5]) == "note");
     static_assert(unique_count<Item>() == 1);
