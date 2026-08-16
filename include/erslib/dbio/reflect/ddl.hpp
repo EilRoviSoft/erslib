@@ -57,7 +57,7 @@ namespace dbio::impl {
             if constexpr (is_identity<m, T>())
                 out += " GENERATED ALWAYS AS IDENTITY";
 
-            if constexpr (has<NotNull>(m))
+            if constexpr (!is_nullable_column<m>() && !is_identity<m, T>())
                 out += " NOT NULL";
 
             if constexpr (has_text<m, Default>()) {
@@ -86,18 +86,13 @@ namespace dbio::impl {
                 constexpr auto type = std::meta::remove_cv(std::meta::type_of(a));
 
                 if constexpr (std::meta::has_template_arguments(type) && std::meta::template_of(type) == ^^Fk) {
-                    using target = typename [:type:]::target;
-
                     out += "    FOREIGN KEY (";
                     out += column_name<m>();
                     out += ") REFERENCES ";
-                    out += table_name<target>();
+                    out += table_name<typename [:type:]::target>();
                     out += " (";
 
-                    if constexpr ([:type:]::column.empty())
-                        out += primary_key<target>().front();
-                    else
-                        out += [:type:]::column;
+                    out += [:type:]::column;
 
                     out += ')';
                     out += on_delete_text([:type:]::on_delete);

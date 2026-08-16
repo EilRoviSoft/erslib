@@ -32,31 +32,10 @@ namespace dbio::impl {
 }
 
 
-// Statements
-
-namespace dbio::impl::statement {
-    struct SelectAll {};
-    struct Save {};
-    struct Update {};
-    struct Delete {};
-
-    template<ers::fixed_string... Fields>
-    struct LoadBy {
-        static constexpr std::array<std::string_view, sizeof...(Fields)> fields { Fields.to_sv()... };
-    };
-
-    template<ers::fixed_string... Fields>
-    struct DeleteBy {
-        static constexpr std::array<std::string_view, sizeof...(Fields)> fields { Fields.to_sv()... };
-    };
-}
-
 
 // Exports
 
 namespace dbio::reflect {
     using impl::Table;
     using impl::Unique;
-
-    namespace statement = impl::statement;
 }

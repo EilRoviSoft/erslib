@@ -21,7 +21,7 @@ namespace ers::impl::util {
 
     template<fixed_string... Args>
 	constexpr auto concat_literals() {
-        fixed_string<(Args.size() + ...)> result;
+        fixed_string<(Args.size() + ...) + 1> result;
         size_t ptr = 0;
 
 
@@ -32,7 +32,7 @@ namespace ers::impl::util {
         };
 
         (append(Args), ...);
-
+        result.value[ptr] = '\0';
 
         return result;
     }

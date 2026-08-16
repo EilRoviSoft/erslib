@@ -24,8 +24,7 @@ namespace dbio::impl {
         NoAction, Cascade, SetNull, Restrict
     };
 
-    // Column defaults to the referenced entity's primary key.
-    template<typename Ref, ers::fixed_string Column = "", OnDelete Action = OnDelete::NoAction>
+    template<typename Ref, ers::fixed_string Column, OnDelete Action = OnDelete::NoAction>
     struct Fk {
         using target = Ref;
 
@@ -46,7 +45,9 @@ namespace dbio::impl {
     struct Default : TextTag<Value> {};
 
 
-    struct NotNull {};
+    // Columns are NOT NULL unless the type is nullable or this is present.
+    struct Nullable {};
+
     struct Identity {};
 
     // In the definition, not in the table.
@@ -66,7 +67,7 @@ namespace dbio::reflect {
     using impl::Name;
     using impl::Default;
 
-    using impl::NotNull;
+    using impl::Nullable;
     using impl::Identity;
     using impl::Skip;
 }
