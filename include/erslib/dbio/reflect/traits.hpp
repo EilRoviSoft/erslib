@@ -83,8 +83,8 @@ namespace dbio::impl {
     consteval std::vector<std::meta::info> columns() {
         std::vector<std::meta::info> out;
 
-        for (const auto it : nonstatic_data_members_of(^^dbio::Definition<T>,
-                std::meta::access_context::current()))
+        for (const auto it : nonstatic_data_members_of(^^Definition<T>,
+                 std::meta::access_context::current()))
             if (!is_metadata(it) && !has<Skip>(it))
                 out.emplace_back(it);
 
@@ -99,7 +99,7 @@ namespace dbio::impl {
     template<typename T>
     consteval std::string_view table_name() {
         template for (constexpr auto it : std::define_static_array(
-            std::meta::bases_of(^^dbio::Definition<T>, std::meta::access_context::current()))) {
+            std::meta::bases_of(^^Definition<T>, std::meta::access_context::current()))) {
             constexpr auto type = std::meta::dealias(std::meta::type_of(it));
 
             if constexpr (std::meta::has_template_arguments(type) && std::meta::template_of(type) == ^^Table)
@@ -191,7 +191,7 @@ namespace dbio::impl {
         std::vector<std::vector<const char*>> out;
 
         template for (constexpr auto it : std::define_static_array(
-                nonstatic_data_members_of(^^dbio::Definition<T>, std::meta::access_context::current()))) {
+            nonstatic_data_members_of(^^Definition<T>, std::meta::access_context::current()))) {
             constexpr auto type = std::meta::dealias(std::meta::type_of(it));
 
             if constexpr (std::meta::has_template_arguments(type) && std::meta::template_of(type) == ^^Unique) {
@@ -216,30 +216,4 @@ namespace dbio::impl {
     consteval size_t unique_count() {
         return unique_groups<T>().size();
     }
-}
-
-
-
-// Exports
-
-namespace dbio::reflect {
-    using impl::Entity;
-
-    using impl::has;
-    using impl::has_text;
-    using impl::text_of;
-
-    using impl::columns;
-    using impl::entity_members;
-    using impl::column_count;
-    using impl::unique_count;
-    using impl::column_names;
-    using impl::column_name;
-    using impl::sql_type_of;
-    using impl::is_nullable_column;
-
-    using impl::table_name;
-    using impl::primary_key;
-    using impl::unique_groups;
-
 }

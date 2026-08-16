@@ -9,7 +9,7 @@
 #include <erslib/core/type/fixed_string.hpp>
 
 
-namespace dbio {
+namespace dbio::impl {
     // Specialized per entity. Non-static members are columns; everything else is
     // metadata, and the table identity comes from the Table base.
     template<typename T>
@@ -29,13 +29,4 @@ namespace dbio::impl {
     struct Unique {
         static constexpr std::array<std::string_view, sizeof...(Fields)> fields { Fields.to_sv()... };
     };
-}
-
-
-
-// Exports
-
-namespace dbio::reflect {
-    using impl::Table;
-    using impl::Unique;
 }

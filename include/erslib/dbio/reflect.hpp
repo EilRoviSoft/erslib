@@ -10,25 +10,17 @@
 #include <erslib/dbio/reflect/annotations.hpp>
 
 namespace dbio::reflect {
-    using impl::Statement;
     using impl::OnDelete;
 
-    using impl::Table;
-    using impl::PrimaryKey;
-    using impl::Unique;
-    using impl::LayoutTag;
-    using impl::ForeignKey;
+    using impl::Pk;
+    using impl::Fk;
 
     using impl::Column;
     using impl::Name;
     using impl::Default;
 
-    using impl::InTag;
-    using impl::OutTag;
-    using impl::KeyTag;
-
+    using impl::Nullable;
     using impl::Identity;
-    using impl::NotNull;
     using impl::Skip;
 }
 
@@ -42,17 +34,23 @@ namespace dbio::ddl {
 }
 
 
-// Query
+// Definition
 
-#include <erslib/dbio/reflect/query.hpp>
+#include <erslib/dbio/reflect/definition.hpp>
 
 namespace dbio::reflect {
-    using impl::build_sql;
-    using impl::sql;
+    using impl::Table;
+    using impl::Unique;
+    using impl::Definition;
+}
 
-    using impl::bind_params;
-    using impl::params_of;
-    using impl::load_row;
+
+// Entity
+
+#include <erslib/dbio/reflect/entity.hpp>
+
+namespace dbio::reflect {
+    using impl::entity_specs;
 }
 
 
@@ -68,28 +66,20 @@ namespace dbio::reflect {
 namespace dbio::reflect {
     using impl::Entity;
 
-    using impl::all_members;
-    using impl::persisted;
-
     using impl::has;
     using impl::has_text;
     using impl::text_of;
-    using impl::list_of;
-    using impl::groups_of;
-    using impl::list_contains;
 
-    using impl::table_name;
+    using impl::columns;
+    using impl::entity_members;
+    using impl::column_count;
+    using impl::unique_count;
+    using impl::column_names;
     using impl::column_name;
     using impl::sql_type_of;
+    using impl::is_nullable_column;
 
-    using impl::column_names;
-    using impl::columns_of;
-    using impl::has_layout;
-
-    using impl::declares_layout;
-    using impl::statement_of;
-
+    using impl::table_name;
     using impl::primary_key;
-    using impl::conflict_target;
-    using impl::upsert_updates;
+    using impl::unique_groups;
 }

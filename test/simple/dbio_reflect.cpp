@@ -9,13 +9,13 @@
 #include <string>
 
 // ers
-#include <erslib/dbio/reflect/ddl.hpp>
-#include <erslib/dbio/reflect/entity.hpp>
+#include <erslib/dbio/reflect.hpp>
+
+
+using namespace dbio::reflect;
 
 
 namespace {
-    using namespace dbio::reflect;
-
     struct Product;
     struct Item;
 
@@ -30,14 +30,14 @@ struct dbio::reflect::sql_type_traits<Money> {
 };
 
 template<>
-struct dbio::Definition<Product> : Table<"products"> {
+struct dbio::reflect::Definition<Product> : Table<"products"> {
     [[= Pk()]]
     uint32_t id;
     std::string title;
 };
 
 template<>
-struct dbio::Definition<Item> : Table<"items"> {
+struct dbio::reflect::Definition<Item> : Table<"items"> {
     [[= Pk()]]
     uint32_t id;
 
@@ -60,9 +60,10 @@ struct dbio::Definition<Item> : Table<"items"> {
     Unique<"product_id", "color", "size"> sku;
 };
 
-ERS_DBIO_ENTITY(Product);
-consteval { std::meta::define_aggregate(^^Item, dbio::reflect::entity_specs<Item>()); }
-static_assert(dbio::reflect::Entity<Item>);
+namespace {
+    ERS_DBIO_ENTITY(Product);
+    ERS_DBIO_ENTITY(Item);
+}
 
 
 TEST_CASE("dbio reflect: definition shape") {
@@ -85,8 +86,7 @@ TEST_CASE("dbio reflect: ddl") {
     CHECK(text.find("color TEXT NOT NULL") != std::string_view::npos);
     CHECK(text.find("PRIMARY KEY (id)") != std::string_view::npos);
     CHECK(text.find("UNIQUE (product_id, color, size)") != std::string_view::npos);
-    CHECK(text.find("FOREIGN KEY (product_id) REFERENCES products (id) ON DELETE CASCADE")
-        != std::string_view::npos);
+    CHECK(text.find("FOREIGN KEY (product_id) REFERENCES products (id) ON DELETE CASCADE") != std::string_view::npos);
     CHECK(text.find("cache") == std::string_view::npos);
 }
 

@@ -109,10 +109,3 @@ namespace dbio::impl {
         return std::define_static_string(out);
     }
 }
-
-
-// Exports
-
-namespace dbio::ddl {
-    using impl::create_table;
-}

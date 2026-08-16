@@ -25,14 +25,6 @@ namespace dbio::impl {
     }
 }
 
-
-// Exports
-
-namespace dbio::reflect {
-    using impl::entity_specs;
-}
-
-
 // Declares the entity's members from Definition<Type>.
 #define ERS_DBIO_ENTITY(Type)                                                      \
     consteval {                                                                    \
