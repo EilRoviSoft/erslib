@@ -3,12 +3,21 @@
 
 // Includes
 
+#include <erslib/core/meta/enum.hpp>
 #include <erslib/core/meta/type_hash.hpp>
 #include <erslib/core/meta/type_literal.hpp>
 #include <erslib/core/meta/type_name.hpp>
 
 
 // Exports
+
+namespace ers::meta {
+    using impl::meta::enumerator_of;
+
+    using impl::meta::has_attribute;
+    using impl::meta::has_template_attribute;
+    using impl::meta::get_template_attribute_value;
+}
 
 namespace ers::meta {
     using impl::meta::type_hash;

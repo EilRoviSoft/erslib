@@ -24,7 +24,7 @@ namespace ers::impl {
         }
 
 
-        constexpr size_t size() const { return N - 1; }
+        constexpr size_t size() const { return N; }
 
 
         constexpr std::string_view to_sv() const noexcept {
@@ -32,11 +32,10 @@ namespace ers::impl {
         }
 
 
-        constexpr size_t length() const noexcept {
+        constexpr size_t strlen() const noexcept {
             size_t result = 0;
             while (result < N && value[result] != '\0')
                 result++;
-
             return result;
         }
 
