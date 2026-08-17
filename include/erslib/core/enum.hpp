@@ -30,6 +30,15 @@ namespace ers::enum_utils {
     using impl::enum_utils::custom_t;
     using impl::enum_utils::custom;
 
+    using impl::enum_utils::source_case_t;
+    using impl::enum_utils::source_case;
+
+    using impl::enum_utils::target_case_t;
+    using impl::enum_utils::target_case;
+
+    using impl::enum_utils::set_cases_t;
+    using impl::enum_utils::set_cases;
+
     using impl::enum_utils::to_string;
     using impl::enum_utils::from_string;
 }

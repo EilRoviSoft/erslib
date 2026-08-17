@@ -27,16 +27,19 @@ namespace ers::impl::meta {
 
 
 // Annotation queries
+//
+// `Target` is the reflection of whatever is being inspected for annotations - an
+// enumerator (via enumerator_of<E, V>()) or the enum type itself (^^E).
 
 namespace ers::impl::meta {
-    template<typename Attr, typename E, E V>
+    template<std::meta::info Target, typename Attr>
     consteval bool has_attribute() {
-        return !std::meta::annotations_of_with_type(enumerator_of<E, V>(), ^^Attr).empty();
+        return !std::meta::annotations_of_with_type(Target, ^^Attr).empty();
     }
 
-    template<template<auto> typename Attr, typename E, E V>
+    template<std::meta::info Target, template<auto> typename Attr>
     consteval bool has_template_attribute() {
-        template for (constexpr auto attr : std::define_static_array(std::meta::annotations_of(enumerator_of<E, V>()))) {
+        template for (constexpr auto attr : std::define_static_array(std::meta::annotations_of(Target))) {
             constexpr auto type = std::meta::remove_const(std::meta::type_of(attr));
 
             if constexpr (std::meta::has_template_arguments(type)) {
@@ -48,9 +51,9 @@ namespace ers::impl::meta {
         return false;
     }
 
-    template<template<auto> typename Attr, typename E, E V>
+    template<std::meta::info Target, template<auto> typename Attr>
     consteval auto get_template_attribute_value() {
-        template for (constexpr auto attr : std::define_static_array(std::meta::annotations_of(enumerator_of<E, V>()))) {
+        template for (constexpr auto attr : std::define_static_array(std::meta::annotations_of(Target))) {
             constexpr auto type = std::meta::remove_const(std::meta::type_of(attr));
 
             if constexpr (std::meta::has_template_arguments(type)) {
@@ -61,5 +64,67 @@ namespace ers::impl::meta {
                 }
             }
         }
+    }
+
+
+    template<std::meta::info Target, template<typename> typename Attr>
+    consteval bool has_type_attribute() {
+        template for (constexpr auto attr : std::define_static_array(std::meta::annotations_of(Target))) {
+            constexpr auto type = std::meta::remove_const(std::meta::type_of(attr));
+
+            if constexpr (std::meta::has_template_arguments(type)) {
+                if constexpr (std::meta::template_of(type) == ^^Attr)
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    template<std::meta::info Target, template<typename> typename Attr>
+    consteval std::meta::info get_type_attribute_arg() {
+        std::meta::info result {};
+
+        template for (constexpr auto attr : std::define_static_array(std::meta::annotations_of(Target))) {
+            constexpr auto type = std::meta::remove_const(std::meta::type_of(attr));
+
+            if constexpr (std::meta::has_template_arguments(type)) {
+                if constexpr (std::meta::template_of(type) == ^^Attr)
+                    result = std::meta::template_arguments_of(type)[0];
+            }
+        }
+
+        return result;
+    }
+
+
+    template<std::meta::info Target, template<typename, typename> typename Attr>
+    consteval bool has_type_attribute2() {
+        template for (constexpr auto attr : std::define_static_array(std::meta::annotations_of(Target))) {
+            constexpr auto type = std::meta::remove_const(std::meta::type_of(attr));
+
+            if constexpr (std::meta::has_template_arguments(type)) {
+                if constexpr (std::meta::template_of(type) == ^^Attr)
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    template<std::meta::info Target, template<typename, typename> typename Attr, size_t I>
+    consteval std::meta::info get_type_attribute_arg2() {
+        std::meta::info result {};
+
+        template for (constexpr auto attr : std::define_static_array(std::meta::annotations_of(Target))) {
+            constexpr auto type = std::meta::remove_const(std::meta::type_of(attr));
+
+            if constexpr (std::meta::has_template_arguments(type)) {
+                if constexpr (std::meta::template_of(type) == ^^Attr)
+                    result = std::meta::template_arguments_of(type)[I];
+            }
+        }
+
+        return result;
     }
 }

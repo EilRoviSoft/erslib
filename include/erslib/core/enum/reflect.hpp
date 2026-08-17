@@ -33,7 +33,7 @@ namespace ers::impl::enum_utils {
             return std::meta::identifier_of(meta::enumerator_of<E, V>());
         } else if constexpr (style::custom) {
             return std::define_static_string(
-                meta::get_template_attribute_value<custom_t, E, V>().view()
+                meta::get_template_attribute_value<meta::enumerator_of<E, V>(), custom_t>().view()
             );
         } else {
             using source = case_style_traits<typename style::source_case>;

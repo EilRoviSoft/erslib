@@ -15,8 +15,15 @@ namespace ers::meta {
     using impl::meta::enumerator_of;
 
     using impl::meta::has_attribute;
+
     using impl::meta::has_template_attribute;
     using impl::meta::get_template_attribute_value;
+
+    using impl::meta::has_type_attribute;
+    using impl::meta::get_type_attribute_arg;
+
+    using impl::meta::has_type_attribute2;
+    using impl::meta::get_type_attribute_arg2;
 }
 
 namespace ers::meta {
