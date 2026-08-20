@@ -10,6 +10,11 @@ namespace dbio::impl::slots {
         .arity = Arity::Multi,
     };
 
+    inline constexpr Slot conflict_constraint {
+        .name  = "dbio.conflict_constraint",
+        .arity = Arity::Single,
+    };
+
     inline constexpr Slot conflict_action {
         .name  = "dbio.conflict_action",
         .arity = Arity::Single,
@@ -22,6 +27,11 @@ namespace dbio::impl::bindings {
         .prefix    = "\nON CONFLICT (",
         .separator = ", ",
         .suffix    = ")"
+    };
+
+    inline constexpr SlotBinding conflict_constraint {
+        .slot   = &slots::conflict_constraint,
+        .prefix = "\nON CONFLICT ON CONSTRAINT "
     };
 
     inline constexpr SlotBinding conflict_action {

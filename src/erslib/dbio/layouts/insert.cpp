@@ -26,6 +26,7 @@ namespace {
         },
         dbio::impl::bindings::values,
         dbio::impl::bindings::conflict,
+        dbio::impl::bindings::conflict_constraint,
         dbio::impl::bindings::conflict_action,
         dbio::impl::bindings::returning,
     };

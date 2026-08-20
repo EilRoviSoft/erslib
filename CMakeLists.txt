@@ -13,7 +13,6 @@ project(erslib
 
 
 include(cmake/utils.cmake)
-include(cmake/dbio.cmake)
 include(GNUInstallDirs)
 
 string(COMPARE EQUAL "${CMAKE_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}" IS_TOP_LEVEL)
@@ -228,6 +227,7 @@ if(ERSLIB_BUILD_DBIO)
 
             "src/erslib/dbio/clauses/assign.cpp"
             "src/erslib/dbio/clauses/bound.cpp"
+            "src/erslib/dbio/clauses/conflict.cpp"
             "src/erslib/dbio/clauses/order.cpp"
             "src/erslib/dbio/clauses/raw.cpp"
             "src/erslib/dbio/clauses/returning.cpp"
@@ -451,20 +451,6 @@ if(ERSLIB_INSTALL AND NOT CMAKE_SKIP_INSTALL_RULES)
         DESTINATION "${ERSLIB_INSTALL_CMAKEDIR}"
     )
 
-    install(FILES
-        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/dbio.cmake"
-        COMPONENT erslib_dev
-        DESTINATION "${ERSLIB_INSTALL_CMAKEDIR}"
-    )
-
-    install(
-        DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/scripts/"
-        COMPONENT erslib_dev
-        DESTINATION "${ERSLIB_INSTALL_CMAKEDIR}/scripts"
-        FILES_MATCHING
-            PATTERN "*.py"
-            PATTERN "*.jinja"
-    )
 endif()
 
 

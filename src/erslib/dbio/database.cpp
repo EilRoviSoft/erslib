@@ -16,6 +16,7 @@ ers::Result<dbio::impl::Database::Connection> dbio::impl::Database::acquire() {
     return _pool->acquire();
 }
 
+#ifdef ERS_DBIO_GLOBAL_QUERY_STORE
 ers::Status dbio::impl::Database::init(std::string_view label) {
     auto query = queries.get(label);
     if (!query)
@@ -27,6 +28,7 @@ ers::Status dbio::impl::Database::init(std::string_view label) {
         return ers::ok;
     }, "Init");
 }
+#endif
 
 void dbio::impl::Database::maintain() {
     _pool->maintain();

@@ -99,9 +99,10 @@ namespace dbio::impl::clauses {
     }
 
 
-    inline Clause do_nothing() {
-        return raw(&slots::conflict_action, "DO NOTHING");
-    }
+    Clause on_conflict_constraint(std::string name);
+
+
+    Clause do_nothing();
 
     template<std::ranges::input_range R>
         requires std::constructible_from<std::string, std::ranges::range_reference_t<R>>

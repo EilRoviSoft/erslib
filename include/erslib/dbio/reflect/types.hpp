@@ -119,6 +119,28 @@ namespace dbio::impl {
 
 
 namespace dbio::impl {
+    template<ers::fixed_string Constraint>
+    struct Conflict {};
+
+
+    template<typename T>
+    struct is_conflict : std::false_type {};
+
+    template<ers::fixed_string Constraint>
+    struct is_conflict<Conflict<Constraint>> : std::true_type {};
+
+
+    template<typename T>
+    struct conflict_info;
+
+    template<ers::fixed_string Constraint>
+    struct conflict_info<Conflict<Constraint>> {
+        static constexpr auto constraint = std::string_view(Constraint.value, Constraint.strlen());
+    };
+}
+
+
+namespace dbio::impl {
     template<ers::fixed_string Field, auto Value>
     struct Default {};
 

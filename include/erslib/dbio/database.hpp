@@ -59,10 +59,10 @@ namespace dbio::impl {
 
         // Initializers
 
-        // Runs each query found in the given store under the provided labels, every one in its own savepoint.
-        // Missing labels are skipped.
-        // Intended for schema bootstrap (e.g. the generated CREATE TABLE statements).
+#ifdef ERS_DBIO_GLOBAL_QUERY_STORE
+        // Runs the query stored under the given label in its own transaction.
         ers::Status init(std::string_view label);
+#endif
 
 
         // Modifiers
