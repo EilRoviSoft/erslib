@@ -19,7 +19,7 @@
 #include <erslib/core/enum/fwd.hpp>
 #include <erslib/core/enum/case_styles.hpp>
 #include <erslib/core/enum/traits/enumerator_style.hpp>
-#include <erslib/core/enum/traits/resolved_target_case.hpp>
+#include <erslib/core/enum/traits/resolved_to.hpp>
 
 
 // Per-enumerator name resolution
@@ -33,14 +33,14 @@ namespace ers::impl::enum_utils {
             return std::meta::identifier_of(meta::enumerator_of<E, V>());
         } else if constexpr (style::custom) {
             return std::define_static_string(
-                meta::get_template_attribute_value<meta::enumerator_of<E, V>(), custom_t>().view()
+                meta::get_template_attribute_arg<meta::enumerator_of<E, V>(), custom_t>().view()
             );
         } else {
-            using source = case_style_traits<typename style::source_case>;
-            using target = case_style_traits<typename resolved_target_case<E, V>::type>;
+            using from = case_style_traits<typename style::from>;
+            using to = case_style_traits<typename resolved_to<E, V>::type>;
 
             auto raw = std::meta::identifier_of(meta::enumerator_of<E, V>());
-            return std::define_static_string(target::combine(source::split(raw)));
+            return std::define_static_string(to::combine(from::split(raw)));
         }
     }
 }

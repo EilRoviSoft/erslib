@@ -1,30 +1,58 @@
 #pragma once
 
 // std
+#include <charconv>
 #include <span>
 #include <string>
 #include <string_view>
-#include <vector>
 
 // ers
-#include <erslib/dbio/reflect/traits.hpp>
+#include <erslib/dbio/reflect/schema.hpp>
 
 
 // Internal
 
 namespace dbio::impl {
-    consteval std::string_view on_delete_text(OnDelete what) {
+    consteval std::string_view on_delete_text(action_on_delete what) {
         switch (what) {
-            case OnDelete::Cascade:  return " ON DELETE CASCADE";
-            case OnDelete::SetNull:  return " ON DELETE SET NULL";
-            case OnDelete::Restrict: return " ON DELETE RESTRICT";
-            case OnDelete::NoAction: return "";
+            case action_on_delete::cascade:     return " ON DELETE CASCADE";
+            case action_on_delete::set_null:    return " ON DELETE SET NULL";
+            case action_on_delete::set_default: return " ON DELETE SET DEFAULT";
+            case action_on_delete::restrict:    return " ON DELETE RESTRICT";
+            case action_on_delete::none:        return "";
         }
 
         return "";
     }
 
-    consteval void append_list(std::string& into, std::span<const char* const> what) {
+    template<auto Value>
+    consteval std::string sql_literal() {
+        using type = std::remove_cvref_t<decltype(Value)>;
+
+        if constexpr (std::is_same_v<type, bool>) {
+            return Value ? "TRUE" : "FALSE";
+        }
+        else if constexpr (std::is_integral_v<type>) {
+            char buffer[32] {};
+            const auto [ptr, ec] = std::to_chars(buffer, buffer + sizeof(buffer), Value);
+            return std::string(buffer, ptr);
+        }
+        else {
+            std::string out = "'";
+
+            for (const char it : Value.to_sv()) {
+                if (it == '\'')
+                    out += '\'';
+
+                out += it;
+            }
+
+            out += '\'';
+            return out;
+        }
+    }
+
+    consteval void append_list(std::string& into, std::span<const std::string_view> what) {
         into += '(';
 
         for (size_t i = 0; i < what.size(); i++) {
@@ -44,60 +72,67 @@ namespace dbio::impl {
 namespace dbio::impl {
     template<Entity T>
     consteval std::string_view create_table() {
+        static_assert(declaration_is_valid<T>(),
+            "Declaration names a column that does not exist on the entity");
+
         std::string out = "CREATE TABLE IF NOT EXISTS ";
         out += table_name<T>();
         out += " (\n";
 
         template for (constexpr auto m : std::define_static_array(columns<T>())) {
             out += "    ";
-            out += column_name<m>();
+            out += column_name<T, m>();
             out += ' ';
-            out += sql_type_of<m>();
+            out += sql_type_name<T, m>();
 
-            if constexpr (is_identity<m, T>())
+            if constexpr (is_identity_column<T, m>())
                 out += " GENERATED ALWAYS AS IDENTITY";
-
-            if constexpr (!is_nullable_column<m>() && !is_identity<m, T>())
+            else if constexpr (!is_nullable<m>())
                 out += " NOT NULL";
 
-            if constexpr (has_text<m, Default>()) {
-                out += " DEFAULT ";
-                out += text_of<m, Default>();
+            template for (constexpr auto it : std::define_static_array(declaration_members<T>())) {
+                using entry = typename [:std::meta::type_of(it):];
+
+                if constexpr (is_default<entry>::value)
+                    if constexpr (default_info<entry>::field == column_name<T, m>()) {
+                        out += " DEFAULT ";
+                        out += sql_literal<default_info<entry>::value>();
+                    }
             }
 
             out += ",\n";
         }
 
-        constexpr auto primary = primary_key<T>();
-        if constexpr (!primary.empty()) {
-            out += "    PRIMARY KEY ";
-            append_list(out, primary);
-            out += ",\n";
-        }
+        template for (constexpr auto it : std::define_static_array(declaration_members<T>())) {
+            using entry = typename [:std::meta::type_of(it):];
+            constexpr std::string_view name = std::define_static_string(std::meta::identifier_of(it));
 
-        for (const auto& group : unique_groups<T>()) {
-            out += "    UNIQUE ";
-            append_list(out, group);
-            out += ",\n";
-        }
-
-        template for (constexpr auto m : std::define_static_array(columns<T>())) {
-            template for (constexpr auto a : std::define_static_array(std::meta::annotations_of(m))) {
-                constexpr auto type = std::meta::remove_cv(std::meta::type_of(a));
-
-                if constexpr (std::meta::has_template_arguments(type) && std::meta::template_of(type) == ^^Fk) {
-                    out += "    FOREIGN KEY (";
-                    out += column_name<m>();
-                    out += ") REFERENCES ";
-                    out += table_name<typename [:type:]::target>();
-                    out += " (";
-
-                    out += [:type:]::column;
-
-                    out += ')';
-                    out += on_delete_text([:type:]::on_delete);
-                    out += ",\n";
-                }
+            if constexpr (is_pk<entry>::value) {
+                out += "    CONSTRAINT ";
+                out += name;
+                out += " PRIMARY KEY ";
+                append_list(out, pk_fields<entry>::names);
+                out += ",\n";
+            }
+            else if constexpr (is_unique<entry>::value) {
+                out += "    CONSTRAINT ";
+                out += name;
+                out += " UNIQUE ";
+                append_list(out, unique_fields<entry>::names);
+                out += ",\n";
+            }
+            else if constexpr (is_fk<entry>::value) {
+                out += "    CONSTRAINT ";
+                out += name;
+                out += " FOREIGN KEY (";
+                out += fk_info<entry>::field;
+                out += ") REFERENCES ";
+                out += fk_info<entry>::ref_table;
+                out += " (";
+                out += fk_info<entry>::ref_column;
+                out += ')';
+                out += on_delete_text(fk_info<entry>::on_delete);
+                out += ",\n";
             }
         }
 

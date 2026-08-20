@@ -7,7 +7,7 @@
 
 
 namespace ers::impl {
-    struct lower_case_t;
+    struct lower_case_t : base_case_t {};
 }
 
 template<>

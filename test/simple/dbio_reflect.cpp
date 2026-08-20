@@ -5,109 +5,164 @@
 
 // std
 #include <cstdint>
-#include <optional>
 #include <string>
+#include <string_view>
 
 // ers
+#include <erslib/core/type/optional.hpp>
+#include <erslib/dbio/constant.hpp>
 #include <erslib/dbio/reflect.hpp>
 
 
-using namespace dbio::reflect;
+namespace {
+    std::string squeeze(std::string_view what) {
+        std::string out;
+        bool pending = false;
+
+        for (const char it : what) {
+            if (it == ' ' || it == '\t' || it == '\n' || it == '\r') {
+                pending = true;
+                continue;
+            }
+
+            if (pending && !out.empty())
+                out += ' ';
+
+            pending = false;
+            out += it;
+        }
+
+        return out;
+    }
+
+    bool contains(std::string_view text, std::string_view what) {
+        return squeeze(text).find(squeeze(what)) != std::string::npos;
+    }
+}
 
 
 namespace {
-    struct Product;
-    struct Item;
+    struct Image {
+        uint32_t id = dbio::undefined_id;
+        std::string url;
+        std::string path;
+    };
 
-    struct Money {
-        int64_t cents = 0;
+    struct Product {
+        uint32_t id = dbio::undefined_id;
+        int32_t price;
+        ers::optional<std::string> description;
+        std::string title;
+        uint32_t sku;
+        int cache;
+    };
+
+    struct ProductImage {
+        uint32_t product_id = dbio::undefined_id;
+        uint32_t image_id = dbio::undefined_id;
+        uint16_t position;
+        bool replaceable = true;
     };
 }
 
+
 template<>
-struct dbio::reflect::sql_type_traits<Money> {
-    static constexpr std::string_view value = "NUMERIC(12, 2)";
+struct dbio::reflect::Declaration<Image> : Table<"images"> {
+    Pk<"id"> images_pk;
+    Unique<"url"> images_url_key;
+    Unique<"path"> images_path_key;
 };
 
 template<>
-struct dbio::reflect::Definition<Product> : Table<"products"> {
-    [[= Pk()]]
-    uint32_t id;
-    std::string title;
+struct dbio::reflect::Declaration<Product> : Table<"products"> {
+    Pk<"id"> products_pk;
+    Unique<"sku"> products_sku_key;
+
+    Column<"descr"> description;
+    Column<"", "VARCHAR(120)"> title;
+    Skip cache;
 };
 
 template<>
-struct dbio::reflect::Definition<Item> : Table<"items"> {
-    [[= Pk()]]
-    uint32_t id;
-
-    [[= Fk<Product, "id", OnDelete::Cascade>()]]
-    uint32_t product_id;
-
-    std::string color;
-
-    int32_t size;
-
-    [[= Default<"0">()]]
-    int32_t amount;
-
-    [[= Nullable()]]
-    std::string note;
-
-    [[= Skip()]]
-    int cache;
-
-    Unique<"product_id", "color", "size"> sku;
+struct dbio::reflect::Declaration<ProductImage> : Table<"product_images"> {
+    Pk<"product_id", "image_id"> product_images_pk;
+    Fk<"product_id", "products", "id", action_on_delete::cascade> product_images_product_fk;
+    Fk<"image_id", "images", "id"> product_images_image_fk;
+    Unique<"product_id", "position"> product_images_position_key;
+    Default<"replaceable", true> product_images_replaceable;
 };
 
-namespace {
-    ERS_DBIO_ENTITY(Product);
-    ERS_DBIO_ENTITY(Item);
+
+TEST_CASE("dbio reflect: squeeze") {
+    CHECK(squeeze("  a\t\tb\n\n  c  ") == "a b c");
+    CHECK(squeeze("\n\n") == "");
+    CHECK(squeeze("a") == "a");
 }
 
+TEST_CASE("dbio reflect: shape") {
+    using namespace dbio::reflect;
 
-TEST_CASE("dbio reflect: definition shape") {
-    CHECK(table_name<Item>() == "items");
-    CHECK(column_names<Item>().size() == 6);
-    CHECK(primary_key<Item>().size() == 1);
-    CHECK(std::string_view(primary_key<Item>().front()) == "id");
-    CHECK(std::string_view(column_names<Item>()[4]) == "amount");
-    CHECK(std::string_view(column_names<Item>()[5]) == "note");
-    static_assert(unique_count<Item>() == 1);
+    CHECK(table_name<Image>() == "images");
+    CHECK(table_name<ProductImage>() == "product_images");
+
+    static_assert(declaration_is_valid<Image>());
+    static_assert(declaration_is_valid<Product>());
+    static_assert(declaration_is_valid<ProductImage>());
+
+    CHECK(primary_key<ProductImage>().size() == 2);
+
+    // Column renames the field; Skip drops it from the table.
+    CHECK(column_name<Product, ^^Product::description>() == "descr");
+    CHECK(column_name<Product, ^^Product::price>() == "price");
+    CHECK(sql_type_name<Product, ^^Product::title>() == "VARCHAR(120)");
+
+    static_assert(has_field<Product>("cache"));
+    static_assert(!has_column<Product>("cache"));
 }
 
-TEST_CASE("dbio reflect: ddl") {
-    constexpr std::string_view text = dbio::ddl::create_table<Item>();
+TEST_CASE("dbio reflect: ddl for a surrogate key") {
+    constexpr std::string_view text = dbio::ddl::create_table<Image>();
 
-    CHECK(text.starts_with("CREATE TABLE IF NOT EXISTS items ("));
-    CHECK(text.find("id BIGINT GENERATED ALWAYS AS IDENTITY") != std::string_view::npos);
-    CHECK(text.find("amount INTEGER NOT NULL DEFAULT 0") != std::string_view::npos);
-    CHECK(text.find("note TEXT,") != std::string_view::npos);
-    CHECK(text.find("color TEXT NOT NULL") != std::string_view::npos);
-    CHECK(text.find("PRIMARY KEY (id)") != std::string_view::npos);
-    CHECK(text.find("UNIQUE (product_id, color, size)") != std::string_view::npos);
-    CHECK(text.find("FOREIGN KEY (product_id) REFERENCES products (id) ON DELETE CASCADE") != std::string_view::npos);
-    CHECK(text.find("cache") == std::string_view::npos);
+    CHECK(squeeze(text) == squeeze(
+        "CREATE TABLE IF NOT EXISTS images ("
+        "    id INTEGER GENERATED ALWAYS AS IDENTITY,"
+        "    url TEXT NOT NULL,"
+        "    path TEXT NOT NULL,"
+        "    CONSTRAINT images_pk PRIMARY KEY (id),"
+        "    CONSTRAINT images_url_key UNIQUE (url),"
+        "    CONSTRAINT images_path_key UNIQUE (path)"
+        " )"));
 }
 
-TEST_CASE("dbio reflect: sql_type_traits") {
-    static_assert(HasSqlType<Money>);
-    static_assert(!HasSqlType<void*>);
-    static_assert(is_nullable<std::optional<std::string>>());
-    static_assert(!is_nullable<std::string>());
+TEST_CASE("dbio reflect: ddl with nullable, rename and skip") {
+    constexpr std::string_view text = dbio::ddl::create_table<Product>();
+
+    CHECK(squeeze(text) == squeeze(
+        "CREATE TABLE IF NOT EXISTS products ("
+        "    id INTEGER GENERATED ALWAYS AS IDENTITY,"
+        "    price INTEGER NOT NULL,"
+        "    descr TEXT,"
+        "    title VARCHAR(120) NOT NULL,"
+        "    sku INTEGER NOT NULL,"
+        "    CONSTRAINT products_pk PRIMARY KEY (id),"
+        "    CONSTRAINT products_sku_key UNIQUE (sku)"
+        " )"));
+
+    CHECK_FALSE(contains(text, "cache"));
 }
 
-TEST_CASE("dbio reflect: injected entity") {
-    Item entity {};
-    entity.id = 7;
-    entity.product_id = 3;
-    entity.color = "red";
-    entity.size = 42;
-    entity.amount = 5;
-    entity.note = "n";
+TEST_CASE("dbio reflect: ddl with composite key and defaults") {
+    constexpr std::string_view text = dbio::ddl::create_table<ProductImage>();
 
-    constexpr size_t members = nonstatic_data_members_of(^^Item, std::meta::access_context::current()).size();
-    static_assert(members == 6);
+    CHECK_FALSE(contains(text, "GENERATED ALWAYS AS IDENTITY"));
+
+    CHECK(contains(text, "replaceable BOOLEAN NOT NULL DEFAULT TRUE"));
+    CHECK(contains(text, "CONSTRAINT product_images_pk PRIMARY KEY (product_id, image_id)"));
+    CHECK(contains(text,
+        "CONSTRAINT product_images_product_fk FOREIGN KEY (product_id) "
+        "REFERENCES products (id) ON DELETE CASCADE"));
+    CHECK(contains(text,
+        "CONSTRAINT product_images_image_fk FOREIGN KEY (image_id) REFERENCES images (id)"));
 }
 
 #endif

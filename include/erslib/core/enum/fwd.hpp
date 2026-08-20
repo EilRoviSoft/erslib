@@ -9,31 +9,10 @@ namespace ers::impl::enum_utils {
     inline constexpr as_is_t as_is {};
 
     template<fixed_string Str>
-    struct custom_t {
-        static constexpr auto value = Str;
-    };
+    struct custom_t {};
 
     template<fixed_string Str>
     inline constexpr custom_t<Str> custom {};
-
-
-    template<typename Style>
-    struct source_case_t {};
-
-    template<typename Style>
-    inline constexpr source_case_t<Style> source_case {};
-
-    template<typename Style>
-    struct target_case_t {};
-
-    template<typename Style>
-    inline constexpr target_case_t<Style> target_case {};
-
-    template<typename Source, typename Target>
-    struct set_cases_t {};
-
-    template<typename Source, typename Target>
-    inline constexpr set_cases_t<Source, Target> set_cases {};
 }
 
 

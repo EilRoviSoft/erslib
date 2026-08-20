@@ -8,7 +8,7 @@
 
 
 namespace ers::impl {
-    struct camel_case_t;
+    struct camel_case_t : base_case_t {};
 }
 
 template<>

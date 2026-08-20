@@ -8,7 +8,7 @@
 
 
 namespace ers::impl {
-    struct kebab_case_t;
+    struct kebab_case_t : base_case_t {};
 }
 
 template<>

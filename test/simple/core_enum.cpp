@@ -18,22 +18,51 @@ namespace {
         LightBlue,
     };
 
-    enum class [[=set_cases<pascal_case_t, upper_snake_case_t>]] Status {
+    enum class Status {
         NotStarted,
         InProgress,
         Done,
     };
 
-    enum class [[=target_case<kebab_case_t>]] Direction {
+    enum class Direction {
         NorthWest,
         SouthEast,
     };
 
-    enum class [[=target_case<camel_case_t>]] Weekday {
+    enum class Weekday {
         MondayStart,
         FridayEnd,
     };
+
+    enum class Priority {
+        VeryHigh,
+        Low,
+    };
 }
+
+template<>
+struct ers::enum_traits<Status> {
+    using from = pascal_case_t;
+    using to = upper_snake_case_t;
+};
+
+template<>
+struct ers::enum_traits<Direction> {
+    using from = pascal_case_t;
+    using to = kebab_case_t;
+};
+
+template<>
+struct ers::enum_traits<Weekday> {
+    using from = pascal_case_t;
+    using to = camel_case_t;
+};
+
+template<>
+struct ers::enum_traits<Priority> {
+    using from = pascal_case_t;
+    using to = snake_case_t;
+};
 
 
 TEST_CASE("enum reflection: default case (pascal -> pascal)") {
@@ -47,7 +76,7 @@ TEST_CASE("enum reflection: default case (pascal -> pascal)") {
     CHECK_FALSE(from_string<Color>("nope").has_value());
 }
 
-TEST_CASE("enum reflection: set_cases annotation (pascal -> upper_snake)") {
+TEST_CASE("enum reflection: enum_traits specialization (pascal -> upper_snake)") {
     CHECK(to_string(Status::NotStarted) == "NOT_STARTED");
     CHECK(to_string(Status::InProgress) == "IN_PROGRESS");
     CHECK(to_string(Status::Done) == "DONE");
@@ -64,6 +93,12 @@ TEST_CASE("enum reflection: kebab and camel case styles") {
     CHECK(to_string(Weekday::MondayStart) == "mondayStart");
     CHECK(to_string(Weekday::FridayEnd) == "fridayEnd");
     CHECK(from_string<Weekday>("fridayEnd") == Weekday::FridayEnd);
+}
+
+TEST_CASE("enum reflection: enum_traits with snake_case target") {
+    CHECK(to_string(Priority::VeryHigh) == "very_high");
+    CHECK(to_string(Priority::Low) == "low");
+    CHECK(from_string<Priority>("very_high") == Priority::VeryHigh);
 }
 
 TEST_CASE("enum reflection: ers::convert integration") {

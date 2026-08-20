@@ -8,7 +8,7 @@
 
 
 namespace ers::impl {
-    struct upper_snake_case_t;
+    struct upper_snake_case_t : base_case_t {};
 }
 
 template<>
