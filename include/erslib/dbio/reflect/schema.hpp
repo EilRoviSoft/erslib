@@ -21,10 +21,12 @@ namespace dbio::impl::reflect {
         return nonstatic_data_members_of(^^T, std::meta::access_context::current());
     }
 
+
     template<typename T>
     consteval std::vector<std::meta::info> declaration_members() {
         return nonstatic_data_members_of(^^Declaration<T>, std::meta::access_context::current());
     }
+
 
     consteval bool is_skipped(std::meta::info member) {
         for (const auto it : std::meta::annotations_of(member)) {
@@ -52,8 +54,7 @@ namespace dbio::impl::reflect {
 
     template<typename T, template<typename> typename IsKind>
     consteval std::string_view base_tag() {
-        template for (constexpr auto it : std::define_static_array(
-            std::meta::bases_of(^^Declaration<T>, std::meta::access_context::current()))) {
+        template for (constexpr auto it : std::define_static_array(std::meta::bases_of(^^Declaration<T>, std::meta::access_context::current()))) {
             using base = typename [:std::meta::type_of(it):];
 
             if constexpr (IsKind<base>::value)
@@ -139,7 +140,7 @@ namespace dbio::impl::reflect {
 }
 
 
-// Column information which is got from `Declaration<T>`
+// Column info got from `Declaration<T>`
 
 namespace dbio::impl::reflect {
     template<typename T>
@@ -154,7 +155,7 @@ namespace dbio::impl::reflect {
                     out.emplace_back(std::define_static_string(name));
         }
 
-        return std::span<const char* const>(std::define_static_array(out));
+        return std::span(std::define_static_array(out));
     }();
 
     template<typename T>

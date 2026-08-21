@@ -15,6 +15,7 @@ namespace ers {
     ERS_MAKE_EXCEPTION_EXPORTS(impl, domain_error);
     ERS_MAKE_EXCEPTION_EXPORTS(impl, length_error);
     ERS_MAKE_EXCEPTION_EXPORTS(impl, out_of_range_error);
+    ERS_MAKE_EXCEPTION_EXPORTS(impl, format_error);
     ERS_MAKE_EXCEPTION_EXPORTS(impl, enumerator_error);
 
     ERS_MAKE_EXCEPTION_EXPORTS(impl, runtime_error);

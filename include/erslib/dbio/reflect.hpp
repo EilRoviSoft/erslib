@@ -93,6 +93,7 @@ namespace dbio::reflect {
 #include <erslib/dbio/reflect/row.hpp>
 
 namespace dbio::reflect {
+    using impl::reflect::PlainRow;
     using impl::reflect::ColumnIndex;
 
     using impl::reflect::map_columns;

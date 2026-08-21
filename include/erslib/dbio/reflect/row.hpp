@@ -4,6 +4,7 @@
 #include <array>
 #include <meta>
 #include <string_view>
+#include <type_traits>
 
 // pqxx
 #include <pqxx/result>
@@ -16,11 +17,15 @@
 
 
 namespace dbio::impl::reflect {
-    template<RowType T>
+    template<typename T>
+    concept PlainRow = std::is_aggregate_v<T> && !ValidRow<T> && !RowType<T>;
+
+
+    template<typename T>
     using ColumnIndex = std::array<int, column_count<T>>;
 
 
-    template<RowType T>
+    template<typename T>
     ColumnIndex<T> map_columns(const pqxx::result& from) {
         ColumnIndex<T> out;
         out.fill(-1);
@@ -44,7 +49,7 @@ namespace dbio::impl::reflect {
     }
 
 
-    template<RowType T>
+    template<typename T>
     void read_row(T& into, pqxx::row_ref row, const ColumnIndex<T>& index) {
         size_t slot = 0;
 
@@ -56,7 +61,7 @@ namespace dbio::impl::reflect {
         }
     }
 
-    template<RowType T>
+    template<typename T>
     T from_row(pqxx::row_ref row, const ColumnIndex<T>& index) {
         T out {};
         read_row(out, row, index);
@@ -66,6 +71,14 @@ namespace dbio::impl::reflect {
 
 
 template<dbio::impl::reflect::RowType T>
+struct dbio::impl::row_reader<T> {
+    using state = reflect::ColumnIndex<T>;
+
+    static state prepare(const pqxx::result& from) { return reflect::map_columns<T>(from); }
+    static T read(pqxx::row_ref row, const state& index) { return reflect::from_row<T>(row, index); }
+};
+
+template<dbio::impl::reflect::PlainRow T>
 struct dbio::impl::row_reader<T> {
     using state = reflect::ColumnIndex<T>;
 

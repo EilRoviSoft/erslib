@@ -60,6 +60,7 @@ namespace {
 
 namespace query {
     struct CascadeSearch;
+    inline constexpr auto cascade_search = dbio::reflect::query_fn<CascadeSearch>;
 }
 
 template<>
@@ -81,10 +82,6 @@ struct dbio::reflect::Declaration<query::CascadeSearch> : dbio::reflect::Query<"
     struct Input { uint32_t image_id; };
     using Output = CascadeHitResult;
 };
-
-namespace query {
-    inline constexpr auto cascade_search = dbio::reflect::query_fn<CascadeSearch>;
-}
 
 
 namespace {

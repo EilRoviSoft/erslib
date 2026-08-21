@@ -65,10 +65,3 @@ void dbio::impl::QueryStore::add(std::string_view label, std::string_view query)
     std::unique_lock lock(m_mutex);
     m_data.emplace(label, query);
 }
-
-
-#ifdef ERS_DBIO_GLOBAL_QUERY_STORE_INIT
-namespace dbio::impl {
-    QueryStore queries = QueryStore::make_from_path("./res/query"); // NOLINT(bugprone-throwing-static-initialization)
-}
-#endif

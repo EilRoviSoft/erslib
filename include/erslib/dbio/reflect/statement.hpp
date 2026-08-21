@@ -55,11 +55,11 @@ namespace dbio::impl::reflect {
 
     template<Statement Tag, typename... Args>
     QueryCall<Tag> query_call(Args&&... args) {
-        return QueryCall<Tag>(typename Declaration<Tag>::Input{std::forward<Args>(args)...});
+        return QueryCall<Tag>(typename Declaration<Tag>::Input(std::forward<Args>(args)...));
     }
 
 
-    template<Statement Tag>
+    template<typename Tag>
     struct QueryFn {
         template<typename... Args>
         auto operator()(Args&&... args) const {
@@ -67,6 +67,6 @@ namespace dbio::impl::reflect {
         }
     };
 
-    template<Statement Tag>
+    template<typename Tag>
     inline constexpr QueryFn<Tag> query_fn {};
 }

@@ -15,4 +15,5 @@ namespace ers::impl {
     ERS_MAKE_EXCEPTION_TYPE(out_of_range_error, std::out_of_range);
 
     ERS_MAKE_EXCEPTION_TYPE(enumerator_error, std::out_of_range);
+    ERS_MAKE_EXCEPTION_TYPE(format_error, std::format_error);
 }

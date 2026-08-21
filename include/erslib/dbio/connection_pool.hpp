@@ -36,8 +36,7 @@ namespace dbio::impl {
     >;
 
     template<typename Fn>
-    concept TransactionCallable =
-        requires { typename transaction_arg_t<Fn>; }
+    concept TransactionCallable = requires { typename transaction_arg_t<Fn>; }
         && std::derived_from<transaction_arg_t<Fn>, pqxx::dbtransaction>;
 }
 

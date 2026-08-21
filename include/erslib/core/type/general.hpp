@@ -20,11 +20,33 @@ namespace ers::impl::type {
     using f64 = double_t;
 }
 
+namespace ers::impl::type {
+    template<typename T>
+    struct vec2 {
+        T x;
+        T y;
+    };
+}
+
 
 // Exports
 
-namespace ers {
-    namespace type = impl::type;
+namespace ers::type {
+    using impl::type::u8;
+    using impl::type::u16;
+    using impl::type::u32;
+    using impl::type::u64;
+
+    using impl::type::i8;
+    using impl::type::i16;
+    using impl::type::i32;
+    using impl::type::i64;
+
+    using impl::type::f32;
+    using impl::type::f64;
+
+
+    using impl::type::vec2;
 }
 
 

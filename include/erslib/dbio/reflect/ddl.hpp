@@ -72,8 +72,10 @@ namespace dbio::impl::reflect {
 namespace dbio::impl::reflect {
     template<Entity T>
     consteval std::string_view create_table() {
-        static_assert(declaration_is_valid<T>,
-            "Declaration names a column that does not exist on the entity");
+        static_assert(
+            declaration_is_valid<T>,
+            "Declaration names a column that does not exist on the entity"
+        );
 
         std::string out = "CREATE TABLE IF NOT EXISTS ";
         out += table_name<T>;

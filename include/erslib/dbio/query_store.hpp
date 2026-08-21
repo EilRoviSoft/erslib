@@ -32,10 +32,7 @@ namespace dbio::impl {
     };
 
 
-#ifdef ERS_DBIO_GLOBAL_QUERY_STORE
-    // Loads ./res/query at static init.
     extern QueryStore queries;
-#endif
 }
 
 
@@ -43,8 +40,5 @@ namespace dbio::impl {
 
 namespace dbio {
     using impl::QueryStore;
-
-#ifdef ERS_DBIO_GLOBAL_QUERY_STORE
     using impl::queries;
-#endif
 }

@@ -128,6 +128,7 @@ struct dbio::reflect::Declaration<CascadeHit> {};
 
 namespace query {
     struct CascadeSearch;
+    inline constexpr auto cascade_search = dbio::reflect::query_fn<CascadeSearch>;
 }
 
 template<>
@@ -136,9 +137,22 @@ struct dbio::reflect::Declaration<query::CascadeSearch> : Query<"cascade_search"
     using Output = CascadeHit;
 };
 
+
 namespace query {
-    inline constexpr auto cascade_search = dbio::reflect::query_fn<CascadeSearch>;
+    struct InlineOutputSearch;
+    inline constexpr auto inline_output_search = dbio::reflect::query_fn<InlineOutputSearch>;
 }
+
+template<>
+struct dbio::reflect::Declaration<query::InlineOutputSearch> : Query<"inline_output_search"> {
+    struct Input { uint32_t image_id; };
+
+    struct Output {
+        std::string source_table;
+        uint32_t id;
+        uint32_t image_id;
+    };
+};
 
 
 TEST_CASE("dbio reflect: squeeze") {
@@ -264,6 +278,19 @@ TEST_CASE("dbio reflect: statement") {
 
     [[maybe_unused]] auto call = query::cascade_search(static_cast<uint32_t>(7));
     static_assert(std::is_same_v<decltype(call), QueryCall<query::CascadeSearch>>);
+}
+
+TEST_CASE("dbio reflect: statement with an inline nested Output") {
+    using namespace dbio::reflect;
+
+    using Output = Declaration<query::InlineOutputSearch>::Output;
+
+    static_assert(PlainRow<Output>);
+    static_assert(!RowType<Output>);
+    static_assert(dbio::ReadableRow<Output>);
+
+    [[maybe_unused]] auto call = query::inline_output_search(static_cast<uint32_t>(7));
+    static_assert(std::is_same_v<decltype(call), QueryCall<query::InlineOutputSearch>>);
 }
 
 
