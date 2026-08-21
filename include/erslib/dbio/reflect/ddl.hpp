@@ -12,7 +12,7 @@
 
 // Internal
 
-namespace dbio::impl {
+namespace dbio::impl::reflect {
     consteval std::string_view on_delete_text(action_on_delete what) {
         switch (what) {
             case action_on_delete::cascade:     return " ON DELETE CASCADE";
@@ -69,7 +69,7 @@ namespace dbio::impl {
 
 // DDL
 
-namespace dbio::impl {
+namespace dbio::impl::reflect {
     template<Entity T>
     consteval std::string_view create_table() {
         static_assert(declaration_is_valid<T>,

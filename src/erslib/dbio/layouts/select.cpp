@@ -40,8 +40,8 @@ namespace {
 
 // Public API
 
-dbio::impl::Query dbio::impl::layouts::select_from(std::string table) {
-    Query q(select_layout);
+dbio::impl::QueryBuilder dbio::impl::layouts::select_from(std::string table) {
+    QueryBuilder q(select_layout);
     q |= clauses::from(std::move(table));
     return q;
 }

@@ -10,7 +10,7 @@
 #include <erslib/dbio/reflect/ddl.hpp>
 
 namespace dbio::ddl {
-    using impl::create_table;
+    using impl::reflect::create_table;
 }
 
 
@@ -19,7 +19,7 @@ namespace dbio::ddl {
 #include <erslib/dbio/reflect/declaration.hpp>
 
 namespace dbio::reflect {
-    using impl::Declaration;
+    using impl::reflect::Declaration;
 }
 
 
@@ -28,28 +28,30 @@ namespace dbio::reflect {
 #include <erslib/dbio/reflect/schema.hpp>
 
 namespace dbio::reflect {
-    using impl::RowType;
-    using impl::Entity;
+    using impl::reflect::RowType;
+    using impl::reflect::Entity;
+    using impl::reflect::Statement;
 
-    using impl::all_members;
-    using impl::columns;
-    using impl::declaration_members;
-    using impl::table_name;
-    using impl::column_name;
-    using impl::column_count;
-    using impl::member_type;
-    using impl::sql_type_name;
-    using impl::is_nullable;
-    using impl::is_skipped;
-    using impl::has_field;
-    using impl::has_column;
-    using impl::primary_key;
-    using impl::pk_constraint;
-    using impl::is_pk_column;
-    using impl::is_identity_column;
-    using impl::has_identity;
-    using impl::identity_column;
-    using impl::declaration_is_valid;
+    using impl::reflect::all_members;
+    using impl::reflect::columns;
+    using impl::reflect::declaration_members;
+    using impl::reflect::table_name;
+    using impl::reflect::query_label;
+    using impl::reflect::column_name;
+    using impl::reflect::column_count;
+    using impl::reflect::member_type;
+    using impl::reflect::sql_type_name;
+    using impl::reflect::is_nullable;
+    using impl::reflect::is_skipped;
+    using impl::reflect::has_field;
+    using impl::reflect::has_column;
+    using impl::reflect::primary_key;
+    using impl::reflect::pk_constraint;
+    using impl::reflect::is_pk_column;
+    using impl::reflect::is_identity_column;
+    using impl::reflect::has_identity;
+    using impl::reflect::identity_column;
+    using impl::reflect::declaration_is_valid;
 }
 
 
@@ -59,9 +61,9 @@ namespace dbio::reflect {
 #include <erslib/dbio/reflect/value.hpp>
 
 namespace dbio::reflect {
-    using impl::sql_type;
-    using impl::sql_value;
-    using impl::value_binder;
+    using impl::reflect::sql_type;
+    using impl::reflect::sql_value;
+    using impl::reflect::value_binder;
 }
 
 
@@ -70,18 +72,19 @@ namespace dbio::reflect {
 #include <erslib/dbio/reflect/types.hpp>
 
 namespace dbio::reflect {
-    using impl::action_on_delete;
+    using impl::reflect::action_on_delete;
 
-    using impl::Table;
+    using impl::reflect::Table;
+    using impl::reflect::Query;
 
-    using impl::Pk;
-    using impl::Unique;
-    using impl::Fk;
+    using impl::reflect::Pk;
+    using impl::reflect::Unique;
+    using impl::reflect::Fk;
 
-    using impl::Default;
-    using impl::Identity;
-    using impl::Column;
-    using impl::Skip;
+    using impl::reflect::Default;
+    using impl::reflect::Identity;
+    using impl::reflect::Column;
+    using impl::reflect::Skip;
 }
 
 
@@ -90,9 +93,31 @@ namespace dbio::reflect {
 #include <erslib/dbio/reflect/row.hpp>
 
 namespace dbio::reflect {
-    using impl::ColumnIndex;
+    using impl::reflect::ColumnIndex;
 
-    using impl::map_columns;
-    using impl::read_row;
-    using impl::from_row;
+    using impl::reflect::map_columns;
+    using impl::reflect::read_row;
+    using impl::reflect::from_row;
+}
+
+
+// Bind
+
+#include <erslib/dbio/reflect/bind.hpp>
+
+namespace dbio::reflect {
+    using impl::reflect::bind_params;
+}
+
+
+// Statements
+
+#include <erslib/dbio/reflect/statement.hpp>
+
+namespace dbio::reflect {
+    using impl::reflect::QueryCall;
+    using impl::reflect::query_call;
+
+    using impl::reflect::QueryFn;
+    using impl::reflect::query_fn;
 }

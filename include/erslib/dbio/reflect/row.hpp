@@ -15,7 +15,7 @@
 #include <erslib/dbio/reflect/value.hpp>
 
 
-namespace dbio::impl {
+namespace dbio::impl::reflect {
     template<RowType T>
     using ColumnIndex = std::array<int, column_count<T>>;
 
@@ -65,10 +65,10 @@ namespace dbio::impl {
 }
 
 
-template<dbio::impl::RowType T>
+template<dbio::impl::reflect::RowType T>
 struct dbio::impl::row_reader<T> {
-    using state = ColumnIndex<T>;
+    using state = reflect::ColumnIndex<T>;
 
-    static state prepare(const pqxx::result& from) { return map_columns<T>(from); }
-    static T read(pqxx::row_ref row, const state& index) { return from_row<T>(row, index); }
+    static state prepare(const pqxx::result& from) { return reflect::map_columns<T>(from); }
+    static T read(pqxx::row_ref row, const state& index) { return reflect::from_row<T>(row, index); }
 };

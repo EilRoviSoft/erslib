@@ -11,7 +11,7 @@
 
 // ers
 #include <erslib/dbio.hpp>
-#include <erslib/dbio/query.hpp>
+#include <erslib/dbio/query_builder.hpp>
 
 #ifdef ERSLIB_HAS_REFLECTION
 #include <erslib/dbio/reflect.hpp>
@@ -51,6 +51,15 @@ namespace {
         uint32_t tag_id = dbio::undefined_id;
         uint16_t position;
     };
+
+    struct CascadeHitResult {
+        uint32_t image_id;
+        uint32_t tag_id;
+    };
+}
+
+namespace query {
+    struct CascadeSearch;
 }
 
 template<>
@@ -63,6 +72,19 @@ template<>
 struct dbio::reflect::Declaration<ImageTag> : Table<"reflect_image_tags"> {
     Pk<"image_id", "tag_id"> reflect_image_tags_pk;
 };
+
+template<>
+struct dbio::reflect::Declaration<CascadeHitResult> {};
+
+template<>
+struct dbio::reflect::Declaration<query::CascadeSearch> : dbio::reflect::Query<"cascade_search"> {
+    struct Input { uint32_t image_id; };
+    using Output = CascadeHitResult;
+};
+
+namespace query {
+    inline constexpr auto cascade_search = dbio::reflect::query_fn<CascadeSearch>;
+}
 
 
 namespace {
@@ -148,6 +170,18 @@ TEST_CASE("dbio reflect: round trip against postgres" * doctest::skip(dsn() == n
 
         REQUIRE(tags->size() == 1);
         CHECK((*tags->begin()).position == 2);
+
+        dbio::QueryStore local_queries;
+        local_queries.load_directory(fs::path(TEST_QUERY_DIR));
+
+        auto hits = query::cascade_search(id).exec(tx, local_queries);
+
+        if (!hits)
+            return hits.error();
+
+        REQUIRE(hits->size() == 1);
+        CHECK((*hits->begin()).image_id == id);
+        CHECK((*hits->begin()).tag_id == 7);
 
         if (auto s = (delete_from("reflect_image_tags")
                 | where("image_id", id)

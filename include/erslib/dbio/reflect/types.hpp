@@ -12,10 +12,10 @@
 
 // Table
 
-namespace dbio::impl {
+namespace dbio::impl::reflect {
     template<ers::fixed_string Name>
     struct Table {
-        static constexpr auto table_name = Name;
+        static constexpr auto name = Name;
     };
 
 
@@ -27,9 +27,26 @@ namespace dbio::impl {
 }
 
 
+// Query
+
+namespace dbio::impl::reflect {
+    template<ers::fixed_string Name>
+    struct Query {
+        static constexpr auto name = Name;
+    };
+
+
+    template<typename T>
+    struct is_query : std::false_type {};
+
+    template<ers::fixed_string Name>
+    struct is_query<Query<Name>> : std::true_type {};
+}
+
+
 // Metadata
 
-namespace dbio::impl {
+namespace dbio::impl::reflect {
     template<ers::fixed_string... Fields>
     struct Pk {};
 
@@ -53,7 +70,7 @@ namespace dbio::impl {
 }
 
 
-namespace dbio::impl {
+namespace dbio::impl::reflect {
     enum class action_on_delete {
         none,
         cascade,
@@ -94,7 +111,7 @@ namespace dbio::impl {
 }
 
 
-namespace dbio::impl {
+namespace dbio::impl::reflect {
     template<ers::fixed_string... Fields>
     struct Unique {};
 
@@ -118,7 +135,7 @@ namespace dbio::impl {
 }
 
 
-namespace dbio::impl {
+namespace dbio::impl::reflect {
     template<ers::fixed_string Field, auto Value>
     struct Default {};
 
@@ -141,7 +158,7 @@ namespace dbio::impl {
 }
 
 
-namespace dbio::impl {
+namespace dbio::impl::reflect {
     template<ers::fixed_string Field>
     struct Identity {};
 
@@ -165,7 +182,7 @@ namespace dbio::impl {
 
 // Annotations utility
 
-namespace dbio::impl {
+namespace dbio::impl::reflect {
     template<ers::fixed_string Name = "", ers::fixed_string Type = "">
     struct column_t {};
 
@@ -192,7 +209,7 @@ namespace dbio::impl {
 }
 
 
-namespace dbio::impl {
+namespace dbio::impl::reflect {
     struct skip_t {};
 
 

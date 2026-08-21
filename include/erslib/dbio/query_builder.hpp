@@ -13,7 +13,7 @@
 
 #include <erslib/dbio/impl/clause.hpp>
 #include <erslib/dbio/impl/layout.hpp>
-#include <erslib/dbio/impl/query.hpp>
+#include <erslib/dbio/impl/query_builder.hpp>
 #include <erslib/dbio/impl/slot.hpp>
 
 // Clauses
@@ -68,7 +68,7 @@ namespace dbio {
     using impl::Context;
 
     using impl::Layout;
-    using impl::Query;
+    using impl::QueryBuilder;
 
     using impl::Arity;
     using impl::Slot;

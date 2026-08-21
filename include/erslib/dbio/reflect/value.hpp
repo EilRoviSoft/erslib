@@ -13,7 +13,7 @@
 
 // Declaration
 
-namespace dbio::impl {
+namespace dbio::impl::reflect {
     template<typename T>
     struct sql_value;
 }
@@ -21,7 +21,7 @@ namespace dbio::impl {
 
 // Implementation
 
-namespace dbio::impl {
+namespace dbio::impl::reflect {
     template<typename T>
     struct sql_value {
         static void bind(pqxx::params& out, const T& what) {
@@ -54,7 +54,7 @@ namespace dbio::impl {
 
 // Utility
 
-namespace dbio::impl {
+namespace dbio::impl::reflect {
     template<typename T>
     binder_t value_binder(T value) {
         return [stored = std::move(value)](pqxx::params& out) {

@@ -5,7 +5,7 @@
 #include <string>
 
 // ers
-#include <erslib/dbio/impl/query.hpp>
+#include <erslib/dbio/impl/query_builder.hpp>
 
 // export
 #include <erslib/export.hpp>
@@ -26,6 +26,6 @@ namespace dbio::impl {
 
 
     namespace layouts {
-        ERSLIB_EXPORT Query insert_into(std::string table);
+        ERSLIB_EXPORT QueryBuilder insert_into(std::string table);
     }
 }

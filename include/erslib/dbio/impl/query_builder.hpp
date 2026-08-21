@@ -17,11 +17,11 @@
 // Query
 
 namespace dbio::impl {
-    class ERSLIB_EXPORT Query {
+    class ERSLIB_EXPORT QueryBuilder {
     public:
         // Member functions
 
-        explicit Query(LayoutView layout) :
+        explicit QueryBuilder(LayoutView layout) :
             _layout(layout) {
         }
 
@@ -90,11 +90,11 @@ namespace dbio::impl {
 // Operators
 
 namespace dbio::impl {
-    Query& operator|(Query& lhs, Clause rhs);
-    Query&& operator|(Query&& lhs, Clause rhs);
-    Query& operator|=(Query& lhs, Clause rhs);
+    QueryBuilder& operator|(QueryBuilder& lhs, Clause rhs);
+    QueryBuilder&& operator|(QueryBuilder&& lhs, Clause rhs);
+    QueryBuilder& operator|=(QueryBuilder& lhs, Clause rhs);
 
-    Query& operator|(Query& lhs, std::vector<Clause> rhs);
-    Query&& operator|(Query&& lhs, std::vector<Clause> rhs);
-    Query& operator|=(Query& lhs, std::vector<Clause> rhs);
+    QueryBuilder& operator|(QueryBuilder& lhs, std::vector<Clause> rhs);
+    QueryBuilder&& operator|(QueryBuilder&& lhs, std::vector<Clause> rhs);
+    QueryBuilder& operator|=(QueryBuilder& lhs, std::vector<Clause> rhs);
 }

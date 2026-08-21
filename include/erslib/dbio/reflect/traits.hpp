@@ -11,7 +11,7 @@
 
 // Declaration
 
-namespace dbio::impl {
+namespace dbio::impl::reflect {
     template<typename T>
     struct sql_type;
 }
@@ -19,7 +19,7 @@ namespace dbio::impl {
 
 // Implementation
 
-namespace dbio::impl {
+namespace dbio::impl::reflect {
     template<>
     struct sql_type<bool> {
         static constexpr std::string_view name = "BOOLEAN";
@@ -64,7 +64,7 @@ namespace dbio::impl {
 }
 
 
-namespace dbio::impl {
+namespace dbio::impl::reflect {
     template<>
     struct sql_type<std::string> {
         static constexpr std::string_view name = "TEXT";

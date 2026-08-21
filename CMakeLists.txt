@@ -223,7 +223,7 @@ if(ERSLIB_BUILD_DBIO)
             "src/erslib/dbio/impl/context.cpp"
             "src/erslib/dbio/impl/identity.cpp"
             "src/erslib/dbio/impl/layout.cpp"
-            "src/erslib/dbio/impl/query.cpp"
+            "src/erslib/dbio/impl/query_builder.cpp"
 
             "src/erslib/dbio/clauses/assign.cpp"
             "src/erslib/dbio/clauses/bound.cpp"
@@ -239,12 +239,6 @@ if(ERSLIB_BUILD_DBIO)
             "src/erslib/dbio/layouts/insert.cpp"
             "src/erslib/dbio/layouts/select.cpp"
             "src/erslib/dbio/layouts/update.cpp"
-
-            "src/erslib/dbio/connection_pool.cpp"
-            "src/erslib/dbio/database.cpp"
-            "src/erslib/dbio/formatter.cpp"
-            "src/erslib/dbio/options.cpp"
-            "src/erslib/dbio/query_store.cpp"
 
             "src/erslib/dbio/connection_pool.cpp"
             "src/erslib/dbio/database.cpp"

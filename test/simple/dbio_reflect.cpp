@@ -10,11 +10,14 @@
 #include <string_view>
 #include <type_traits>
 
+// pqxx
+#include <pqxx/params>
+
 // ers
 #include <erslib/core/type/optional.hpp>
 #include <erslib/dbio/constant.hpp>
 #include <erslib/dbio/database.hpp>
-#include <erslib/dbio/query.hpp>
+#include <erslib/dbio/query_builder.hpp>
 #include <erslib/dbio/reflect.hpp>
 
 
@@ -43,7 +46,7 @@ namespace {
         return squeeze(text).find(squeeze(what)) != std::string::npos;
     }
 
-    std::string sql_of(const dbio::Query& what) {
+    std::string sql_of(const dbio::QueryBuilder& what) {
         auto out = what.to_sql();
         REQUIRE(out.has_value());
         return squeeze(*out);
@@ -121,6 +124,21 @@ struct dbio::reflect::Declaration<ProductImage> : Table<"product_images"> {
 
 template<>
 struct dbio::reflect::Declaration<CascadeHit> {};
+
+
+namespace query {
+    struct CascadeSearch;
+}
+
+template<>
+struct dbio::reflect::Declaration<query::CascadeSearch> : Query<"cascade_search"> {
+    struct Input { uint32_t image_id; };
+    using Output = CascadeHit;
+};
+
+namespace query {
+    inline constexpr auto cascade_search = dbio::reflect::query_fn<CascadeSearch>;
+}
 
 
 TEST_CASE("dbio reflect: squeeze") {
@@ -231,6 +249,23 @@ TEST_CASE("dbio reflect: entities are readable rows") {
     static_assert(std::is_same_v<dbio::row_reader<Image>::state, dbio::reflect::ColumnIndex<Image>>);
     static_assert(std::is_empty_v<dbio::row_reader<Counted>::state>);
 }
+
+TEST_CASE("dbio reflect: statement") {
+    using namespace dbio::reflect;
+
+    CHECK(query_label<query::CascadeSearch> == "cascade_search");
+    static_assert(Statement<query::CascadeSearch>);
+    static_assert(!Entity<query::CascadeSearch>);
+    static_assert(std::is_same_v<QueryCall<query::CascadeSearch>::Output, CascadeHit>);
+
+    pqxx::params params;
+    bind_params(params, Declaration<query::CascadeSearch>::Input{42});
+    CHECK(params.size() == 1);
+
+    [[maybe_unused]] auto call = query::cascade_search(static_cast<uint32_t>(7));
+    static_assert(std::is_same_v<decltype(call), QueryCall<query::CascadeSearch>>);
+}
+
 
 namespace {
     [[maybe_unused]]

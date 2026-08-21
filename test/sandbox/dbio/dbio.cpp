@@ -2,7 +2,7 @@
 #include <iostream>
 
 // ers
-#include <erslib/dbio/query.hpp>
+#include <erslib/dbio/query_builder.hpp>
 
 
 namespace {
@@ -26,12 +26,12 @@ namespace {
 
 
 int main() {
-    const dbio::Query queries[] = {
+    const dbio::QueryBuilder queries[] = {
         select_users_by_id_and_name(),
         insert_id_and_name_into_users(),
     };
 
-    for (const dbio::Query& it : queries) {
+    for (const dbio::QueryBuilder& it : queries) {
         auto r = it.to_sql();
         std::cout << (r ? *r : "No result") << '\n';
     }

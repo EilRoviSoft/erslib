@@ -1,7 +1,7 @@
 #pragma once
 
 
-namespace dbio::impl {
+namespace dbio::impl::reflect {
     template<typename T>
     struct Declaration;
 }

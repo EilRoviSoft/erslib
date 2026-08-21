@@ -28,8 +28,8 @@ namespace {
 
 // Public API
 
-dbio::impl::Query dbio::impl::layouts::delete_from(std::string table) {
-    Query q(delete_layout);
+dbio::impl::QueryBuilder dbio::impl::layouts::delete_from(std::string table) {
+    QueryBuilder q(delete_layout);
     q |= clauses::identifier(&slots::delete_from, std::move(table));
     return q;
 }

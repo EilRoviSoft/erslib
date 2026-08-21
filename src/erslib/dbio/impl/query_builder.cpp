@@ -1,4 +1,4 @@
-#include "erslib/dbio/impl/query.hpp"
+#include "erslib/dbio/impl/query_builder.hpp"
 
 // std
 #include <algorithm>
@@ -9,7 +9,7 @@
 
 // Modifiers
 
-void dbio::impl::Query::add(Clause clause) {
+void dbio::impl::QueryBuilder::add(Clause clause) {
     if (clause->slot()->arity == Arity::Single) {
         std::erase_if(_clauses, [&](const Clause& it) {
             return same_slot(it->slot(), clause->slot());
@@ -19,13 +19,13 @@ void dbio::impl::Query::add(Clause clause) {
     _clauses.emplace_back(std::move(clause));
 }
 
-void dbio::impl::Query::add(std::vector<Clause> clauses) {
+void dbio::impl::QueryBuilder::add(std::vector<Clause> clauses) {
     for (auto& it : clauses)
         add(std::move(it));
 }
 
 
-ers::Status dbio::impl::Query::build(Context& ctx) const {
+ers::Status dbio::impl::QueryBuilder::build(Context& ctx) const {
     if (auto s = _validate(); !s)
         return s;
 
@@ -36,7 +36,7 @@ ers::Status dbio::impl::Query::build(Context& ctx) const {
     return ers::ok;
 }
 
-ers::Status dbio::impl::Query::_render_slot(Context& ctx, const SlotBinding& binding) const {
+ers::Status dbio::impl::QueryBuilder::_render_slot(Context& ctx, const SlotBinding& binding) const {
     if (binding.renderer)
         return _render_custom(ctx, binding);
 
@@ -66,7 +66,7 @@ ers::Status dbio::impl::Query::_render_slot(Context& ctx, const SlotBinding& bin
     return ers::ok;
 }
 
-ers::Status dbio::impl::Query::_render_custom(Context& ctx, const SlotBinding& binding) const {
+ers::Status dbio::impl::QueryBuilder::_render_custom(Context& ctx, const SlotBinding& binding) const {
     std::vector<const Clause*> group;
 
     for (const auto& it : _clauses) {
@@ -88,7 +88,7 @@ ers::Status dbio::impl::Query::_render_custom(Context& ctx, const SlotBinding& b
     return binding.renderer(ctx, group);
 }
 
-ers::Status dbio::impl::Query::_validate() const {
+ers::Status dbio::impl::QueryBuilder::_validate() const {
     for (const auto& it : _clauses) {
         if (!_layout.contains(it->slot())) {
             return ers::make_error("Slot '{}' is not part of this statement",
@@ -100,7 +100,7 @@ ers::Status dbio::impl::Query::_validate() const {
 }
 
 
-ers::Result<std::string> dbio::impl::Query::to_sql() const {
+ers::Result<std::string> dbio::impl::QueryBuilder::to_sql() const {
     Context ctx;
 
     if (auto s = build(ctx); !s)
@@ -112,7 +112,7 @@ ers::Result<std::string> dbio::impl::Query::to_sql() const {
 
 // Executors
 
-ers::Result<pqxx::result> dbio::impl::Query::exec(pqxx::dbtransaction& tx) const ERS_DBIO_TRY_EVAL {
+ers::Result<pqxx::result> dbio::impl::QueryBuilder::exec(pqxx::dbtransaction& tx) const ERS_DBIO_TRY_EVAL {
     Context ctx(tx);
 
     if (auto s = build(ctx); !s)
@@ -122,7 +122,7 @@ ers::Result<pqxx::result> dbio::impl::Query::exec(pqxx::dbtransaction& tx) const
 }
 ERS_DBIO_CATCH_EVAL_ERRORS
 
-ers::Status dbio::impl::Query::exec_and_discard(pqxx::dbtransaction& tx) const {
+ers::Status dbio::impl::QueryBuilder::exec_and_discard(pqxx::dbtransaction& tx) const {
     auto r = exec(tx);
     if (!r)
         return r.error();
@@ -133,30 +133,30 @@ ers::Status dbio::impl::Query::exec_and_discard(pqxx::dbtransaction& tx) const {
 
 // Operators
 
-dbio::impl::Query& dbio::impl::operator|(Query& lhs, Clause rhs) {
+dbio::impl::QueryBuilder& dbio::impl::operator|(QueryBuilder& lhs, Clause rhs) {
     lhs.add(std::move(rhs));
     return lhs;
 }
 
-dbio::impl::Query&& dbio::impl::operator|(Query&& lhs, Clause rhs) {
+dbio::impl::QueryBuilder&& dbio::impl::operator|(QueryBuilder&& lhs, Clause rhs) {
     lhs.add(std::move(rhs));
     return std::move(lhs);
 }
 
-dbio::impl::Query& dbio::impl::operator|=(Query& lhs, Clause rhs) {
+dbio::impl::QueryBuilder& dbio::impl::operator|=(QueryBuilder& lhs, Clause rhs) {
     return lhs | std::move(rhs);
 }
 
-dbio::impl::Query& dbio::impl::operator|(Query& lhs, std::vector<Clause> rhs) {
+dbio::impl::QueryBuilder& dbio::impl::operator|(QueryBuilder& lhs, std::vector<Clause> rhs) {
     lhs.add(std::move(rhs));
     return lhs;
 }
 
-dbio::impl::Query&& dbio::impl::operator|(Query&& lhs, std::vector<Clause> rhs) {
+dbio::impl::QueryBuilder&& dbio::impl::operator|(QueryBuilder&& lhs, std::vector<Clause> rhs) {
     lhs.add(std::move(rhs));
     return std::move(lhs);
 }
 
-dbio::impl::Query& dbio::impl::operator|=(Query& lhs, std::vector<Clause> rhs) {
+dbio::impl::QueryBuilder& dbio::impl::operator|=(QueryBuilder& lhs, std::vector<Clause> rhs) {
     return lhs | std::move(rhs);
 }

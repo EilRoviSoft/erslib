@@ -28,8 +28,8 @@ namespace {
 
 // Public API
 
-dbio::impl::Query dbio::impl::layouts::update(std::string table) {
-    Query q(update_layout);
+dbio::impl::QueryBuilder dbio::impl::layouts::update(std::string table) {
+    QueryBuilder q(update_layout);
     q |= clauses::identifier(&slots::update, std::move(table));
     return q;
 }

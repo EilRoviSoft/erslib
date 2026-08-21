@@ -35,8 +35,8 @@ namespace {
 
 // Public API
 
-dbio::impl::Query dbio::impl::layouts::insert_into(std::string table) {
-    Query q(insert_layout);
+dbio::impl::QueryBuilder dbio::impl::layouts::insert_into(std::string table) {
+    QueryBuilder q(insert_layout);
     q |= clauses::identifier(&slots::insert_into, std::move(table));
     return q;
 }
