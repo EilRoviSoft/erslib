@@ -50,7 +50,7 @@ namespace dbio::impl {
         ers::Status exec_and_discard(pqxx::dbtransaction& tx) const;
 
         template<typename T>
-            requires ValidRow<T>
+            requires ReadableRow<T>
         ers::Result<RowGenerator<T>> exec_as(pqxx::dbtransaction& tx) const {
             auto r = exec(tx);
             if (!r)
@@ -60,7 +60,7 @@ namespace dbio::impl {
         }
 
         template<typename T>
-            requires ValidRow<T>
+            requires ReadableRow<T>
         ers::Result<T> exec_one(pqxx::dbtransaction& tx) const {
             auto r = exec(tx);
             if (!r)
@@ -69,7 +69,7 @@ namespace dbio::impl {
             if (r->size() != 1)
                 return ers::make_error("Expected exactly 1 row, got {}.", r->size());
 
-            return T(r->one_row_ref());
+            return row_reader<T>::read(r->one_row_ref(), row_reader<T>::prepare(*r));
         }
 
 

@@ -119,28 +119,6 @@ namespace dbio::impl {
 
 
 namespace dbio::impl {
-    template<ers::fixed_string Constraint>
-    struct Conflict {};
-
-
-    template<typename T>
-    struct is_conflict : std::false_type {};
-
-    template<ers::fixed_string Constraint>
-    struct is_conflict<Conflict<Constraint>> : std::true_type {};
-
-
-    template<typename T>
-    struct conflict_info;
-
-    template<ers::fixed_string Constraint>
-    struct conflict_info<Conflict<Constraint>> {
-        static constexpr auto constraint = std::string_view(Constraint.value, Constraint.strlen());
-    };
-}
-
-
-namespace dbio::impl {
     template<ers::fixed_string Field, auto Value>
     struct Default {};
 
@@ -185,36 +163,47 @@ namespace dbio::impl {
 }
 
 
+// Field-level markers. These are annotations rather than Declaration members, so they are
+// values, not types - an annotation takes a constant expression and a type name is not one.
+
 namespace dbio::impl {
     template<ers::fixed_string Name = "", ers::fixed_string Type = "">
-    struct Column {};
+    struct column_t {};
 
 
     template<typename T>
     struct is_column : std::false_type {};
 
     template<ers::fixed_string Name, ers::fixed_string Type>
-    struct is_column<Column<Name, Type>> : std::true_type {};
+    struct is_column<column_t<Name, Type>> : std::true_type {};
 
 
     template<typename T>
     struct column_info;
 
     template<ers::fixed_string Name, ers::fixed_string Type>
-    struct column_info<Column<Name, Type>> {
+    struct column_info<column_t<Name, Type>> {
         static constexpr std::string_view name = std::string_view(Name.value, Name.strlen());
         static constexpr std::string_view type = std::string_view(Type.value, Type.strlen());
     };
+
+
+    // An empty argument leaves that facet alone: Column<"descr"> renames without retyping.
+    template<ers::fixed_string Name = "", ers::fixed_string Type = "">
+    inline constexpr column_t<Name, Type> Column {};
 }
 
 
 namespace dbio::impl {
-    struct Skip {};
+    struct skip_t {};
 
 
     template<typename T>
     struct is_skip : std::false_type {};
 
     template<>
-    struct is_skip<Skip> : std::true_type {};
+    struct is_skip<skip_t> : std::true_type {};
+
+
+    inline constexpr skip_t Skip {};
 }

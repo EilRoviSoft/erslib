@@ -72,29 +72,29 @@ namespace dbio::impl {
 namespace dbio::impl {
     template<Entity T>
     consteval std::string_view create_table() {
-        static_assert(declaration_is_valid<T>(),
+        static_assert(declaration_is_valid<T>,
             "Declaration names a column that does not exist on the entity");
 
         std::string out = "CREATE TABLE IF NOT EXISTS ";
-        out += table_name<T>();
+        out += table_name<T>;
         out += " (\n";
 
         template for (constexpr auto m : std::define_static_array(columns<T>())) {
             out += "    ";
-            out += column_name<T, m>();
+            out += column_name<m>;
             out += ' ';
-            out += sql_type_name<T, m>();
+            out += sql_type_name<m>;
 
-            if constexpr (is_identity_column<T, m>())
+            if constexpr (is_identity_column<T, m>)
                 out += " GENERATED ALWAYS AS IDENTITY";
-            else if constexpr (!is_nullable<m>())
+            else if constexpr (!is_nullable<m>)
                 out += " NOT NULL";
 
             template for (constexpr auto it : std::define_static_array(declaration_members<T>())) {
                 using entry = typename [:std::meta::type_of(it):];
 
                 if constexpr (is_default<entry>::value)
-                    if constexpr (default_info<entry>::field == column_name<T, m>()) {
+                    if constexpr (default_info<entry>::field == column_name<m>) {
                         out += " DEFAULT ";
                         out += sql_literal<default_info<entry>::value>();
                     }
