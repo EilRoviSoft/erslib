@@ -7,6 +7,7 @@
 
 // ers
 #include <erslib/core/hashing/rapid.hpp>
+#include <erslib/core/type/general.hpp>
 #include <erslib/core/type/result.hpp>
 #include <erslib/dbio/impl/context.hpp>
 #include <erslib/dbio/impl/fwd.hpp>
@@ -25,7 +26,7 @@ namespace dbio::impl {
         std::string_view name;
         Arity arity;
 
-        constexpr uint64_t id() const noexcept {
+        constexpr u64 id() const noexcept {
             return ers::RapidHash<std::string_view> {}(name);
         }
     };

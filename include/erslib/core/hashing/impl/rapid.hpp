@@ -32,6 +32,9 @@
 // std
 #include <cstdint>
 
+// ers
+#include <erslib/core/type/general.hpp>
+
 
 /*
  *  Unrolled macro.
@@ -92,7 +95,7 @@ namespace ers::impl::hashing {
     /*
      *  Default secret parameters.
      */
-    constexpr uint64_t rapid_secret[8] = {
+    constexpr u64 rapid_secret[8] = {
         0x2d358dccaa6c78a5ull,
         0x8bb84b93962eacc9ull,
         0x4b33a62ed433d4a3ull,
@@ -119,18 +122,18 @@ namespace ers::impl::hashing {
      *  Xors and overwrites A contents with C's low 64 bits.
      *  Xors and overwrites B contents with C's high 64 bits.
      */
-    constexpr void rapid_mum(uint64_t* A, uint64_t* B) noexcept {
+    constexpr void rapid_mum(u64* A, u64* B) noexcept {
 #ifdef __SIZEOF_INT128__
         __uint128_t r = *A; r *= *B;
 #ifdef RAPIDHASH_PROTECTED
-        *A ^= (uint64_t) r; *B ^= (uint64_t) (r >> 64);
+        *A ^= (u64) r; *B ^= (u64) (r >> 64);
 #else
-        *A = (uint64_t) r; *B = (uint64_t) (r >> 64);
+        *A = (u64) r; *B = (u64) (r >> 64);
 #endif
 #elif defined(_MSC_VER) && (defined(_WIN64) || defined(_M_HYBRID_CHPE_ARM64))
 #if defined(_M_X64)
 #ifdef RAPIDHASH_PROTECTED
-        uint64_t a, b;
+        u64 a, b;
         a = _umul128(*A, *B, &b);
         *A ^= a; *B ^= b;
 #else
@@ -138,22 +141,22 @@ namespace ers::impl::hashing {
 #endif
 #else
 #ifdef RAPIDHASH_PROTECTED
-        uint64_t a, b;
+        u64 a, b;
         b = __umulh(*A, *B);
         a = *A * *B;
         *A ^= a; *B ^= b;
 #else
-        uint64_t c = __umulh(*A, *B);
+        u64 c = __umulh(*A, *B);
         *A = *A * *B;
         *B = c;
 #endif
 #endif
 #else
-        uint64_t ha = *A >> 32, hb = *B >> 32, la = (uint32_t) *A, lb = (uint32_t) *B;
-        uint64_t rh = ha * hb, rm0 = ha * lb, rm1 = hb * la, rl = la * lb, t = rl + (rm0 << 32), c = t < rl;
-        uint64_t lo = t + (rm1 << 32);
+        u64 ha = *A >> 32, hb = *B >> 32, la = static_cast<u32>(*A), lb = static_cast<u32>(*B);
+        u64 rh = ha * hb, rm0 = ha * lb, rm1 = hb * la, rl = la * lb, t = rl + (rm0 << 32), c = t < rl;
+        u64 lo = t + (rm1 << 32);
         c += lo < t;
-        uint64_t hi = rh + (rm0 >> 32) + (rm1 >> 32) + c;
+        u64 hi = rh + (rm0 >> 32) + (rm1 >> 32) + c;
 #ifdef RAPIDHASH_PROTECTED
         *A ^= lo; *B ^= hi;
 #else
@@ -171,7 +174,7 @@ namespace ers::impl::hashing {
      *  Calculates 128-bit C = A * B.
      *  Returns 64-bit xor between high and low 64 bits of C.
      */
-    constexpr uint64_t rapid_mix(uint64_t A, uint64_t B) noexcept {
+    constexpr u64 rapid_mix(u64 A, u64 B) noexcept {
         rapid_mum(&A, &B);
         return A ^ B;
     }
@@ -180,47 +183,47 @@ namespace ers::impl::hashing {
      *  Read functions.
      */
 #ifdef RAPIDHASH_LITTLE_ENDIAN
-    constexpr uint64_t rapid_read64(const std::byte* p) noexcept {
-        return static_cast<uint64_t>(std::to_integer<uint8_t>(p[0]))
-            | static_cast<uint64_t>(std::to_integer<uint8_t>(p[1])) << 8
-            | static_cast<uint64_t>(std::to_integer<uint8_t>(p[2])) << 16
-            | static_cast<uint64_t>(std::to_integer<uint8_t>(p[3])) << 24
-            | static_cast<uint64_t>(std::to_integer<uint8_t>(p[4])) << 32
-            | static_cast<uint64_t>(std::to_integer<uint8_t>(p[5])) << 40
-            | static_cast<uint64_t>(std::to_integer<uint8_t>(p[6])) << 48
-            | static_cast<uint64_t>(std::to_integer<uint8_t>(p[7])) << 56;
+    constexpr u64 rapid_read64(const std::byte* p) noexcept {
+        return static_cast<u64>(std::to_integer<u8>(p[0]))
+            | static_cast<u64>(std::to_integer<u8>(p[1])) << 8
+            | static_cast<u64>(std::to_integer<u8>(p[2])) << 16
+            | static_cast<u64>(std::to_integer<u8>(p[3])) << 24
+            | static_cast<u64>(std::to_integer<u8>(p[4])) << 32
+            | static_cast<u64>(std::to_integer<u8>(p[5])) << 40
+            | static_cast<u64>(std::to_integer<u8>(p[6])) << 48
+            | static_cast<u64>(std::to_integer<u8>(p[7])) << 56;
     }
-    constexpr uint64_t rapid_read32(const std::byte* p) noexcept {
-        return static_cast<uint32_t>(std::to_integer<uint8_t>(p[0]))
-            | static_cast<uint32_t>(std::to_integer<uint8_t>(p[1])) << 8
-            | static_cast<uint32_t>(std::to_integer<uint8_t>(p[2])) << 16
-            | static_cast<uint32_t>(std::to_integer<uint8_t>(p[3])) << 24;
+    constexpr u64 rapid_read32(const std::byte* p) noexcept {
+        return static_cast<u32>(std::to_integer<u8>(p[0]))
+            | static_cast<u32>(std::to_integer<u8>(p[1])) << 8
+            | static_cast<u32>(std::to_integer<u8>(p[2])) << 16
+            | static_cast<u32>(std::to_integer<u8>(p[3])) << 24;
     }
 #elif defined(__GNUC__) || defined(__INTEL_COMPILER) || defined(__clang__)
-    constexpr uint64_t rapid_read64(const std::byte* p) noexcept {
-        uint64_t v;
-        memcpy(&v, p, sizeof(uint64_t));
+    constexpr u64 rapid_read64(const std::byte* p) noexcept {
+        u64 v;
+        memcpy(&v, p, sizeof(u64));
         return __builtin_bswap64(v);
     }
-    constexpr uint64_t rapid_read32(const std::byte* p) noexcept {
-        uint32_t v;
-        memcpy(&v, p, sizeof(uint32_t));
+    constexpr u64 rapid_read32(const std::byte* p) noexcept {
+        u32 v;
+        memcpy(&v, p, sizeof(u32));
         return __builtin_bswap32(v);
     }
 #elif defined(_MSC_VER)
-    constexpr uint64_t rapid_read64(const std::byte* p) noexcept {
-        uint64_t v;
-        memcpy(&v, p, sizeof(uint64_t));
+    constexpr u64 rapid_read64(const std::byte* p) noexcept {
+        u64 v;
+        memcpy(&v, p, sizeof(u64));
         return _byteswap_uint64(v);
     }
-    constexpr uint64_t rapid_read32(const std::byte* p) noexcept {
-        uint32_t v;
-        memcpy(&v, p, sizeof(uint32_t));
+    constexpr u64 rapid_read32(const std::byte* p) noexcept {
+        u32 v;
+        memcpy(&v, p, sizeof(u32));
         return _byteswap_ulong(v);
     }
 #else
-    constexpr uint64_t rapid_read64(const std::byte* p) noexcept {
-        uint64_t v;
+    constexpr u64 rapid_read64(const std::byte* p) noexcept {
+        u64 v;
         memcpy(&v, p, 8);
         return (((v >> 56) & 0xff)
             | ((v >> 40) & 0xff00)
@@ -231,8 +234,8 @@ namespace ers::impl::hashing {
             | ((v << 40) & 0xff000000000000)
             | ((v << 56) & 0xff00000000000000));
     }
-    constexpr uint64_t rapid_read32(const std::byte* p) noexcept {
-        uint32_t v;
+    constexpr u64 rapid_read32(const std::byte* p) noexcept {
+        u32 v;
         memcpy(&v, p, 4);
         return (((v >> 24) & 0xff)
             | ((v >> 8) & 0xff00)
@@ -251,9 +254,9 @@ namespace ers::impl::hashing {
      *
      *  Returns a 64-bit hash.
      */
-    constexpr uint64_t rapidhash(const std::byte* p, size_t len, uint64_t seed, const uint64_t* secret) noexcept {
+    constexpr u64 rapidhash(const std::byte* p, size_t len, u64 seed, const u64* secret) noexcept {
         seed ^= rapid_mix(seed ^ secret[2], secret[1]);
-        uint64_t a = 0, b = 0;
+        u64 a = 0, b = 0;
         size_t i = len;
 
         if (_likely_(len <= 16)) {
@@ -270,15 +273,15 @@ namespace ers::impl::hashing {
                     b = rapid_read32(plast);
                 }
             } else if (len > 0) {
-                a = static_cast<uint64_t>(p[0]) << 45 | static_cast<uint64_t>(p[len - 1]);
-                b = static_cast<uint64_t>(p[len >> 1]);
+                a = static_cast<u64>(p[0]) << 45 | static_cast<u64>(p[len - 1]);
+                b = static_cast<u64>(p[len >> 1]);
             } else
                 a = b = 0;
         } else {
             if (len > 112) {
-                uint64_t see1 = seed, see2 = seed;
-                uint64_t see3 = seed, see4 = seed;
-                uint64_t see5 = seed, see6 = seed;
+                u64 see1 = seed, see2 = seed;
+                u64 see3 = seed, see4 = seed;
+                u64 see5 = seed, see6 = seed;
 
 #ifdef RAPIDHASH_COMPACT
                 do {
@@ -371,9 +374,9 @@ namespace ers::impl::hashing {
      *
      *  Returns a 64-bit hash.
      */
-    constexpr uint64_t rapidhash_micro(const std::byte* p, size_t len, uint64_t seed, const uint64_t* secret) noexcept {
+    constexpr u64 rapidhash_micro(const std::byte* p, size_t len, u64 seed, const u64* secret) noexcept {
         seed ^= rapid_mix(seed ^ secret[2], secret[1]);
-        uint64_t a = 0, b = 0;
+        u64 a = 0, b = 0;
         size_t i = len;
 
         if (_likely_(len <= 16)) {
@@ -389,14 +392,14 @@ namespace ers::impl::hashing {
                     b = rapid_read32(plast);
                 }
             } else if (len > 0) {
-                a = static_cast<uint64_t>(p[0]) << 45 | static_cast<uint64_t>(p[len - 1]);
-                b = static_cast<uint64_t>(p[len >> 1]);
+                a = static_cast<u64>(p[0]) << 45 | static_cast<u64>(p[len - 1]);
+                b = static_cast<u64>(p[len >> 1]);
             } else
                 a = b = 0;
         } else {
             if (i > 80) {
-                uint64_t see1 = seed, see2 = seed;
-                uint64_t see3 = seed, see4 = seed;
+                u64 see1 = seed, see2 = seed;
+                u64 see3 = seed, see4 = seed;
 
                 do {
                     seed = rapid_mix(rapid_read64(p) ^ secret[0], rapid_read64(p + 8) ^ seed);
@@ -447,9 +450,9 @@ namespace ers::impl::hashing {
     *
     *  Returns a 64-bit hash.
     */
-    constexpr uint64_t rapidhash_nano(const std::byte* p, size_t len, uint64_t seed, const uint64_t* secret) noexcept {
+    constexpr u64 rapidhash_nano(const std::byte* p, size_t len, u64 seed, const u64* secret) noexcept {
         seed ^= rapid_mix(seed ^ secret[2], secret[1]);
-        uint64_t a = 0, b = 0;
+        u64 a = 0, b = 0;
         size_t i = len;
         if (_likely_(len <= 16)) {
             if (len >= 4) {
@@ -464,13 +467,13 @@ namespace ers::impl::hashing {
                     b = rapid_read32(plast);
                 }
             } else if (len > 0) {
-                a = static_cast<uint64_t>(p[0]) << 45 | static_cast<uint64_t>(p[len - 1]);
-                b = static_cast<uint64_t>(p[len >> 1]);
+                a = static_cast<u64>(p[0]) << 45 | static_cast<u64>(p[len - 1]);
+                b = static_cast<u64>(p[len >> 1]);
             } else
                 a = b = 0;
         } else {
             if (i > 48) {
-                uint64_t see1 = seed, see2 = seed;
+                u64 see1 = seed, see2 = seed;
 
                 do {
                     seed = rapid_mix(rapid_read64(p) ^ secret[0], rapid_read64(p + 8) ^ seed);

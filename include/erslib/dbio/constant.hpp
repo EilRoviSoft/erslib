@@ -1,13 +1,15 @@
 #pragma once
 
 // std
-#include <cstdint>
 #include <limits>
+
+// ers
+#include <erslib/core/type/general.hpp>
 
 
 namespace dbio::impl {
     // Sentinel for not-yet-persisted identity columns (GENERATED ALWAYS AS IDENTITY).
-    inline constexpr std::uint32_t undefined_id = std::numeric_limits<std::uint32_t>::max();
+    inline constexpr u32 undefined_id = std::numeric_limits<u32>::max();
 }
 
 

@@ -1,11 +1,10 @@
 #pragma once
 
 // std
-#include <cstdint>
 #include <string>
-#include <type_traits>
 
 // ers
+#include <erslib/core/type/general.hpp>
 #include <erslib/core/type/optional.hpp>
 
 
@@ -27,37 +26,37 @@ namespace dbio::impl::reflect {
     };
 
     template<>
-    struct sql_type<int16_t> {
+    struct sql_type<i16> {
         static constexpr std::string_view name = "SMALLINT";
         static constexpr bool nullable = false;
     };
 
     template<>
-    struct sql_type<uint16_t> {
+    struct sql_type<u16> {
         static constexpr std::string_view name = "SMALLINT";
         static constexpr bool nullable = false;
     };
 
     template<>
-    struct sql_type<int32_t> {
+    struct sql_type<i32> {
         static constexpr std::string_view name = "INTEGER";
         static constexpr bool nullable = false;
     };
     
     template<>
-    struct sql_type<uint32_t> {
+    struct sql_type<u32> {
         static constexpr std::string_view name = "INTEGER";
         static constexpr bool nullable = false;
     };
 
     template<>
-    struct sql_type<int64_t> {
+    struct sql_type<i64> {
         static constexpr std::string_view name = "BIGINT";
         static constexpr bool nullable = false;
     };
 
     template<>
-    struct sql_type<uint64_t> {
+    struct sql_type<u64> {
         static constexpr std::string_view name = "BIGINT";
         static constexpr bool nullable = false;
     };

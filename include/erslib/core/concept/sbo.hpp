@@ -4,6 +4,9 @@
 #include <cstdint>
 #include <type_traits>
 
+// ers
+#include <erslib/core/type/general.hpp>
+
 
 namespace ers::impl {
     template<typename T, size_t Size, size_t Align>
@@ -23,7 +26,7 @@ namespace ers::impl {
     constexpr bool is_sbo_applicable_v = is_sbo_applicable<T, Size, Align>::value;
 
 
-    enum class SboPolicy : uint8_t {
+    enum class SboPolicy : u8 {
         Empty = 0,
         Dynamic,
         Embedded

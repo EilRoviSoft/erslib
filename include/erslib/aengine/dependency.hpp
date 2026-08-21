@@ -6,19 +6,20 @@
 #include <erslib/core/exception.hpp>
 #include <erslib/core/convert/string.hpp>
 #include <erslib/core/hashing/rapid.hpp>
+#include <erslib/core/type/general.hpp>
 #include <erslib/core/type/result.hpp>
 #include <erslib/core/type/version.hpp>
 
 
 namespace aengine::impl {
-    enum class DependencyType : uint8_t {
+    enum class DependencyType : u8 {
         None = 0,
         Incompatible,
         Optional,
         Required
     };
 
-    enum class DependencyLimit : uint8_t {
+    enum class DependencyLimit : u8 {
         None = 0,
         Lower,
         Upper

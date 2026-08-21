@@ -29,6 +29,7 @@
 #include <erslib/core/meta.hpp>
 #include <erslib/core/convert/impl/to_str.hpp>
 #include <erslib/core/hashing/rapid.hpp>
+#include <erslib/core/type/general.hpp>
 #include <erslib/core/type/optional.hpp>
 #include <erslib/core/util/string.hpp>
 
@@ -85,8 +86,8 @@ namespace utl::impl {
     template<class T>
     using array_type_impl = std::vector<T>;
     using string_type_impl = std::string;
-    using integral_type_impl = int64_t;
-    using floating_type_impl = double;
+    using integral_type_impl = i64;
+    using floating_type_impl = f64;
     using bool_type_impl = bool;
 
     struct null_type_impl {
@@ -247,9 +248,9 @@ namespace utl::impl {
     // --- Node class ---
     // ==================
 
-    enum class Format : uint8_t { Pretty, Minimized };
+    enum class Format : u8 { Pretty, Minimized };
 
-    enum class NodeType : uint8_t {
+    enum class NodeType : u8 {
         None = 0, Object = 1, Array = 2, String = 3, Integral = 4, Floating = 5, Bool = 6
     };
 
@@ -665,7 +666,7 @@ struct ers::convert::to_string_backend<utl::impl::NodeType> {
             return UTL_JSON_NODE_TYPE_LITERAL(String, std::string);
 
         case Integral:
-            return UTL_JSON_NODE_TYPE_LITERAL(Integral, int64_t);
+            return UTL_JSON_NODE_TYPE_LITERAL(Integral, i64);
 
         case Floating:
             return UTL_JSON_NODE_TYPE_LITERAL(Floating, double);

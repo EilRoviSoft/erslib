@@ -70,7 +70,7 @@ ers::Status dbio::impl::WhereOpClause::render(Context& ctx) const {
     const auto op = op_text(_op);
     if (op.empty()) {
         return ers::make_error("Unknown operator ({}) for column '{}' in slot '{}'.",
-            static_cast<uint8_t>(_op), _column, slot()->name);
+            static_cast<u8>(_op), _column, slot()->name);
     }
 
     ctx.query += _column;

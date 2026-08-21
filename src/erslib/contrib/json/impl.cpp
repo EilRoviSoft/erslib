@@ -41,7 +41,7 @@ namespace {
     // Characters 'a', 'b', 'c', 'd', 'e', 'f' correspond to the bits taken from the codepoint 'U+ABCDEF'
     // (each letter in a codepoint is a hex corresponding to 4 bits, 6 positions => 24 bits of info).
     // In terms of C++ 'U+ABCDEF' codepoints can be expressed as an integer hex-literal '0xABCDEF'.
-    bool codepoint_to_utf8(std::string& destination, std::uint32_t cp) {
+    bool codepoint_to_utf8(std::string& destination, u32 cp) {
         // returns success so we can handle the error message inside the parser itself.
 
         std::array<char, 4> buffer;
@@ -93,13 +93,13 @@ namespace {
     // JSON '\u' escapes use UTF-16 surrogate pairs to encode codepoints outside of basic multilingual plane,
     // see https://unicodebook.readthedocs.io/unicode_encodings.html
     //     https://en.wikipedia.org/wiki/UTF-16
-    [[nodiscard]] constexpr std::uint32_t utf16_pair_to_codepoint(std::uint16_t high, std::uint16_t low) noexcept {
+    [[nodiscard]] constexpr u32 utf16_pair_to_codepoint(u16 high, u16 low) noexcept {
         return 0x10000 + ((high & 0x03FF) << 10) + (low & 0x03FF);
     }
 
     [[nodiscard]] std::string utf8_replace_non_ascii(std::string str, char replacement_char) noexcept {
         for (auto& e : str)
-            if (static_cast<std::uint8_t>(e) > 127) e = replacement_char;
+            if (static_cast<u8>(e) > 127) e = replacement_char;
         return str;
     }
 
@@ -427,7 +427,7 @@ namespace utl::impl {
 // =====================
 
 namespace {
-    constexpr std::uint8_t to_u8(char value) { return static_cast<std::uint8_t>(value); }
+    constexpr u8 to_u8(char value) { return static_cast<u8>(value); }
 
     static_assert(CHAR_BIT == 8); // we assume a sane platform, perhaps this isn't even necessary
 
@@ -446,7 +446,7 @@ namespace {
     // which ends up being a bit faster and also nicer.
     //
     // Note:
-    // It is important that we explicitly cast to 'uint8_t' when indexing, depending on the platform 'char' might
+    // It is important that we explicitly cast to 'u8' when indexing, depending on the platform 'char' might
     // be either signed or unsigned, we don't want our array to be indexed at '-71'. While we can reasonably expect
     // ASCII encoding on the platform (which would put all char literals that we use into the 0-127 range) other chars
     // might still be negative. This shouldn't have any cost as trivial int casts like these involve no runtime logic.
@@ -796,8 +796,8 @@ namespace utl::impl {
                 cursor, pretty_error(cursor, chars));
         };
 
-        const auto parse_utf16 = [&](std::string_view hex) -> std::uint16_t {
-            std::uint16_t utf16 {};
+        const auto parse_utf16 = [&](std::string_view hex) -> u16 {
+            u16 utf16 {};
             const auto [end_ptr, error_code] = std::from_chars(hex.data(), hex.data() + hex.size(), utf16, 16);
 
             const bool sequence_is_valid = (error_code == std::errc {});
@@ -826,7 +826,7 @@ namespace utl::impl {
             throw make_end_of_buffer_error();
 
         const std::string_view hex_1(start + hex_1_start, 4);
-        const std::uint16_t utf16_1 = parse_utf16(hex_1);
+        const u16 utf16_1 = parse_utf16(hex_1);
 
         // Surrogate pair case
 
@@ -839,9 +839,9 @@ namespace utl::impl {
                 throw make_surrogate_error(hex_1);
 
             const std::string_view hex_2(start + hex_2_start, 4);
-            const std::uint16_t utf16_2 = parse_utf16(hex_2);
+            const u16 utf16_2 = parse_utf16(hex_2);
 
-            if (const std::uint32_t codepoint = utf16_pair_to_codepoint(utf16_1, utf16_2);
+            if (const u32 codepoint = utf16_pair_to_codepoint(utf16_1, utf16_2);
                 !codepoint_to_utf8(string_value, codepoint))
                 throw make_parsing_error(hex_1);
             return cursor + hex_2_end;
@@ -849,7 +849,7 @@ namespace utl::impl {
 
         // Regular case
 
-        if (const std::uint32_t codepoint = utf16_1;
+        if (const u32 codepoint = utf16_1;
             !codepoint_to_utf8(string_value, codepoint))
             throw make_parsing_error(hex_1);
         return cursor + hex_1_end;

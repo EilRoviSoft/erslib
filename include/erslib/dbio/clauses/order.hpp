@@ -5,6 +5,7 @@
 #include <string>
 
 // ers
+#include <erslib/core/type/general.hpp>
 #include <erslib/dbio/impl/clause.hpp>
 
 // export
@@ -12,7 +13,7 @@
 
 
 namespace dbio::impl {
-    enum class Order : uint8_t { Asc, Desc };
+    enum class Order : u8 { Asc, Desc };
 
 
     class ERSLIB_EXPORT OrderClause : public IClause {

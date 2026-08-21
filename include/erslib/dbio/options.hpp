@@ -1,10 +1,10 @@
 #pragma once
 
 // std
-#include <cstdint>
 #include <string>
 
 // ers
+#include <erslib/core/type/general.hpp>
 #include <erslib/dbio/fwd.hpp>
 
 // export
@@ -14,7 +14,7 @@
 namespace dbio::impl {
     struct ERSLIB_EXPORT db_options_t {
         std::string host = "localhost";
-        std::uint16_t port = 5432;
+        u16 port = 5432;
         std::string dbname;
         std::string username;
         std::string password;

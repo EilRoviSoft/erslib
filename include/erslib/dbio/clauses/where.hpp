@@ -11,6 +11,7 @@
 #include <vector>
 
 // ers
+#include <erslib/core/type/general.hpp>
 #include <erslib/dbio/impl/clause.hpp>
 
 // export
@@ -37,7 +38,7 @@ namespace dbio::impl {
 // WhereOp
 
 namespace dbio::impl {
-    enum class Op : uint8_t {
+    enum class Op : u8 {
         Eq, // ==
         Ne, // !=
         Lt, // <

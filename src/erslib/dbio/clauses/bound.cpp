@@ -7,7 +7,7 @@
 
 // BoundClause
 
-dbio::impl::BoundClause::BoundClause(SlotRef slot, int64_t amount) :
+dbio::impl::BoundClause::BoundClause(SlotRef slot, i64 amount) :
     IClause(slot),
     _amount(amount) {
 }
@@ -22,10 +22,10 @@ ers::Status dbio::impl::BoundClause::render(Context& ctx) const {
 
 // Shortcuts
 
-dbio::impl::Clause dbio::impl::clauses::with_limit(int64_t amount) {
+dbio::impl::Clause dbio::impl::clauses::with_limit(i64 amount) {
     return make_clause<BoundClause>(&slots::limit, amount);
 }
 
-dbio::impl::Clause dbio::impl::clauses::with_offset(int64_t amount) {
+dbio::impl::Clause dbio::impl::clauses::with_offset(i64 amount) {
     return make_clause<BoundClause>(&slots::offset, amount);
 }

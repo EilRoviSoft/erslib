@@ -4,6 +4,7 @@
 #include <cstdint>
 
 // ers
+#include <erslib/core/type/general.hpp>
 #include <erslib/dbio/impl/clause.hpp>
 
 // export
@@ -15,7 +16,7 @@ namespace dbio::impl {
     public:
         // Member functions
 
-        BoundClause(SlotRef slot, int64_t amount);
+        BoundClause(SlotRef slot, i64 amount);
 
 
         // Executors
@@ -24,12 +25,12 @@ namespace dbio::impl {
 
 
     private:
-        int64_t _amount;
+        i64 _amount;
     };
 
 
     namespace clauses {
-        Clause with_limit(int64_t amount);
-        Clause with_offset(int64_t amount);
+        Clause with_limit(i64 amount);
+        Clause with_offset(i64 amount);
     }
 }
