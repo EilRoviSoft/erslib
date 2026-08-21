@@ -65,14 +65,10 @@ namespace dbio::impl {
 }
 
 
-// Query dispatches through this to build entities out of result rows.
+template<dbio::impl::RowType T>
+struct dbio::impl::row_reader<T> {
+    using state = ColumnIndex<T>;
 
-namespace dbio::impl {
-    template<RowType T>
-    struct row_reader<T> {
-        using state = ColumnIndex<T>;
-
-        static state prepare(const pqxx::result& from) { return map_columns<T>(from); }
-        static T read(pqxx::row_ref row, const state& index) { return from_row<T>(row, index); }
-    };
-}
+    static state prepare(const pqxx::result& from) { return map_columns<T>(from); }
+    static T read(pqxx::row_ref row, const state& index) { return from_row<T>(row, index); }
+};

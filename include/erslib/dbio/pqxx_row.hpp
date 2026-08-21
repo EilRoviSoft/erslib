@@ -9,7 +9,6 @@
 
 namespace dbio::impl {
     // Sequential reader over a pqxx::row_ref.
-    // Keeps an internal cursor so generated entity code can pull fields one after another in declaration order.
     class PqxxRow {
     public:
         using size_type = pqxx::row_ref::size_type;
@@ -40,8 +39,8 @@ namespace dbio::impl {
             return result;
         }
 
-        // Stores the field at the cursor into dest and advances.
-        // Returns false if the cursor is past the end or the field can't be cast to T.
+        // Stores and advanced.
+        // Returns false if error occurs.
         template<typename T>
         bool store(T& dest) try {
             if (!has_next())

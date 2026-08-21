@@ -26,8 +26,6 @@ namespace dbio::impl {
 
         // Modifiers
 
-        // Recursively loads every "*.sql" file under root
-        // as "sql.<relative/path/without-ext>" with '/' replaced by '.'.
         size_t load_directory(const std::filesystem::path& root);
 
         void add(std::string_view label, std::string_view query);
@@ -35,7 +33,7 @@ namespace dbio::impl {
 
 
 #ifdef ERS_DBIO_GLOBAL_QUERY_STORE
-    // Defined only when ERSLIB_DBIO_OWN_QUERY_STORE is on; it loads ./res/query at static init.
+    // Loads ./res/query at static init.
     extern QueryStore queries;
 #endif
 }

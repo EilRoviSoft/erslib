@@ -14,10 +14,6 @@
 
 
 // Shape
-//
-// Readers that take nothing but template arguments are variable templates, so they are
-// spelled without a trailing (). The ones that return a vector have to stay functions:
-// a vector cannot escape constant evaluation into a constexpr variable.
 
 namespace dbio::impl {
     template<typename T>
@@ -31,12 +27,11 @@ namespace dbio::impl {
             std::meta::access_context::current());
     }
 
-    // Field-level facts ride on the field as annotations, so no name matching is needed.
-    // type_of() on an annotation is cv-qualified; comparing without remove_cv silently never matches.
     consteval bool is_skipped(std::meta::info member) {
-        for (const auto it : std::meta::annotations_of(member))
+        for (const auto it : std::meta::annotations_of(member)) {
             if (std::meta::remove_cv(std::meta::type_of(it)) == ^^skip_t)
                 return true;
+        }
 
         return false;
     }
@@ -45,9 +40,10 @@ namespace dbio::impl {
     consteval std::vector<std::meta::info> columns() {
         std::vector<std::meta::info> out;
 
-        for (const auto it : all_members<T>())
+        for (const auto it : all_members<T>()) {
             if (!is_skipped(it))
                 out.emplace_back(it);
+        }
 
         return out;
     }
@@ -68,14 +64,9 @@ namespace dbio::impl {
         return {};
     }();
 
-    // A Declaration exists. The primary template is only declared, so an unspecialised T
-    // leaves it incomplete and sizeof fails cleanly instead of hard-erroring - which is what
-    // lets row_reader's specialisations be checked against arbitrary types.
     template<typename T>
     concept RowType = std::is_class_v<T> && requires { sizeof(Declaration<T>); };
 
-    // A RowType that also names a table, so DDL can be emitted for it.
-    // The conjunction short-circuits, so table_name<T> is never instantiated without a Declaration.
     template<typename T>
     concept Entity = RowType<T> && !table_name<T>.empty();
 }
@@ -120,25 +111,27 @@ namespace dbio::impl {
 
     template<typename T>
     consteval bool has_field(std::string_view what) {
-        for (const auto it : all_members<T>())
+        for (const auto it : all_members<T>()) {
             if (std::meta::identifier_of(it) == what)
                 return true;
+        }
 
         return false;
     }
 
     template<typename T>
     consteval bool has_column(std::string_view what) {
-        template for (constexpr auto it : std::define_static_array(columns<T>()))
+        template for (constexpr auto it : std::define_static_array(columns<T>())) {
             if (column_name<it> == what)
                 return true;
+        }
 
         return false;
     }
 }
 
 
-// Column facts drawn from the declaration
+// Column information which is got from `Declaration<T>`
 
 namespace dbio::impl {
     template<typename T>
@@ -170,9 +163,10 @@ namespace dbio::impl {
 
     template<typename T, std::meta::info M>
     constexpr bool is_pk_column = [] consteval {
-        for (const char* const it : primary_key<T>)
+        for (const char* const it : primary_key<T>) {
             if (std::string_view(it) == column_name<M>)
                 return true;
+        }
 
         return false;
     }();
@@ -187,7 +181,6 @@ namespace dbio::impl {
                     return true;
         }
 
-        // A lone integral primary key is an identity column unless Identity said otherwise.
         if (primary_key<T>.size() != 1 || std::string_view(primary_key<T>.front()) != column_name<M>)
             return false;
 
@@ -196,18 +189,20 @@ namespace dbio::impl {
 
     template<typename T>
     constexpr bool has_identity = [] consteval {
-        template for (constexpr auto m : std::define_static_array(columns<T>()))
+        template for (constexpr auto m : std::define_static_array(columns<T>())) {
             if constexpr (is_identity_column<T, m>)
                 return true;
+        }
 
         return false;
     }();
 
     template<typename T>
     constexpr std::string_view identity_column = [] consteval -> std::string_view {
-        template for (constexpr auto m : std::define_static_array(columns<T>()))
+        template for (constexpr auto m : std::define_static_array(columns<T>())) {
             if constexpr (is_identity_column<T, m>)
                 return column_name<m>;
+        }
 
         return {};
     }();

@@ -81,14 +81,12 @@ namespace {
         bool replaceable = true;
     };
 
-    // A join result: columns but no table, so it is a RowType and not an Entity.
     struct CascadeHit {
         std::string source_table;
         uint32_t id;
         uint32_t image_id;
     };
 
-    // Hand-written row type, read the classic way rather than through reflection.
     struct Counted {
         explicit Counted(pqxx::row_ref row) :
             total(row[0].as<int64_t>()) {
@@ -144,7 +142,6 @@ TEST_CASE("dbio reflect: shape") {
     CHECK(primary_key<ProductImage>.size() == 2);
     CHECK(pk_constraint<ProductImage> == "product_images_pk");
 
-    // Column renames the field; Skip drops it from the table.
     CHECK(column_name<^^Product::description> == "descr");
     CHECK(column_name<^^Product::price> == "price");
     CHECK(sql_type_name<^^Product::title> == "VARCHAR(120)");
@@ -168,12 +165,9 @@ TEST_CASE("dbio reflect: concepts") {
     static_assert(RowType<Image>);
     static_assert(Entity<Image>);
 
-    // Columns but no Table<>, so readable but not DDL-able.
     static_assert(RowType<CascadeHit>);
     static_assert(!Entity<CascadeHit>);
 
-    // Must be false rather than a hard error - this is what lets row_reader's two
-    // specialisations be checked against arbitrary types.
     static_assert(!RowType<std::string>);
     static_assert(!Entity<std::string>);
 }
@@ -224,28 +218,21 @@ TEST_CASE("dbio reflect: ddl with composite key and defaults") {
 }
 
 
-// Reading through Query
-
 TEST_CASE("dbio reflect: entities are readable rows") {
-    // What makes (select_from(...) | ...).exec_as<Image>(tx) compile.
     static_assert(dbio::ReadableRow<Image>);
     static_assert(dbio::ReadableRow<ProductImage>);
     static_assert(dbio::ReadableRow<CascadeHit>);
 
-    // The hand-written path still works and is unaffected.
     static_assert(dbio::ValidRow<Counted>);
     static_assert(dbio::ReadableRow<Counted>);
 
     static_assert(!dbio::ReadableRow<std::string>);
 
-    // Entities go through the reflected reader, hand-written rows through the ctor.
     static_assert(std::is_same_v<dbio::row_reader<Image>::state, dbio::reflect::ColumnIndex<Image>>);
     static_assert(std::is_empty_v<dbio::row_reader<Counted>::state>);
 }
 
 namespace {
-    // Never called - it exists so the exact builder-plus-exec_as shape is type-checked.
-    // This is what did not compile while entity reading lived outside Query.
     [[maybe_unused]]
     auto select_randomly(dbio::Database& db, int64_t limit) {
         return db.with_transaction([limit](pqxx::read_transaction& tx) {
@@ -296,8 +283,6 @@ TEST_CASE("dbio reflect: hand-built queries") {
         "DELETE FROM images WHERE id = $1");
 }
 
-
-// Custom column types, spelled the way the documentation tells users to spell them.
 
 namespace {
     struct Money {

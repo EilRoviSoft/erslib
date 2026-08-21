@@ -163,8 +163,7 @@ namespace dbio::impl {
 }
 
 
-// Field-level markers. These are annotations rather than Declaration members, so they are
-// values, not types - an annotation takes a constant expression and a type name is not one.
+// Annotations utility
 
 namespace dbio::impl {
     template<ers::fixed_string Name = "", ers::fixed_string Type = "">
@@ -188,7 +187,6 @@ namespace dbio::impl {
     };
 
 
-    // An empty argument leaves that facet alone: Column<"descr"> renames without retyping.
     template<ers::fixed_string Name = "", ers::fixed_string Type = "">
     inline constexpr column_t<Name, Type> Column {};
 }

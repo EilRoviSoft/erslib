@@ -29,12 +29,14 @@
 #include <erslib/dbio/clauses/where.hpp>
 
 // Layouts
+
 #include <erslib/dbio/layouts/delete.hpp>
 #include <erslib/dbio/layouts/insert.hpp>
 #include <erslib/dbio/layouts/select.hpp>
 #include <erslib/dbio/layouts/update.hpp>
 
 // Slots
+
 #include <erslib/dbio/slots/column.hpp>
 #include <erslib/dbio/slots/conflict.hpp>
 #include <erslib/dbio/slots/from.hpp>

@@ -86,9 +86,6 @@ namespace dbio::reflect {
 
 
 // Rows
-//
-// Reading is reached through Query: once this header is included, exec_as<T>/exec_one<T>
-// accept any entity with a Declaration. These are the pieces behind that.
 
 #include <erslib/dbio/reflect/row.hpp>
 

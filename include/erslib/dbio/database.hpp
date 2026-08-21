@@ -57,14 +57,6 @@ namespace dbio::impl {
         }
 
 
-        // Initializers
-
-#ifdef ERS_DBIO_GLOBAL_QUERY_STORE
-        // Runs the query stored under the given label in its own transaction.
-        ers::Status init(std::string_view label);
-#endif
-
-
         // Modifiers
 
         void maintain();

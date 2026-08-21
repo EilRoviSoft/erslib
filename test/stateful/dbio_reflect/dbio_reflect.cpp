@@ -19,6 +19,7 @@
 
 
 namespace fs = std::filesystem;
+namespace dbrefl = dbio::reflect;
 
 
 TEST_CASE("dbio store: hand-written queries load from a directory") {
@@ -65,8 +66,6 @@ struct dbio::reflect::Declaration<ImageTag> : Table<"reflect_image_tags"> {
 
 
 namespace {
-    // Set ERSLIB_TEST_PG_DSN to a libpq connection string to exercise the round trip;
-    // without it there is no server to talk to and this case is skipped.
     const char* dsn() {
         return std::getenv("ERSLIB_TEST_PG_DSN");
     }
@@ -78,32 +77,26 @@ TEST_CASE("dbio reflect: round trip against postgres" * doctest::skip(dsn() == n
 
     auto done = db.with_transaction([](pqxx::work& tx) -> ers::Status {
         ERS_QUICK_DBIO_USING;
-        namespace refl = dbio::reflect;
 
         tx.exec("DROP TABLE IF EXISTS reflect_image_tags");
         tx.exec("DROP TABLE IF EXISTS reflect_images");
         tx.exec(std::string(dbio::ddl::create_table<Image>()));
         tx.exec(std::string(dbio::ddl::create_table<ImageTag>()));
 
-        // The identity column is server-generated, so it stays out of the insert and
-        // comes back through RETURNING.
         auto inserted = (insert_into("reflect_images")
             | columns("url", "path")
             | values(std::string("a.png"), std::string("/img/a.png"))
-            | returning(std::string(refl::identity_column<Image>))
+            | returning(std::string(dbrefl::identity_column<Image>))
         ).exec_one<Image>(tx);
 
         if (!inserted)
             return inserted.error();
 
         CHECK(inserted->id != dbio::undefined_id);
-
-        // RETURNING carried only id, so every other column was left at its default.
         CHECK(inserted->url.empty());
 
         const uint32_t id = inserted->id;
 
-        // Upsert on the natural key: same row, new path.
         auto again = (insert_into("reflect_images")
             | columns("url", "path")
             | values(std::string("a.png"), std::string("/img/a-v2.png"))
@@ -117,7 +110,6 @@ TEST_CASE("dbio reflect: round trip against postgres" * doctest::skip(dsn() == n
 
         CHECK(again->id == id);
 
-        // SELECT * fills the entity by column name.
         auto loaded = (select_from("reflect_images") | where("id", id)).exec_one<Image>(tx);
 
         if (!loaded)
@@ -134,12 +126,11 @@ TEST_CASE("dbio reflect: round trip against postgres" * doctest::skip(dsn() == n
         CHECK(all->size() == 1);
         CHECK((*all->begin()).url == "a.png");
 
-        // Composite key, no identity column. The constraint name comes from the declaration.
         auto upsert_tag = [&](uint16_t position) {
             return (insert_into("reflect_image_tags")
                 | columns("image_id", "tag_id", "position")
-                | values(id, uint32_t(7), position)
-                | on_conflict_constraint(std::string(refl::pk_constraint<ImageTag>))
+                | values(id, static_cast<uint32_t>(7), position)
+                | on_conflict_constraint(std::string(dbrefl::pk_constraint<ImageTag>))
                 | do_update("position")
             ).exec_and_discard(tx);
         };

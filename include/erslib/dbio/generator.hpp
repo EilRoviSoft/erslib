@@ -18,9 +18,6 @@ namespace dbio::impl {
     concept ValidRow = std::constructible_from<T, pqxx::row_ref>;
 
 
-    // Teaches Query how to turn result rows into T. The state is prepared once per result and
-    // reused for every row. Specialise to add a mapping Query cannot know about on its own -
-    // erslib/dbio/reflect/row.hpp does exactly that for reflected entities.
     template<typename T>
     struct row_reader;
 
@@ -34,8 +31,11 @@ namespace dbio::impl {
 
 
     template<typename T>
-    concept ReadableRow = requires(const pqxx::result& result, pqxx::row_ref row,
-                                   const typename row_reader<T>::state& state) {
+    concept ReadableRow = requires(
+        const pqxx::result& result,
+        pqxx::row_ref row,
+        const typename row_reader<T>::state& state
+    ) {
         { row_reader<T>::prepare(result) } -> std::same_as<typename row_reader<T>::state>;
         { row_reader<T>::read(row, state) } -> std::same_as<T>;
     };
@@ -90,7 +90,6 @@ namespace dbio::impl {
 
         private:
             pqxx::result::const_iterator _inner_it;
-            // Held by value: pointing back at the generator would dangle if it were moved.
             state_t _state {};
         };
 
@@ -118,7 +117,7 @@ namespace dbio::impl {
 
 
     private:
-        pqxx::result _content;  // declared first: _state is prepared from it
+        pqxx::result _content;
         state_t _state {};
     };
 }
