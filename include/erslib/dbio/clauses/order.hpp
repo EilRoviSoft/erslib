@@ -38,5 +38,6 @@ namespace dbio::impl {
     namespace clauses {
         Clause order_by(std::string column, Order order = Order::Asc);
         Clause order_by_random();
+        Clause order_by_stable_random(std::string_view key, int64_t seed);
     }
 }

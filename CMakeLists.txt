@@ -116,6 +116,10 @@ target_sources(erslib_core
 
         "src/erslib/core/exception/internal.cpp"
 
+        "src/erslib/core/random/entropy.cpp"
+
+        "src/erslib/core/thread_safe/shuffle_seed.cpp"
+
         "src/erslib/core/type/diagnostic.cpp"
 
         "src/erslib/core/util/file.cpp"

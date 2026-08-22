@@ -358,13 +358,13 @@ namespace {
 }
 
 template<>
-struct dbio::reflect::sql_type<Money> {
+struct dbio::sql_type<Money> {
     static constexpr std::string_view name = "NUMERIC(12, 2)";
     static constexpr bool nullable = false;
 };
 
 template<>
-struct dbio::reflect::sql_value<Money> {
+struct dbio::sql_value<Money> {
     static void bind(pqxx::params& out, const Money& what) {
         out.append(what.cents);
     }

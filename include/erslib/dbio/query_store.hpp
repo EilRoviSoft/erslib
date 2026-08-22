@@ -4,7 +4,7 @@
 #include <filesystem>
 
 // ers
-#include <erslib/core/thread_safe.hpp>
+#include <erslib/core/thread_safe/map.hpp>
 #include <erslib/dbio/fwd.hpp>
 
 // export

@@ -108,3 +108,10 @@ namespace ers::impl::thread_safe {
         container_type m_data;
     };
 }
+
+
+// Exports
+
+namespace ers::thread_safe {
+    using impl::thread_safe::Map;
+}

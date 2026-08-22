@@ -36,3 +36,7 @@ dbio::impl::Clause dbio::impl::clauses::order_by(std::string column, Order order
 dbio::impl::Clause dbio::impl::clauses::order_by_random() {
     return raw(&slots::order, "RANDOM()");
 }
+
+dbio::impl::Clause dbio::impl::clauses::order_by_stable_random(std::string_view key, int64_t seed) {
+    return raw(&slots::order, std::format("md5({}::text || ?::text)", key), seed);
+}

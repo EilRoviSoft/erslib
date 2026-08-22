@@ -14,7 +14,7 @@
 
 // ers
 #include <erslib/core/adaptor.hpp>
-#include <erslib/core/thread_safe.hpp>
+#include <erslib/core/thread_safe/map.hpp>
 #include <erslib/core/hashing/rapid.hpp>
 #include <erslib/core/type/time.hpp>
 #include <erslib/core/type/timed_object.hpp>
