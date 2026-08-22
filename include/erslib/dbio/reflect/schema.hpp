@@ -8,8 +8,8 @@
 #include <vector>
 
 // ers
+#include <erslib/dbio/traits.hpp>
 #include <erslib/dbio/reflect/declaration.hpp>
-#include <erslib/dbio/reflect/traits.hpp>
 #include <erslib/dbio/reflect/types.hpp>
 
 

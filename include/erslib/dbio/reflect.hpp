@@ -57,13 +57,12 @@ namespace dbio::reflect {
 
 // Traits
 
-#include <erslib/dbio/reflect/traits.hpp>
-#include <erslib/dbio/reflect/value.hpp>
+#include <erslib/dbio/traits.hpp>
 
-namespace dbio::reflect {
-    using impl::reflect::sql_type;
-    using impl::reflect::sql_value;
-    using impl::reflect::value_binder;
+namespace dbio {
+    using impl::sql_type;
+    using impl::sql_value;
+    using impl::value_binder;
 }
 
 

@@ -12,8 +12,8 @@
 
 // ers
 #include <erslib/dbio/generator.hpp>
+#include <erslib/dbio/impl/traits.hpp>
 #include <erslib/dbio/reflect/schema.hpp>
-#include <erslib/dbio/reflect/value.hpp>
 
 
 namespace dbio::impl::reflect {

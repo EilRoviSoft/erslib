@@ -1,24 +1,11 @@
 #pragma once
 
-// std
-#include <string>
-
 // ers
 #include <erslib/core/type/general.hpp>
-#include <erslib/core/type/optional.hpp>
+#include <erslib/dbio/impl/traits.hpp>
 
 
-// Declaration
-
-namespace dbio::impl::reflect {
-    template<typename T>
-    struct sql_type;
-}
-
-
-// Implementation
-
-namespace dbio::impl::reflect {
+namespace dbio::impl {
     template<>
     struct sql_type<bool> {
         static constexpr std::string_view name = "BOOLEAN";
@@ -42,7 +29,7 @@ namespace dbio::impl::reflect {
         static constexpr std::string_view name = "INTEGER";
         static constexpr bool nullable = false;
     };
-    
+
     template<>
     struct sql_type<u32> {
         static constexpr std::string_view name = "INTEGER";
@@ -59,19 +46,5 @@ namespace dbio::impl::reflect {
     struct sql_type<u64> {
         static constexpr std::string_view name = "BIGINT";
         static constexpr bool nullable = false;
-    };
-}
-
-
-namespace dbio::impl::reflect {
-    template<>
-    struct sql_type<std::string> {
-        static constexpr std::string_view name = "TEXT";
-        static constexpr bool nullable = false;
-    };
-
-    template<typename T>
-    struct sql_type<ers::optional<T>> : sql_type<T> {
-        static constexpr bool nullable = true;
     };
 }

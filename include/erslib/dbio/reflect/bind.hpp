@@ -8,7 +8,7 @@
 
 // ers
 #include <erslib/dbio/reflect/schema.hpp>
-#include <erslib/dbio/reflect/value.hpp>
+#include <erslib/dbio/traits.hpp>
 
 
 namespace dbio::impl::reflect {
