@@ -29,7 +29,7 @@
             "hidden": true,
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
-                "CMAKE_CXX_FLAGS": "-Wall -Wextra -Wpedantic",
+                "CMAKE_CXX_FLAGS": "-Wall -Wextra -Wpedantic -Wno-missing-field-initializers",
                 "CMAKE_CXX_FLAGS_DEBUG": "-g -O0",
                 "CMAKE_CXX_FLAGS_RELEASE": "-O2 -DNDEBUG -march=x86-64-v3",
 
