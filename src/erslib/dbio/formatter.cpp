@@ -1,6 +1,12 @@
 #include "erslib/dbio/formatter.hpp"
 
 
+namespace {
+    constexpr std::string_view lower_digits = "0123456789abcdef";
+    constexpr std::string_view upper_digits = "0123456789ABCDEF";
+}
+
+
 std::string dbio::impl::bytes_to_string(const pqxx::bytes& bytes, std::string_view args) {
     auto it = args.begin();
     auto mode = Mode::HexLower;

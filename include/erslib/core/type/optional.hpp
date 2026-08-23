@@ -12,7 +12,7 @@ namespace ers::impl {
 
 
     using nullopt_t = std::nullopt_t;
-    static constexpr nullopt_t nullopt = std::nullopt;
+    inline constexpr nullopt_t nullopt = std::nullopt;
 }
 
 
@@ -28,7 +28,7 @@ namespace ers::impl {
 
 
     using nullopt_t = boost::none_t;
-    static constexpr nullopt_t nullopt { nullopt_t::init_tag {} };
+    inline constexpr nullopt_t nullopt { nullopt_t::init_tag {} };
 }
 
 

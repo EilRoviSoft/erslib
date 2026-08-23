@@ -24,4 +24,4 @@ namespace ers::impl {
 
 #define ERS_CO_WRAP(S, DATA, ELEM) [&]{ return (ELEM); }
 
-#define ERS_COALESCE(FIRST, ...) ers::util::coalesce_lazy((FIRST) __VA_OPT__(, BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(ERS_CO_WRAP, ~, BOOST_PP_VARIADIC_TO_SEQ(__VA_ARGS__)))))
+#define ERS_COALESCE(FIRST, ...) ers::impl::coalesce_lazy((FIRST) __VA_OPT__(, BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(ERS_CO_WRAP, ~, BOOST_PP_VARIADIC_TO_SEQ(__VA_ARGS__)))))

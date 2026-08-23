@@ -16,5 +16,5 @@ namespace ers::impl {
     }
 
     template<typename F>
-    static constexpr bool is_constexpr_friendly_v = is_constexpr_friendly<F>();
+    inline constexpr bool is_constexpr_friendly_v = is_constexpr_friendly<F>();
 }

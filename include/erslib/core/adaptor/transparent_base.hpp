@@ -16,7 +16,7 @@ namespace ers::impl {
     concept MemberOrNull = std::same_as<decltype(Member), std::nullptr_t> || std::is_member_pointer_v<decltype(Member)>;
 
     template<auto Member>
-    static constexpr bool has_member_v = !std::same_as<decltype(Member), std::nullptr_t>;
+    inline constexpr bool has_member_v = !std::same_as<decltype(Member), std::nullptr_t>;
 
     template<auto Member, typename T>
     using projected_t = std::remove_cvref_t<

@@ -80,6 +80,12 @@ namespace dbio::impl {
         Clause where(std::string column, T&& value) {
             return where(std::move(column), Op::Eq, std::forward<T>(value));
         }
+
+        template<typename T>
+            requires (!std::same_as<std::remove_cvref_t<T>, Op>)
+        Clause where_not(std::string column, T&& value) {
+            return where(std::move(column), Op::Ne, std::forward<T>(value));
+        }
     }
 }
 

@@ -14,17 +14,17 @@ namespace ers::impl {
 
 #elif ERS_TRACE_VERBOSITY == 1
 
-    static constexpr size_t max_depth_default = 1;
+    inline constexpr size_t max_depth_default = 1;
 
 #elif ERS_TRACE_VERBOSITY == 2
 
 #if ERS_TRACE_MAX_DEPTH != 0
 
-    static constexpr size_t max_depth_default = ERS_TRACE_MAX_DEPTH;
+    inline constexpr size_t max_depth_default = ERS_TRACE_MAX_DEPTH;
 
 #else
 
-    static constexpr size_t max_depth_default = std::numeric_limits<size_t>::max();
+    inline constexpr size_t max_depth_default = std::numeric_limits<size_t>::max();
 
 #endif
 
@@ -139,8 +139,8 @@ namespace ers::impl {
         using base_type = ers::impl::exception_fn<IncludeTrace, TYPE>; \
         using base_type::operator(); \
     }; \
-    static constexpr NAME##_fn<false> make_##NAME; \
-    static constexpr NAME##_fn<true> make_##NAME##_with_trace
+    inline constexpr NAME##_fn<false> make_##NAME; \
+    inline constexpr NAME##_fn<true> make_##NAME##_with_trace
 
 #define ERS_MAKE_EXCEPTION_TYPE(NAME, BASE) \
     struct NAME : BASE { \

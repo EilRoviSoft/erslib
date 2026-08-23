@@ -11,5 +11,5 @@ namespace ers::impl::meta {
     };
 
     template<typename T>
-    constexpr std::string_view type_name_v = type_name<T>::value;
+    inline constexpr std::string_view type_name_v = type_name<T>::value;
 }

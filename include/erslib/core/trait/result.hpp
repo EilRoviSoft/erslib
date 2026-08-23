@@ -12,7 +12,7 @@ namespace ers::impl {
     struct is_result<Result<T>> : std::true_type {};
 
     template<typename T>
-    static constexpr bool is_result_v = is_result<T>::value;
+    inline constexpr bool is_result_v = is_result<T>::value;
 }
 
 
