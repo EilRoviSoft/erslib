@@ -10,14 +10,6 @@ namespace dbio::impl {
 }
 
 
-// Exports
-
-namespace dbio {
-    namespace tag = impl::tag;
-    using impl::tx_tag;
-}
-
-
 // Defines
 
 #ifdef ERS_DBIO_SAFE

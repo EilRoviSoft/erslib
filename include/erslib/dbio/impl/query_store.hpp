@@ -34,11 +34,3 @@ namespace dbio::impl {
 
     extern QueryStore queries;
 }
-
-
-// Exports
-
-namespace dbio {
-    using impl::QueryStore;
-    using impl::queries;
-}

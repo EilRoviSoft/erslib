@@ -15,11 +15,3 @@ namespace dbio::impl {
 
     std::string bytes_to_string(const pqxx::bytes& bytes, std::string_view args);
 }
-
-
-// Exports
-
-namespace dbio {
-    using impl::Mode;
-    using impl::bytes_to_string;
-}

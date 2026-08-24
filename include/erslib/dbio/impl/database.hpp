@@ -8,19 +8,15 @@
 #include <pqxx/pqxx>
 
 // ers
+#include <erslib/core/filesystem.hpp>
 #include <erslib/core/type/result.hpp>
-#include <erslib/dbio/connection_pool.hpp>
-#include <erslib/dbio/options.hpp>
-#include <erslib/dbio/query_store.hpp>
+#include <erslib/dbio/impl/connection_pool.hpp>
+#include <erslib/dbio/impl/options.hpp>
+#include <erslib/dbio/impl/query_store.hpp>
 
 // export
 #include <erslib/export.hpp>
 
-
-namespace fs = std::filesystem;
-
-
-// Database
 
 namespace dbio::impl {
     // Thin owning wrapper around a pqxx::connection.
@@ -65,11 +61,4 @@ namespace dbio::impl {
     private:
         ers::shared_ptr<ConnectionPool> _pool;
     };
-}
-
-
-// Exports
-
-namespace dbio {
-    using impl::Database;
 }

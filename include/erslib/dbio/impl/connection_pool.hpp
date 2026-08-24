@@ -19,7 +19,7 @@
 #include <erslib/core/trait/result.hpp>
 #include <erslib/core/type/result.hpp>
 #include <erslib/core/type/time.hpp>
-#include <erslib/dbio/options.hpp>
+#include <erslib/dbio/impl/options.hpp>
 
 
 namespace dbio::impl {

@@ -215,14 +215,20 @@ if(ERSLIB_BUILD_DBIO)
     target_sources(erslib_dbio
         PRIVATE
             "src/erslib/dbio/impl/clause.cpp"
+            "src/erslib/dbio/impl/connection_pool.cpp"
             "src/erslib/dbio/impl/context.cpp"
+            "src/erslib/dbio/impl/database.cpp"
+            "src/erslib/dbio/impl/formatter.cpp"
             "src/erslib/dbio/impl/identity.cpp"
             "src/erslib/dbio/impl/layout.cpp"
+            "src/erslib/dbio/impl/options.cpp"
             "src/erslib/dbio/impl/query_builder.cpp"
+            "src/erslib/dbio/impl/query_store.cpp"
 
             "src/erslib/dbio/clauses/assign.cpp"
             "src/erslib/dbio/clauses/bound.cpp"
             "src/erslib/dbio/clauses/conflict.cpp"
+            "src/erslib/dbio/clauses/exists.cpp"
             "src/erslib/dbio/clauses/order.cpp"
             "src/erslib/dbio/clauses/raw.cpp"
             "src/erslib/dbio/clauses/returning.cpp"
@@ -231,15 +237,10 @@ if(ERSLIB_BUILD_DBIO)
             "src/erslib/dbio/clauses/where.cpp"
 
             "src/erslib/dbio/layouts/delete.cpp"
+            "src/erslib/dbio/layouts/exists.cpp"
             "src/erslib/dbio/layouts/insert.cpp"
             "src/erslib/dbio/layouts/select.cpp"
             "src/erslib/dbio/layouts/update.cpp"
-
-            "src/erslib/dbio/connection_pool.cpp"
-            "src/erslib/dbio/database.cpp"
-            "src/erslib/dbio/formatter.cpp"
-            "src/erslib/dbio/options.cpp"
-            "src/erslib/dbio/query_store.cpp"
     )
 
     target_link_libraries(erslib_dbio
