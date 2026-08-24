@@ -33,6 +33,11 @@ namespace utl {
 }
 
 namespace utl {
+    using impl::IJsonConvertible;
+    using impl::load_from_json;
+    using impl::save_into_json;
+
+
     using impl::JsonCompatible;
     using impl::JsonSchema;
 }

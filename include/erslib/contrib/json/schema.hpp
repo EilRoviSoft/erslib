@@ -1,10 +1,12 @@
 #pragma once
 
 // std
+#include <concepts>
 #include <functional>
 #include <list>
 
 // ers
+#include <erslib/contrib/json/convert.hpp>
 #include <erslib/contrib/json/concept.hpp>
 #include <erslib/contrib/json/impl.hpp>
 #include <erslib/core/concept/json.hpp>
@@ -85,6 +87,21 @@ namespace utl::impl {
                 m_error = r.error();
         }
 
+        template<std::derived_from<IJsonConvertible> T>
+        void require_and_load(std::string_view name, T& out) {
+            if (auto r = _find(m_json.as_object(), name); r)
+                _defer_load(out, (*r)->second);
+            else
+                m_error = std::move(r.error());
+        }
+
+        template<std::derived_from<IJsonConvertible> T>
+        void load_if_exist(std::string_view name, T& out) {
+            if (auto r = _find(m_json.as_object(), name); r)
+                _defer_load(out, (*r)->second);
+        }
+
+
 
         [[nodiscard]]
         ers::Status finalize() const {
@@ -105,8 +122,7 @@ namespace utl::impl {
 
 
     private:
-        template<JsonCompatible T>
-        static ers::Result<json_iterator> _check(const Node::object_type& object, std::string_view name) {
+        static ers::Result<json_iterator> _find(const Node::object_type& object, std::string_view name) {
             auto it = object.find(name);
 
             if (it == object.end()) {
@@ -114,12 +130,29 @@ namespace utl::impl {
                     name);
             }
 
-            if (!it->second.is<T>()) {
+            return it;
+        }
+
+        template<std::derived_from<IJsonConvertible> T>
+        void _defer_load(T& out, const Node& value) {
+            m_assignments.emplace_back([&out, value] {
+                if (auto s = out.load_from(value); !s)
+                    throw ers::conversion_error(s.error().to_string(true));
+            });
+        }
+
+        template<JsonCompatible T>
+        static ers::Result<json_iterator> _check(const Node::object_type& object, std::string_view name) {
+            auto it = _find(object, name);
+            if (!it)
+                return it.error();
+
+            if (!(*it)->second.is<T>()) {
                 return ers::make_error("Field with name \"{}\" has mismatched type \"{}\"",
                     name, ers::meta::type_name_v<T>);
             }
 
-            return it;
+            return *it;
         }
     };
 }
