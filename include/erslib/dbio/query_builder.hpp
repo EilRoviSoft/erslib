@@ -21,6 +21,7 @@
 #include <erslib/dbio/clauses/assign.hpp>
 #include <erslib/dbio/clauses/bound.hpp>
 #include <erslib/dbio/clauses/conflict.hpp>
+#include <erslib/dbio/clauses/exists.hpp>
 #include <erslib/dbio/clauses/order.hpp>
 #include <erslib/dbio/clauses/raw.hpp>
 #include <erslib/dbio/clauses/returning.hpp>
@@ -31,6 +32,7 @@
 // Layouts
 
 #include <erslib/dbio/layouts/delete.hpp>
+#include <erslib/dbio/layouts/exists.hpp>
 #include <erslib/dbio/layouts/insert.hpp>
 #include <erslib/dbio/layouts/select.hpp>
 #include <erslib/dbio/layouts/update.hpp>
@@ -91,6 +93,7 @@ namespace dbio {
     using impl::WhereInClause;
     using impl::WhereNullClause;
     using impl::WhereOpClause;
+    using impl::ExistsClause;
 }
 
 #define ERS_QUICK_DBIO_USING \

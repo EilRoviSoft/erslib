@@ -9,26 +9,29 @@
 #include <erslib/dbio/slots/where.hpp>
 
 
+using namespace dbio::impl;
+
+
 // Impl
 
 namespace {
     ////&slots::from,
 
-    constexpr dbio::impl::SlotBinding update_layout[] = {
+    constexpr SlotBinding update_layout[] = {
         {
-            .slot   = &dbio::impl::slots::update,
+            .slot   = &slots::update,
             .prefix = "UPDATE "
         },
-        dbio::impl::bindings::set,
-        dbio::impl::bindings::where,
-        dbio::impl::bindings::returning,
+        bindings::set,
+        bindings::where,
+        bindings::returning,
     };
 }
 
 
 // Public API
 
-dbio::impl::QueryBuilder dbio::impl::layouts::update(std::string table) {
+QueryBuilder layouts::update(std::string table) {
     QueryBuilder q(update_layout);
     q |= clauses::identifier(&slots::update, std::move(table));
     return q;

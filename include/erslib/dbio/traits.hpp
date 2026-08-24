@@ -8,3 +8,11 @@
 #include <erslib/dbio/traits/scalar.hpp>
 #include <erslib/dbio/traits/string.hpp>
 #include <erslib/dbio/traits/vec2.hpp>
+
+
+// Exports
+
+namespace dbio {
+    using impl::sql_type;
+    using impl::sql_value;
+}

@@ -55,16 +55,6 @@ namespace dbio::reflect {
 }
 
 
-// Traits
-
-#include <erslib/dbio/traits.hpp>
-
-namespace dbio {
-    using impl::sql_type;
-    using impl::sql_value;
-}
-
-
 // Types
 
 #include <erslib/dbio/reflect/types.hpp>

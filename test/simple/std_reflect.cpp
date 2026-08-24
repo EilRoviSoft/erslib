@@ -6,7 +6,6 @@
 // std
 #include <format>
 #include <meta>
-#include <print>
 #include <string>
 
 
@@ -27,7 +26,7 @@ std::meta::define_aggregate(^^A, {
 template<typename... Ts>
 struct Tuple {
     struct Storage;
-    
+
     consteval {
     std::vector<std::meta::info> member_specs;
     template for (int i {}; auto type : { ^^Ts... }) {
@@ -37,7 +36,7 @@ struct Tuple {
         ++i;
     }
 
-        define_aggregate(^^Storage, member_specs);
+    define_aggregate(^^Storage, member_specs);
     }
 
     Storage data;

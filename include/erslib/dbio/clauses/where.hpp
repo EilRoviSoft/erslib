@@ -2,7 +2,6 @@
 
 // std
 #include <concepts>
-#include <cstdint>
 #include <initializer_list>
 #include <ranges>
 #include <string>

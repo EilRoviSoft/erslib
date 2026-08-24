@@ -3,7 +3,6 @@
 // std
 #include <concepts>
 #include <ranges>
-#include <type_traits>
 #include <utility>
 
 // pqxx

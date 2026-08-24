@@ -7,12 +7,6 @@
 
 namespace dbio::impl {
     template<>
-    struct sql_type<bool> {
-        static constexpr std::string_view name = "BOOLEAN";
-        static constexpr bool nullable = false;
-    };
-
-    template<>
     struct sql_type<i16> {
         static constexpr std::string_view name = "SMALLINT";
         static constexpr bool nullable = false;
