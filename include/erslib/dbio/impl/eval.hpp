@@ -1,15 +1,5 @@
 #pragma once
 
-
-namespace dbio::impl::tag {
-    struct transaction_t {};
-}
-
-namespace dbio::impl {
-    constexpr tag::transaction_t tx_tag;
-}
-
-
 // Defines
 
 #ifdef ERS_DBIO_SAFE

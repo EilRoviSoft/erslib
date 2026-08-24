@@ -1,7 +1,7 @@
 #pragma once
 
 // ers
-#include <erslib/dbio/generator.hpp>
+#include <erslib/dbio/impl/generator.hpp>
 #include <erslib/dbio/impl/traits.hpp>
 
 // pqxx

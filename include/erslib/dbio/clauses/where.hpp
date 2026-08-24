@@ -127,7 +127,7 @@ namespace dbio::impl {
 
         template<typename T>
         Clause where_in(std::string column, std::initializer_list<T> values, bool negated = false) {
-            return where_in<std::initializer_list<T>>(std::move(column), values, negated);
+            return where_in<std::initializer_list<T>>(std::move(column), std::move(values), negated);
         }
     }
 }

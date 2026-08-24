@@ -11,7 +11,7 @@
 #include <pqxx/row>
 
 // ers
-#include <erslib/dbio/generator.hpp>
+#include <erslib/dbio/impl/generator.hpp>
 #include <erslib/dbio/impl/traits.hpp>
 #include <erslib/dbio/reflect/schema.hpp>
 
@@ -22,7 +22,7 @@ namespace dbio::impl::reflect {
 
 
     template<typename T>
-    concept MappedRow = RowType<T> || PlainRow<T>;
+    concept MappedRow = (RowType<T> || PlainRow<T>) && !ValidRow<T>;
 
 
     template<typename T>
@@ -36,7 +36,7 @@ namespace dbio::impl::reflect {
 
         size_t slot = 0;
 
-        template for (constexpr auto m : std::define_static_array(columns<T>())) {
+        template for (constexpr auto m : column_list<T>) {
             constexpr std::string_view name = column_name<m>;
 
             for (pqxx::row_size_type i = 0; i < from.columns(); i++) {
@@ -57,7 +57,7 @@ namespace dbio::impl::reflect {
     void read_row(T& into, pqxx::row_ref row, const ColumnIndex<T>& index) {
         size_t slot = 0;
 
-        template for (constexpr auto m : std::define_static_array(columns<T>())) {
+        template for (constexpr auto m : column_list<T>) {
             if (const int at = index[slot]; at >= 0)
                 into.[:m:] = sql_value<member_type<m>>::read(row[static_cast<pqxx::row_size_type>(at)]);
 

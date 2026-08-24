@@ -4,9 +4,6 @@
 #include <erslib/dbio/slots/where.hpp>
 
 
-using std::string_literals::operator ""s;
-
-
 dbio::impl::ExistsClause::ExistsClause(QueryBuilder subquery, bool negated) :
     IWhereClause(&slots::where),
     _subquery(std::move(subquery)),
@@ -14,14 +11,7 @@ dbio::impl::ExistsClause::ExistsClause(QueryBuilder subquery, bool negated) :
 }
 
 ers::Status dbio::impl::ExistsClause::render(Context& ctx) const {
-    ctx.query += _negated ? "NOT EXISTS (" : "EXISTS (";
-
-    if (auto s = _subquery.build(ctx); !s)
-        return s;
-
-    ctx.query += ')';
-
-    return ers::ok;
+    return append_subquery(ctx, _subquery, _negated ? "NOT EXISTS (" : "EXISTS (");
 }
 
 

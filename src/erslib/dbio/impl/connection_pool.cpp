@@ -1,4 +1,4 @@
-#include "erslib/dbio/connection_pool.hpp"
+#include "erslib/dbio/impl/connection_pool.hpp"
 
 // std
 #include <cstdio>
@@ -62,7 +62,7 @@ void dbio::impl::ConnectionPool::maintain() {
 }
 
 
-bool dbio::ConnectionPool::_is_stale(const entry_t& entry, ers::timestamp_t now) const noexcept {
+bool dbio::impl::ConnectionPool::_is_stale(const entry_t& entry, ers::timestamp_t now) const noexcept {
     return now - entry.last_used > _pool_opts.idle_timeout;
 }
 

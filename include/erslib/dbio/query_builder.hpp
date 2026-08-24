@@ -54,13 +54,24 @@
 // Exports
 
 namespace dbio {
+    namespace orm {
+        using namespace impl::clauses;
+        using namespace impl::layouts;
+    }
+
     namespace clauses = impl::clauses;
     namespace layouts = impl::layouts;
     namespace slots = impl::slots;
     namespace bindings = impl::bindings;
 }
 
+
 namespace dbio {
+    using impl::QueryBuilder;
+}
+
+
+namespace dbio::ext {
     using impl::binder_t;
     using impl::make_binder;
 
@@ -70,7 +81,6 @@ namespace dbio {
     using impl::Context;
 
     using impl::Layout;
-    using impl::QueryBuilder;
 
     using impl::Arity;
     using impl::Slot;
@@ -81,7 +91,7 @@ namespace dbio {
     using impl::Clause;
 }
 
-namespace dbio {
+namespace dbio::ext {
     using impl::AssignClause;
     using impl::BoundClause;
     using impl::OrderClause;
@@ -95,6 +105,7 @@ namespace dbio {
     using impl::WhereOpClause;
     using impl::ExistsClause;
 }
+
 
 #define ERS_QUICK_DBIO_USING \
     using namespace dbio::clauses; \

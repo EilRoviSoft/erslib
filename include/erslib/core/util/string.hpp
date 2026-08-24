@@ -2,6 +2,7 @@
 
 // std
 #include <array>
+#include <cstddef>
 #include <string>
 
 // ers
@@ -93,6 +94,7 @@ namespace ers::impl::util {
 namespace ers::impl::util {
     std::string ERSLIB_EXPORT replace(std::string_view where, std::string_view from, std::string_view to, size_t estimated_replacements = 4);
     std::string ERSLIB_EXPORT quote(std::string_view what);
+    std::string ERSLIB_EXPORT bytes_to_string(std::span<const std::byte> bytes, std::string_view args);
 }
 
 

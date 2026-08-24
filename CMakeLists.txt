@@ -218,7 +218,6 @@ if(ERSLIB_BUILD_DBIO)
             "src/erslib/dbio/impl/connection_pool.cpp"
             "src/erslib/dbio/impl/context.cpp"
             "src/erslib/dbio/impl/database.cpp"
-            "src/erslib/dbio/impl/formatter.cpp"
             "src/erslib/dbio/impl/identity.cpp"
             "src/erslib/dbio/impl/layout.cpp"
             "src/erslib/dbio/impl/options.cpp"

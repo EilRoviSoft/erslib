@@ -32,11 +32,3 @@ namespace dbio::impl {
         ers::ms_t idle_timeout = std::chrono::minutes(5);
     };
 }
-
-
-// Exports
-
-namespace dbio {
-    using impl::db_options_t;
-    using impl::pool_options_t;
-}

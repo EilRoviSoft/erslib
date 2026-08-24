@@ -1,5 +1,10 @@
 #include "erslib/core/util/string.hpp"
 
+// ers
+#include <erslib/core/type/general.hpp>
+
+
+// replace
 
 std::string ers::impl::util::replace(std::string_view where, std::string_view from, std::string_view to, size_t estimated_replacements) {
     std::string result;
@@ -30,6 +35,9 @@ std::string ers::impl::util::replace(std::string_view where, std::string_view fr
     return result;
 }
 
+
+// quote
+
 std::string ers::impl::util::quote(std::string_view what) {
     std::string out;
     out.reserve(what.size() + 2);
@@ -44,5 +52,55 @@ std::string ers::impl::util::quote(std::string_view what) {
     }
 
     out += '\'';
+    return out;
+}
+
+
+// bytes_to_string
+
+namespace {
+    enum class Mode : u8 { HexLower, HexUpper, Text };
+
+    constexpr std::string_view lower_digits = "0123456789abcdef";
+    constexpr std::string_view upper_digits = "0123456789ABCDEF";
+}
+
+std::string ers::impl::util::bytes_to_string(std::span<const std::byte> bytes, std::string_view args) {
+    auto it = args.begin();
+    auto mode = Mode::HexLower;
+
+    if (it != args.end()) {
+        switch (*it) {
+            case 'x': mode = Mode::HexLower;
+                ++it;
+                break;
+
+            case 'X': mode = Mode::HexUpper;
+                ++it;
+                break;
+
+            case 's': mode = Mode::Text;
+                ++it;
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    std::string out;
+
+    if (mode != Mode::Text) {
+        const std::string_view digits = mode == Mode::HexLower ? lower_digits : upper_digits;
+        out.reserve(bytes.size() * 2);
+
+        for (auto byte : bytes) {
+            auto v = std::to_integer<unsigned char>(byte);
+            out.push_back(digits[v >> 4]);
+            out.push_back(digits[v & 0xF]);
+        }
+    } else
+        out.assign(reinterpret_cast<char const*>(bytes.data()), bytes.size());
+
     return out;
 }

@@ -10,7 +10,7 @@
 // ers
 #include <erslib/core/filesystem.hpp>
 #include <erslib/core/type/result.hpp>
-#include <erslib/dbio/impl/connection_pool.hpp>
+#include <erslib/dbio/impl/transaction.hpp>
 #include <erslib/dbio/impl/options.hpp>
 #include <erslib/dbio/impl/query_store.hpp>
 

@@ -1,11 +1,7 @@
-#include "erslib/dbio/database.hpp"
-
-// std
-#include <format>
+#include "erslib/dbio/impl/database.hpp"
 
 // ers
-#include <erslib/core/type/diagnostic.hpp>
-#include <erslib/dbio/query_store.hpp>
+#include <erslib/dbio/impl/query_store.hpp>
 
 
 dbio::impl::Database::Database(std::string connection_string, pool_options_t pool_opts) :

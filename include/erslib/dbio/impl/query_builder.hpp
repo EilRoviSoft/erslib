@@ -5,15 +5,14 @@
 #include <vector>
 
 // ers
-#include <erslib/dbio/generator.hpp>
 #include <erslib/dbio/impl/clause.hpp>
 #include <erslib/dbio/impl/context.hpp>
+#include <erslib/dbio/impl/generator.hpp>
 #include <erslib/dbio/impl/layout.hpp>
+#include <erslib/dbio/impl/traits.hpp>
 
 // export
 #include <erslib/export.hpp>
-
-#include "traits.hpp"
 
 
 // Query
@@ -104,4 +103,14 @@ namespace dbio::impl {
     QueryBuilder& operator|(QueryBuilder& lhs, std::vector<Clause> rhs);
     QueryBuilder&& operator|(QueryBuilder&& lhs, std::vector<Clause> rhs);
     QueryBuilder& operator|=(QueryBuilder& lhs, std::vector<Clause> rhs);
+}
+
+
+// Subqueries
+
+namespace dbio::impl {
+    ers::Status ERSLIB_EXPORT append_subquery(
+        Context& ctx, const QueryBuilder& sub,
+        std::string_view open, std::string_view close = ")"
+    );
 }

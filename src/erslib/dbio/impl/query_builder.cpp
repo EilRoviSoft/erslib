@@ -4,7 +4,7 @@
 #include <algorithm>
 
 // ers
-#include <erslib/dbio/eval.hpp>
+#include <erslib/dbio/impl/eval.hpp>
 
 
 // Modifiers
@@ -159,4 +159,21 @@ dbio::impl::QueryBuilder&& dbio::impl::operator|(QueryBuilder&& lhs, std::vector
 
 dbio::impl::QueryBuilder& dbio::impl::operator|=(QueryBuilder& lhs, std::vector<Clause> rhs) {
     return lhs | std::move(rhs);
+}
+
+
+// Subqueries
+
+ers::Status dbio::impl::append_subquery(
+    Context& ctx, const QueryBuilder& sub,
+    std::string_view open, std::string_view close
+) {
+    ctx.query += open;
+
+    if (auto s = sub.build(ctx); !s)
+        return s;
+
+    ctx.query += close;
+
+    return ers::ok;
 }

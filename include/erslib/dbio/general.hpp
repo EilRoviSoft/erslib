@@ -23,28 +23,12 @@ namespace dbio {
 
 #include <erslib/dbio/impl/eval.hpp>
 
-namespace dbio {
-    namespace tag = impl::tag;
-    using impl::tx_tag;
-}
-
-
-// Formatter
-
-#include <erslib/dbio/impl/formatter.hpp>
-
-namespace dbio {
-    using impl::Mode;
-    using impl::bytes_to_string;
-}
-
 
 // Generator
 
 #include <erslib/dbio/impl/generator.hpp>
 
 namespace dbio {
-    using impl::ValidRow;
     using impl::ReadableRow;
 
     using impl::row_reader;
@@ -55,6 +39,16 @@ namespace dbio {
     using impl::for_each_row;
     using impl::read_one;
     using impl::read_at_most_one;
+}
+
+
+// Options
+
+#include <erslib/dbio/impl/options.hpp>
+
+namespace dbio {
+    using impl::db_options_t;
+    using impl::pool_options_t;
 }
 
 

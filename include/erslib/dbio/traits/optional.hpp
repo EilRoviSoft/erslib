@@ -2,7 +2,7 @@
 
 // ers
 #include <erslib/core/type/optional.hpp>
-#include <erslib/dbio/generator.hpp>
+#include <erslib/dbio/impl/generator.hpp>
 #include <erslib/dbio/impl/traits.hpp>
 
 
@@ -28,7 +28,7 @@ struct dbio::impl::sql_value<ers::optional<T>> {
     }
 };
 
-template<dbio::ReadableRow T>
+template<dbio::impl::ReadableRow T>
 struct dbio::impl::sql_collector<ers::optional<T>> {
     using row_t = T;
 

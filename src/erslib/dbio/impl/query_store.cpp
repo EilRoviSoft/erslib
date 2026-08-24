@@ -1,9 +1,8 @@
-#include "erslib/dbio/query_store.hpp"
+#include "erslib/dbio/impl/query_store.hpp"
 
 // std
 #include <fstream>
 #include <mutex>
-#include <sstream>
 
 // ers
 #include <erslib/core/filesystem.hpp>
@@ -30,7 +29,7 @@ namespace {
 }
 
 
-dbio::QueryStore dbio::QueryStore::make_from_path(const fs::path& path) try {
+dbio::impl::QueryStore dbio::impl::QueryStore::make_from_path(const fs::path& path) try {
     QueryStore result;
     result.load_directory(path);
     return result;

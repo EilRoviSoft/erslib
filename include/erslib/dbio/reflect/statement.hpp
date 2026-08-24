@@ -10,9 +10,9 @@
 
 // ers
 #include <erslib/core/type/result.hpp>
-#include <erslib/dbio/eval.hpp>
-#include <erslib/dbio/generator.hpp>
-#include <erslib/dbio/query_store.hpp>
+#include <erslib/dbio/impl/eval.hpp>
+#include <erslib/dbio/impl/generator.hpp>
+#include <erslib/dbio/impl/query_store.hpp>
 #include <erslib/dbio/reflect/bind.hpp>
 #include <erslib/dbio/reflect/row.hpp>
 #include <erslib/dbio/reflect/schema.hpp>

@@ -3,12 +3,12 @@
 // ers
 #include <erslib/core/trait/container.hpp>
 #include <erslib/core/type/result.hpp>
-#include <erslib/dbio/generator.hpp>
+#include <erslib/dbio/impl/generator.hpp>
 #include <erslib/dbio/impl/traits.hpp>
 
 
 template<typename T>
-    requires dbio::ReadableRow<typename T::value_type>
+    requires dbio::impl::ReadableRow<typename T::value_type>
     && ers::HintInsertable<T>
     && (!std::convertible_to<T, std::string_view>)
 struct dbio::impl::sql_collector<T> {

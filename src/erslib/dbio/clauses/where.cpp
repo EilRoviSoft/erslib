@@ -1,6 +1,7 @@
 #include "erslib/dbio/clauses/where.hpp"
 
 // std
+#include <format>
 #include <string_view>
 
 // ers
@@ -10,23 +11,10 @@
 // Internal
 
 namespace {
-    // Empty means "unknown", which the callers turn into an error.
-    std::string_view op_text(dbio::impl::Op op) {
-        using enum dbio::impl::Op;
-
-        switch (op) {
-            case Eq:    return " = ";
-            case Ne:    return " <> ";
-            case Lt:    return " < ";
-            case Le:    return " <= ";
-            case Gt:    return " > ";
-            case Ge:    return " >= ";
-            case Like:  return " LIKE ";
-            case ILike: return " ILIKE ";
-        }
-
-        return {};
-    }
+    constexpr std::array<std::string_view, 8> op_text = {
+        "=", "<>", "<", "<=", ">", ">=",
+        "LIKE", "ILIKE"
+    };
 }
 
 
@@ -47,7 +35,7 @@ dbio::impl::WhereOpClause::WhereOpClause(std::string column, Op op, binder_t bin
 }
 
 ers::Status dbio::impl::WhereOpClause::render(Context& ctx) const {
-    auto op = op_text(_op);
+    auto op = op_text[static_cast<size_t>(_op)];
     if (op.empty()) {
         return ers::make_error("Unknown operator ({}) for column '{}' in slot '{}'.",
             static_cast<u8>(_op), _column, slot()->name);
@@ -56,8 +44,8 @@ ers::Status dbio::impl::WhereOpClause::render(Context& ctx) const {
     if (auto s = append_identifier(ctx, _column, slot()); !s)
         return s;
 
-    ctx.query += op;
-    ctx.query += ctx.bind(_binder);
+    ctx.query += std::format(" {} {}",
+        op, ctx.bind(_binder));
 
     return ers::ok;
 }
