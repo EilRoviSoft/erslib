@@ -4,7 +4,6 @@
 #include <string_view>
 
 // ers
-#include <erslib/dbio/impl/identity.hpp>
 #include <erslib/dbio/slots/where.hpp>
 
 
@@ -28,20 +27,6 @@ namespace {
 
         return {};
     }
-
-    ers::Status render_list(dbio::impl::Context& ctx, const std::vector<dbio::impl::binder_t>& binders) {
-        bool first = true;
-
-        for (const auto& it : binders) {
-            if (!first)
-                ctx.query += ", ";
-            first = false;
-
-            ctx.query += it ? ctx.bind(it) : ctx.bind_null();
-        }
-
-        return ers::ok;
-    }
 }
 
 
@@ -62,20 +47,17 @@ dbio::impl::WhereOpClause::WhereOpClause(std::string column, Op op, binder_t bin
 }
 
 ers::Status dbio::impl::WhereOpClause::render(Context& ctx) const {
-    if (!is_identifier(_column)) {
-        return ers::make_error("Invalid identifier '{}' in slot '{}'.",
-            _column, slot()->name);
-    }
-
-    const auto op = op_text(_op);
+    auto op = op_text(_op);
     if (op.empty()) {
         return ers::make_error("Unknown operator ({}) for column '{}' in slot '{}'.",
             static_cast<u8>(_op), _column, slot()->name);
     }
 
-    ctx.query += _column;
+    if (auto s = append_identifier(ctx, _column, slot()); !s)
+        return s;
+
     ctx.query += op;
-    ctx.query += _binder ? ctx.bind(_binder) : ctx.bind_null();
+    ctx.query += ctx.bind(_binder);
 
     return ers::ok;
 }
@@ -91,12 +73,9 @@ dbio::impl::WhereInClause::WhereInClause(std::string column, std::vector<binder_
 }
 
 ers::Status dbio::impl::WhereInClause::render(Context& ctx) const {
-    if (!is_identifier(_column)) {
-        return ers::make_error("Invalid identifier '{}' in slot '{}'.",
-            _column, slot()->name);
-    }
+    if (auto s = check_identifier(_column, slot()); !s)
+        return s;
 
-    // "x IN ()" is a syntax error
     if (_binders.empty()) {
         ctx.query += _negated ? "TRUE" : "FALSE";
         return ers::ok;
@@ -105,7 +84,7 @@ ers::Status dbio::impl::WhereInClause::render(Context& ctx) const {
     ctx.query += _column;
     ctx.query += _negated ? " NOT IN (" : " IN (";
 
-    if (auto s = render_list(ctx, _binders); !s)
+    if (auto s = append_binders(ctx, _binders); !s)
         return s;
 
     ctx.query += ')';
@@ -123,12 +102,9 @@ dbio::impl::WhereNullClause::WhereNullClause(std::string column, bool is_null) :
 }
 
 ers::Status dbio::impl::WhereNullClause::render(Context& ctx) const {
-    if (!is_identifier(_column)) {
-        return ers::make_error("Invalid identifier '{}' in slot '{}'.",
-            _column, slot()->name);
-    }
+    if (auto s = append_identifier(ctx, _column, slot()); !s)
+        return s;
 
-    ctx.query += _column;
     ctx.query += _is_null ? " IS NULL" : " IS NOT NULL";
 
     return ers::ok;

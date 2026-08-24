@@ -13,6 +13,8 @@
 // export
 #include <erslib/export.hpp>
 
+#include "traits.hpp"
+
 
 // Query
 
@@ -55,9 +57,18 @@ namespace dbio::impl {
             auto r = exec(tx);
             if (!r)
                 return r.error();
-
             return RowGenerator<T>(std::move(*r));
         }
+
+        template<typename T>
+            requires RowContainer<T>
+        ers::Result<T> exec_as(pqxx::dbtransaction& tx) const {
+            auto r = exec(tx);
+            if (!r)
+                return r.error();
+            return sql_collector<T>::collect(*r);
+        }
+
 
         template<typename T>
             requires ReadableRow<T>
@@ -65,11 +76,7 @@ namespace dbio::impl {
             auto r = exec(tx);
             if (!r)
                 return r.error();
-
-            if (r->size() != 1)
-                return ers::make_error("Expected exactly 1 row, got {}.", r->size());
-
-            return row_reader<T>::read(r->one_row_ref(), row_reader<T>::prepare(*r));
+            return read_one<T>(*r);
         }
 
 

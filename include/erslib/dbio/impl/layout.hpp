@@ -48,6 +48,7 @@ namespace dbio::impl {
 
         LayoutArray& _materialize();
 
+        ers::Status _check_insertable(SlotRef slot) const;
         ers::Status _insert_at(SlotRef anchor, const SlotBinding& binding, ptrdiff_t offset);
     };
 }

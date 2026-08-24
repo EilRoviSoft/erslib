@@ -10,6 +10,10 @@
 #include <pqxx/result>
 #include <pqxx/row>
 
+// ers
+#include <erslib/core/type/optional.hpp>
+#include <erslib/core/type/result.hpp>
+
 
 // Concepts
 
@@ -39,6 +43,34 @@ namespace dbio::impl {
         { row_reader<T>::prepare(result) } -> std::same_as<typename row_reader<T>::state>;
         { row_reader<T>::read(row, state) } -> std::same_as<T>;
     };
+
+
+    template<ReadableRow Row, typename Fn>
+    void for_each_row(const pqxx::result& from, Fn&& fn) {
+        const auto state = row_reader<Row>::prepare(from);
+        for (const auto& r : from)
+            fn(row_reader<Row>::read(r, state));
+    }
+
+
+    template<ReadableRow T>
+    ers::Result<T> read_one(const pqxx::result& from) {
+        if (from.size() != 1)
+            return ers::make_error("Expected exactly 1 row, got {}.", from.size());
+
+        return row_reader<T>::read(from.one_row_ref(), row_reader<T>::prepare(from));
+    }
+
+    template<ReadableRow T>
+    ers::Result<ers::optional<T>> read_at_most_one(const pqxx::result& from) {
+        if (from.empty())
+            return ers::optional<T> {};
+
+        if (from.size() > 1)
+            return ers::make_error("Expected at most 1 row, got {}.", from.size());
+
+        return ers::optional<T>(row_reader<T>::read(from.one_row_ref(), row_reader<T>::prepare(from)));
+    }
 }
 
 
@@ -131,4 +163,10 @@ namespace dbio {
 
     using impl::row_reader;
     using impl::RowGenerator;
+}
+
+namespace dbio {
+    using impl::for_each_row;
+    using impl::read_one;
+    using impl::read_at_most_one;
 }

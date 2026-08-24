@@ -39,6 +39,5 @@ namespace dbio::impl {
         // Modifiers
 
         std::string bind(const binder_t& binder);
-        std::string bind_null();
     };
 }

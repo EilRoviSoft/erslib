@@ -5,18 +5,14 @@
 #include <mutex>
 #include <sstream>
 
+// ers
+#include <erslib/core/filesystem.hpp>
+
 
 namespace fs = std::filesystem;
 
 
 namespace {
-    std::string read_file(const fs::path& path) {
-        std::ifstream stream(path, std::ios::binary);
-        std::ostringstream buffer;
-        buffer << stream.rdbuf();
-        return buffer.str();
-    }
-
     // "user/save.g.sql" -> "user.save"
     // "player/create.sql" -> "player.create"
     std::string make_label(const fs::path& path) {
@@ -54,7 +50,7 @@ size_t dbio::impl::QueryStore::load_directory(const fs::path& root) {
             continue;
 
         const fs::path relative = fs::relative(entry.path(), root);
-        add(make_label(relative), read_file(entry.path()));
+        add(make_label(relative), ers::util::read_file(entry.path()));
         count++;
     }
 

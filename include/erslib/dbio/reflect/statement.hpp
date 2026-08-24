@@ -30,26 +30,36 @@ namespace dbio::impl::reflect {
         }
 
 
-        ers::Result<RowGenerator<Output>> exec(pqxx::dbtransaction& tx, const QueryStore& store) const ERS_DBIO_TRY_EVAL {
-            const auto sql = store.get(std::string(query_label<Tag>));
+        ers::Result<RowGenerator<Output>> exec(pqxx::dbtransaction& tx) const {
+            auto r = _exec_raw(tx);
+            if (!r)
+                return r.error();
+
+            return RowGenerator<Output>(std::move(*r));
+        }
+
+        ers::Result<Output> exec_one(pqxx::dbtransaction& tx) const {
+            auto r = _exec_raw(tx);
+            if (!r)
+                return r.error();
+            return read_one<Output>(*r);
+        }
+
+
+    private:
+        Input _input;
+
+
+        ers::Result<pqxx::result> _exec_raw(pqxx::dbtransaction& tx) const ERS_DBIO_TRY_EVAL {
+            const auto sql = queries.get(std::string(query_label<Tag>));
             if (!sql)
                 return ers::make_error("dbio: no query registered for label '{}'", query_label<Tag>);
 
             pqxx::params params;
             bind_params(params, _input);
 
-            return RowGenerator<Output>(tx.exec(*sql, params));
+            return tx.exec(*sql, params);
         } ERS_DBIO_CATCH_EVAL_ERRORS
-
-#ifdef ERS_DBIO_GLOBAL_QUERY_STORE
-        ers::Result<RowGenerator<Output>> exec(pqxx::dbtransaction& tx) const {
-            return exec(tx, queries);
-        }
-#endif
-
-
-    private:
-        Input _input;
     };
 
 

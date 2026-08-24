@@ -95,10 +95,10 @@ namespace dbio::impl::reflect {
             template for (constexpr auto it : std::define_static_array(declaration_members<T>())) {
                 using entry = typename [:std::meta::type_of(it):];
 
-                if constexpr (is_default<entry>::value)
-                    if constexpr (default_info<entry>::field == column_name<m>) {
+                if constexpr (EntryOf<entry, kinds::def>)
+                    if constexpr (entry::field == column_name<m>) {
                         out += " DEFAULT ";
-                        out += sql_literal<default_info<entry>::value>();
+                        out += sql_literal<entry::value>();
                     }
             }
 
@@ -109,31 +109,31 @@ namespace dbio::impl::reflect {
             using entry = typename [:std::meta::type_of(it):];
             constexpr std::string_view name = std::define_static_string(std::meta::identifier_of(it));
 
-            if constexpr (is_pk<entry>::value) {
+            if constexpr (EntryOf<entry, kinds::pk>) {
                 out += "    CONSTRAINT ";
                 out += name;
                 out += " PRIMARY KEY ";
-                append_list(out, pk_fields<entry>::names);
+                append_list(out, entry::names);
                 out += ",\n";
             }
-            else if constexpr (is_unique<entry>::value) {
+            else if constexpr (EntryOf<entry, kinds::unique>) {
                 out += "    CONSTRAINT ";
                 out += name;
                 out += " UNIQUE ";
-                append_list(out, unique_fields<entry>::names);
+                append_list(out, entry::names);
                 out += ",\n";
             }
-            else if constexpr (is_fk<entry>::value) {
+            else if constexpr (EntryOf<entry, kinds::fk>) {
                 out += "    CONSTRAINT ";
                 out += name;
                 out += " FOREIGN KEY (";
-                out += fk_info<entry>::field;
+                out += entry::field;
                 out += ") REFERENCES ";
-                out += fk_info<entry>::ref_table;
+                out += entry::ref_table;
                 out += " (";
-                out += fk_info<entry>::ref_column;
+                out += entry::ref_column;
                 out += ')';
-                out += on_delete_text(fk_info<entry>::on_delete);
+                out += on_delete_text(entry::on_delete);
                 out += ",\n";
             }
         }

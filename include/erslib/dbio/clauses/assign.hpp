@@ -5,7 +5,6 @@
 
 // ers
 #include <erslib/dbio/impl/clause.hpp>
-#include <erslib/dbio/impl/identity.hpp>
 
 // export
 #include <erslib/export.hpp>

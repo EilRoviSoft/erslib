@@ -62,7 +62,6 @@ namespace dbio::reflect {
 namespace dbio {
     using impl::sql_type;
     using impl::sql_value;
-    using impl::value_binder;
 }
 
 
@@ -93,6 +92,7 @@ namespace dbio::reflect {
 
 namespace dbio::reflect {
     using impl::reflect::PlainRow;
+    using impl::reflect::MappedRow;
     using impl::reflect::ColumnIndex;
 
     using impl::reflect::map_columns;

@@ -7,10 +7,14 @@
 #include <erslib/dbio/impl/binder.hpp>
 
 
+
 namespace dbio::impl {
     template<typename T>
     struct sql_type;
+}
 
+
+namespace dbio::impl {
     template<typename T>
     struct sql_value {
         static void bind(pqxx::params& out, const T& what) {
@@ -24,9 +28,21 @@ namespace dbio::impl {
 
 
     template<typename T>
-    binder_t value_binder(T value) {
-        return [stored = std::move(value)](pqxx::params& out) {
-            sql_value<T>::bind(out, stored);
+    binder_t make_binder(T&& value) {
+        return [stored = owned_t<T>(std::forward<T>(value))](pqxx::params& out) {
+            sql_value<owned_t<T>>::bind(out, stored);
         };
     }
+}
+
+
+namespace dbio::impl {
+    template<typename T>
+    struct sql_collector;
+
+    template<typename T>
+    concept RowContainer = requires(const pqxx::result& r) {
+        typename sql_collector<T>::row_t;
+        { sql_collector<T>::collect(r) } -> std::same_as<ers::Result<T>>;
+    };
 }

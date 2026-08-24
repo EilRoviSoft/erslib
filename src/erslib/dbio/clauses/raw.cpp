@@ -23,8 +23,7 @@ ers::Status dbio::impl::RawClause::render(Context& ctx) const {
                 slot()->name, _binders.size());
         }
 
-        const auto& binder = _binders[next];
-        ctx.query += binder ? ctx.bind(binder) : ctx.bind_null();
+        ctx.query += ctx.bind(_binders[next]);
 
         next++;
     }

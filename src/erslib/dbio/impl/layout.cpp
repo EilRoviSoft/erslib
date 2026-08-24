@@ -39,19 +39,15 @@ std::vector<dbio::impl::SlotBinding>& dbio::impl::Layout::_materialize() {
 }
 
 ers::Status dbio::impl::Layout::_insert_at(SlotRef anchor, const SlotBinding& binding, ptrdiff_t offset) {
-    if (!binding.slot || !anchor)
-        return ers::make_error("Null slot.");
+    if (!anchor)
+        return ers::make_error("Null anchor slot.");
 
-    if (contains(binding.slot)) {
-        return ers::make_error("Slot '{}' is already in the layout.",
-            binding.slot->name);
-    }
+    if (auto s = _check_insertable(binding.slot); !s)
+        return s;
 
     const auto at = index_of(anchor);
-    if (!at) {
-        return ers::make_error("Anchor slot '{}' is not in the layout.",
-            anchor->name);
-    }
+    if (!at)
+        return ers::make_error("Anchor slot '{}' is not in the layout.", anchor->name);
 
     auto& owned = _materialize();
     owned.emplace(owned.begin() + static_cast<ptrdiff_t>(*at) + offset, binding);
@@ -69,14 +65,22 @@ ers::Status dbio::impl::Layout::insert_before(SlotRef anchor, const SlotBinding&
 
 
 ers::Status dbio::impl::Layout::append(SlotBinding binding) {
-    if (!binding.slot)
-        return ers::make_error("Null slot.");
-
-    if (contains(binding.slot)) {
-        return ers::make_error("Slot '{}' is already in the layout.",
-            binding.slot->name);
-    }
+    if (auto s = _check_insertable(binding.slot); !s)
+        return s;
 
     _materialize().emplace_back(binding);
+    return ers::ok;
+}
+
+
+// Checkers
+
+ers::Status dbio::impl::Layout::_check_insertable(SlotRef slot) const {
+    if (!slot)
+        return ers::make_error("Null slot.");
+
+    if (contains(slot))
+        return ers::make_error("Slot '{}' is already in the layout.", slot->name);
+
     return ers::ok;
 }

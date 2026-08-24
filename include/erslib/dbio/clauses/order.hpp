@@ -1,7 +1,6 @@
 #pragma once
 
 // std
-#include <cstdint>
 #include <string>
 
 // ers
@@ -11,6 +10,8 @@
 // export
 #include <erslib/export.hpp>
 
+
+// OrderClause
 
 namespace dbio::impl {
     enum class Order : u8 { Asc, Desc };
@@ -25,7 +26,6 @@ namespace dbio::impl {
 
         // Executors
 
-        [[nodiscard]]
         ers::Status render(Context& ctx) const override;
 
 
@@ -38,6 +38,32 @@ namespace dbio::impl {
     namespace clauses {
         Clause order_by(std::string column, Order order = Order::Asc);
         Clause order_by_random();
-        Clause order_by_stable_random(std::string_view key, int64_t seed);
+    }
+}
+
+
+// StableRandomClause
+
+namespace dbio::impl {
+    class ERSLIB_EXPORT StableRandomClause : public IClause {
+    public:
+        // Member functions
+
+        StableRandomClause(std::string key, i64 seed);
+
+
+        // Executors
+
+        ers::Status render(Context& ctx) const override;
+
+
+    private:
+        std::string _key;
+        i64 _seed;
+    };
+
+
+    namespace clauses {
+        Clause order_by_stable_random(std::string key, i64 seed);
     }
 }

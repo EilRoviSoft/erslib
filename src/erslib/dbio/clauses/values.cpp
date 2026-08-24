@@ -14,16 +14,5 @@ dbio::impl::ValuesClause::ValuesClause(std::vector<binder_t> binders) :
 ers::Status dbio::impl::ValuesClause::render(Context& ctx) const {
     if (_binders.empty())
         return ers::make_error("Slot '{}' needs at least one value.", slot()->name);
-
-    bool first = true;
-
-    for (const auto& it : _binders) {
-        if (!first)
-            ctx.query += ", ";
-        first = false;
-
-        ctx.query += it ? ctx.bind(it) : ctx.bind_null();
-    }
-
-    return ers::ok;
+    return append_binders(ctx, _binders);
 }

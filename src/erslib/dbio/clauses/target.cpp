@@ -1,7 +1,6 @@
 #include "erslib/dbio/clauses/target.hpp"
 
 // ers
-#include <erslib/dbio/impl/identity.hpp>
 #include <erslib/dbio/slots/column.hpp>
 #include <erslib/dbio/slots/from.hpp>
 
@@ -14,14 +13,7 @@ dbio::impl::IdentityClause::IdentityClause(SlotRef slot, std::string name) :
 }
 
 ers::Status dbio::impl::IdentityClause::render(Context& ctx) const {
-    if (!is_identifier(_name)) {
-        return ers::make_error("Invalid identifier '{}' in slot '{}'.",
-            _name, slot()->name);
-    }
-
-    ctx.query += _name;
-
-    return ers::ok;
+    return append_identifier(ctx, _name, slot());
 }
 
 

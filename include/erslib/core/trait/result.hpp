@@ -13,6 +13,9 @@ namespace ers::impl {
 
     template<typename T>
     inline constexpr bool is_result_v = is_result<T>::value;
+
+    template<typename T>
+    using flattened_result_t = std::conditional_t<is_result_v<T>, T, Result<T>>;
 }
 
 
@@ -33,4 +36,5 @@ namespace ers {
     using impl::is_result_v;
 
     using impl::result_traits;
+    using impl::flattened_result_t;
 }

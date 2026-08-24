@@ -41,6 +41,18 @@ namespace ers::impl {
 
     template<
         typename K,
+        auto Member,
+        template<typename> typename Hasher = RapidHash,
+        typename Alloc = std::allocator<K>>
+    using HashSetByMember = boost::unordered_flat_set<
+        K,
+        adaptor::member_hash<Hasher, Member>,
+        adaptor::member_equal<Member>,
+        Alloc
+    >;
+
+    template<
+        typename K,
         typename V,
         typename Hasher = RapidHash<K>,
         typename EqualTo = std::equal_to<K>,
@@ -66,20 +78,6 @@ namespace ers::impl {
         adaptor::string_hash<RapidHash>,
         adaptor::equal<std::string>
     >;
-
-
-    using StringViewSet = HashSet<
-        std::string_view,
-        adaptor::string_hash<RapidHash>,
-        adaptor::equal<std::string_view>
-    >;
-
-    template<typename V>
-    using StringViewMap = HashMap<
-        std::string_view, V,
-        adaptor::string_hash<RapidHash>,
-        adaptor::equal<std::string_view>
-    >;
 }
 
 
@@ -90,6 +88,7 @@ namespace ers {
     using impl::OrderedMap;
 
     using impl::HashSet;
+    using impl::HashSetByMember;
     using impl::HashMap;
 
     using impl::TrivialSet;
@@ -97,7 +96,4 @@ namespace ers {
 
     using impl::StringSet;
     using impl::StringMap;
-
-    using impl::StringViewSet;
-    using impl::StringViewMap;
 }

@@ -258,7 +258,11 @@ TEST_CASE("dbio reflect: entities are readable rows") {
     static_assert(dbio::ValidRow<Counted>);
     static_assert(dbio::ReadableRow<Counted>);
 
-    static_assert(!dbio::ReadableRow<std::string>);
+    static_assert(!dbio::reflect::RowType<std::string>);
+    static_assert(!dbio::reflect::PlainRow<std::string>);
+
+    static_assert(dbio::ReadableRow<std::string>);
+    static_assert(std::is_empty_v<dbio::row_reader<std::string>::state>);
 
     static_assert(std::is_same_v<dbio::row_reader<Image>::state, dbio::reflect::ColumnIndex<Image>>);
     static_assert(std::is_empty_v<dbio::row_reader<Counted>::state>);

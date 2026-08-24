@@ -4,6 +4,7 @@
 #include <chrono>
 #include <condition_variable>
 #include <deque>
+#include <functional>
 #include <mutex>
 #include <string>
 #include <vector>
@@ -27,9 +28,6 @@ namespace dbio::impl {
     template<typename Fn>
     concept ConnectionHandler = std::invocable<Fn, pqxx::connection&>;
 
-    template<typename T>
-    using flattened_result_t = std::conditional_t<ers::is_result_v<T>, T, ers::Result<T>>;
-
     template<typename Fn>
     using transaction_arg_t = std::remove_cvref_t<
         typename ers::fn_traits<std::remove_cvref_t<Fn>>::template arg_type<0>
@@ -44,6 +42,7 @@ namespace dbio::impl {
 namespace dbio::impl {
     class ConnectionPool : public ers::enable_shared_from_this<ConnectionPool> {
         friend class Connection;
+
 
     public:
         class Connection;
@@ -63,11 +62,11 @@ namespace dbio::impl {
 
         template<typename Fn>
             requires ConnectionHandler<Fn>
-        auto with_connection(Fn&& fn) -> ers::Result<std::invoke_result_t<Fn, pqxx::connection&>>;
+        auto with_connection(Fn&& fn) -> ers::flattened_result_t<std::invoke_result_t<Fn, pqxx::connection&>>;
 
         template<typename Fn>
             requires TransactionCallable<Fn>
-        auto with_transaction(Fn&& fn, std::string_view name = {}) -> flattened_result_t<std::invoke_result_t<Fn, transaction_arg_t<Fn>&>>;
+        auto with_transaction(Fn&& fn, std::string_view name = {}) -> ers::flattened_result_t<std::invoke_result_t<Fn, transaction_arg_t<Fn>&>>;
 
         template<typename Tx = pqxx::work, typename DbioFn, typename... Args>
             requires std::derived_from<Tx, pqxx::dbtransaction> && std::invocable<DbioFn, Tx&, Args...>
@@ -81,6 +80,9 @@ namespace dbio::impl {
         };
 
 
+        bool _is_stale(const entry_t& entry, ers::timestamp_t now) const noexcept;
+
+
         void _init();
 
         void _release(pqxx::connection* conn) noexcept;
@@ -88,7 +90,7 @@ namespace dbio::impl {
         void _discard(pqxx::connection* conn) noexcept;
 
         // mutex should acquired already
-        pqxx::connection* _spawn();
+        ers::Result<pqxx::connection*> _spawn();
 
 
         std::string _db_connection_string;
@@ -138,7 +140,7 @@ namespace dbio::impl {
 namespace dbio::impl {
     template<typename Fn>
         requires ConnectionHandler<Fn>
-    auto ConnectionPool::with_connection(Fn&& fn) -> ers::Result<std::invoke_result_t<Fn, pqxx::connection&>> {
+    auto ConnectionPool::with_connection(Fn&& fn) -> ers::flattened_result_t<std::invoke_result_t<Fn, pqxx::connection&>> {
         using return_type = std::invoke_result_t<Fn, pqxx::connection&>;
 
 
@@ -162,7 +164,7 @@ namespace dbio::impl {
         requires TransactionCallable<Fn>
     auto ConnectionPool::with_transaction(
         Fn&& fn, std::string_view name
-    ) -> flattened_result_t<std::invoke_result_t<Fn, transaction_arg_t<Fn>&>> {
+    ) -> ers::flattened_result_t<std::invoke_result_t<Fn, transaction_arg_t<Fn>&>> {
         using Tx = transaction_arg_t<Fn>;
         using return_type = std::invoke_result_t<Fn, Tx&>;
 
@@ -191,8 +193,8 @@ namespace dbio::impl {
     template<typename Tx, typename DbioFn, typename... Args>
         requires std::derived_from<Tx, pqxx::dbtransaction> && std::invocable<DbioFn, Tx&, Args...>
     auto ConnectionPool::call(DbioFn&& fn, Args&&... args) {
-        return with_transaction([&](Tx& tx) -> decltype(auto) {
-            return fn(tx, args...);
+        return with_transaction([&fn, &args...](Tx& tx) -> decltype(auto) {
+            return std::invoke(std::forward<DbioFn>(fn), tx, std::forward<Args>(args)...);
         });
     }
 }

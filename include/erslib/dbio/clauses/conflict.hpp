@@ -8,10 +8,8 @@
 #include <vector>
 
 // ers
-#include <erslib/dbio/clauses/raw.hpp>
 #include <erslib/dbio/clauses/target.hpp>
 #include <erslib/dbio/impl/clause.hpp>
-#include <erslib/dbio/impl/identity.hpp>
 #include <erslib/dbio/slots/conflict.hpp>
 
 // export
@@ -26,39 +24,12 @@ namespace dbio::impl {
     public:
         // Member functions
 
-        explicit ConflictUpdateClause(std::vector<std::string> columns) :
-            IClause(&slots::conflict_action),
-            _columns(std::move(columns)) {
-        }
+        explicit ConflictUpdateClause(std::vector<std::string> columns);
 
 
         // Executors
 
-        ers::Status render(Context& ctx) const override {
-            if (_columns.empty())
-                return ers::make_error("Slot '{}' needs at least one column.", slot()->name);
-
-            ctx.query += "DO UPDATE SET ";
-
-            bool first = true;
-
-            for (const std::string& it : _columns) {
-                if (!is_identifier(it)) {
-                    return ers::make_error("Invalid identifier '{}' in slot '{}'.",
-                        it, slot()->name);
-                }
-
-                if (!first)
-                    ctx.query += ", ";
-                first = false;
-
-                ctx.query += it;
-                ctx.query += " = excluded.";
-                ctx.query += it;
-            }
-
-            return ers::ok;
-        }
+        ers::Status render(Context& ctx) const override;
 
 
     private:

@@ -5,7 +5,7 @@
 
 // ers
 #include <erslib/core/type/general.hpp>
-#include <erslib/dbio/fwd.hpp>
+#include <erslib/core/type/time.hpp>
 
 // export
 #include <erslib/export.hpp>
@@ -28,8 +28,8 @@ namespace dbio::impl {
     struct pool_options_t {
         size_t min_size = 1;
         size_t max_size = 4;
-        ms_t acquire_timeout { 5000 };
-        ms_t idle_timeout { 1000 };
+        ers::ms_t acquire_timeout = std::chrono::seconds(5);
+        ers::ms_t idle_timeout = std::chrono::minutes(5);
     };
 }
 

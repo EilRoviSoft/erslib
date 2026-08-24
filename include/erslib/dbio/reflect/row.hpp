@@ -22,6 +22,10 @@ namespace dbio::impl::reflect {
 
 
     template<typename T>
+    concept MappedRow = RowType<T> || PlainRow<T>;
+
+
+    template<typename T>
     using ColumnIndex = std::array<int, column_count<T>>;
 
 
@@ -70,15 +74,7 @@ namespace dbio::impl::reflect {
 }
 
 
-template<dbio::impl::reflect::RowType T>
-struct dbio::impl::row_reader<T> {
-    using state = reflect::ColumnIndex<T>;
-
-    static state prepare(const pqxx::result& from) { return reflect::map_columns<T>(from); }
-    static T read(pqxx::row_ref row, const state& index) { return reflect::from_row<T>(row, index); }
-};
-
-template<dbio::impl::reflect::PlainRow T>
+template<dbio::impl::reflect::MappedRow T>
 struct dbio::impl::row_reader<T> {
     using state = reflect::ColumnIndex<T>;
 

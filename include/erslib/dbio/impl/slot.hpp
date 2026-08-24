@@ -1,13 +1,10 @@
 #pragma once
 
 // std
-#include <cstdint>
 #include <span>
-#include <string>
+#include <string_view>
 
 // ers
-#include <erslib/core/hashing/rapid.hpp>
-#include <erslib/core/type/general.hpp>
 #include <erslib/core/type/result.hpp>
 #include <erslib/dbio/impl/context.hpp>
 #include <erslib/dbio/impl/fwd.hpp>
@@ -25,10 +22,6 @@ namespace dbio::impl {
     struct Slot {
         std::string_view name;
         Arity arity;
-
-        constexpr u64 id() const noexcept {
-            return ers::RapidHash<std::string_view> {}(name);
-        }
     };
 
 

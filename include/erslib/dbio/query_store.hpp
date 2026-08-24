@@ -5,7 +5,7 @@
 
 // ers
 #include <erslib/core/thread_safe/map.hpp>
-#include <erslib/dbio/fwd.hpp>
+#include <erslib/core/fwd.hpp>
 
 // export
 #include <erslib/export.hpp>
@@ -14,7 +14,7 @@
 namespace dbio::impl {
     // Thread-safe registry mapping query labels to their SQL text.
     // Generated code looks queries up by label, e.g. queries["user.save"].
-    class ERSLIB_EXPORT QueryStore : public ers::thread_safe::Map<kv_container_type> {
+    class ERSLIB_EXPORT QueryStore : public ers::thread_safe::Map<ers::StringMap<std::string>> {
     public:
         // Member functions
 

@@ -36,8 +36,6 @@ set_if_undefined(ERSLIB_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/erslib"
     CACHE STRING "Install path for erslib package-related CMake files"
 )
 
-option(ERSLIB_DBIO_OWN_QUERY_STORE "Init own 'QueryStore queries' for sql" OFF)
-
 if(NOT DEFINED CMAKE_BUILD_TYPE AND NOT DEFINED CMAKE_CONFIGURATION_TYPES)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
     set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
@@ -214,16 +212,9 @@ endif()
 if(ERSLIB_BUILD_DBIO)
     erslib_add_library(erslib_dbio dbio)
 
-    if(ERSLIB_DBIO_OWN_QUERY_STORE)
-        target_compile_definitions(erslib_dbio
-            PUBLIC
-                ERS_DBIO_GLOBAL_QUERY_STORE
-                ERS_DBIO_GLOBAL_QUERY_STORE_INIT
-        )
-    endif()
-
     target_sources(erslib_dbio
         PRIVATE
+            "src/erslib/dbio/impl/clause.cpp"
             "src/erslib/dbio/impl/context.cpp"
             "src/erslib/dbio/impl/identity.cpp"
             "src/erslib/dbio/impl/layout.cpp"

@@ -2,76 +2,70 @@
 
 // std
 #include <array>
-#include <meta>
+#include <concepts>
 #include <string_view>
-#include <type_traits>
 
 // ers
 #include <erslib/core/type/fixed_string.hpp>
+#include <erslib/core/type/general.hpp>
 
 
-// Table
+// Entry kinds
+
+namespace dbio::impl::reflect::kinds {
+    struct table {};
+    struct query {};
+
+    struct pk {};
+    struct unique {};
+    struct fk {};
+
+    struct def {};
+    struct identity {};
+    struct column {};
+}
+
+namespace dbio::impl::reflect {
+    template<typename T, typename Kind>
+    concept EntryOf = requires { typename T::kind; }
+        && std::same_as<typename T::kind, Kind>;
+}
+
+
+// Declaration tags
 
 namespace dbio::impl::reflect {
     template<ers::fixed_string Name>
     struct Table {
-        static constexpr auto name = Name;
+        using kind = kinds::table;
+        static constexpr std::string_view name = Name.to_sv();
     };
 
-
-    template<typename T>
-    struct is_table : std::false_type {};
-
-    template<ers::fixed_string Name>
-    struct is_table<Table<Name>> : std::true_type {};
-}
-
-
-// Query
-
-namespace dbio::impl::reflect {
     template<ers::fixed_string Name>
     struct Query {
-        static constexpr auto name = Name;
-    };
-
-
-    template<typename T>
-    struct is_query : std::false_type {};
-
-    template<ers::fixed_string Name>
-    struct is_query<Query<Name>> : std::true_type {};
-}
-
-
-// Metadata
-
-namespace dbio::impl::reflect {
-    template<ers::fixed_string... Fields>
-    struct Pk {};
-
-
-    template<typename T>
-    struct is_pk : std::false_type {};
-
-    template<ers::fixed_string... Fields>
-    struct is_pk<Pk<Fields...>> : std::true_type {};
-
-
-    template<typename T>
-    struct pk_fields;
-
-    template<ers::fixed_string... Fields>
-    struct pk_fields<Pk<Fields...>> {
-        static constexpr std::array<std::string_view, sizeof...(Fields)> names = {
-            std::string_view(Fields.value, Fields.strlen())...
-        };
+        using kind = kinds::query;
+        static constexpr std::string_view name = Name.to_sv();
     };
 }
 
 
+// Constraints
+
 namespace dbio::impl::reflect {
-    enum class action_on_delete {
+    template<ers::fixed_string... Fields>
+    struct Pk {
+        using kind = kinds::pk;
+        static constexpr std::array<std::string_view, sizeof...(Fields)> names = { Fields.to_sv()... };
+    };
+
+    template<ers::fixed_string... Fields>
+    struct Unique {
+        using kind = kinds::unique;
+        static constexpr std::array<std::string_view, sizeof...(Fields)> names = { Fields.to_sv()... };
+    };
+
+
+    enum class action_on_delete : u8 {
         none,
         cascade,
         set_null,
@@ -79,103 +73,36 @@ namespace dbio::impl::reflect {
         restrict,
     };
 
-
     template<
         ers::fixed_string Field,
-        ers::fixed_string Table,
-        ers::fixed_string Column,
+        ers::fixed_string RefTable,
+        ers::fixed_string RefColumn,
         action_on_delete OnDelete = action_on_delete::none
     >
-    struct Fk {};
-
-
-    template<typename T>
-    struct is_fk : std::false_type {};
-
-    template<ers::fixed_string Field, ers::fixed_string Table,
-        ers::fixed_string Column, action_on_delete OnDelete>
-    struct is_fk<Fk<Field, Table, Column, OnDelete>> : std::true_type {};
-
-
-    template<typename T>
-    struct fk_info;
-
-    template<ers::fixed_string Field, ers::fixed_string Table,
-        ers::fixed_string Column, action_on_delete OnDelete>
-    struct fk_info<Fk<Field, Table, Column, OnDelete>> {
-        static constexpr auto field = std::string_view(Field.value, Field.strlen());
-        static constexpr auto ref_table = std::string_view(Table.value, Table.strlen());
-        static constexpr auto ref_column = std::string_view(Column.value, Column.strlen());
+    struct Fk {
+        using kind = kinds::fk;
+        static constexpr std::string_view field = Field.to_sv();
+        static constexpr std::string_view ref_table = RefTable.to_sv();
+        static constexpr std::string_view ref_column = RefColumn.to_sv();
         static constexpr action_on_delete on_delete = OnDelete;
     };
 }
 
 
-namespace dbio::impl::reflect {
-    template<ers::fixed_string... Fields>
-    struct Unique {};
-
-
-    template<typename T>
-    struct is_unique : std::false_type {};
-
-    template<ers::fixed_string... Fields>
-    struct is_unique<Unique<Fields...>> : std::true_type {};
-
-
-    template<typename T>
-    struct unique_fields;
-
-    template<ers::fixed_string... Fields>
-    struct unique_fields<Unique<Fields...>> {
-        static constexpr std::array<std::string_view, sizeof...(Fields)> names = {
-            std::string_view(Fields.value, Fields.strlen())...
-        };
-    };
-}
-
+// Column metadata
 
 namespace dbio::impl::reflect {
     template<ers::fixed_string Field, auto Value>
-    struct Default {};
-
-
-    template<typename T>
-    struct is_default : std::false_type {};
-
-    template<ers::fixed_string Field, auto Value>
-    struct is_default<Default<Field, Value>> : std::true_type {};
-
-
-    template<typename T>
-    struct default_info;
-
-    template<ers::fixed_string Field, auto Value>
-    struct default_info<Default<Field, Value>> {
-        static constexpr std::string_view field = std::string_view(Field.value, Field.strlen());
+    struct Default {
+        using kind = kinds::def;
+        static constexpr std::string_view field = Field.to_sv();
         static constexpr auto value = Value;
     };
-}
-
-
-namespace dbio::impl::reflect {
-    template<ers::fixed_string Field>
-    struct Identity {};
-
-
-    template<typename T>
-    struct is_identity : std::false_type {};
 
     template<ers::fixed_string Field>
-    struct is_identity<Identity<Field>> : std::true_type {};
-
-
-    template<typename T>
-    struct identity_info;
-
-    template<ers::fixed_string Field>
-    struct identity_info<Identity<Field>> {
-        static constexpr std::string_view field = std::string_view(Field.value, Field.strlen());
+    struct Identity {
+        using kind = kinds::identity;
+        static constexpr std::string_view field = Field.to_sv();
     };
 }
 
@@ -184,41 +111,17 @@ namespace dbio::impl::reflect {
 
 namespace dbio::impl::reflect {
     template<ers::fixed_string Name = "", ers::fixed_string Type = "">
-    struct column_t {};
-
-
-    template<typename T>
-    struct is_column : std::false_type {};
-
-    template<ers::fixed_string Name, ers::fixed_string Type>
-    struct is_column<column_t<Name, Type>> : std::true_type {};
-
-
-    template<typename T>
-    struct column_info;
-
-    template<ers::fixed_string Name, ers::fixed_string Type>
-    struct column_info<column_t<Name, Type>> {
-        static constexpr std::string_view name = std::string_view(Name.value, Name.strlen());
-        static constexpr std::string_view type = std::string_view(Type.value, Type.strlen());
+    struct column_t {
+        using kind = kinds::column;
+        static constexpr std::string_view name = Name.to_sv();
+        static constexpr std::string_view type = Type.to_sv();
     };
-
 
     template<ers::fixed_string Name = "", ers::fixed_string Type = "">
     inline constexpr column_t<Name, Type> Column {};
-}
 
 
-namespace dbio::impl::reflect {
     struct skip_t {};
-
-
-    template<typename T>
-    struct is_skip : std::false_type {};
-
-    template<>
-    struct is_skip<skip_t> : std::true_type {};
-
 
     inline constexpr skip_t Skip {};
 }

@@ -29,3 +29,20 @@ std::string ers::impl::util::replace(std::string_view where, std::string_view fr
 
     return result;
 }
+
+std::string ers::impl::util::quote(std::string_view what) {
+    std::string out;
+    out.reserve(what.size() + 2);
+
+    out += '\'';
+
+    for (const char c : what) {
+        if (c == '\'' || c == '\\')
+            out += '\\';
+
+        out += c;
+    }
+
+    out += '\'';
+    return out;
+}

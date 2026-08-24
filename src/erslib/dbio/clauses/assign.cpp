@@ -1,5 +1,8 @@
 #include "erslib/dbio/clauses/assign.hpp"
 
+// std
+#include <format>
+
 // ers
 #include <erslib/dbio/slots/set.hpp>
 
@@ -13,14 +16,11 @@ dbio::impl::AssignClause::AssignClause(std::string column, binder_t binder) :
 }
 
 ers::Status dbio::impl::AssignClause::render(Context& ctx) const {
-    if (!is_identifier(_column)) {
-        return ers::make_error("Invalid identifier '{}' in slot '{}'.",
-            _column, slot()->name);
-    }
+    if (auto s = append_identifier(ctx, _column, slot()); !s)
+        return s;
 
-    ctx.query += _column;
-    ctx.query += " = ";
-    ctx.query += _binder ? ctx.bind(_binder) : ctx.bind_null();
+    ctx.query += std::format(" = {}",
+        ctx.bind(_binder));
 
     return ers::ok;
 }

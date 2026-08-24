@@ -52,23 +52,23 @@ namespace dbio::impl::reflect {
     template<typename T>
     constexpr size_t column_count = columns<T>().size();
 
-    template<typename T, template<typename> typename IsKind>
+    template<typename T, typename Kind>
     consteval std::string_view base_tag() {
         template for (constexpr auto it : std::define_static_array(std::meta::bases_of(^^Declaration<T>, std::meta::access_context::current()))) {
             using base = typename [:std::meta::type_of(it):];
 
-            if constexpr (IsKind<base>::value)
-                return std::define_static_string(base::name.to_sv());
+            if constexpr (EntryOf<base, Kind>)
+                return base::name;
         }
 
         return {};
     }
 
     template<typename T>
-    constexpr std::string_view table_name = base_tag<T, is_table>();
+    constexpr std::string_view table_name = base_tag<T, kinds::table>();
 
     template<typename T>
-    constexpr std::string_view query_label = base_tag<T, is_query>();
+    constexpr std::string_view query_label = base_tag<T, kinds::query>();
 
     template<typename T>
     concept RowType = std::is_class_v<T> && requires { sizeof(Declaration<T>); };
@@ -93,9 +93,9 @@ namespace dbio::impl::reflect {
         template for (constexpr auto it : std::define_static_array(std::meta::annotations_of(M))) {
             using entry = typename [:std::meta::remove_cv(std::meta::type_of(it)):];
 
-            if constexpr (is_column<entry>::value)
-                if constexpr (!column_info<entry>::name.empty())
-                    return column_info<entry>::name;
+            if constexpr (EntryOf<entry, kinds::column>)
+                if constexpr (!entry::name.empty())
+                    return entry::name;
         }
 
         return std::define_static_string(std::meta::identifier_of(M));
@@ -106,9 +106,9 @@ namespace dbio::impl::reflect {
         template for (constexpr auto it : std::define_static_array(std::meta::annotations_of(M))) {
             using entry = typename [:std::meta::remove_cv(std::meta::type_of(it)):];
 
-            if constexpr (is_column<entry>::value)
-                if constexpr (!column_info<entry>::type.empty())
-                    return column_info<entry>::type;
+            if constexpr (EntryOf<entry, kinds::column>)
+                if constexpr (!entry::type.empty())
+                    return entry::type;
         }
 
         return sql_type<member_type<M>>::name;
@@ -150,8 +150,8 @@ namespace dbio::impl::reflect {
         template for (constexpr auto it : std::define_static_array(declaration_members<T>())) {
             using entry = typename [:std::meta::type_of(it):];
 
-            if constexpr (is_pk<entry>::value)
-                for (const std::string_view name : pk_fields<entry>::names)
+            if constexpr (EntryOf<entry, kinds::pk>)
+                for (const std::string_view name : entry::names)
                     out.emplace_back(std::define_static_string(name));
         }
 
@@ -163,7 +163,7 @@ namespace dbio::impl::reflect {
         template for (constexpr auto it : std::define_static_array(declaration_members<T>())) {
             using entry = typename [:std::meta::type_of(it):];
 
-            if constexpr (is_pk<entry>::value)
+            if constexpr (EntryOf<entry, kinds::pk>)
                 return std::define_static_string(std::meta::identifier_of(it));
         }
 
@@ -185,8 +185,8 @@ namespace dbio::impl::reflect {
         template for (constexpr auto it : std::define_static_array(declaration_members<T>())) {
             using entry = typename [:std::meta::type_of(it):];
 
-            if constexpr (is_identity<entry>::value)
-                if constexpr (identity_info<entry>::field == column_name<M>)
+            if constexpr (EntryOf<entry, kinds::identity>)
+                if constexpr (entry::field == column_name<M>)
                     return true;
         }
 
@@ -226,22 +226,24 @@ namespace dbio::impl::reflect {
         template for (constexpr auto it : std::define_static_array(declaration_members<T>())) {
             using entry = typename [:std::meta::type_of(it):];
 
-            if constexpr (is_pk<entry>::value) {
-                for (const std::string_view name : pk_fields<entry>::names)
+            if constexpr (EntryOf<entry, kinds::pk>) {
+                for (const std::string_view name : entry::names) {
                     if (!has_column<T>(name))
                         return false;
-            } else if constexpr (is_unique<entry>::value) {
-                for (const std::string_view name : unique_fields<entry>::names)
+                }
+            } else if constexpr (EntryOf<entry, kinds::unique>) {
+                for (const std::string_view name : entry::names) {
                     if (!has_column<T>(name))
                         return false;
-            } else if constexpr (is_fk<entry>::value) {
-                if (!has_column<T>(fk_info<entry>::field))
+                }
+            } else if constexpr (EntryOf<entry, kinds::fk>) {
+                if (!has_column<T>(entry::field))
                     return false;
-            } else if constexpr (is_default<entry>::value) {
-                if (!has_column<T>(default_info<entry>::field))
+            } else if constexpr (EntryOf<entry, kinds::def>) {
+                if (!has_column<T>(entry::field))
                     return false;
-            } else if constexpr (is_identity<entry>::value) {
-                if (!has_column<T>(identity_info<entry>::field))
+            } else if constexpr (EntryOf<entry, kinds::identity>) {
+                if (!has_column<T>(entry::field))
                     return false;
             }
         }
