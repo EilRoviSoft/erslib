@@ -1,7 +1,6 @@
 #pragma once
 
 // ers
-#include <erslib/core/convert/impl/to_str.hpp>
 #include <erslib/core/hashing/base.hpp>
 
 
@@ -54,15 +53,6 @@ namespace ers {
     using impl::fixed_string;
 }
 
-
-// Utility
-
-template<size_t N>
-struct ers::convert::to_string_backend<ers::fixed_string<N>> {
-    constexpr std::string_view constexpr_value(const fixed_string<N>& what) const noexcept {
-        return what.to_sv();
-    }
-};
 
 
 template<size_t N, typename Policy>

@@ -25,10 +25,10 @@ namespace {
         for (const auto& obj : array) {
             if (!obj.is_string()) {
                 return ers::make_error("Expected '{}' got '{}'.",
-                    ers::meta::type_name_v<utl::Json::string_type>, ers::convert::to_str(obj.type()));
+                    ers::meta::type_name_v<utl::Json::string_type>, type_label(obj.type()));
             }
 
-            auto r = ers::convert::from_str<aengine::dependency_t>(obj.as_string());
+            auto r = aengine::dependency_t::parse(obj.as_string());
             if (!r)
                 return r.error();
 
@@ -78,7 +78,7 @@ namespace {
 
         schema.require_and_write("name", identity.name);
         schema.require_and_write("title", identity.title);
-        schema.require_and_convert("version", identity.version, &ers::convert::from_str<ers::version_t>);
+        schema.require_and_convert("version", identity.version, &ers::version_t::parse);
         schema.require_and_write("author", metadata.author);
         schema.write_if_exist("contact", metadata.contact);
         schema.require_and_write("description", metadata.description);

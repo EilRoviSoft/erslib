@@ -27,7 +27,6 @@
 #include <erslib/core/adaptor.hpp>
 #include <erslib/core/exception.hpp>
 #include <erslib/core/meta.hpp>
-#include <erslib/core/convert/impl/to_str.hpp>
 #include <erslib/core/hashing/rapid.hpp>
 #include <erslib/core/type/general.hpp>
 #include <erslib/core/type/optional.hpp>
@@ -639,18 +638,18 @@ namespace utl::impl {
 
 
 #define UTL_JSON_NODE_TYPE_LITERAL(ENUMERATOR, TYPE)                                                                   \
-    util::concat_literals<                                                                                             \
+    ers::util::concat_literals<                                                                                             \
         "'" #ENUMERATOR "' aka '",                                                                                     \
-        meta::type_literal_v<TYPE>,                                                                                    \
+        ers::meta::type_literal_v<TYPE>,                                                                                    \
         "'"                                                                                                            \
     >().to_sv()
 
 #define UTL_IDENTITY(...) __VA_ARGS__
 
-template<>
-struct ers::convert::to_string_backend<utl::impl::NodeType> {
-    constexpr std::string_view constexpr_value(const utl::impl::NodeType& value) const noexcept {
-        using enum utl::impl::NodeType;
+namespace utl::impl {
+    // Diagnostic label, e.g. "'Object' aka 'std::unordered_map<...>'".
+    constexpr std::string_view type_label(NodeType value) noexcept {
+        using enum NodeType;
 
         switch (value) {
         case None:
@@ -678,7 +677,7 @@ struct ers::convert::to_string_backend<utl::impl::NodeType> {
             return "Unknown";
         }
     }
-};
+}
 
 #undef UTL_IDENTITY
 #undef UTL_JSON_NODE_TYPE_LITERAL

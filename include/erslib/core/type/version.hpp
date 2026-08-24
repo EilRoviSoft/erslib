@@ -1,7 +1,12 @@
 #pragma once
 
+// std
+#include <charconv>
+#include <cstddef>
+#include <string_view>
+
 // ers
-#include <erslib/core/convert/string.hpp>
+#include <erslib/core/type/result.hpp>
 
 
 // Definition
@@ -14,6 +19,10 @@ namespace ers::impl {
 
 
         constexpr auto operator<=>(const version_t& other) const noexcept = default;
+
+
+        // Parses "<major>.<minor>.<patch>".
+        static Result<version_t> parse(std::string_view source);
     };
 }
 
@@ -22,51 +31,32 @@ namespace ers {
 }
 
 
-// Utility
+// Implementation
 
-template<>
-struct ers::convert::from_string_backend<ers::version_t> {
-    Result<version_t> runtime_value(std::string_view source) const {
-        version_t result;
+namespace ers::impl {
+    inline Result<version_t> version_t::parse(std::string_view source) {
+        const auto part = [](std::string_view what, size_t& out) {
+            return std::from_chars(what.data(), what.data() + what.size(), out).ec == std::errc {};
+        };
 
 
-        auto dot1 = source.find('.');
-        if (dot1 == std::string_view::npos) {
-            return make_error("Can't convert string \"{}\" to type [T = version_t]",
-                source);
+        const auto dot1 = source.find('.');
+        if (dot1 == std::string_view::npos)
+            return make_error("Can't convert string \"{}\" to type [T = version_t]", source);
+
+        const auto dot2 = source.find('.', dot1 + 1);
+        if (dot2 == std::string_view::npos)
+            return make_error("Can't convert string \"{}\" to type [T = version_t]", source);
+
+
+        version_t result {};
+
+        if (!part(source.substr(0, dot1), result.major)
+            || !part(source.substr(dot1 + 1, dot2 - dot1 - 1), result.minor)
+            || !part(source.substr(dot2 + 1), result.patch)) {
+            return make_error("Can't convert string \"{}\" to type [T = version_t]", source);
         }
-
-        auto dot2 = source.find('.', dot1 + 1);
-        if (dot2 == std::string_view::npos) {
-            return make_error("Can't convert string \"{}\" to type [T = version_t]",
-                source);
-        }
-
-
-        if (auto r = from_str<size_t>(source.substr(0, dot1)); !r)
-            return r.error();
-        else
-            result.major = *r;
-
-        if (auto r = from_str<size_t>(source.substr(dot1 + 1, dot2 - dot1 - 1)); !r)
-            return r.error();
-        else
-            result.minor = *r;
-
-        if (auto r = from_str<size_t>(source.substr(dot2 + 1)); !r)
-            return r.error();
-        else
-            result.patch = *r;
-
 
         return result;
     }
-};
-
-
-template<>
-struct ers::convert::to_string_backend<ers::version_t> {
-    std::string runtime_value(const version_t& value) const {
-        return std::format("{}.{}.{}", value.major, value.minor, value.patch);
-    }
-};
+}

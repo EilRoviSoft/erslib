@@ -5,7 +5,7 @@
 #include <erslib/core/type/version.hpp>
 
 
-TEST_CASE("version") {
+TEST_CASE("version: parse") {
     std::string_view s;
     ers::version_t v;
 
@@ -21,6 +21,14 @@ TEST_CASE("version") {
     }
 
 
-    REQUIRE(*ers::convert::from_str<ers::version_t>(s) == v);
-    REQUIRE(ers::convert::to_str(v) == s);
+    auto r = ers::version_t::parse(s);
+    REQUIRE(r);
+    CHECK(*r == v);
+}
+
+TEST_CASE("version: malformed input is an error") {
+    CHECK_FALSE(ers::version_t::parse("1.0"));
+    CHECK_FALSE(ers::version_t::parse("1"));
+    CHECK_FALSE(ers::version_t::parse(""));
+    CHECK_FALSE(ers::version_t::parse("a.b.c"));
 }

@@ -6,7 +6,6 @@
 #include <string>
 
 // ers
-#include <erslib/core/convert/impl/to_str.hpp>
 #include <erslib/core/exception/impl.hpp>
 #include <erslib/core/type/time.hpp>
 
@@ -24,31 +23,24 @@ namespace ers::impl {
         Error,
         Crit
     };
+
+    constexpr std::string_view severity_name(Severity value) noexcept {
+        switch (value) {
+            case Severity::Debug:   return "DEBUG";
+            case Severity::Info:    return "INFO";
+            case Severity::Warning: return "WARNING";
+            case Severity::Error:   return "ERROR";
+            case Severity::Crit:    return "CRIT";
+        }
+
+        return "UNKNOWN";
+    }
 }
 
 namespace ers {
     using impl::Severity;
+    using impl::severity_name;
 }
-
-template<>
-struct ers::convert::to_string_backend<ers::Severity> {
-    constexpr std::string_view constexpr_value(const Severity& value) const noexcept {
-        switch (value) {
-            case Severity::Debug:
-                return "DEBUG";
-            case Severity::Info:
-                return "INFO";
-            case Severity::Warning:
-                return "WARNING";
-            case Severity::Error:
-                return "ERROR";
-            case Severity::Crit:
-                return "CRIT";
-            default:
-                return "UNKNOWN";
-        }
-    }
-};
 
 
 // Error

@@ -3,8 +3,8 @@
 // boost
 #include <boost/regex.hpp>
 
-// ers
-#include <erslib/core/convert/string.hpp>
+// std
+#include <charconv>
 
 
 namespace {
@@ -24,9 +24,11 @@ std::tuple<std::string, size_t> aengine::impl::util::extract_stage_info(std::str
     if (!boost::regex_match(sv.begin(), sv.end(), match, regex) || match.size() != 3)
         return {};
 
-    auto r = ers::convert::from_str<size_t>(match[2].str());
-    if (!r)
+    const std::string digits = match[2].str();
+
+    size_t index = 0;
+    if (std::from_chars(digits.data(), digits.data() + digits.size(), index).ec != std::errc {})
         return {};
 
-    return { match[1], *r };
+    return { match[1], index };
 }

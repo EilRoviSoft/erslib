@@ -8,9 +8,9 @@
 
 // Dependency
 
-ers::Result<aengine::impl::dependency_t> ers::convert::from_string_backend<aengine::impl::dependency_t>::runtime_value(
+ers::Result<aengine::impl::dependency_t> aengine::impl::dependency_t::parse(
     std::string_view source
-) const {
+) {
     using namespace aengine;
 
 
@@ -32,7 +32,7 @@ ers::Result<aengine::impl::dependency_t> ers::convert::from_string_backend<aengi
         source = source.substr(1);
 
 
-    algo::RegularSplitter splitter(source, " ");
+    ers::algo::RegularSplitter splitter(source, " ");
     auto it = splitter.begin();
 
     if (has_short_type) {
@@ -71,7 +71,7 @@ ers::Result<aengine::impl::dependency_t> ers::convert::from_string_backend<aengi
     if (has_version_bounds) {
         it++;
 
-        if (auto r = convert::from_str<version_t>(*it); r)
+        if (auto r = ers::version_t::parse(*it); r)
             result.version = *r;
         else
             return r.error();

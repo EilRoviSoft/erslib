@@ -15,7 +15,6 @@
 // ers
 #include <erslib/core/meta.hpp>
 #include <erslib/core/type/optional.hpp>
-#include <erslib/core/convert/string.hpp>
 #include <erslib/core/enum/fwd.hpp>
 #include <erslib/core/enum/case_styles.hpp>
 #include <erslib/core/enum/traits/enumerator_style.hpp>
@@ -99,25 +98,3 @@ namespace ers::impl::enum_utils {
     }
 }
 
-
-// ers::convert integration
-
-template<typename E>
-    requires std::is_enum_v<E>
-struct ers::convert::to_string_backend<E> {
-    constexpr std::string_view constexpr_value(const E& value) const noexcept {
-        return impl::enum_utils::to_string(value);
-    }
-};
-
-template<typename E>
-    requires std::is_enum_v<E>
-struct ers::convert::from_string_backend<E> {
-    Result<E> runtime_value(std::string_view source) const {
-        if (auto value = ers::impl::enum_utils::from_string<E>(source))
-            return *value;
-
-        return make_error("Can't convert string \"{}\" to type [T = {}]",
-            source, meta::type_name_v<E>);
-    }
-};

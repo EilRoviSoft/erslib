@@ -3,9 +3,7 @@
 // std
 #include <string>
 #include <string_view>
-
-// ers
-#include <erslib/core/convert/impl/from_str.hpp>
+#include <type_traits>
 
 
 namespace ers::impl {
@@ -13,6 +11,5 @@ namespace ers::impl {
     concept StringConvertible =
         std::is_convertible_v<T, std::string_view>
         || std::is_convertible_v<T, std::string>
-        || std::is_same_v<std::remove_reference_t<T>, const char*>
-        || FromStringConvertible<T>;
+        || std::is_same_v<std::remove_reference_t<T>, const char*>;
 }

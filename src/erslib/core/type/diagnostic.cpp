@@ -20,7 +20,7 @@ std::string ers::impl::Diagnostic::to_string(bool trim) const {
         : std::format(
             "[{:%Y-%m-%dT%H:%M:%S}] [{}] {}",
             std::chrono::floor<std::chrono::seconds>(m_timestamp),
-            convert::to_sv<Severity>(m_severity),
+            severity_name(m_severity),
             extend_with_trace(m_message, m_trace)
         );
 }
@@ -46,7 +46,7 @@ std::string ers::impl::Diagnostic::to_string(bool trim) const {
         : std::format(
             "[{:%Y-%m-%dT%H:%M:%S}] [{}] {}",
             std::chrono::floor<std::chrono::seconds>(m_timestamp),
-            convert::to_sv<Severity>(m_severity),
+            severity_name(m_severity),
             m_message
         );
 }

@@ -1,10 +1,12 @@
 #pragma once
 
+// std
+#include <string_view>
+
 // ers
 #include <erslib/aengine/fwd.hpp>
 #include <erslib/core/adaptor.hpp>
 #include <erslib/core/exception.hpp>
-#include <erslib/core/convert/string.hpp>
 #include <erslib/core/hashing/rapid.hpp>
 #include <erslib/core/type/general.hpp>
 #include <erslib/core/type/result.hpp>
@@ -31,6 +33,10 @@ namespace aengine::impl {
         DependencyType type = DependencyType::None;
         DependencyLimit limit = DependencyLimit::None;
         ers::version_t version = { 0, 0, 0 };
+
+
+        // Parses "[?!]<name>[ (<|<=|>|>=|min|max) <version>]".
+        static ers::Result<dependency_t> parse(std::string_view source);
     };
 
 
@@ -58,10 +64,3 @@ namespace aengine {
     using impl::make_dependency_error_with_trace;
 }
 
-
-// Specialization
-
-template<>
-struct ers::convert::from_string_backend<aengine::impl::dependency_t> {
-    Result<aengine::impl::dependency_t> runtime_value(std::string_view source) const;
-};

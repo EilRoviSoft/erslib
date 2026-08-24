@@ -5,7 +5,6 @@
 
 // ers
 #include <erslib/core/enum.hpp>
-#include <erslib/core/convert/string.hpp>
 
 
 using namespace ers::enum_utils;
@@ -99,22 +98,6 @@ TEST_CASE("enum reflection: enum_traits with snake_case target") {
     CHECK(to_string(Priority::VeryHigh) == "very_high");
     CHECK(to_string(Priority::Low) == "low");
     CHECK(from_string<Priority>("very_high") == Priority::VeryHigh);
-}
-
-TEST_CASE("enum reflection: ers::convert integration") {
-    CHECK(ers::convert::to_str(Status::Done) == "DONE");
-    CHECK(ers::convert::to_sv(Color::Red) == "Red");
-
-    {
-        auto r = ers::convert::from_str<Status>("NOT_STARTED");
-        REQUIRE(r);
-        CHECK(*r == Status::NotStarted);
-    }
-
-    {
-        auto bad = ers::convert::from_str<Status>("bogus");
-        CHECK_FALSE(bad);
-    }
 }
 
 #endif
