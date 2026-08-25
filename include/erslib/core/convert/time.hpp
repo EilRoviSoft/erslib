@@ -10,9 +10,9 @@
 
 // Implementation
 
-namespace ers::impl::convert {
+namespace ers::impl {
     template<typename Clock>
-    Result<timestamp_t> from_chars(std::string_view sv, std::string_view fmt) {
+    Result<timestamp_t> timestamp_from_string(std::string_view sv, std::string_view fmt) {
         typename Clock::time_point result;
         std::stringstream iss(static_cast<std::string>(sv));
 
@@ -26,6 +26,6 @@ namespace ers::impl::convert {
 
 // Exports
 
-namespace ers::convert {
-    using impl::convert::from_chars;
+namespace ers {
+    using impl::timestamp_from_string;
 }
