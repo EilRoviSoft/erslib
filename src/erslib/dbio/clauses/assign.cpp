@@ -1,8 +1,5 @@
 #include "erslib/dbio/clauses/assign.hpp"
 
-// std
-#include <format>
-
 // ers
 #include <erslib/dbio/slots/set.hpp>
 
@@ -19,8 +16,8 @@ ers::Status dbio::impl::AssignClause::render(Context& ctx) const {
     if (auto s = append_identifier(ctx, _column, slot()); !s)
         return s;
 
-    ctx.query += std::format(" = {}",
-        ctx.bind(_binder));
+    ctx.query += " = ";
+    ctx.query += ctx.bind(_binder);
 
     return ers::ok;
 }

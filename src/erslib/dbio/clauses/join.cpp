@@ -19,8 +19,20 @@ ers::Status dbio::impl::JoinClause::render(Context& ctx) const {
             return st;
     }
 
-    ctx.query += std::format("\nJOIN {} AS {} ON {} {} {}",
-        _table, _alias, _left, op_sql(_op), _right);
+    ctx.query += "\nJOIN ";
+    ctx.query += _table;
+    
+    if (!_alias.empty()) {
+        ctx.query += " AS ";
+        ctx.query += _alias;
+    }
+
+    ctx.query += " ON ";
+    ctx.query += _left;
+    ctx.query += ' ';
+    ctx.query += op_sql(_op);
+    ctx.query += ' ';
+    ctx.query += _right;
 
     return ers::ok;
 }

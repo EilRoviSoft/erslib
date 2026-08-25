@@ -1,8 +1,5 @@
 #include "erslib/dbio/clauses/target.hpp"
 
-// std
-#include <format>
-
 // ers
 #include <erslib/dbio/slots/column.hpp>
 #include <erslib/dbio/slots/from.hpp>
@@ -24,8 +21,8 @@ ers::Status dbio::impl::IdentityClause::render(Context& ctx) const {
         if (auto s = check_identifier(_alias, slot()); !s)
             return s;
 
-        ctx.query += std::format(" AS {}",
-            _alias);
+        ctx.query += " AS ";
+        ctx.query += _alias;
     }
 
     return ers::ok;

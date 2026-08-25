@@ -1,5 +1,8 @@
 #include "erslib/dbio/clauses/where_column.hpp"
 
+// std
+#include <format>
+
 // ers
 #include <erslib/dbio/slots/where.hpp>
 

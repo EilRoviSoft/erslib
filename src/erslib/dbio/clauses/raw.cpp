@@ -1,8 +1,6 @@
 #include "erslib/dbio/clauses/raw.hpp"
 
 
-// RawClause
-
 dbio::impl::RawClause::RawClause(SlotRef slot, std::string sql, std::vector<binder_t> binders) :
     IClause(slot),
     _sql(std::move(sql)),
