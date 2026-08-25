@@ -14,7 +14,7 @@ template<typename T>
 struct dbio::impl::sql_collector<T> {
     using row_t = typename T::value_type;
 
-    static ers::Result<T> collect(const pqxx::result& from) {
+    static T collect(const pqxx::result& from) {
         T out;
         if constexpr (ers::Reservable<T>)
             out.reserve(from.size());

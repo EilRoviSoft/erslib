@@ -10,8 +10,8 @@
 #include <pqxx/row>
 
 // ers
+#include <erslib/core/exception.hpp>
 #include <erslib/core/type/optional.hpp>
-#include <erslib/core/type/result.hpp>
 
 
 // Concepts
@@ -53,20 +53,20 @@ namespace dbio::impl {
 
 
     template<ReadableRow T>
-    ers::Result<T> read_one(const pqxx::result& from) {
+    T read_one(const pqxx::result& from) {
         if (from.size() != 1)
-            return ers::make_error("Expected exactly 1 row, got {}.", from.size());
+            throw ers::make_runtime_error("Expected exactly 1 row, got {}.", from.size());
 
         return row_reader<T>::read(from.one_row_ref(), row_reader<T>::prepare(from));
     }
 
     template<ReadableRow T>
-    ers::Result<ers::optional<T>> read_at_most_one(const pqxx::result& from) {
+    ers::optional<T> read_at_most_one(const pqxx::result& from) {
         if (from.empty())
-            return ers::optional<T> {};
+            return ers::nullopt;
 
         if (from.size() > 1)
-            return ers::make_error("Expected at most 1 row, got {}.", from.size());
+            throw ers::make_runtime_error("Expected at most 1 row, got {}.", from.size());
 
         return ers::optional<T>(row_reader<T>::read(from.one_row_ref(), row_reader<T>::prepare(from)));
     }

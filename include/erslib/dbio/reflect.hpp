@@ -102,6 +102,10 @@ namespace dbio::reflect {
 
 #include <erslib/dbio/reflect/statement.hpp>
 
+namespace dbio {
+    using impl::QueryResult;
+}
+
 namespace dbio::reflect {
     using impl::reflect::QueryCall;
     using impl::reflect::query_call;

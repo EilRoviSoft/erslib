@@ -18,6 +18,10 @@
 // Query
 
 namespace dbio::impl {
+    class QueryResult;
+}
+
+namespace dbio::impl {
     class ERSLIB_EXPORT QueryBuilder {
     public:
         // Member functions
@@ -46,37 +50,7 @@ namespace dbio::impl {
 
         // Executors
 
-        ers::Result<pqxx::result> exec(pqxx::dbtransaction& tx) const;
-
-        ers::Status exec_and_discard(pqxx::dbtransaction& tx) const;
-
-        template<typename T>
-            requires ReadableRow<T>
-        ers::Result<RowGenerator<T>> exec_as(pqxx::dbtransaction& tx) const {
-            auto r = exec(tx);
-            if (!r)
-                return r.error();
-            return RowGenerator<T>(std::move(*r));
-        }
-
-        template<typename T>
-            requires RowContainer<T>
-        ers::Result<T> exec_as(pqxx::dbtransaction& tx) const {
-            auto r = exec(tx);
-            if (!r)
-                return r.error();
-            return sql_collector<T>::collect(*r);
-        }
-
-
-        template<typename T>
-            requires ReadableRow<T>
-        ers::Result<T> exec_one(pqxx::dbtransaction& tx) const {
-            auto r = exec(tx);
-            if (!r)
-                return r.error();
-            return read_one<T>(*r);
-        }
+        QueryResult exec(pqxx::dbtransaction& tx) const;
 
 
     private:
@@ -89,6 +63,59 @@ namespace dbio::impl {
 
 
         ers::Status _validate() const;
+    };
+}
+
+
+// QueryResult
+
+namespace dbio::impl {
+    class QueryResult {
+    public:
+        explicit QueryResult(pqxx::result content) :
+            _content(std::move(content)) {
+        }
+
+
+        const pqxx::result& raw() const noexcept { return _content; }
+
+
+        // T is a container (including ers::optional<Row>, via sql_collector<optional<T>>) ->
+        // eager, 0..N (or 0..1) rows, never throws on row count.
+        template<typename T>
+            requires RowContainer<T>
+        T get_as() const {
+            return sql_collector<T>::collect(_content);
+        }
+
+        // T is itself the row type -> eager, exactly 1 row; throws otherwise.
+        template<typename T>
+            requires ReadableRow<T>
+        T get_as() const {
+            return read_one<T>(_content);
+        }
+
+        // Always lazy, always 0..N rows, never throws on row count.
+        template<ReadableRow T>
+        RowGenerator<T> view_as() const {
+            return RowGenerator<T>(_content);
+        }
+
+
+    private:
+        pqxx::result _content;
+    };
+}
+
+
+// Executable
+
+namespace dbio::impl {
+    // Anything that renders and runs like a QueryBuilder - QueryBuilder itself, and
+    // dbio::reflect::QueryCall<Tag> for declaration-driven custom queries.
+    template<typename T>
+    concept Executable = requires(const T& q, pqxx::dbtransaction& tx) {
+        { q.exec(tx) } -> std::same_as<QueryResult>;
     };
 }
 

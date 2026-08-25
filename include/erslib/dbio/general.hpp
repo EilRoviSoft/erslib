@@ -19,11 +19,6 @@ namespace dbio {
 }
 
 
-// Eval
-
-#include <erslib/dbio/impl/eval.hpp>
-
-
 // Generator
 
 #include <erslib/dbio/impl/generator.hpp>

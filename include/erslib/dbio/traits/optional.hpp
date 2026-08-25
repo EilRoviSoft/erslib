@@ -32,7 +32,7 @@ template<dbio::impl::ReadableRow T>
 struct dbio::impl::sql_collector<ers::optional<T>> {
     using row_t = T;
 
-    static ers::Result<ers::optional<T>> collect(const pqxx::result& from) {
+    static ers::optional<T> collect(const pqxx::result& from) {
         return read_at_most_one<T>(from);
     }
 };

@@ -44,6 +44,12 @@ ers::Result<dbio::impl::ConnectionPool::Connection> dbio::impl::ConnectionPool::
 
     return Connection(shared_from_this(), *conn);
 }
+dbio::impl::ConnectionPool::Connection dbio::impl::ConnectionPool::acquire_or_throw() {
+    auto conn = acquire();
+    if (conn)
+        throw ers::make_runtime_error(conn.error().to_string());
+    return std::move(*conn);
+}
 
 void dbio::impl::ConnectionPool::maintain() {
     std::scoped_lock lock(_mutex);

@@ -8,10 +8,10 @@
 #include <pqxx/pqxx>
 
 // ers
-#include <erslib/core/filesystem.hpp>
 #include <erslib/core/type/result.hpp>
-#include <erslib/dbio/impl/transaction.hpp>
+#include <erslib/dbio/impl/connection_pool.hpp>
 #include <erslib/dbio/impl/options.hpp>
+#include <erslib/dbio/impl/query_builder.hpp>
 #include <erslib/dbio/impl/query_store.hpp>
 
 // export
@@ -19,7 +19,6 @@
 
 
 namespace dbio::impl {
-    // Thin owning wrapper around a pqxx::connection.
     class ERSLIB_EXPORT Database {
     public:
         using Connection = ConnectionPool::Connection;
@@ -37,19 +36,40 @@ namespace dbio::impl {
 
         template<typename Fn>
             requires ConnectionHandler<Fn>
-        auto with_connection(Fn&& fn) {
-            return _pool->with_connection(std::forward<Fn>(fn));
+        auto with_conn(Fn&& fn) {
+            auto conn = _pool->acquire_or_throw();
+            return std::forward<Fn>(fn)(*conn);
         }
 
         template<typename Fn>
             requires TransactionCallable<Fn>
-        auto with_transaction(Fn&& fn, std::string_view name = {}) {
-            return _pool->with_transaction(std::forward<Fn>(fn), name);
+        auto with_tx(Fn&& fn, std::string_view name = {}) {
+            using Tx = transaction_arg_t<Fn>;
+            using return_type = std::invoke_result_t<Fn, Tx&>;
+
+
+            auto conn = _pool->acquire_or_throw();
+            Tx tx(*conn, name);
+
+            if constexpr (std::is_void_v<return_type>) {
+                std::forward<Fn>(fn)(tx);
+                tx.commit();
+            } else {
+                auto result = std::forward<Fn>(fn)(tx);
+                tx.commit();
+                return result;
+            }
         }
 
-        template<typename Tx = pqxx::work, typename DbioFn, typename... Args>
-        auto call(DbioFn&& fn, Args&&... args) {
-            return _pool->call<Tx>(std::forward<DbioFn>(fn), std::forward<Args>(args)...);
+        template<typename Tx = pqxx::work, Executable Q>
+        auto with_query(Q query, std::string_view name = {}) {
+            auto conn = _pool->acquire_or_throw();
+            Tx tx(*conn, name);
+
+            auto result = query.exec(tx);
+            tx.commit();
+
+            return result;
         }
 
 

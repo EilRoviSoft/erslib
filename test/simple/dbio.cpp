@@ -29,7 +29,7 @@ namespace {
 
 
 TEST_CASE("dbio: select renders slots in layout order") {
-    ERS_QUICK_DBIO_USING;
+    using namespace dbio::orm;
 
     const auto sql = sql_of(select_from("users")
         | columns("id", "name")
@@ -48,13 +48,13 @@ TEST_CASE("dbio: select renders slots in layout order") {
 }
 
 TEST_CASE("dbio: select without columns falls back to *") {
-    ERS_QUICK_DBIO_USING;
+    using namespace dbio::orm;
 
     CHECK(sql_of(select_from("users")) == "SELECT *\nFROM users");
 }
 
 TEST_CASE("dbio: insert with conflict and returning") {
-    ERS_QUICK_DBIO_USING;
+    using namespace dbio::orm;
 
     const auto sql = sql_of(insert_into("images")
         | columns("url", "path")
@@ -72,7 +72,7 @@ TEST_CASE("dbio: insert with conflict and returning") {
 }
 
 TEST_CASE("dbio: update and delete") {
-    ERS_QUICK_DBIO_USING;
+    using namespace dbio::orm;
 
     CHECK(sql_of(update("users") | assign("name", std::string("bob")) | where("id", 1))
         == "UPDATE users\nSET name = $1\nWHERE id = $2");
@@ -82,7 +82,7 @@ TEST_CASE("dbio: update and delete") {
 }
 
 TEST_CASE("dbio: where variants") {
-    ERS_QUICK_DBIO_USING;
+    using namespace dbio::orm;
 
     CHECK(contains(sql_of(select_from("t") | where_null("a")), "WHERE a IS NULL"));
     CHECK(contains(sql_of(select_from("t") | where_null("a", false)), "WHERE a IS NOT NULL"));
@@ -95,7 +95,7 @@ TEST_CASE("dbio: where variants") {
 }
 
 TEST_CASE("dbio: identifiers are validated, values are bound") {
-    ERS_QUICK_DBIO_USING;
+    using namespace dbio::orm;
 
     CHECK_FALSE((select_from("users") | where("id; DROP TABLE users", 1)).to_sql().has_value());
     CHECK_FALSE((select_from("users") | columns("1")).to_sql().has_value());
@@ -109,14 +109,14 @@ TEST_CASE("dbio: identifiers are validated, values are bound") {
 }
 
 TEST_CASE("dbio: a clause outside the layout is rejected") {
-    ERS_QUICK_DBIO_USING;
+    using namespace dbio::orm;
 
     // DELETE has no ORDER BY slot
     CHECK_FALSE((delete_from("t") | order_by("a")).to_sql().has_value());
 }
 
 TEST_CASE("dbio: subqueries share the parent placeholder counter") {
-    ERS_QUICK_DBIO_USING;
+    using namespace dbio::orm;
 
     const auto sql = sql_of(select_from("users")
         | columns("id")
@@ -130,10 +130,46 @@ TEST_CASE("dbio: subqueries share the parent placeholder counter") {
 }
 
 TEST_CASE("dbio: exists_in is a standalone statement") {
-    ERS_QUICK_DBIO_USING;
+    using namespace dbio::orm;
 
     CHECK(sql_of(exists_in("orders") | where("user_id", 7))
         == "SELECT EXISTS (\nSELECT 1 FROM orders\nWHERE user_id = $1\n) AS \"exists\"");
+}
+
+TEST_CASE("dbio: exec() result dispatch") {
+    // No live database here, so this only proves the *shape* QueryBuilder::exec() hands back:
+    // get_as<T>() picks the RowContainer or the exactly-one-row overload by which T satisfies,
+    // view_as<T>() is always the lazy generator. The row-count/throwing behavior of each is
+    // exercised against a real connection in the stateful suite.
+    static_assert(dbio::ReadableRow<bool>);
+    static_assert(dbio::impl::RowContainer<std::vector<bool>>);
+    static_assert(dbio::impl::RowContainer<ers::optional<bool>>);
+
+    static_assert(std::is_same_v<decltype(std::declval<dbio::QueryResult>().get_as<bool>()), bool>);
+    static_assert(std::is_same_v<
+        decltype(std::declval<dbio::QueryResult>().get_as<std::vector<bool>>()), std::vector<bool>>);
+    static_assert(std::is_same_v<
+        decltype(std::declval<dbio::QueryResult>().get_as<ers::optional<bool>>()), ers::optional<bool>>);
+    static_assert(std::is_same_v<
+        decltype(std::declval<dbio::QueryResult>().view_as<bool>()), dbio::RowGenerator<bool>>);
+
+    // raw() gives back the pqxx::result untouched, no wrapping.
+    static_assert(std::is_same_v<decltype(std::declval<dbio::QueryResult>().raw()), const pqxx::result&>);
+}
+
+namespace {
+    // Anything shaped like QueryBuilder - a .exec(tx) that returns QueryResult - qualifies for
+    // ConnectionPool/Database::with_query, not just QueryBuilder itself (dbio::reflect::QueryCall<Tag>
+    // is the other real implementation of this shape).
+    struct FakeExecutable {
+        dbio::QueryResult exec(pqxx::dbtransaction&) const;
+    };
+}
+
+TEST_CASE("dbio: with_query accepts anything shaped like exec(tx) -> QueryResult") {
+    static_assert(dbio::impl::Executable<dbio::QueryBuilder>);
+    static_assert(dbio::impl::Executable<FakeExecutable>);
+    static_assert(!dbio::impl::Executable<int>);
 }
 
 

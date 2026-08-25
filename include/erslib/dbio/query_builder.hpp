@@ -6,7 +6,7 @@
 //     | where("guild_id", guild_id)
 //     | order_by("created_at", Order::Desc)
 //     | with_limit(20)
-// ).exec_as<User>(tx);
+// ).exec(tx).get_as<std::vector<User>>();
 
 
 // Main implementation
@@ -68,6 +68,7 @@ namespace dbio {
 
 namespace dbio {
     using impl::QueryBuilder;
+    using impl::QueryResult;
 }
 
 
@@ -105,8 +106,3 @@ namespace dbio::ext {
     using impl::WhereOpClause;
     using impl::ExistsClause;
 }
-
-
-#define ERS_QUICK_DBIO_USING \
-    using namespace dbio::clauses; \
-    using namespace dbio::layouts

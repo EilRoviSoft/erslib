@@ -7,13 +7,13 @@
 
 namespace {
     auto select_users_by_id_and_name() {
-        ERS_QUICK_DBIO_USING;
+        using namespace dbio::orm;
         return select_from("users")
             | columns("id", "name");
     }
 
     auto insert_id_and_name_into_users() {
-        ERS_QUICK_DBIO_USING;
+        using namespace dbio::orm;
 
         size_t id = 42;
         std::string name = "Bob";

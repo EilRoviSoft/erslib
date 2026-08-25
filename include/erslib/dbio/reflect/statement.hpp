@@ -9,9 +9,8 @@
 #include <pqxx/params>
 
 // ers
-#include <erslib/core/type/result.hpp>
-#include <erslib/dbio/impl/eval.hpp>
 #include <erslib/dbio/impl/generator.hpp>
+#include <erslib/dbio/impl/query_builder.hpp>
 #include <erslib/dbio/impl/query_store.hpp>
 #include <erslib/dbio/reflect/bind.hpp>
 #include <erslib/dbio/reflect/row.hpp>
@@ -30,19 +29,8 @@ namespace dbio::impl::reflect {
         }
 
 
-        ers::Result<RowGenerator<Output>> exec(pqxx::dbtransaction& tx) const {
-            auto r = _exec_raw(tx);
-            if (!r)
-                return r.error();
-
-            return RowGenerator<Output>(std::move(*r));
-        }
-
-        ers::Result<Output> exec_one(pqxx::dbtransaction& tx) const {
-            auto r = _exec_raw(tx);
-            if (!r)
-                return r.error();
-            return read_one<Output>(*r);
+        QueryResult exec(pqxx::dbtransaction& tx) const {
+            return QueryResult(_exec_raw(tx));
         }
 
 
@@ -50,16 +38,16 @@ namespace dbio::impl::reflect {
         Input _input;
 
 
-        ers::Result<pqxx::result> _exec_raw(pqxx::dbtransaction& tx) const ERS_DBIO_TRY_EVAL {
-            const auto sql = queries.get(std::string(query_label<Tag>));
+        pqxx::result _exec_raw(pqxx::dbtransaction& tx) const {
+            auto sql = queries.get(std::string(query_label<Tag>));
             if (!sql)
-                return ers::make_error("dbio: no query registered for label '{}'", query_label<Tag>);
+                throw ers::make_runtime_error("dbio: no query registered for label '{}'", query_label<Tag>);
 
             pqxx::params params;
             bind_params(params, _input);
 
             return tx.exec(*sql, params);
-        } ERS_DBIO_CATCH_EVAL_ERRORS
+        }
     };
 
 

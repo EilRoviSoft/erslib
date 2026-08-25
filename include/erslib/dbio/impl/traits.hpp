@@ -1,5 +1,8 @@
 #pragma once
 
+// std
+#include <concepts>
+
 // pqxx
 #include <pqxx/params>
 
@@ -43,6 +46,6 @@ namespace dbio::impl {
     template<typename T>
     concept RowContainer = requires(const pqxx::result& r) {
         typename sql_collector<T>::row_t;
-        { sql_collector<T>::collect(r) } -> std::same_as<ers::Result<T>>;
+        { sql_collector<T>::collect(r) } -> std::same_as<T>;
     };
 }

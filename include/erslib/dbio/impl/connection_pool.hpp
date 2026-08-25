@@ -16,10 +16,10 @@
 #include <erslib/core/filesystem.hpp>
 #include <erslib/core/memory.hpp>
 #include <erslib/core/trait/fn.hpp>
-#include <erslib/core/trait/result.hpp>
 #include <erslib/core/type/result.hpp>
 #include <erslib/core/type/time.hpp>
 #include <erslib/dbio/impl/options.hpp>
+#include <erslib/dbio/impl/query_builder.hpp>
 
 
 namespace dbio::impl {
@@ -56,21 +56,9 @@ namespace dbio::impl {
         // Modifiers
 
         ers::Result<Connection> acquire();
+        Connection acquire_or_throw();
 
         void maintain();
-
-
-        template<typename Fn>
-            requires ConnectionHandler<Fn>
-        auto with_connection(Fn&& fn) -> ers::flattened_result_t<std::invoke_result_t<Fn, pqxx::connection&>>;
-
-        template<typename Fn>
-            requires TransactionCallable<Fn>
-        auto with_transaction(Fn&& fn, std::string_view name = {}) -> ers::flattened_result_t<std::invoke_result_t<Fn, transaction_arg_t<Fn>&>>;
-
-        template<typename Tx = pqxx::work, typename DbioFn, typename... Args>
-            requires std::derived_from<Tx, pqxx::dbtransaction> && std::invocable<DbioFn, Tx&, Args...>
-        auto call(DbioFn&& fn, Args&&... args);
 
 
     private:
@@ -135,8 +123,3 @@ namespace dbio::impl {
         pqxx::connection* _conn;
     };
 }
-
-
-
-
-// Template member definitions live in <erslib/dbio/impl/transaction.hpp>.

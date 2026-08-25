@@ -95,7 +95,7 @@ CREATE TABLE IF NOT EXISTS images (
 Include `reflect.hpp` and `exec_as` / `exec_one` start accepting your entities:
 
 ```cpp
-auto collections = db.with_transaction([limit](pqxx::read_transaction& tx) {
+auto collections = db.with_tx([limit](pqxx::read_transaction& tx) {
     ERS_QUICK_DBIO_USING;
     return (select_from("collections")
         | order_by_random()

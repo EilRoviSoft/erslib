@@ -4,7 +4,7 @@
 #include <algorithm>
 
 // ers
-#include <erslib/dbio/impl/eval.hpp>
+#include <erslib/core/exception.hpp>
 
 
 // Modifiers
@@ -112,22 +112,13 @@ ers::Result<std::string> dbio::impl::QueryBuilder::to_sql() const {
 
 // Executors
 
-ers::Result<pqxx::result> dbio::impl::QueryBuilder::exec(pqxx::dbtransaction& tx) const ERS_DBIO_TRY_EVAL {
+dbio::impl::QueryResult dbio::impl::QueryBuilder::exec(pqxx::dbtransaction& tx) const {
     Context ctx(tx);
 
     if (auto s = build(ctx); !s)
-        return s.error();
+        throw ers::make_runtime_error(s.error().to_string());
 
-    return tx.exec(ctx.query, ctx.params);
-}
-ERS_DBIO_CATCH_EVAL_ERRORS
-
-ers::Status dbio::impl::QueryBuilder::exec_and_discard(pqxx::dbtransaction& tx) const {
-    auto r = exec(tx);
-    if (!r)
-        return r.error();
-
-    return ers::ok;
+    return QueryResult(tx.exec(ctx.query, ctx.params));
 }
 
 
