@@ -61,3 +61,7 @@ QueryBuilder layouts::select_from(std::string table, std::string alias) {
     q |= clauses::from(std::move(table), std::move(alias));
     return q;
 }
+
+QueryBuilder layouts::select() {
+    return QueryBuilder(select_layout);
+}

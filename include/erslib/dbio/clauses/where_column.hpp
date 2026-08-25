@@ -30,7 +30,5 @@ namespace dbio::impl {
 
     namespace clauses {
         Clause where_column(std::string left, Op op, std::string right);
-
-        Clause where_column(std::string left, std::string right);
     }
 }

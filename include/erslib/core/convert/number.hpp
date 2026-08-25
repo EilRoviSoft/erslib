@@ -17,7 +17,7 @@ namespace ers::impl {
 
 
     template<HasFromChars T>
-    Result<T> number_from_chars(std::string_view source) {
+    Result<T> number_from_string(std::string_view source) {
         T out;
         
         if (auto r = std::from_chars(source.begin(), source.end(), out); !r) {
@@ -38,5 +38,5 @@ namespace ers::impl {
 
 
 namespace ers {
-    using impl::number_from_chars;
+    using impl::number_from_string;
 }

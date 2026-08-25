@@ -30,7 +30,7 @@ ers::Status dbio::impl::JoinClause::render(Context& ctx) const {
     ctx.query += " ON ";
     ctx.query += _left;
     ctx.query += ' ';
-    ctx.query += op_sql(_op);
+    ctx.query += to_string(_op);
     ctx.query += ' ';
     ctx.query += _right;
 
@@ -38,10 +38,11 @@ ers::Status dbio::impl::JoinClause::render(Context& ctx) const {
 }
 
 
-dbio::impl::Clause dbio::impl::clauses::join(std::string table, std::string alias, std::string left, Op op, std::string right) {
+dbio::impl::Clause dbio::impl::clauses::join_with_alias(std::string table, std::string alias, std::string left, Op op, std::string right) {
     return make_clause<JoinClause>(std::move(table), std::move(alias), std::move(left), std::move(right), op);
 }
 
-dbio::impl::Clause dbio::impl::clauses::join(std::string table, std::string alias, std::string left, std::string right) {
-    return join(std::move(table), std::move(alias), std::move(left), Op::Eq, std::move(right));
+dbio::impl::Clause dbio::impl::clauses::join(std::string table, std::string left, Op op, std::string right) {
+    return make_clause<JoinClause>(std::move(table), "", std::move(left), std::move(right), op);
 }
+

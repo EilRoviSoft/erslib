@@ -22,7 +22,7 @@ ers::Status dbio::impl::WhereColumnClause::render(Context& ctx) const {
         return s;
 
     ctx.query += std::format("{} {} {}",
-        _left, op_sql(_op), _right);
+        _left, to_string(_op), _right);
 
     return ers::ok;
 }
@@ -30,8 +30,4 @@ ers::Status dbio::impl::WhereColumnClause::render(Context& ctx) const {
 
 dbio::impl::Clause dbio::impl::clauses::where_column(std::string left, Op op, std::string right) {
     return make_clause<WhereColumnClause>(std::move(left), std::move(right), op);
-}
-
-dbio::impl::Clause dbio::impl::clauses::where_column(std::string left, std::string right) {
-    return make_clause<WhereColumnClause>(std::move(left), std::move(right), Op::Eq);
 }

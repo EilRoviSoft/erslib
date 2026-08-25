@@ -1,9 +1,7 @@
 #pragma once
 
 // std
-#include <concepts>
 #include <string>
-#include <type_traits>
 
 // ers
 #include <erslib/dbio/clauses/where.hpp>
@@ -35,18 +33,6 @@ namespace dbio::impl {
         template<typename T>
         Clause where(std::string column, Op op, T&& value) {
             return make_clause<WhereOpClause>(std::move(column), op, make_binder(std::forward<T>(value)));
-        }
-
-        template<typename T>
-            requires (!std::same_as<std::remove_cvref_t<T>, Op>)
-        Clause where(std::string column, T&& value) {
-            return where(std::move(column), Op::Eq, std::forward<T>(value));
-        }
-
-        template<typename T>
-            requires (!std::same_as<std::remove_cvref_t<T>, Op>)
-        Clause where_not(std::string column, T&& value) {
-            return where(std::move(column), Op::Ne, std::forward<T>(value));
         }
     }
 }

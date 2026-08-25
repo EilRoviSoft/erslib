@@ -8,5 +8,5 @@
 
 
 namespace dbio::impl::clauses {
-    inline Clause group_by(std::string column);
+    Clause group_by(std::string column);
 }

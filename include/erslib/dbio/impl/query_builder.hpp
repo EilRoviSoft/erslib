@@ -19,6 +19,9 @@
 
 namespace dbio::impl {
     class QueryResult;
+
+    struct WithCte;
+    struct WithUnion;
 }
 
 namespace dbio::impl {
@@ -42,6 +45,9 @@ namespace dbio::impl {
         void add(Clause clause);
         void add(std::vector<Clause> clauses);
 
+        void add(WithCte with_cte);
+        void add(WithUnion with_union);
+
 
         ers::Status build(Context& ctx) const;
 
@@ -56,6 +62,8 @@ namespace dbio::impl {
     private:
         Layout _layout;
         std::vector<Clause> _clauses;
+        std::vector<WithCte> _ctes;
+        std::vector<WithUnion> _unions;
 
 
         ers::Status _render_slot(Context& ctx, const SlotBinding& binding) const;
@@ -108,6 +116,30 @@ namespace dbio::impl {
 }
 
 
+// Exclusive clauses
+
+namespace dbio::impl {
+    struct WithCte {
+        QueryBuilder definition;
+        std::string name;
+        bool recursive;
+    };
+
+    struct WithUnion {
+        QueryBuilder other;
+        bool all;
+    };
+
+
+    namespace clauses {
+        WithCte ERSLIB_EXPORT with_cte(std::string name, QueryBuilder definition, bool recursive = false);
+
+        WithUnion ERSLIB_EXPORT union_with(QueryBuilder other, bool all = false);
+    }
+}
+
+
+
 // Executable
 
 namespace dbio::impl {
@@ -131,6 +163,14 @@ namespace dbio::impl {
     QueryBuilder& operator|(QueryBuilder& lhs, std::vector<Clause> rhs);
     QueryBuilder&& operator|(QueryBuilder&& lhs, std::vector<Clause> rhs);
     QueryBuilder& operator|=(QueryBuilder& lhs, std::vector<Clause> rhs);
+
+    QueryBuilder& operator|(QueryBuilder& lhs, WithUnion rhs);
+    QueryBuilder&& operator|(QueryBuilder&& lhs, WithUnion rhs);
+    QueryBuilder& operator|=(QueryBuilder& lhs, WithUnion rhs);
+
+    QueryBuilder& operator|(QueryBuilder& lhs, WithCte rhs);
+    QueryBuilder&& operator|(QueryBuilder&& lhs, WithCte rhs);
+    QueryBuilder& operator|=(QueryBuilder& lhs, WithCte rhs);
 }
 
 

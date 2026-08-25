@@ -24,14 +24,53 @@ void dbio::impl::QueryBuilder::add(std::vector<Clause> clauses) {
         add(std::move(it));
 }
 
+void dbio::impl::QueryBuilder::add(WithCte with_cte) {
+    _ctes.emplace_back(std::move(with_cte));
+}
+
+void dbio::impl::QueryBuilder::add(WithUnion with_union) {
+    _unions.emplace_back(std::move(with_union));
+}
+
 
 ers::Status dbio::impl::QueryBuilder::build(Context& ctx) const {
     if (auto s = _validate(); !s)
         return s;
 
-    for (const auto& binding : _layout.bindings())
+    if (!_ctes.empty()) {
+        bool recursive = std::ranges::any_of(_ctes, [](const WithCte& c) { return c.recursive; });
+
+        ctx.query += recursive ? "WITH RECURSIVE " : "WITH ";
+
+        bool first = true;
+        for (auto& cte : _ctes) {
+            if (!first)
+                ctx.query += ",\n";
+            first = false;
+
+            if (auto s = check_identifier(cte.name, nullptr); !s)
+                return s;
+
+            ctx.query += cte.name;
+            ctx.query += " AS (\n";
+            if (auto s = cte.definition.build(ctx); !s)
+                return s;
+            ctx.query += "\n)";
+        }
+
+        ctx.query += "\n";
+    }
+
+    for (const auto& binding : _layout.bindings()) {
         if (auto s = _render_slot(ctx, binding); !s)
             return s;
+    }
+
+    for (auto& u : _unions) {
+        ctx.query += u.all ? "\nUNION ALL\n" : "\nUNION\n";
+        if (auto s = u.other.build(ctx); !s)
+            return s;
+    }
 
     return ers::ok;
 }
@@ -128,12 +167,10 @@ dbio::impl::QueryBuilder& dbio::impl::operator|(QueryBuilder& lhs, Clause rhs) {
     lhs.add(std::move(rhs));
     return lhs;
 }
-
 dbio::impl::QueryBuilder&& dbio::impl::operator|(QueryBuilder&& lhs, Clause rhs) {
     lhs.add(std::move(rhs));
     return std::move(lhs);
 }
-
 dbio::impl::QueryBuilder& dbio::impl::operator|=(QueryBuilder& lhs, Clause rhs) {
     return lhs | std::move(rhs);
 }
@@ -142,14 +179,55 @@ dbio::impl::QueryBuilder& dbio::impl::operator|(QueryBuilder& lhs, std::vector<C
     lhs.add(std::move(rhs));
     return lhs;
 }
-
 dbio::impl::QueryBuilder&& dbio::impl::operator|(QueryBuilder&& lhs, std::vector<Clause> rhs) {
     lhs.add(std::move(rhs));
     return std::move(lhs);
 }
-
 dbio::impl::QueryBuilder& dbio::impl::operator|=(QueryBuilder& lhs, std::vector<Clause> rhs) {
     return lhs | std::move(rhs);
+}
+
+
+dbio::impl::QueryBuilder& dbio::impl::operator|(QueryBuilder& lhs, WithUnion rhs) {
+    lhs.add(std::move(rhs));
+    return lhs;
+}
+dbio::impl::QueryBuilder&& dbio::impl::operator|(QueryBuilder&& lhs, WithUnion rhs) {
+    lhs.add(std::move(rhs));
+    return std::move(lhs);
+}
+dbio::impl::QueryBuilder& dbio::impl::operator|=(QueryBuilder& lhs, WithUnion rhs) {
+    return lhs | std::move(rhs);
+}
+
+dbio::impl::QueryBuilder& dbio::impl::operator|(QueryBuilder& lhs, WithCte rhs) {
+    lhs.add(std::move(rhs));
+    return lhs;
+}
+dbio::impl::QueryBuilder&& dbio::impl::operator|(QueryBuilder&& lhs, WithCte rhs) {
+    lhs.add(std::move(rhs));
+    return std::move(lhs);
+}
+dbio::impl::QueryBuilder& dbio::impl::operator|=(QueryBuilder& lhs, WithCte rhs) {
+    return lhs | std::move(rhs);
+}
+
+
+// Statement-level combinators
+
+dbio::impl::WithCte dbio::impl::clauses::with_cte(std::string name, QueryBuilder definition, bool recursive) {
+    return WithCte {
+        .definition = std::move(definition),
+        .name       = std::move(name),
+        .recursive  = recursive
+    };
+}
+
+dbio::impl::WithUnion dbio::impl::clauses::union_with(QueryBuilder other, bool all) {
+    return WithUnion {
+        .other = std::move(other),
+        .all   = all
+    };
 }
 
 

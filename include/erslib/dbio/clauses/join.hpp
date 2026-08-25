@@ -25,8 +25,7 @@ namespace dbio::impl {
 
 
     namespace clauses {
-        Clause join(std::string table, std::string alias, std::string left, Op op, std::string right);
-
-        Clause join(std::string table, std::string alias, std::string left, std::string right);
+        Clause join_with_alias(std::string table, std::string alias, std::string left, Op op, std::string right);
+        Clause join(std::string table, std::string left, Op op, std::string right);
     }
 }

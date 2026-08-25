@@ -12,7 +12,7 @@ dbio::impl::WhereOpClause::WhereOpClause(std::string column, Op op, binder_t bin
 }
 
 ers::Status dbio::impl::WhereOpClause::render(Context& ctx) const {
-    auto op_str = op_sql(_op);
+    auto op_str = to_string(_op);
     if (op_str.empty()) {
         return ers::make_error("Unknown operator ({}) for column '{}' in slot '{}'.",
             static_cast<u8>(_op), _column, slot()->name);

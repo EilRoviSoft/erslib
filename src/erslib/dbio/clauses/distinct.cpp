@@ -5,6 +5,6 @@
 #include <erslib/dbio/slots/dinstinct.hpp>
 
 
-inline dbio::impl::Clause dbio::impl::clauses::distinct() {
+dbio::impl::Clause dbio::impl::clauses::distinct() {
     return raw(&slots::distinct, " DISTINCT");
 }
