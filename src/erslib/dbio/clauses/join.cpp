@@ -27,7 +27,7 @@ ers::Status dbio::impl::JoinClause::render(Context& ctx) const {
 
 
 dbio::impl::Clause dbio::impl::clauses::join(std::string table, std::string alias, std::string left, Op op, std::string right) {
-    return make_clause<JoinClause>(std::move(table), std::move(alias), std::move(left), op, std::move(right));
+    return make_clause<JoinClause>(std::move(table), std::move(alias), std::move(left), std::move(right), op);
 }
 
 dbio::impl::Clause dbio::impl::clauses::join(std::string table, std::string alias, std::string left, std::string right) {

@@ -6,7 +6,7 @@
 #include <type_traits>
 
 // ers
-#include <erslib/dbio/query_builder.hpp>
+#include <erslib/dbio/clauses/where.hpp>
 #include <erslib/dbio/impl/op.hpp>
 #include <erslib/dbio/impl/traits.hpp>
 

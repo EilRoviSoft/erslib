@@ -3,6 +3,9 @@
 // std
 #include <format>
 
+// ers
+#include <erslib/dbio/slots/where.hpp>
+
 
 dbio::impl::WhereOpClause::WhereOpClause(std::string column, Op op, binder_t binder) :
     IWhereClause(&slots::where),
