@@ -15,6 +15,6 @@ namespace dbio::impl::bindings {
     inline constexpr SlotBinding returning {
         .slot      = &slots::returning,
         .prefix    = "\nRETURNING ",
-        .separator = ", "
+        .separator = ", ",
     };
 }

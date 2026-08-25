@@ -15,6 +15,6 @@ namespace dbio::impl::bindings {
     inline constexpr SlotBinding where {
         .slot      = &slots::where,
         .prefix    = "\nWHERE ",
-        .separator = " AND "
+        .separator = " AND ",
     };
 }

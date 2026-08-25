@@ -26,16 +26,16 @@ namespace dbio::impl::bindings {
         .slot      = &slots::conflict,
         .prefix    = "\nON CONFLICT (",
         .separator = ", ",
-        .suffix    = ")"
+        .suffix    = ")",
     };
 
     inline constexpr SlotBinding conflict_constraint {
         .slot   = &slots::conflict_constraint,
-        .prefix = "\nON CONFLICT ON CONSTRAINT "
+        .prefix = "\nON CONFLICT ON CONSTRAINT ",
     };
 
     inline constexpr SlotBinding conflict_action {
         .slot   = &slots::conflict_action,
-        .prefix = "\n"
+        .prefix = "\n",
     };
 }

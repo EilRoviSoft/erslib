@@ -14,6 +14,6 @@ namespace dbio::impl::slots {
 namespace dbio::impl::bindings {
     inline constexpr SlotBinding limit {
         .slot   = &slots::limit,
-        .prefix = "\nLIMIT "
+        .prefix = "\nLIMIT ",
     };
 }

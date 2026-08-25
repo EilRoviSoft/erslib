@@ -15,6 +15,6 @@ namespace dbio::impl::bindings {
     inline constexpr SlotBinding from {
         .slot      = &slots::from,
         .prefix    = "\nFROM ",
-        .separator = ", "
+        .separator = ", ",
     };
 }

@@ -16,6 +16,6 @@ namespace dbio::impl::bindings {
         .slot      = &slots::values,
         .prefix    = "\nVALUES (",
         .separator = "), (",
-        .suffix    = ")"
+        .suffix    = ")",
     };
 }

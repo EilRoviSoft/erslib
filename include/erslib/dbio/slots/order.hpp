@@ -15,6 +15,6 @@ namespace dbio::impl::bindings {
     inline constexpr SlotBinding order {
         .slot      = &slots::order,
         .prefix    = "\nORDER BY ",
-        .separator = ", "
+        .separator = ", ",
     };
 }

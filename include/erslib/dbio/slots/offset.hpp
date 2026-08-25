@@ -14,6 +14,6 @@ namespace dbio::impl::slots {
 namespace dbio::impl::bindings {
     inline constexpr SlotBinding offset {
         .slot   = &slots::offset,
-        .prefix = "\nOFFSET "
+        .prefix = "\nOFFSET ",
     };
 }
