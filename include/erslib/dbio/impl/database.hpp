@@ -62,11 +62,23 @@ namespace dbio::impl {
         }
 
         template<typename Tx = pqxx::work, Executable Q>
-        auto with_query(Q query, std::string_view name = {}) {
+            requires (!ExecutableWithOutput<Q>)
+        QueryResult with_query(Q query, std::string_view name = {}) {
             auto conn = _pool->acquire_or_throw();
             Tx tx(*conn, name);
 
             auto result = query.exec(tx);
+            tx.commit();
+
+            return result;
+        }
+
+        template<typename Tx = pqxx::work, ExecutableWithOutput Q>
+        typename Q::Output with_query(Q query, std::string_view name = {}) {
+            auto conn = _pool->acquire_or_throw();
+            Tx tx(*conn, name);
+
+            auto result = query.exec(tx).template get_as<typename Q::Output>();
             tx.commit();
 
             return result;

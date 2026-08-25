@@ -26,6 +26,6 @@ namespace dbio::impl {
 
 
     namespace layouts {
-        ERSLIB_EXPORT QueryBuilder insert_into(std::string table);
+        QueryBuilder ERSLIB_EXPORT insert_into(std::string table);
     }
 }

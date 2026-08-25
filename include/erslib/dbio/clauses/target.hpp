@@ -19,7 +19,7 @@ namespace dbio::impl {
     public:
         // Member functions
 
-        IdentityClause(SlotRef slot, std::string name);
+        IdentityClause(SlotRef slot, std::string name, std::string alias = "");
 
 
         // Executors
@@ -29,11 +29,12 @@ namespace dbio::impl {
 
     private:
         std::string _name;
+        std::string _alias;
     };
 
 
     namespace clauses {
-        Clause identifier(SlotRef slot, std::string name);
+        Clause identifier(SlotRef slot, std::string name, std::string alias = "");
 
 
         Clause column(std::string name);
@@ -62,6 +63,6 @@ namespace dbio::impl {
         }
 
 
-        Clause from(std::string name);
+        Clause from(std::string name, std::string alias = "");
     }
 }

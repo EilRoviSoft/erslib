@@ -21,13 +21,20 @@
 #include <erslib/dbio/clauses/assign.hpp>
 #include <erslib/dbio/clauses/bound.hpp>
 #include <erslib/dbio/clauses/conflict.hpp>
+#include <erslib/dbio/clauses/dinstinct.hpp>
 #include <erslib/dbio/clauses/exists.hpp>
+#include <erslib/dbio/clauses/group.hpp>
+#include <erslib/dbio/clauses/join.hpp>
 #include <erslib/dbio/clauses/order.hpp>
 #include <erslib/dbio/clauses/raw.hpp>
 #include <erslib/dbio/clauses/returning.hpp>
 #include <erslib/dbio/clauses/target.hpp>
 #include <erslib/dbio/clauses/values.hpp>
 #include <erslib/dbio/clauses/where.hpp>
+#include <erslib/dbio/clauses/where_column.hpp>
+#include <erslib/dbio/clauses/where_in.hpp>
+#include <erslib/dbio/clauses/where_null.hpp>
+#include <erslib/dbio/clauses/where_op.hpp>
 
 // Layouts
 
@@ -41,7 +48,10 @@
 
 #include <erslib/dbio/slots/column.hpp>
 #include <erslib/dbio/slots/conflict.hpp>
+#include <erslib/dbio/slots/dinstinct.hpp>
 #include <erslib/dbio/slots/from.hpp>
+#include <erslib/dbio/slots/group.hpp>
+#include <erslib/dbio/slots/join.hpp>
 #include <erslib/dbio/slots/limit.hpp>
 #include <erslib/dbio/slots/offset.hpp>
 #include <erslib/dbio/slots/order.hpp>
@@ -77,7 +87,7 @@ namespace dbio::ext {
     using impl::make_binder;
 
     using impl::Op;
-    using impl::Order;
+    using impl::op_sql;
 
     using impl::Context;
 
@@ -87,22 +97,35 @@ namespace dbio::ext {
     using impl::Slot;
     using impl::SlotRef;
     using impl::SlotBinding;
-
-    using impl::IClause;
-    using impl::Clause;
 }
 
 namespace dbio::ext {
-    using impl::AssignClause;
-    using impl::BoundClause;
-    using impl::OrderClause;
-    using impl::RawClause;
-    using impl::IdentityClause;
-    using impl::ValuesClause;
+    using impl::IClause;
+    using impl::Clause;
 
+
+    using impl::AssignClause;
+
+    using impl::BoundClause;
+    
+    using impl::ConflictUpdateClause;
+
+    using impl::ExistsClause;
+
+    using impl::JoinClause;
+
+    using impl::Order;
+    using impl::OrderClause;
+    
+    using impl::RawClause;
+    
+    using impl::IdentityClause;
+    
+    using impl::ValuesClause;
+    
     using impl::IWhereClause;
+    using impl::WhereColumnClause;
     using impl::WhereInClause;
     using impl::WhereNullClause;
     using impl::WhereOpClause;
-    using impl::ExistsClause;
 }

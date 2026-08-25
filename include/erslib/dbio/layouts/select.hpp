@@ -12,6 +12,6 @@
 
 namespace dbio::impl {
     namespace layouts {
-        ERSLIB_EXPORT QueryBuilder select_from(std::string table);
+        QueryBuilder ERSLIB_EXPORT select_from(std::string table, std::string alias = "");
     }
 }

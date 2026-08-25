@@ -111,12 +111,13 @@ namespace dbio::impl {
 // Executable
 
 namespace dbio::impl {
-    // Anything that renders and runs like a QueryBuilder - QueryBuilder itself, and
-    // dbio::reflect::QueryCall<Tag> for declaration-driven custom queries.
     template<typename T>
     concept Executable = requires(const T& q, pqxx::dbtransaction& tx) {
         { q.exec(tx) } -> std::same_as<QueryResult>;
     };
+
+    template<typename T>
+    concept ExecutableWithOutput = Executable<T> && requires { typename T::Output; };
 }
 
 

@@ -159,9 +159,15 @@ TEST_CASE("dbio: exec() result dispatch") {
 
 namespace {
     // Anything shaped like QueryBuilder - a .exec(tx) that returns QueryResult - qualifies for
-    // ConnectionPool/Database::with_query, not just QueryBuilder itself (dbio::reflect::QueryCall<Tag>
-    // is the other real implementation of this shape).
+    // Database::with_query, not just QueryBuilder itself (dbio::reflect::QueryCall<Tag> is the
+    // other real implementation of this shape).
     struct FakeExecutable {
+        dbio::QueryResult exec(pqxx::dbtransaction&) const;
+    };
+
+    // Shaped like QueryCall<Tag>: Executable, and it also names its own Output.
+    struct FakeQueryCall {
+        using Output = bool;
         dbio::QueryResult exec(pqxx::dbtransaction&) const;
     };
 }
@@ -170,6 +176,11 @@ TEST_CASE("dbio: with_query accepts anything shaped like exec(tx) -> QueryResult
     static_assert(dbio::impl::Executable<dbio::QueryBuilder>);
     static_assert(dbio::impl::Executable<FakeExecutable>);
     static_assert(!dbio::impl::Executable<int>);
+
+    // QueryBuilder has no fixed result shape, so it never takes the Output-unwrapping path.
+    static_assert(!dbio::impl::ExecutableWithOutput<dbio::QueryBuilder>);
+    static_assert(!dbio::impl::ExecutableWithOutput<FakeExecutable>);
+    static_assert(dbio::impl::ExecutableWithOutput<FakeQueryCall>);
 }
 
 
