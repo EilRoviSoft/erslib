@@ -2,10 +2,9 @@
 
 // std
 #include <array>
+#include <stdexcept>
 #include <string_view>
-
-// frozen
-#include <frozen/unordered_map.h>
+#include <utility>
 
 // ers
 #include <erslib/core/type/fixed_string.hpp>
@@ -19,22 +18,15 @@ namespace dbio::impl {
     };
 
     constexpr std::string_view to_string(Op op) {
-        static frozen::unordered_map<Op, std::string_view, 8> conversion_table = {
-            { Op::Eq, "=" },
-            { Op::Ne, "<>" },
-            { Op::Lt, "<" },
-            { Op::Le, "<=" },
-            { Op::Gt, ">" },
-            { Op::Ge, ">=" },
-            { Op::Like, "LIKE" },
-            { Op::ILike, "ILIKE" },
+        constexpr std::array<std::string_view, 8> table = {
+            "=", "<>", "<", "<=", ">", ">=", "LIKE", "ILIKE",
         };
 
-        return conversion_table.at(static_cast<size_t>(op));
+        return table[static_cast<size_t>(op)];
     }
 
     constexpr Op to_op(std::string_view s) {
-        static frozen::unordered_map<std::string_view, Op, 8> conversion_table = {
+        constexpr std::array<std::pair<std::string_view, Op>, 8> table = {{
             { "=", Op::Eq },
             { "<>", Op::Ne },
             { "<", Op::Lt },
@@ -43,9 +35,14 @@ namespace dbio::impl {
             { ">=", Op::Ge },
             { "LIKE", Op::Like },
             { "ILIKE", Op::ILike },
-        };
+        }};
 
-        return conversion_table.at(s);
+        for (const auto& [key, value] : table) {
+            if (key == s)
+                return value;
+        }
+
+        throw std::out_of_range("Unknown SQL operator");
     }
 
 

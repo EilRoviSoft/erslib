@@ -46,7 +46,7 @@ ers::Result<dbio::impl::ConnectionPool::Connection> dbio::impl::ConnectionPool::
 }
 dbio::impl::ConnectionPool::Connection dbio::impl::ConnectionPool::acquire_or_throw() {
     auto conn = acquire();
-    if (conn)
+    if (!conn)
         throw ers::make_runtime_error(conn.error().to_string());
     return std::move(*conn);
 }

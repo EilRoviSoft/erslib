@@ -1,6 +1,7 @@
 {
   "dependencies": [
     "boost-container",
+    "boost-multi-index",
     "boost-optional",
     "boost-preprocessor",
     "boost-regex",

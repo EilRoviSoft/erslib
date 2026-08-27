@@ -24,6 +24,17 @@ namespace ers::impl {
 
     template<
         typename K,
+        auto Member,
+        typename Compare = std::less<>,
+        typename AllocatorOrContainer = std::allocator<K>>
+    using OrderedSetByMember = boost::container::flat_set<
+        K,
+        adaptor::member_compare<Member, Compare>,
+        AllocatorOrContainer
+    >;
+
+    template<
+        typename K,
         typename V,
         typename Compare = std::less<K>,
         typename AllocatorOrContainer = std::allocator<std::pair<K, V>>>
@@ -85,6 +96,7 @@ namespace ers::impl {
 
 namespace ers {
     using impl::OrderedSet;
+    using impl::OrderedSetByMember;
     using impl::OrderedMap;
 
     using impl::HashSet;

@@ -17,6 +17,8 @@ namespace ers::adaptor {
     using impl::adaptor::equal;
     using impl::adaptor::member_equal;
 
+    using impl::adaptor::member_compare;
+
     using impl::adaptor::unary_op;
     using impl::adaptor::member_unary_op;
 

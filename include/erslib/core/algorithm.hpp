@@ -13,6 +13,7 @@
 
 namespace ers::algo {
     using impl::algo::keys_sorted_by_value;
+    using impl::algo::insert_sorted;
     using impl::algo::combine;
 
     using RegularSplitter = impl::algo::SplitProcessor<impl::algo::RegularSplitIterator>;

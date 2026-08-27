@@ -183,7 +183,7 @@ namespace ers::impl::adaptor {
     using hash = hash_base<Hash, nullptr, Ts...>;
 
     template<template<typename> typename Hash, auto Member, typename... Ts>
-    using member_hash = hash_base<Hash, Member, std::remove_cvref_t<member_class_t<Member>>, Ts...>;
+    using member_hash = hash_base<Hash, Member, std::remove_cvref_t<member_class_t<Member>>, member_type_t<Member>, Ts...>;
 }
 
 namespace ers::impl::adaptor {
@@ -192,4 +192,7 @@ namespace ers::impl::adaptor {
 
     template<auto Member>
     using member_equal = member_binary_op<Member, std::equal_to<>>;
+
+    template<auto Member, typename Compare = std::less<>>
+    using member_compare = member_binary_op<Member, Compare>;
 }

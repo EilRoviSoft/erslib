@@ -6,6 +6,7 @@
 #include <vector>
 
 // ers
+#include <erslib/core/adaptor/transparent_base.hpp>
 #include <erslib/core/concept/pair.hpp>
 
 
@@ -25,5 +26,17 @@ namespace ers::impl::algo {
 
         for (auto it : sorted_items)
             *out++ = it->first;
+    }
+}
+
+namespace ers::impl::algo {
+    template<auto Member, typename T, typename Alloc, typename Compare = std::less<>>
+    typename std::vector<T, Alloc>::iterator insert_sorted(std::vector<T, Alloc>& v, T value, Compare comp = {}) {
+        const auto pos = std::ranges::upper_bound(
+            v, project<Member>(value), comp,
+            [](const T& e) -> decltype(auto) { return project<Member>(e); }
+        );
+
+        return v.insert(pos, std::move(value));
     }
 }

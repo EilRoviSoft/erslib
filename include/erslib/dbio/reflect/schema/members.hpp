@@ -12,7 +12,20 @@
 namespace dbio::impl::reflect {
     template<typename T>
     consteval std::vector<std::meta::info> all_members() {
-        return nonstatic_data_members_of(^^T, std::meta::access_context::current());
+        std::vector<std::meta::info> out, stack { ^^T };
+
+        while (!stack.empty()) {
+            const auto current = stack.back();
+            stack.pop_back();
+
+            for (const auto member : std::meta::nonstatic_data_members_of(current, std::meta::access_context::current()))
+                out.push_back(member);
+
+            for (const auto base : std::meta::bases_of(current, std::meta::access_context::current()))
+                stack.push_back(std::meta::type_of(base));
+        }
+
+        return out;
     }
 
 

@@ -14,6 +14,27 @@ namespace ers::impl {
         using member_type = Member;
     };
 
+    template<typename Class, typename Ret, typename... Args>
+    struct member_ptr_traits<Ret(Class::*)(Args...)> {
+        using class_type = Class;
+        using member_type = Ret;
+    };
+    template<typename Class, typename Ret, typename... Args>
+    struct member_ptr_traits<Ret(Class::*)(Args...) const> {
+        using class_type = Class;
+        using member_type = Ret;
+    };
+    template<typename Class, typename Ret, typename... Args>
+    struct member_ptr_traits<Ret(Class::*)(Args...) noexcept> {
+        using class_type = Class;
+        using member_type = Ret;
+    };
+    template<typename Class, typename Ret, typename... Args>
+    struct member_ptr_traits<Ret(Class::*)(Args...) const noexcept> {
+        using class_type = Class;
+        using member_type = Ret;
+    };
+
 
     template<auto Member>
     using member_class_t = typename member_ptr_traits<decltype(Member)>::class_type;
