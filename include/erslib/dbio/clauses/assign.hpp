@@ -36,5 +36,11 @@ namespace dbio::impl {
         }
 
         Clause assign_null(std::string column);
+
+        
+        template<typename T>
+        Clause set(std::string column, T&& value) {
+            return assign(std::move(column), std::forward<T>(value));
+        }
     }
 }

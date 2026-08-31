@@ -61,27 +61,17 @@ namespace dbio::impl {
             }
         }
 
-        template<typename Tx = pqxx::work, Executable Q>
-            requires (!ExecutableWithOutput<Q>)
-        QueryResult with_query(Q query, std::string_view name = {}) {
-            auto conn = _pool->acquire_or_throw();
-            Tx tx(*conn, name);
 
-            auto result = query.exec(tx);
-            tx.commit();
-
-            return result;
+        template<typename Tx = pqxx::work, typename Q>
+            requires (Executable<Q> || ExecutableWithOutput<Q>)
+        auto with_query(std::string_view name, Q query) {
+            return this->_with_query<Tx>(name, std::move(query));
         }
 
-        template<typename Tx = pqxx::work, ExecutableWithOutput Q>
-        typename Q::Output with_query(Q query, std::string_view name = {}) {
-            auto conn = _pool->acquire_or_throw();
-            Tx tx(*conn, name);
-
-            auto result = query.exec(tx).template get_as<typename Q::Output>();
-            tx.commit();
-
-            return result;
+        template<typename Tx = pqxx::work, typename Q>
+            requires (Executable<Q> || ExecutableWithOutput<Q>)
+        auto with_query(Q query) {
+            return this->_with_query<Tx>("", std::move(query));
         }
 
 
@@ -92,5 +82,29 @@ namespace dbio::impl {
 
     private:
         ers::shared_ptr<ConnectionPool> _pool;
+
+
+        template<typename Tx = pqxx::work, Executable Q>
+            requires (!ExecutableWithOutput<Q>)
+        QueryResult _with_query(std::string_view name, Q query) {
+            auto conn = _pool->acquire_or_throw();
+            Tx tx(*conn, name);
+
+            auto result = query.exec(tx);
+            tx.commit();
+
+            return result;
+        }
+
+        template<typename Tx = pqxx::work, ExecutableWithOutput Q>
+        typename Q::Output _with_query(std::string_view name, Q query) {
+            auto conn = _pool->acquire_or_throw();
+            Tx tx(*conn, name);
+
+            auto result = query.exec(tx).template get_as<typename Q::Output>();
+            tx.commit();
+
+            return result;
+        }
     };
 }
