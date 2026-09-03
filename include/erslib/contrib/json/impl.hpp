@@ -247,9 +247,9 @@ namespace utl::impl {
     // --- Node class ---
     // ==================
 
-    enum class Format : u8 { Pretty, Minimized };
+    enum class EFormat : u8 { Pretty, Minimized };
 
-    enum class NodeType : u8 {
+    enum class ENodeType : u8 {
         None = 0, Object = 1, Array = 2, String = 3, Integral = 4, Floating = 5, Bool = 6
     };
 
@@ -504,14 +504,14 @@ namespace utl::impl {
         // --- JSON Serializing public API ---
         // -----------------------------------
 
-        [[nodiscard]] std::string to_string(Format format = Format::Pretty) const;
+        [[nodiscard]] std::string to_string(EFormat format = EFormat::Pretty) const;
 
-        void to_file(const fs::path& filepath, Format format = Format::Pretty) const;
+        void to_file(const fs::path& filepath, EFormat format = EFormat::Pretty) const;
 
         // --- Type Information ---
         // ------------------------
 
-        [[nodiscard]] NodeType type() const;
+        [[nodiscard]] ENodeType type() const;
     };
 
 
@@ -648,8 +648,8 @@ namespace utl::impl {
 
 namespace utl::impl {
     // Diagnostic label, e.g. "'Object' aka 'std::unordered_map<...>'".
-    constexpr std::string_view type_label(NodeType value) noexcept {
-        using enum NodeType;
+    constexpr std::string_view type_label(ENodeType value) noexcept {
+        using enum ENodeType;
 
         switch (value) {
         case None:

@@ -26,7 +26,7 @@ namespace ers::impl {
     constexpr bool is_sbo_applicable_v = is_sbo_applicable<T, Size, Align>::value;
 
 
-    enum class SboPolicy : u8 {
+    enum class ESboPolicy : u8 {
         Empty = 0,
         Dynamic,
         Embedded

@@ -1,0 +1,302 @@
+// doctest
+#include <doctest/doctest.h>
+
+// std
+#include <string>
+#include <string_view>
+
+// ers
+#include <erslib/conduit.hpp>
+#include <erslib/conduit/query_builder.hpp>
+
+
+using namespace conduit::orm;
+
+
+namespace {
+    bool contains(std::string_view haystack, std::string_view needle) {
+        return haystack.find(needle) != std::string_view::npos;
+    }
+
+    std::string sql_of(const auto& q) {
+        auto r = q.to_sql();
+        return r ? *r : std::string("<error>");
+    }
+}
+
+
+//----------------------------------------------------------------------------------------------------------------------
+// query builder
+//----------------------------------------------------------------------------------------------------------------------
+
+
+TEST_CASE("conduit: select renders slots in layout order") {
+    const auto sql = sql_of(select_from("users")
+        | columns("id", "name")
+        | where("active", "="_op, true)
+        | order_by("created_at", conduit::ext::EOrder::Desc)
+        | with_limit(20)
+        | with_offset(5));
+
+    CHECK(sql ==
+        "SELECT id, name"
+        "\nFROM users"
+        "\nWHERE active = $1"
+        "\nORDER BY created_at DESC"
+        "\nLIMIT $2"
+        "\nOFFSET $3");
+}
+
+TEST_CASE("conduit: select without columns falls back to *") {
+    using namespace conduit::orm;
+
+    CHECK(sql_of(select_from("users")) == "SELECT *\nFROM users");
+}
+
+TEST_CASE("conduit: insert with conflict and returning") {
+    const auto sql = sql_of(insert_into("images")
+        | columns("url", "path")
+        | values(std::string("a.png"), std::string("/a.png"))
+        | on_conflict("url")
+        | do_update("path")
+        | returning("id"));
+
+    CHECK(sql ==
+        "INSERT INTO images (url, path)"
+        "\nVALUES ($1, $2)"
+        "\nON CONFLICT (url)"
+        "\nDO UPDATE SET path = excluded.path"
+        "\nRETURNING id");
+}
+
+TEST_CASE("conduit: update and delete") {
+    CHECK(sql_of(update("users") | assign("name", std::string("bob")) | where("id", "="_op, 1))
+        == "UPDATE users\nSET name = $1\nWHERE id = $2");
+
+    CHECK(sql_of(delete_from("users") | where("id", "="_op, 1))
+        == "DELETE FROM users\nWHERE id = $1");
+}
+
+TEST_CASE("conduit: where variants") {
+    CHECK(contains(sql_of(select_from("t") | where_null("a")), "WHERE a IS NULL"));
+    CHECK(contains(sql_of(select_from("t") | where_null("a", false)), "WHERE a IS NOT NULL"));
+    CHECK(contains(sql_of(select_from("t") | where_in("a", {1, 2, 3})), "WHERE a IN ($1, $2, $3)"));
+    CHECK(contains(sql_of(select_from("t") | where("a", "<>"_op, 1)), "WHERE a <> $1"));
+
+    // "x IN ()" is not valid SQL, so an empty list collapses to a constant.
+    CHECK(contains(sql_of(select_from("t") | where_in("a", std::vector<int> {})), "WHERE FALSE"));
+    CHECK(contains(sql_of(select_from("t") | where_in("a", std::vector<int> {}, true)), "WHERE TRUE"));
+}
+
+TEST_CASE("conduit: identifiers are validated, values are bound") {
+    CHECK_FALSE((select_from("users") | where("id; DROP TABLE users", "="_op, 1)).to_sql().has_value());
+    CHECK_FALSE((select_from("users") | columns("1")).to_sql().has_value());
+    CHECK_FALSE(select_from("users; --").to_sql().has_value());
+
+    // qualified names stay legal
+    CHECK((select_from("public.users") | where("users.id", "="_op, 1)).to_sql().has_value());
+
+    // a hostile value is a parameter, never text
+    CHECK(contains(sql_of(select_from("t") | where("a", "="_op, std::string("'; DROP TABLE t; --"))), "WHERE a = $1"));
+}
+
+TEST_CASE("conduit: a clause outside the layout is rejected") {
+    // DELETE has no ORDER BY slot
+    CHECK_FALSE((delete_from("t") | order_by("a")).to_sql().has_value());
+}
+
+TEST_CASE("conduit: subqueries share the parent placeholder counter") {
+    const auto sql = sql_of(select_from("users")
+        | columns("id")
+        | where("active", "="_op, true)
+        | where_exists(select_from("orders") | where("user_id", "="_op, 7))
+        | with_limit(10));
+
+    CHECK(contains(sql, "WHERE active = $1 AND EXISTS (SELECT *"));
+    CHECK(contains(sql, "WHERE user_id = $2"));
+    CHECK(contains(sql, "LIMIT $3"));
+}
+
+TEST_CASE("conduit: exists_in is a standalone statement") {
+    CHECK(sql_of(exists_in("orders") | where("user_id", "="_op, 7))
+        == "SELECT EXISTS (\nSELECT 1 FROM orders\nWHERE user_id = $1\n) AS \"exists\"");
+}
+
+TEST_CASE("conduit: exec() result dispatch") {
+    // No live database here, so this only proves the *shape* QueryBuilder::exec() hands back:
+    // get_as<T>() picks the RowContainer or the exactly-one-row overload by which T satisfies,
+    // view_as<T>() is always the lazy generator. The row-count/throwing behavior of each is
+    // exercised against a real connection in the stateful suite.
+    static_assert(conduit::ReadableRow<bool>);
+    static_assert(conduit::impl::RowContainer<std::vector<bool>>);
+    static_assert(conduit::impl::RowContainer<ers::optional<bool>>);
+
+    static_assert(std::is_same_v<decltype(std::declval<conduit::QueryResult>().get_as<bool>()), bool>);
+    static_assert(std::is_same_v<
+        decltype(std::declval<conduit::QueryResult>().get_as<std::vector<bool>>()), std::vector<bool>>);
+    static_assert(std::is_same_v<
+        decltype(std::declval<conduit::QueryResult>().get_as<ers::optional<bool>>()), ers::optional<bool>>);
+    static_assert(std::is_same_v<
+        decltype(std::declval<conduit::QueryResult>().view_as<bool>()), conduit::RowGenerator<bool>>);
+
+    // raw() gives back the pqxx::result untouched, no wrapping.
+    static_assert(std::is_same_v<decltype(std::declval<conduit::QueryResult>().raw()), const pqxx::result&>);
+}
+
+namespace {
+    // Anything shaped like QueryBuilder - a .exec(tx) that returns QueryResult - qualifies for
+    // Database::with_query, not just QueryBuilder itself (conduit::reflect::QueryCall<Tag> is the
+    // other real implementation of this shape).
+    struct FakeExecutable {
+        conduit::QueryResult exec(pqxx::dbtransaction&) const;
+    };
+
+    // Shaped like QueryCall<Tag>: Executable, and it also names its own Output.
+    struct FakeQueryCall {
+        using Output = bool;
+        conduit::QueryResult exec(pqxx::dbtransaction&) const;
+    };
+}
+
+TEST_CASE("conduit: with_query accepts anything shaped like exec(tx) -> QueryResult") {
+    static_assert(conduit::impl::Executable<conduit::QueryBuilder>);
+    static_assert(conduit::impl::Executable<FakeExecutable>);
+    static_assert(!conduit::impl::Executable<int>);
+
+    // QueryBuilder has no fixed result shape, so it never takes the Output-unwrapping path.
+    static_assert(!conduit::impl::ExecutableWithOutput<conduit::QueryBuilder>);
+    static_assert(!conduit::impl::ExecutableWithOutput<FakeExecutable>);
+    static_assert(conduit::impl::ExecutableWithOutput<FakeQueryCall>);
+}
+
+
+//----------------------------------------------------------------------------------------------------------------------
+// reflection
+//----------------------------------------------------------------------------------------------------------------------
+
+
+#ifdef ERSLIB_HAS_REFLECTION
+
+namespace {
+    struct Image {
+        uint32_t id = conduit::undefined_id;
+        std::string url;
+
+        [[=conduit::reflect::Column<"", "VARCHAR(120)">]]
+        std::string path;
+
+        [[=conduit::reflect::Skip]]
+        std::string cache;
+    };
+
+    struct ProductImage {
+        uint32_t product_id;
+        uint32_t image_id;
+        bool replaceable;
+    };
+
+    // Aggregate with no Declaration: read positionally by column name.
+    struct Plain {
+        uint32_t a;
+        std::string b;
+    };
+
+    // Handwritten row reader on a reflected entity.
+    struct HandRolled {
+        int id;
+        explicit HandRolled(pqxx::row_ref) : id(0) {}
+    };
+
+    // A constraint kind defined entirely outside the library: it only declares
+    // the category tag and how to render itself.
+    template<ers::fixed_string Expr>
+    struct Check {
+        using table_constraint_tag = void;
+
+        static consteval std::string ddl(std::string_view name) {
+            return "CONSTRAINT " + std::string(name) + " CHECK (" + std::string(Expr.to_sv()) + ')';
+        }
+    };
+}
+
+template<>
+struct conduit::reflect::Declaration<Image> : Table<"images"> {
+    Pk<"id"> images_pk;
+    Unique<"url"> images_url_key;
+};
+
+template<>
+struct conduit::reflect::Declaration<ProductImage> : Table<"product_images"> {
+    Pk<"product_id", "image_id"> product_images_pk;
+    Fk<"image_id", "images", "id", EActionOnDelete::cascade> product_images_image_fk;
+    Default<"replaceable", true> product_images_replaceable;
+    Check<"image_id > 0"> product_images_image_check;
+};
+
+template<>
+struct conduit::reflect::Declaration<HandRolled> : Table<"hand_rolled"> {};
+
+
+TEST_CASE("conduit reflect: schema facts") {
+    using namespace conduit::reflect;
+
+    static_assert(table_name<Image> == "images");
+    static_assert(Entity<Image>);
+    static_assert(!Statement<Image>);
+
+    static_assert(column_count<Image> == 3); // `cache` is skipped
+    static_assert(has_field<Image>("cache"));
+    static_assert(!has_column<Image>("cache"));
+    static_assert(has_column<Image>("path"));
+
+    static_assert(has_identity<Image>);
+    static_assert(identity_column<Image> == "id");
+    static_assert(!has_identity<ProductImage>); // composite key
+
+    static_assert(declaration_is_valid<Image>);
+    static_assert(declaration_is_valid<ProductImage>);
+}
+
+TEST_CASE("conduit reflect: row concepts") {
+    using namespace conduit::reflect;
+
+    static_assert(RowType<Image> && conduit::ReadableRow<Image>);
+    static_assert(conduit::impl::reflect::PlainRow<Plain> && conduit::ReadableRow<Plain>);
+    static_assert(std::is_same_v<conduit::row_reader<Image>::state, ColumnIndex<Image>>);
+
+    // std::string is a single-column scalar read, not an entity row
+    static_assert(!RowType<std::string>);
+    static_assert(!conduit::impl::reflect::PlainRow<std::string>);
+    static_assert(conduit::ReadableRow<std::string>);
+
+    // an explicit T(pqxx::row_ref) beats reflection, so the two readers stay unambiguous
+    static_assert(RowType<HandRolled>);
+    static_assert(!conduit::impl::reflect::MappedRow<HandRolled>);
+    static_assert(std::is_empty_v<conduit::row_reader<HandRolled>::state>);
+}
+
+TEST_CASE("conduit reflect: create_table") {
+    constexpr std::string_view images = conduit::ddl::create_table<Image>();
+
+    CHECK(contains(images, "CREATE TABLE IF NOT EXISTS images"));
+    CHECK(contains(images, "id INTEGER GENERATED ALWAYS AS IDENTITY"));
+    CHECK(contains(images, "path VARCHAR(120) NOT NULL")); // Column<> type override
+    CHECK_FALSE(contains(images, "cache"));                // Skip
+    CHECK(contains(images, "CONSTRAINT images_url_key UNIQUE (url)"));
+
+    constexpr std::string_view product_images = conduit::ddl::create_table<ProductImage>();
+
+    CHECK(contains(product_images, "replaceable BOOLEAN NOT NULL DEFAULT TRUE"));
+    CHECK(contains(product_images, "CONSTRAINT product_images_pk PRIMARY KEY (product_id, image_id)"));
+    CHECK(contains(product_images,
+        "CONSTRAINT product_images_image_fk FOREIGN KEY (image_id) "
+        "REFERENCES images (id) ON DELETE CASCADE"));
+}
+
+TEST_CASE("conduit reflect: a constraint kind defined outside the library renders") {
+    constexpr std::string_view t = conduit::ddl::create_table<ProductImage>();
+
+    CHECK(contains(t, "CONSTRAINT product_images_image_check CHECK (image_id > 0)"));
+}
+
+#endif

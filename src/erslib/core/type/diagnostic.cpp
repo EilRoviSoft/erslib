@@ -6,7 +6,7 @@
 
 #ifdef _HAS_CPPTRACE
 
-ers::impl::Diagnostic::Diagnostic(Severity severity, std::string message, timestamp_t timestamp, cpptrace::raw_trace trace) :
+ers::impl::Diagnostic::Diagnostic(ESeverity severity, std::string message, timestamp_t timestamp, cpptrace::raw_trace trace) :
     m_severity(severity),
     m_message(std::move(message)),
     m_timestamp(timestamp),
@@ -33,7 +33,7 @@ ers::impl::Diagnostic&& ers::impl::Diagnostic::extend(std::string_view message) 
 
 #else
 
-ers::impl::Diagnostic::Diagnostic(Severity severity, std::string message, timestamp_t timestamp) :
+ers::impl::Diagnostic::Diagnostic(ESeverity severity, std::string message, timestamp_t timestamp) :
     m_severity(severity),
     m_message(std::move(message)),
     m_timestamp(timestamp) {

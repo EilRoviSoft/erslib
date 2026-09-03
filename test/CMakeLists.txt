@@ -53,7 +53,7 @@ target_sources(test_simple PRIVATE ${SIMPLE_SOURCES} "simple.cpp")
 
 target_link_libraries(test_simple
     PRIVATE
-        erslib::core erslib::contrib erslib::dbio erslib::aengine erslib::easy_ecs erslib::aescript
+        erslib::core erslib::contrib erslib::conduit erslib::modkit erslib::easy_ecs erslib::luaschema
         doctest::doctest
 )
 
@@ -64,7 +64,7 @@ target_compile_definitions(test_simple
 
 
 if(NOT IS_TOP_LEVEL)
-    win_copy_deps_to_target_dir(test_simple erslib::core erslib::contrib erslib::aengine erslib::easy_ecs erslib::aescript)
+    win_copy_deps_to_target_dir(test_simple erslib::core erslib::contrib erslib::modkit erslib::easy_ecs erslib::luaschema)
 endif()
 
 target_compile_definitions(erslib_core
@@ -95,7 +95,7 @@ function(add_stateful_test)
 
     target_link_libraries(${TEST_TARGET}
         PRIVATE
-            erslib::core erslib::contrib erslib::dbio erslib::aengine erslib::easy_ecs erslib::aescript
+            erslib::core erslib::contrib erslib::conduit erslib::modkit erslib::easy_ecs erslib::luaschema
             doctest::doctest
     )
 
@@ -130,7 +130,7 @@ function(add_sandbox_test)
 
     target_link_libraries(${TEST_TARGET}
         PRIVATE
-            erslib::core erslib::contrib erslib::dbio erslib::aengine erslib::easy_ecs erslib::aescript
+            erslib::core erslib::contrib erslib::conduit erslib::modkit erslib::easy_ecs erslib::luaschema
     )
 
     target_compile_definitions(${TEST_TARGET}

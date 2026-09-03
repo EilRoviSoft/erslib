@@ -10,11 +10,11 @@
 // sol
 #include <sol/sol.hpp>
 
-// aescript
-#include <erslib/aescript/layout.hpp>
+// ers
+#include <erslib/luaschema/layout.hpp>
 
 
-using namespace aescript;
+using namespace ers::luaschema;
 using namespace properties;
 
 

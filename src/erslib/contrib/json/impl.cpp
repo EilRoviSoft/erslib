@@ -219,8 +219,8 @@ namespace {
         return res;
     }
 
-    void serialize_json_to_buffer(std::string& chars, const utl::impl::Node& node, utl::impl::Format format) {
-        if (format == utl::impl::Format::Pretty)
+    void serialize_json_to_buffer(std::string& chars, const utl::impl::Node& node, utl::impl::EFormat format) {
+        if (format == utl::impl::EFormat::Pretty)
             utl::impl::serialize_json_recursion<true>(node, chars);
         else
             utl::impl::serialize_json_recursion<false>(node, chars);
@@ -393,13 +393,13 @@ namespace utl::impl {
     // --- JSON Serializing public API ---
     // -----------------------------------
 
-    std::string Node::to_string(Format format) const {
+    std::string Node::to_string(EFormat format) const {
         std::string buffer;
         serialize_json_to_buffer(buffer, *this, format);
         return buffer;
     }
 
-    void Node::to_file(const fs::path& filepath, Format format) const {
+    void Node::to_file(const fs::path& filepath, EFormat format) const {
         const auto chars = to_string(format);
 
         if (filepath.has_parent_path() && !fs::exists(filepath.parent_path()))
@@ -417,8 +417,8 @@ namespace utl::impl {
         std::ofstream(filepath).write(chars.data(), static_cast<std::streamsize>(chars.size()));
     }
 
-    NodeType Node::type() const {
-        return static_cast<NodeType>(_data.index());
+    ENodeType Node::type() const {
+        return static_cast<ENodeType>(_data.index());
     }
 }
 

@@ -34,7 +34,7 @@ namespace ers {
 
     using impl::is_sbo_applicable;
     using impl::is_sbo_applicable_v;
-    using impl::SboPolicy;
+    using impl::ESboPolicy;
 
     using impl::StringConvertible;
 

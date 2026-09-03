@@ -1,0 +1,32 @@
+#pragma once
+
+// sol
+#include <sol/state_view.hpp>
+
+// ers
+#include <erslib/modkit/mod.hpp>
+
+
+namespace ers::modkit::impl {
+    class IPhaseContext {
+    public:
+        // Member functions
+
+        virtual ~IPhaseContext() = default;
+
+
+        // Modifiers
+
+        virtual void inject(sol::state_view& lua) = 0;
+        virtual void inject_per_mod(sol::state_view& lua, const Mod& mod) {}
+
+        virtual void cleanup(sol::state_view& lua) = 0;
+    };
+}
+
+
+// Exports
+
+namespace ers::modkit {
+    using impl::IPhaseContext;
+}

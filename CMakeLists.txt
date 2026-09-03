@@ -24,10 +24,10 @@ option(ERSLIB_INSTALL "Generate target for installing erslib" ${IS_TOP_LEVEL})
 option(ERSLIB_STANDALONE "Build as standalone project (includes tests/executables)" OFF)
 
 option(ERSLIB_BUILD_CONTRIB "Build erslib::contrib target" OFF)
-option(ERSLIB_BUILD_DBIO "Build erslib::dbio target" OFF)
-option(ERSLIB_BUILD_AENGINE "Build erslib::aengine target" OFF)
+option(ERSLIB_BUILD_CONDUIT "Build erslib::conduit target" OFF)
+option(ERSLIB_BUILD_MODKIT "Build erslib::modkit target" OFF)
 option(ERSLIB_BUILD_EASY_ECS "Build erslib::easy_ecs target" OFF)
-option(ERSLIB_BUILD_AESCRIPT "Build erslib::aescript target" OFF)
+option(ERSLIB_BUILD_LUASCHEMA "Build erslib::luaschema target" OFF)
 
 option(ERSLIB_ENABLE_REFLECTION "Use C++26 static reflection (P2996)" OFF)
 
@@ -206,112 +206,112 @@ endif()
 
 
 #----------------------------------------------------------------------------------------------------------------------
-# erslib::dbio
+# erslib::conduit
 #----------------------------------------------------------------------------------------------------------------------
 
 
-if(ERSLIB_BUILD_DBIO)
-    erslib_add_library(erslib_dbio dbio)
+if(ERSLIB_BUILD_CONDUIT)
+    erslib_add_library(erslib_conduit conduit)
 
-    target_sources(erslib_dbio
+    target_sources(erslib_conduit
         PRIVATE
-            "src/erslib/dbio/impl/clause.cpp"
-            "src/erslib/dbio/impl/connection_pool.cpp"
-            "src/erslib/dbio/impl/context.cpp"
-            "src/erslib/dbio/impl/database.cpp"
-            "src/erslib/dbio/impl/identity.cpp"
-            "src/erslib/dbio/impl/layout.cpp"
-            "src/erslib/dbio/impl/options.cpp"
-            "src/erslib/dbio/impl/query_builder.cpp"
-            "src/erslib/dbio/impl/query_store.cpp"
+            "src/erslib/conduit/impl/clause.cpp"
+            "src/erslib/conduit/impl/connection_pool.cpp"
+            "src/erslib/conduit/impl/context.cpp"
+            "src/erslib/conduit/impl/database.cpp"
+            "src/erslib/conduit/impl/identity.cpp"
+            "src/erslib/conduit/impl/layout.cpp"
+            "src/erslib/conduit/impl/options.cpp"
+            "src/erslib/conduit/impl/query_builder.cpp"
+            "src/erslib/conduit/impl/query_store.cpp"
 
-            "src/erslib/dbio/clauses/aggregate.cpp"
-            "src/erslib/dbio/clauses/assign.cpp"
-            "src/erslib/dbio/clauses/bound.cpp"
-            "src/erslib/dbio/clauses/conflict.cpp"
-            "src/erslib/dbio/clauses/distinct.cpp"
-            "src/erslib/dbio/clauses/exists.cpp"
-            "src/erslib/dbio/clauses/expr.cpp"
-            "src/erslib/dbio/clauses/group.cpp"
-            "src/erslib/dbio/clauses/join.cpp"
-            "src/erslib/dbio/clauses/order.cpp"
-            "src/erslib/dbio/clauses/raw.cpp"
-            "src/erslib/dbio/clauses/returning.cpp"
-            "src/erslib/dbio/clauses/target.cpp"
-            "src/erslib/dbio/clauses/values.cpp"
-            "src/erslib/dbio/clauses/where_any.cpp"
-            "src/erslib/dbio/clauses/where_between.cpp"
-            "src/erslib/dbio/clauses/where_column.cpp"
-            "src/erslib/dbio/clauses/where_in.cpp"
-            "src/erslib/dbio/clauses/where_null.cpp"
-            "src/erslib/dbio/clauses/where_op.cpp"
-            "src/erslib/dbio/clauses/where_or.cpp"
+            "src/erslib/conduit/clauses/aggregate.cpp"
+            "src/erslib/conduit/clauses/assign.cpp"
+            "src/erslib/conduit/clauses/bound.cpp"
+            "src/erslib/conduit/clauses/conflict.cpp"
+            "src/erslib/conduit/clauses/distinct.cpp"
+            "src/erslib/conduit/clauses/exists.cpp"
+            "src/erslib/conduit/clauses/expr.cpp"
+            "src/erslib/conduit/clauses/group.cpp"
+            "src/erslib/conduit/clauses/join.cpp"
+            "src/erslib/conduit/clauses/order.cpp"
+            "src/erslib/conduit/clauses/raw.cpp"
+            "src/erslib/conduit/clauses/returning.cpp"
+            "src/erslib/conduit/clauses/target.cpp"
+            "src/erslib/conduit/clauses/values.cpp"
+            "src/erslib/conduit/clauses/where_any.cpp"
+            "src/erslib/conduit/clauses/where_between.cpp"
+            "src/erslib/conduit/clauses/where_column.cpp"
+            "src/erslib/conduit/clauses/where_in.cpp"
+            "src/erslib/conduit/clauses/where_null.cpp"
+            "src/erslib/conduit/clauses/where_op.cpp"
+            "src/erslib/conduit/clauses/where_or.cpp"
 
-            "src/erslib/dbio/layouts/delete.cpp"
-            "src/erslib/dbio/layouts/exists.cpp"
-            "src/erslib/dbio/layouts/insert.cpp"
-            "src/erslib/dbio/layouts/select.cpp"
-            "src/erslib/dbio/layouts/update.cpp"
+            "src/erslib/conduit/layouts/delete.cpp"
+            "src/erslib/conduit/layouts/exists.cpp"
+            "src/erslib/conduit/layouts/insert.cpp"
+            "src/erslib/conduit/layouts/select.cpp"
+            "src/erslib/conduit/layouts/update.cpp"
     )
 
-    target_link_libraries(erslib_dbio
+    target_link_libraries(erslib_conduit
         PUBLIC
             erslib_core
     )
 
     find_package(PostgreSQL)
-    erslib_required_package(erslib_dbio libpqxx libpqxx::pqxx)
+    erslib_required_package(erslib_conduit libpqxx libpqxx::pqxx)
 
-    list(APPEND ERSLIB_TARGETS erslib_dbio)
+    list(APPEND ERSLIB_TARGETS erslib_conduit)
 endif()
 
 
 #----------------------------------------------------------------------------------------------------------------------
-# erslib::aengine
+# erslib::modkit
 #----------------------------------------------------------------------------------------------------------------------
 
 
-if(ERSLIB_BUILD_AENGINE)
-    erslib_add_library(erslib_aengine aengine)
+if(ERSLIB_BUILD_MODKIT)
+    erslib_add_library(erslib_modkit modkit)
 
-    target_sources(erslib_aengine
+    target_sources(erslib_modkit
         PRIVATE
-            "src/erslib/aengine/dependency.cpp"
-            "src/erslib/aengine/dependency_graph.cpp"
-            "src/erslib/aengine/mod.cpp"
+            "src/erslib/modkit/dependency.cpp"
+            "src/erslib/modkit/dependency_graph.cpp"
+            "src/erslib/modkit/mod.cpp"
 
-            "src/erslib/aengine/resource/texture.cpp"
+            "src/erslib/modkit/resource/texture.cpp"
 
-            "src/erslib/aengine/util/stage.cpp"
+            "src/erslib/modkit/util/stage.cpp"
     )
 
-    target_link_libraries(erslib_aengine
+    target_link_libraries(erslib_modkit
         PUBLIC
             erslib_core
     )
 
     if(ERSLIB_BUILD_CONTRIB)
-        target_link_libraries(erslib_aengine
+        target_link_libraries(erslib_modkit
             PRIVATE
                 erslib_contrib
         )
     endif()
 
-    erslib_required_package(erslib_aengine boost_container Boost::container)
-    erslib_required_package(erslib_aengine boost_regex Boost::regex)
-    erslib_required_package(erslib_aengine boost_unordered Boost::unordered)
-    erslib_required_package(erslib_aengine sol2 sol2::sol2)
+    erslib_required_package(erslib_modkit boost_container Boost::container)
+    erslib_required_package(erslib_modkit boost_regex Boost::regex)
+    erslib_required_package(erslib_modkit boost_unordered Boost::unordered)
+    erslib_required_package(erslib_modkit sol2 sol2::sol2)
     
     find_package(PkgConfig)
     pkg_check_modules(LuaJIT IMPORTED_TARGET luajit)
-    target_compile_definitions(erslib_aengine PUBLIC _HAS_LUAJIT)
-    target_link_libraries(erslib_aengine PUBLIC PkgConfig::LuaJIT)
+    target_compile_definitions(erslib_modkit PUBLIC _HAS_LUAJIT)
+    target_link_libraries(erslib_modkit PUBLIC PkgConfig::LuaJIT)
 
-    erslib_required_package(erslib_aengine SDL3 SDL3::SDL3)
-    erslib_required_package(erslib_aengine quill quill::quill)
-    erslib_required_package(erslib_aengine RmlUi RmlUi::RmlUi)
+    erslib_required_package(erslib_modkit SDL3 SDL3::SDL3)
+    erslib_required_package(erslib_modkit quill quill::quill)
+    erslib_required_package(erslib_modkit RmlUi RmlUi::RmlUi)
 
-    list(APPEND ERSLIB_TARGETS erslib_aengine)
+    list(APPEND ERSLIB_TARGETS erslib_modkit)
 endif()
 
 
@@ -321,8 +321,8 @@ endif()
 
 
 if(ERSLIB_BUILD_EASY_ECS)
-    if(NOT ERSLIB_BUILD_AENGINE)
-        message(FATAL_ERROR "ERSLIB_BUILD_EASY_ECS requires ERSLIB_BUILD_AENGINE")
+    if(NOT ERSLIB_BUILD_MODKIT)
+        message(FATAL_ERROR "ERSLIB_BUILD_EASY_ECS requires ERSLIB_BUILD_MODKIT")
     endif()
 
     erslib_add_library(erslib_easy_ecs easy_ecs)
@@ -336,7 +336,7 @@ if(ERSLIB_BUILD_EASY_ECS)
 
     target_link_libraries(erslib_easy_ecs
         PUBLIC
-            erslib_aengine
+            erslib_modkit
     )
 
     erslib_required_package(erslib_easy_ecs frozen frozen::frozen _HAS_FROZEN)
@@ -346,35 +346,37 @@ endif()
 
 
 #----------------------------------------------------------------------------------------------------------------------
-# erslib::aescript
+# erslib::luaschema
 #----------------------------------------------------------------------------------------------------------------------
 
 
-if(ERSLIB_BUILD_AESCRIPT)
-    if(NOT ERSLIB_BUILD_AENGINE)
-        message(FATAL_ERROR "ERSLIB_BUILD_AESCRIPT requires ERSLIB_BUILD_AENGINE")
+if(ERSLIB_BUILD_LUASCHEMA)
+    if(NOT ERSLIB_BUILD_MODKIT)
+        message(FATAL_ERROR "ERSLIB_BUILD_LUASCHEMA requires ERSLIB_BUILD_MODKIT")
     endif()
 
-    erslib_add_library(erslib_aescript aescript)
+    erslib_add_library(erslib_luaschema luaschema)
 
-    target_sources(erslib_aescript
+    target_sources(erslib_luaschema
         PRIVATE
-            "src/erslib/aescript/impl/field.cpp"
-            "src/erslib/aescript/impl/layout.cpp"
-            "src/erslib/aescript/impl/util.cpp"
+            "src/erslib/luaschema/impl/field.cpp"
+            "src/erslib/luaschema/impl/layout.cpp"
+            "src/erslib/luaschema/impl/util.cpp"
 
-            "src/erslib/aescript/properties/exclusive_with.cpp"
-            "src/erslib/aescript/properties/inclusive_with.cpp"
-            "src/erslib/aescript/properties/one_of.cpp"
-            "src/erslib/aescript/properties/presence.cpp"
+            "src/erslib/luaschema/properties/exclusive_with.cpp"
+            "src/erslib/luaschema/properties/inclusive_with.cpp"
+            "src/erslib/luaschema/properties/one_of.cpp"
+            "src/erslib/luaschema/properties/presence.cpp"
     )
 
-    target_link_libraries(erslib_aescript
+    target_link_libraries(erslib_luaschema
         PUBLIC
-            erslib_aengine
+            erslib_modkit
     )
 
-    list(APPEND ERSLIB_TARGETS erslib_aescript)
+    erslib_required_package(erslib_luaschema sol2 sol2::sol2)
+
+    list(APPEND ERSLIB_TARGETS erslib_luaschema)
 endif()
 
 

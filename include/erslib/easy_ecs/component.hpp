@@ -1,7 +1,7 @@
 #pragma once
 
 // ers
-#include <erslib/core/meta/type_hash.hpp>
+#include <erslib/core/meta.hpp>
 
 
 namespace ecs::impl {

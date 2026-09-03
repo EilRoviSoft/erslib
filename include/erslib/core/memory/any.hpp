@@ -55,10 +55,10 @@ namespace ers::impl {
 
             if constexpr (!is_sbo_applicable_v<T, Size, Align>) {
                 obj.m_storage.heap = obj.m_mr->allocate(sizeof(T), alignof(T));
-                obj.m_policy = SboPolicy::Dynamic;
+                obj.m_policy = ESboPolicy::Dynamic;
                 result = static_cast<T*>(obj.m_storage.heap);
             } else {
-                obj.m_policy = SboPolicy::Embedded;
+                obj.m_policy = ESboPolicy::Embedded;
                 result = reinterpret_cast<T*>(obj.m_storage.buffer);
             }
 
@@ -71,10 +71,10 @@ namespace ers::impl {
                 return;
 
             if constexpr (is_sbo_applicable_v<T, Size, Align>) {
-                ERS_ASSERT(obj.m_policy == SboPolicy::Embedded);
+                ERS_ASSERT(obj.m_policy == ESboPolicy::Embedded);
                 std::destroy_at(reinterpret_cast<T*>(obj.m_storage.buffer));
             } else {
-                ERS_ASSERT(obj.m_policy == SboPolicy::Dynamic);
+                ERS_ASSERT(obj.m_policy == ESboPolicy::Dynamic);
                 std::destroy_at(static_cast<T*>(obj.m_storage.heap));
             }
         }
@@ -183,7 +183,7 @@ namespace ers::impl {
             m_mr(nullptr),
             m_vtable(nullptr),
             m_type(meta::type_hash_v<placeholder_t>),
-            m_policy(SboPolicy::Empty),
+            m_policy(ESboPolicy::Empty),
             m_storage { .heap = nullptr } {
         }
 
@@ -192,7 +192,7 @@ namespace ers::impl {
 
         TAny(const TAny& other) :
             m_type(meta::type_hash_v<placeholder_t>),
-            m_policy(SboPolicy::Empty),
+            m_policy(ESboPolicy::Empty),
             m_storage { .heap = nullptr } {
             if (!other.m_vtable->copy)
                 throw std::runtime_error("bad ers::TAny cast");
@@ -218,7 +218,7 @@ namespace ers::impl {
             m_mr(other.m_mr),
             m_vtable(other.m_vtable),
             m_type(meta::type_hash_v<placeholder_t>),
-            m_policy(SboPolicy::Empty),
+            m_policy(ESboPolicy::Empty),
             m_storage { .heap = nullptr } {
             m_vtable->move(*this, other._data());
         }
@@ -240,14 +240,14 @@ namespace ers::impl {
             m_mr(nullptr),
             m_vtable(nullptr),
             m_type(meta::type_hash_v<placeholder_t>),
-            m_policy(SboPolicy::Empty),
+            m_policy(ESboPolicy::Empty),
             m_storage { .heap = nullptr } {
             emplace_with_resource<T>(provided_mr, std::forward<T>(v));
         }
         template<typename T>
             requires (!std::is_same_v<T, TAny>)
         TAny& operator=(T&& v) {
-            m_policy = SboPolicy::Empty;
+            m_policy = ESboPolicy::Empty;
 
             emplace<T>(std::forward<T>(v));
 
@@ -262,7 +262,7 @@ namespace ers::impl {
             m_mr(nullptr),
             m_vtable(nullptr),
             m_type(meta::type_hash_v<placeholder_t>),
-            m_policy(SboPolicy::Empty),
+            m_policy(ESboPolicy::Empty),
             m_storage { .heap = nullptr } {
             emplace<T>(std::forward<Args>(args)...);
         }
@@ -271,7 +271,7 @@ namespace ers::impl {
             m_mr(nullptr),
             m_vtable(nullptr),
             m_type(meta::type_hash_v<placeholder_t>),
-            m_policy(SboPolicy::Empty),
+            m_policy(ESboPolicy::Empty),
             m_storage { .heap = nullptr } {
             emplace_with_resource<T>(provided_mr, std::forward<Args>(args)...);
         }
@@ -291,13 +291,13 @@ namespace ers::impl {
         }
 
         void reset() {
-            if (m_policy != SboPolicy::Empty) {
+            if (m_policy != ESboPolicy::Empty) {
                 _soft_reset();
 
                 m_mr = nullptr;
                 m_vtable = nullptr;
                 m_type = meta::type_hash_v<placeholder_t>;
-                m_policy = SboPolicy::Empty;
+                m_policy = ESboPolicy::Empty;
             }
         }
 
@@ -317,13 +317,13 @@ namespace ers::impl {
 
 
             U* ptr;
-            if (m_policy != SboPolicy::Empty && same_as<U>() && *m_mr == *provided_mr) {
+            if (m_policy != ESboPolicy::Empty && same_as<U>() && *m_mr == *provided_mr) {
                 ptr = _data_as<U>();
 
                 m_vtable->destroy(*this);
                 std::construct_at(ptr, std::forward<Args>(args)...);
             } else {
-                if (m_policy != SboPolicy::Empty)
+                if (m_policy != ESboPolicy::Empty)
                     _soft_reset();
 
                 m_mr = provided_mr;
@@ -342,7 +342,7 @@ namespace ers::impl {
         // Observers
 
         [[nodiscard]]
-        constexpr bool has_value() const { return m_policy != SboPolicy::Empty; }
+        constexpr bool has_value() const { return m_policy != ESboPolicy::Empty; }
 
         template<typename T>
         [[nodiscard]]
@@ -383,7 +383,7 @@ namespace ers::impl {
         std::pmr::memory_resource* m_mr;
         const vtable_type* m_vtable;
         size_t m_type;
-        SboPolicy m_policy;
+        ESboPolicy m_policy;
         storage_type m_storage;
 
 
@@ -402,7 +402,7 @@ namespace ers::impl {
             if (m_type == meta::type_hash_v<T>)
                 return;
 
-            if (m_policy != SboPolicy::Empty)
+            if (m_policy != ESboPolicy::Empty)
                 m_vtable->destroy(*this);
 
             m_vtable->dealloc(*this);
@@ -418,10 +418,10 @@ namespace ers::impl {
         [[nodiscard]]
         void* _data() {
             switch (m_policy) {
-                case SboPolicy::Dynamic:
+                case ESboPolicy::Dynamic:
                     return m_storage.heap;
 
-                case SboPolicy::Embedded:
+                case ESboPolicy::Embedded:
                     return m_storage.buffer;
 
                 default:
@@ -431,10 +431,10 @@ namespace ers::impl {
         [[nodiscard]]
         const void* _data() const {
             switch (m_policy) {
-                case SboPolicy::Dynamic:
+                case ESboPolicy::Dynamic:
                     return m_storage.heap;
 
-                case SboPolicy::Embedded:
+                case ESboPolicy::Embedded:
                     return m_storage.buffer;
 
                 default:

@@ -5,9 +5,9 @@ out
 
 test/sandbox/personal_sandbox
 
-# Generated per-descriptor SQL debug dumps (dbio_generate's OUT_QUERY_DIR); hand-authored
+# Generated per-descriptor SQL debug dumps (conduit_generate's OUT_QUERY_DIR); hand-authored
 # *.g.json / *.sql (e.g. sql_file references) in the same directory are kept
-test/stateful/dbio_codegen/query/**/*.g.sql
+test/stateful/conduit_codegen/query/**/*.g.sql
 
 vcpkg_installed
 

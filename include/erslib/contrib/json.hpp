@@ -13,7 +13,7 @@
 // Exports
 
 namespace utl {
-    using impl::Format;
+    using impl::EFormat;
 
     using impl::Node;
     using Json = Node;

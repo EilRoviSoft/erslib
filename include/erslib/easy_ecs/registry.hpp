@@ -1,10 +1,10 @@
 #pragma once
 
 // ers
-#include <erslib/aengine/fwd.hpp>
 #include <erslib/easy_ecs/component.hpp>
 #include <erslib/easy_ecs/entity.hpp>
 #include <erslib/easy_ecs/group.hpp>
+#include <erslib/modkit/fwd.hpp>
 
 
 namespace ecs::impl {

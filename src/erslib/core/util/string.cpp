@@ -59,7 +59,7 @@ std::string ers::impl::util::quote(std::string_view what) {
 // bytes_to_string
 
 namespace {
-    enum class Mode : u8 { HexLower, HexUpper, Text };
+    enum class EMode : u8 { HexLower, HexUpper, Text };
 
     constexpr std::string_view lower_digits = "0123456789abcdef";
     constexpr std::string_view upper_digits = "0123456789ABCDEF";
@@ -67,19 +67,19 @@ namespace {
 
 std::string ers::impl::util::bytes_to_string(std::span<const std::byte> bytes, std::string_view args) {
     auto it = args.begin();
-    auto mode = Mode::HexLower;
+    auto mode = EMode::HexLower;
 
     if (it != args.end()) {
         switch (*it) {
-            case 'x': mode = Mode::HexLower;
+            case 'x': mode = EMode::HexLower;
                 ++it;
                 break;
 
-            case 'X': mode = Mode::HexUpper;
+            case 'X': mode = EMode::HexUpper;
                 ++it;
                 break;
 
-            case 's': mode = Mode::Text;
+            case 's': mode = EMode::Text;
                 ++it;
                 break;
 
@@ -90,8 +90,8 @@ std::string ers::impl::util::bytes_to_string(std::span<const std::byte> bytes, s
 
     std::string out;
 
-    if (mode != Mode::Text) {
-        const std::string_view digits = mode == Mode::HexLower ? lower_digits : upper_digits;
+    if (mode != EMode::Text) {
+        const std::string_view digits = mode == EMode::HexLower ? lower_digits : upper_digits;
         out.reserve(bytes.size() * 2);
 
         for (auto byte : bytes) {

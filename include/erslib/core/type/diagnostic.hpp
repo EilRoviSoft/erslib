@@ -13,10 +13,10 @@
 #include <erslib/export.hpp>
 
 
-// Severity
+// ESeverity
 
 namespace ers::impl {
-    enum class Severity {
+    enum class ESeverity {
         Debug,
         Info,
         Warning,
@@ -24,13 +24,13 @@ namespace ers::impl {
         Crit
     };
 
-    constexpr std::string_view severity_name(Severity value) noexcept {
+    constexpr std::string_view severity_name(ESeverity value) noexcept {
         switch (value) {
-            case Severity::Debug:   return "DEBUG";
-            case Severity::Info:    return "INFO";
-            case Severity::Warning: return "WARNING";
-            case Severity::Error:   return "ERROR";
-            case Severity::Crit:    return "CRIT";
+            case ESeverity::Debug:   return "DEBUG";
+            case ESeverity::Info:    return "INFO";
+            case ESeverity::Warning: return "WARNING";
+            case ESeverity::Error:   return "ERROR";
+            case ESeverity::Crit:    return "CRIT";
         }
 
         return "UNKNOWN";
@@ -38,7 +38,7 @@ namespace ers::impl {
 }
 
 namespace ers {
-    using impl::Severity;
+    using impl::ESeverity;
     using impl::severity_name;
 }
 
@@ -57,7 +57,7 @@ namespace ers::impl {
         // Member functions
 
         Diagnostic(
-            Severity severity,
+            ESeverity severity,
             std::string message,
             timestamp_t timestamp = std::chrono::system_clock::now(),
             cpptrace::raw_trace trace = get_trace({ .skip = 1 })
@@ -66,7 +66,7 @@ namespace ers::impl {
 
         // Observers
 
-        Severity severity() const noexcept { return m_severity; }
+        ESeverity severity() const noexcept { return m_severity; }
         timestamp_t timestamp() const noexcept { return m_timestamp; }
         std::string_view message() const noexcept { return m_message; }
         const cpptrace::raw_trace& stacktrace() const noexcept { return m_trace; }
@@ -88,7 +88,7 @@ namespace ers::impl {
 
 
     protected:
-        Severity m_severity;
+        ESeverity m_severity;
         std::string m_message;
         timestamp_t m_timestamp;
         cpptrace::raw_trace m_trace;
@@ -103,7 +103,7 @@ namespace ers::impl {
         // Member functions
 
         Diagnostic(
-            Severity severity,
+            ESeverity severity,
             std::string message,
             timestamp_t timestamp = std::chrono::system_clock::now()
         );
@@ -111,7 +111,7 @@ namespace ers::impl {
 
         // Observers
 
-        Severity severity() const noexcept { return m_severity; }
+        ESeverity severity() const noexcept { return m_severity; }
         timestamp_t timestamp() const noexcept { return m_timestamp; }
         std::string_view message() const noexcept { return m_message; }
 
@@ -132,7 +132,7 @@ namespace ers::impl {
 
 
     protected:
-        Severity m_severity;
+        ESeverity m_severity;
         std::string m_message;
         timestamp_t m_timestamp;
     };
@@ -149,11 +149,11 @@ namespace ers {
     template<typename... Args> \
         requires (sizeof...(Args) >= 1) \
     Diagnostic make_##NAME(std::format_string<Args...> fmt, Args&&... args) { \
-        return Diagnostic(ers::Severity::SEVERITY, std::format(fmt, std::forward<Args>(args)...)); \
+        return Diagnostic(ers::ESeverity::SEVERITY, std::format(fmt, std::forward<Args>(args)...)); \
     } \
     \
     inline Diagnostic make_##NAME(std::string message) { \
-        return Diagnostic(ers::Severity::SEVERITY, std::move(message)); \
+        return Diagnostic(ers::ESeverity::SEVERITY, std::move(message)); \
     }
 
 namespace ers::impl {

@@ -1,0 +1,62 @@
+#include "erslib/conduit/impl/query_store.hpp"
+
+// std
+#include <fstream>
+#include <mutex>
+
+// ers
+#include <erslib/core/filesystem.hpp>
+
+
+namespace fs = std::filesystem;
+
+
+namespace {
+    // "user/save.g.sql" -> "user.save"
+    // "player/create.sql" -> "player.create"
+    std::string make_label(const fs::path& path) {
+        fs::path name = path.filename();
+        while (name.has_extension())
+            name = name.stem();
+
+        std::string result;
+        for (const auto& part : path.parent_path())
+            result += part.string() + '.';
+        result += name.string();
+
+        return result;
+    }
+}
+
+
+conduit::impl::QueryStore conduit::impl::QueryStore::make_from_path(const fs::path& path) try {
+    QueryStore result;
+    result.load_directory(path);
+    return result;
+} catch (...) {
+    return QueryStore();
+}
+
+
+size_t conduit::impl::QueryStore::load_directory(const fs::path& root) {
+    if (!fs::is_directory(root))
+        return 0;
+
+    size_t count = 0;
+
+    for (const auto& entry : fs::recursive_directory_iterator(root)) {
+        if (!entry.is_regular_file() || entry.path().extension() != ".sql")
+            continue;
+
+        const fs::path relative = fs::relative(entry.path(), root);
+        add(make_label(relative), ers::util::read_file(entry.path()));
+        count++;
+    }
+
+    return count;
+}
+
+void conduit::impl::QueryStore::add(std::string_view label, std::string_view query) {
+    std::unique_lock lock(m_mutex);
+    m_data.emplace(label, query);
+}

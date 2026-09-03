@@ -12,6 +12,51 @@
 // Helpers
 
 namespace ers::impl {
+    template<typename... Ts>
+    struct type_pack {};
+
+    template<typename Pack, typename T>
+    struct pack_push;
+
+    template<typename... Ts, typename T>
+    struct pack_push<type_pack<Ts...>, T> {
+        using type = std::conditional_t<
+            (std::same_as<T, Ts> || ...),
+            type_pack<Ts...>,
+            type_pack<Ts..., T>
+        >;
+    };
+
+    template<typename Pack, typename... Ts>
+    struct pack_unique {
+        using type = Pack;
+    };
+
+    template<typename Pack, typename T, typename... Rest>
+    struct pack_unique<Pack, T, Rest...> : pack_unique<typename pack_push<Pack, T>::type, Rest...> {};
+
+
+    template<typename... Bases>
+    struct hash_overloads : Bases... {
+        using Bases::operator()...;
+    };
+
+    template<typename Pack>
+    struct make_hash_overloads;
+
+    template<typename... Bases>
+    struct make_hash_overloads<type_pack<Bases...>> {
+        using type = hash_overloads<Bases...>;
+    };
+
+    template<template<typename> typename Hash, typename... Ts>
+    using hash_overloads_for = typename make_hash_overloads<
+        typename pack_unique<type_pack<>, Hash<std::remove_cvref_t<Ts>>...>::type
+    >::type;
+}
+
+
+namespace ers::impl {
     template<auto Member>
     concept MemberOrNull = std::same_as<decltype(Member), std::nullptr_t> || std::is_member_pointer_v<decltype(Member)>;
 
@@ -126,18 +171,16 @@ namespace ers::impl {
 
     template<template<typename> typename Hash, auto Member, typename T, typename... Ts>
         requires (Member != nullptr)
-    struct hash_base<Hash, Member, T, Ts...> : Hash<std::remove_cvref_t<Ts>>... {
+    struct hash_base<Hash, Member, T, Ts...> : hash_overloads_for<Hash, Ts...> {
         using is_transparent = void;
 
         using primary_type = std::remove_cvref_t<T>;
         using secondary_types = std::tuple<std::remove_cvref_t<Ts>...>;
         using projected_type = std::remove_cvref_t<std::invoke_result_t<decltype(Member), const primary_type&>>;
 
-
         static_assert(owner_matches<primary_type, Member>(), "T must match the class owning Member");
 
-
-        using Hash<std::remove_cvref_t<Ts>>::operator()...;
+        using hash_overloads_for<Hash, Ts...>::operator();
 
         constexpr size_t operator()(
             const primary_type& v, size_t seed = 0
@@ -148,12 +191,11 @@ namespace ers::impl {
     };
 
     template<template<typename> typename Hash, typename... Ts>
-    struct hash_base<Hash, nullptr, Ts...> : Hash<std::remove_cvref_t<Ts>>... {
+    struct hash_base<Hash, nullptr, Ts...> : hash_overloads_for<Hash, Ts...> {
         using is_transparent = void;
         using types = std::tuple<std::remove_cvref_t<Ts>...>;
 
-
-        using Hash<std::remove_cvref_t<Ts>>::operator()...;
+        using hash_overloads_for<Hash, Ts...>::operator();
     };
 }
 
