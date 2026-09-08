@@ -52,13 +52,11 @@ namespace conduit::impl::reflect {
 
         if constexpr (std::is_same_v<type, bool>) {
             return Value ? "TRUE" : "FALSE";
-        }
-        else if constexpr (std::is_integral_v<type>) {
+        } else if constexpr (std::is_integral_v<type>) {
             char buffer[32] {};
             const auto [ptr, ec] = std::to_chars(buffer, buffer + sizeof(buffer), Value);
             return std::string(buffer, ptr);
-        }
-        else {
+        } else {
             static_assert(requires { Value.to_sv(); },
                 "Default<> supports bool, integral and fixed_string values only");
 
@@ -138,20 +136,20 @@ namespace conduit::impl::reflect {
 
 
     enum class EActionOnDelete : u8 {
-        none,
-        cascade,
-        set_null,
-        set_default,
-        restrict,
+        None,
+        Cascade,
+        SetNull,
+        SetDefault,
+        Restrict,
     };
 
     consteval std::string_view on_delete_text(EActionOnDelete what) {
         switch (what) {
-            case EActionOnDelete::cascade:     return " ON DELETE CASCADE";
-            case EActionOnDelete::set_null:    return " ON DELETE SET NULL";
-            case EActionOnDelete::set_default: return " ON DELETE SET DEFAULT";
-            case EActionOnDelete::restrict:    return " ON DELETE RESTRICT";
-            case EActionOnDelete::none:        return "";
+            case EActionOnDelete::Cascade: return " ON DELETE CASCADE";
+            case EActionOnDelete::SetNull: return " ON DELETE SET NULL";
+            case EActionOnDelete::SetDefault: return " ON DELETE SET DEFAULT";
+            case EActionOnDelete::Restrict: return " ON DELETE RESTRICT";
+            case EActionOnDelete::None: return "";
         }
 
         return "";
@@ -161,7 +159,7 @@ namespace conduit::impl::reflect {
         ers::fixed_string Field,
         ers::fixed_string RefTable,
         ers::fixed_string RefColumn,
-        EActionOnDelete OnDelete = EActionOnDelete::none
+        EActionOnDelete OnDelete = EActionOnDelete::None
     >
     struct Fk {
         using kind = kinds::fk;

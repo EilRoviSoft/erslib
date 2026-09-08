@@ -228,7 +228,7 @@ struct conduit::reflect::Declaration<Image> : Table<"images"> {
 template<>
 struct conduit::reflect::Declaration<ProductImage> : Table<"product_images"> {
     Pk<"product_id", "image_id"> product_images_pk;
-    Fk<"image_id", "images", "id", EActionOnDelete::cascade> product_images_image_fk;
+    Fk<"image_id", "images", "id", EActionOnDelete::Cascade> product_images_image_fk;
     Default<"replaceable", true> product_images_replaceable;
     Check<"image_id > 0"> product_images_image_check;
 };

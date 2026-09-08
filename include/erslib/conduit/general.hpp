@@ -55,3 +55,16 @@ namespace conduit {
     using impl::QueryStore;
     using impl::queries;
 }
+
+
+// Scope
+
+#include <erslib/conduit/impl/scope.hpp>
+
+namespace conduit {
+    using impl::ConnectionSource;
+
+    using impl::with_conn;
+    using impl::with_tx;
+    using impl::with_query;
+}

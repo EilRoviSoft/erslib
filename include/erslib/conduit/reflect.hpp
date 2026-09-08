@@ -108,7 +108,6 @@ namespace conduit {
 
 namespace conduit::reflect {
     using impl::reflect::QueryCall;
-    using impl::reflect::query_call;
 
     using impl::reflect::QueryFn;
     using impl::reflect::query_fn;

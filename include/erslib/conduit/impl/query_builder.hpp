@@ -149,7 +149,9 @@ namespace conduit::impl {
     };
 
     template<typename T>
-    concept ExecutableWithOutput = Executable<T> && requires { typename T::Output; };
+    concept ExecutableWithOutput = Executable<T>
+        && requires { typename T::Output; }
+        && !std::is_void_v<typename T::Output>;
 }
 
 
