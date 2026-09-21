@@ -2,8 +2,8 @@
 
 // ers
 #include <erslib/core/meta.hpp>
-#include <erslib/core/enum/util.hpp>
 #include <erslib/core/enum/styles/base.hpp>
+#include <erslib/core/stdlib/ctype.hpp>
 
 
 namespace ers::impl {

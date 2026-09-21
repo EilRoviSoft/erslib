@@ -1,0 +1,35 @@
+#pragma once
+
+// std
+#include <string>
+
+// ers
+#include <erslib/core/type/result.hpp>
+#include <erslib/core/type/time.hpp>
+
+
+// Text conversion for PostgreSQL TIMESTAMPTZ (DateStyle = ISO, the default).
+//
+// Output:
+// 'YYYY-MM-DD HH:MM:SS.ffffff+00' (always UTC, always 6 fraction digits,
+// ' BC' suffix for years <= 0, 'infinity' / '-infinity' for max() / min()).
+// 
+// Input:
+// 'YYYY-MM-DD HH:MM:SS[.f{1,6}]{+|-}HH[:MM[:SS]][ BC]', 'infinity', '-infinity'.
+// 'T' as the separator and a 'Z' offset are accepted as well.
+
+
+namespace ers::impl {
+    timestamp_t floor_to_pg_precision(timestamp_t what);
+    std::string timestamp_to_iso8601(timestamp_t what);
+    Result<timestamp_t> timestamp_from_iso8601(std::string_view text);
+}
+
+
+// Export
+
+namespace ers {
+    using impl::floor_to_pg_precision;
+    using impl::timestamp_from_iso8601;
+    using impl::timestamp_to_iso8601;
+}

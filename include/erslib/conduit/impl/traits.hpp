@@ -2,13 +2,14 @@
 
 // std
 #include <concepts>
+#include <format>
+#include <string>
 
 // pqxx
 #include <pqxx/params>
 
 // ers
 #include <erslib/conduit/impl/binder.hpp>
-
 
 
 namespace conduit::impl {
@@ -35,6 +36,33 @@ namespace conduit::impl {
         return [stored = owned_t<T>(std::forward<T>(value))](pqxx::params& out) {
             sql_value<owned_t<T>>::bind(out, stored);
         };
+    }
+
+
+    template<typename T>
+    concept HasSqlText = requires(const T& v) {
+        { sql_value<T>::to_text(v) } -> std::convertible_to<std::string>;
+    };
+
+    template<typename T>
+    void append_array_element(std::string& out, const T& what) {
+        const std::string text = [&] {
+            if constexpr (HasSqlText<T>)
+                return sql_value<T>::to_text(what);
+            else
+                return std::format("{}", what);
+        }();
+
+        out += '"';
+
+        for (const char c : text) {
+            if (c == '"' || c == '\\')
+                out += '\\';
+
+            out += c;
+        }
+
+        out += '"';
     }
 }
 

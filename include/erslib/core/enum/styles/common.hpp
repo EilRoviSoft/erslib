@@ -5,7 +5,7 @@
 #include <vector>
 
 // ers
-#include <erslib/core/enum/util.hpp>
+#include <erslib/core/stdlib/ctype.hpp>
 
 
 namespace ers::impl {

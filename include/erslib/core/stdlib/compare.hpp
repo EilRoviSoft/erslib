@@ -4,25 +4,25 @@
 #include <concepts>
 
 
-namespace ers::impl::util {
+namespace ers::impl {
     // v ∈ (a, b)
     template<std::integral V, std::integral A, std::integral B>
-    bool between(V v, A a, B b) {
+    constexpr bool is_between(V v, A a, B b) {
         return v > a && v < b;
     }
     // v ∈ [a, b)
     template<std::integral V, std::integral A, std::integral B>
-    bool between_li(V v, A a, B b) {
-        return v >= a && v < b;
+    constexpr bool is_between_upto(V v, A a, B b) {
+        return v > a && v <= b;
     }
     // v ∈ (a, b]
     template<std::integral V, std::integral A, std::integral B>
-    bool between_ri(V v, A a, B b) {
-        return v > a && v <= b;
+    constexpr bool is_between_from(V v, A a, B b) {
+        return v >= a && v < b;
     }
     // v ∈ [a, b]
     template<std::integral V, std::integral A, std::integral B>
-    bool between_lr(V v, A a, B b) {
+    constexpr bool is_in_range(V v, A a, B b) {
         return v >= a && v <= b;
     }
 }
@@ -31,8 +31,8 @@ namespace ers::impl::util {
 // Exports
 
 namespace ers {
-    using impl::util::between;
-    using impl::util::between_li;
-    using impl::util::between_ri;
-    using impl::util::between_lr;
+    using impl::is_between;
+    using impl::is_between_upto;
+    using impl::is_between_from;
+    using impl::is_in_range;
 }

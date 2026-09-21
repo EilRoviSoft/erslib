@@ -97,11 +97,14 @@ TEST_CASE("conduit: identifiers are validated, values are bound") {
     CHECK((select_from("public.users") | where("users.id", "="_op, 1)).to_sql().has_value());
 
     // a hostile value is a parameter, never text
-    CHECK(contains(sql_of(select_from("t") | where("a", "="_op, std::string("'; DROP TABLE t; --"))), "WHERE a = $1"));
+    CHECK(contains(
+        sql_of(select_from("t")
+            | where("a", "="_op, std::string("'; DROP TABLE t; --"))),
+        "WHERE a = $1"
+    ));
 }
 
 TEST_CASE("conduit: a clause outside the layout is rejected") {
-    // DELETE has no ORDER BY slot
     CHECK_FALSE((delete_from("t") | order_by("a")).to_sql().has_value());
 }
 
@@ -123,10 +126,6 @@ TEST_CASE("conduit: exists_in is a standalone statement") {
 }
 
 TEST_CASE("conduit: exec() result dispatch") {
-    // No live database here, so this only proves the *shape* QueryBuilder::exec() hands back:
-    // get_as<T>() picks the RowContainer or the exactly-one-row overload by which T satisfies,
-    // view_as<T>() is always the lazy generator. The row-count/throwing behavior of each is
-    // exercised against a real connection in the stateful suite.
     static_assert(conduit::ReadableRow<bool>);
     static_assert(conduit::impl::RowContainer<std::vector<bool>>);
     static_assert(conduit::impl::RowContainer<ers::optional<bool>>);
@@ -139,19 +138,14 @@ TEST_CASE("conduit: exec() result dispatch") {
     static_assert(std::is_same_v<
         decltype(std::declval<conduit::QueryResult>().view_as<bool>()), conduit::RowGenerator<bool>>);
 
-    // raw() gives back the pqxx::result untouched, no wrapping.
     static_assert(std::is_same_v<decltype(std::declval<conduit::QueryResult>().raw()), const pqxx::result&>);
 }
 
 namespace {
-    // Anything shaped like QueryBuilder - a .exec(tx) that returns QueryResult - qualifies for
-    // Database::with_query, not just QueryBuilder itself (conduit::reflect::QueryCall<Tag> is the
-    // other real implementation of this shape).
     struct FakeExecutable {
         conduit::QueryResult exec(pqxx::dbtransaction&) const;
     };
 
-    // Shaped like QueryCall<Tag>: Executable, and it also names its own Output.
     struct FakeQueryCall {
         using Output = bool;
         conduit::QueryResult exec(pqxx::dbtransaction&) const;
@@ -163,7 +157,6 @@ TEST_CASE("conduit: with_query accepts anything shaped like exec(tx) -> QueryRes
     static_assert(conduit::impl::Executable<FakeExecutable>);
     static_assert(!conduit::impl::Executable<int>);
 
-    // QueryBuilder has no fixed result shape, so it never takes the Output-unwrapping path.
     static_assert(!conduit::impl::ExecutableWithOutput<conduit::QueryBuilder>);
     static_assert(!conduit::impl::ExecutableWithOutput<FakeExecutable>);
     static_assert(conduit::impl::ExecutableWithOutput<FakeQueryCall>);
@@ -195,20 +188,16 @@ namespace {
         bool replaceable;
     };
 
-    // Aggregate with no Declaration: read positionally by column name.
     struct Plain {
         uint32_t a;
         std::string b;
     };
 
-    // Handwritten row reader on a reflected entity.
     struct HandRolled {
         int id;
         explicit HandRolled(pqxx::row_ref) : id(0) {}
     };
 
-    // A constraint kind defined entirely outside the library: it only declares
-    // the category tag and how to render itself.
     template<ers::fixed_string Expr>
     struct Check {
         using table_constraint_tag = void;
@@ -244,14 +233,14 @@ TEST_CASE("conduit reflect: schema facts") {
     static_assert(Entity<Image>);
     static_assert(!Statement<Image>);
 
-    static_assert(column_count<Image> == 3); // `cache` is skipped
+    static_assert(column_count<Image> == 3);
     static_assert(has_field<Image>("cache"));
     static_assert(!has_column<Image>("cache"));
     static_assert(has_column<Image>("path"));
 
     static_assert(has_identity<Image>);
     static_assert(identity_column<Image> == "id");
-    static_assert(!has_identity<ProductImage>); // composite key
+    static_assert(!has_identity<ProductImage>);
 
     static_assert(declaration_is_valid<Image>);
     static_assert(declaration_is_valid<ProductImage>);
@@ -264,12 +253,10 @@ TEST_CASE("conduit reflect: row concepts") {
     static_assert(conduit::impl::reflect::PlainRow<Plain> && conduit::ReadableRow<Plain>);
     static_assert(std::is_same_v<conduit::row_reader<Image>::state, ColumnIndex<Image>>);
 
-    // std::string is a single-column scalar read, not an entity row
     static_assert(!RowType<std::string>);
     static_assert(!conduit::impl::reflect::PlainRow<std::string>);
     static_assert(conduit::ReadableRow<std::string>);
 
-    // an explicit T(pqxx::row_ref) beats reflection, so the two readers stay unambiguous
     static_assert(RowType<HandRolled>);
     static_assert(!conduit::impl::reflect::MappedRow<HandRolled>);
     static_assert(std::is_empty_v<conduit::row_reader<HandRolled>::state>);
@@ -280,8 +267,8 @@ TEST_CASE("conduit reflect: create_table") {
 
     CHECK(contains(images, "CREATE TABLE IF NOT EXISTS images"));
     CHECK(contains(images, "id INTEGER GENERATED ALWAYS AS IDENTITY"));
-    CHECK(contains(images, "path VARCHAR(120) NOT NULL")); // Column<> type override
-    CHECK_FALSE(contains(images, "cache"));                // Skip
+    CHECK(contains(images, "path VARCHAR(120) NOT NULL"));
+    CHECK_FALSE(contains(images, "cache"));
     CHECK(contains(images, "CONSTRAINT images_url_key UNIQUE (url)"));
 
     constexpr std::string_view product_images = conduit::ddl::create_table<ProductImage>();
@@ -297,6 +284,11 @@ TEST_CASE("conduit reflect: a constraint kind defined outside the library render
     constexpr std::string_view t = conduit::ddl::create_table<ProductImage>();
 
     CHECK(contains(t, "CONSTRAINT product_images_image_check CHECK (image_id > 0)"));
+}
+
+TEST_CASE("conduit: timestamps bind as parameters") {
+    CHECK(sql_of(select_from("images") | where("created_at", ">"_op, ers::clock_t::now()))
+        == "SELECT *\nFROM images\nWHERE created_at > $1");
 }
 
 #endif

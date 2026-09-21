@@ -112,6 +112,8 @@ target_sources(erslib_core
         "src/erslib/core/algorithm/split/regular.cpp"
         "src/erslib/core/algorithm/split/smart.cpp"
 
+        "src/erslib/core/convert/pg_time.cpp"
+
         "src/erslib/core/exception/internal.cpp"
 
         "src/erslib/core/random/entropy.cpp"

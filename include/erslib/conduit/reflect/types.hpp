@@ -23,6 +23,7 @@ namespace conduit::impl::reflect::kinds {
     struct pk {};
     struct unique {};
     struct fk {};
+    struct check {};
 
     struct def {};
     struct identity {};
@@ -46,19 +47,38 @@ namespace conduit::impl::reflect {
 // DDL helpers
 
 namespace conduit::impl::reflect {
+    template<ers::fixed_string Sql>
+    struct raw_sql_t {
+        static constexpr std::string_view sql = Sql.to_sv();
+    };
+
+    template<ers::fixed_string Sql>
+    inline constexpr raw_sql_t<Sql> raw_sql {};
+
+    template<typename T>
+    concept RawSql = requires {
+        { T::sql } -> std::convertible_to<std::string_view>;
+    };
+}
+
+namespace conduit::impl::reflect {
     template<auto Value>
     consteval std::string sql_literal() {
         using type = std::remove_cvref_t<decltype(Value)>;
 
-        if constexpr (std::is_same_v<type, bool>) {
+        if constexpr (RawSql<type>) {
+            return std::string(type::sql);
+        } else if constexpr (std::is_same_v<type, bool>) {
             return Value ? "TRUE" : "FALSE";
         } else if constexpr (std::is_integral_v<type>) {
             char buffer[32] {};
             const auto [ptr, ec] = std::to_chars(buffer, buffer + sizeof(buffer), Value);
             return std::string(buffer, ptr);
         } else {
-            static_assert(requires { Value.to_sv(); },
-                "Default<> supports bool, integral and fixed_string values only");
+            static_assert(
+                requires { Value.to_sv(); },
+                "Default<> supports bool, integral, fixed_string and raw_sql values only."
+            );
 
             std::string out = "'";
 
@@ -110,6 +130,8 @@ namespace conduit::impl::reflect {
 // Constraints
 
 namespace conduit::impl::reflect {
+    // Pk
+
     template<ers::fixed_string... Fields>
     struct Pk {
         using kind = kinds::pk;
@@ -121,6 +143,9 @@ namespace conduit::impl::reflect {
             return "CONSTRAINT " + std::string(name) + " PRIMARY KEY " + field_list(names);
         }
     };
+
+
+    // Unique
 
     template<ers::fixed_string... Fields>
     struct Unique {
@@ -134,6 +159,8 @@ namespace conduit::impl::reflect {
         }
     };
 
+
+    // Fk
 
     enum class EActionOnDelete : u8 {
         None,
@@ -176,6 +203,20 @@ namespace conduit::impl::reflect {
                 + ") REFERENCES " + std::string(ref_table)
                 + " (" + std::string(ref_column) + ')'
                 + std::string(on_delete_text(on_delete));
+        }
+    };
+
+
+    // Check
+
+    template<ers::fixed_string Name, ers::fixed_string Expr>
+    struct Check {
+        using kind = kinds::check;
+        using table_constraint_tag = void;
+
+        static consteval std::string ddl(std::string_view name) {
+            return "CONSTRAINT " + std::string(name)
+                + " CHECK (" + std::string(Expr.to_sv()) + ")";
         }
     };
 }

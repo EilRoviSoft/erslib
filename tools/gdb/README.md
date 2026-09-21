@@ -52,6 +52,38 @@ import boost_printers
 boost_printers.register()
 ```
 
+## Using it from another CMake project
+
+Nothing here needs to be built or installed — the printers only need to be on
+GDB's Python path. Beyond adding the `source` line to `~/.gdbinit` or to the
+project's debug configuration, CMake can emit a `<binary>-gdb.py` sidecar that
+GDB auto-loads whenever that binary is debugged, so no developer has to
+configure anything:
+
+```cmake
+# Debug builds only; harmless if the directory is missing at debug time.
+if(UNIX AND CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(BOOST_GDB_PRINTERS "/path/to/erslib/tools/gdb")
+    file(GENERATE
+        OUTPUT  "$<TARGET_FILE:my_target>-gdb.py"
+        CONTENT "import sys\nsys.path.insert(0, '${BOOST_GDB_PRINTERS}')\nimport boost_printers\nboost_printers.register()\n")
+endif()
+```
+
+When erslib is consumed with `FetchContent`, `${erslib_SOURCE_DIR}/tools/gdb`
+is the path to use.
+
+GDB only auto-loads a sidecar whose location is covered by `auto-load
+safe-path`, so the build directory has to be allowed — `set auto-load
+safe-path /` in `~/.gdbinit`, or a narrower prefix.
+
+## Load order
+
+Among *global* pretty printers GDB uses the **last one registered**, so when
+several printer bundles are sourced the last `source` line wins for any type
+they both handle. Objfile printers (such as Boost's embedded ones) are
+consulted before all global printers regardless of order.
+
 ## Interaction with Boost's own printers
 
 Since 1.87 Boost.Unordered embeds a GDB script into every object file that
@@ -123,7 +155,7 @@ BOOST_INC=/path/to/boost/include
 TOOLS=/path/to/tools/gdb
 g++ -std=c++20 -g -O0 -DBOOST_ALL_NO_EMBEDDED_GDB_SCRIPTS -I"$BOOST_INC" \
     "$TOOLS/test/self_test.cpp" -o /tmp/self_test
-LINE=$(grep -n BREAKPOINT "$TOOLS/test/self_test.cpp" | cut -d: -f1)
+LINE=$(grep -n 'asm__ volatile' "$TOOLS/test/self_test.cpp" | cut -d: -f1)
 gdb -batch -ex "set print elements unlimited" -ex "b self_test.cpp:$LINE" \
     -ex run -ex "source $TOOLS/test/self_test.py" /tmp/self_test
 ```
