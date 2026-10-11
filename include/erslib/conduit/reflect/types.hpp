@@ -17,30 +17,54 @@
 // Entry kinds
 
 namespace conduit::impl::reflect::kinds {
-    struct table {};
-    struct query {};
+    struct ESchema {};
+    struct ETable {};
+    struct EQuery {};
 
-    struct pk {};
-    struct unique {};
-    struct fk {};
-    struct check {};
+    struct EPk {};
+    struct EUnique {};
+    struct EFk {};
+    struct ECheck {};
 
-    struct def {};
-    struct identity {};
-    struct column {};
+    struct EDefault {};
+    struct EIdentity {};
+    struct EColumn {};
 }
 
 namespace conduit::impl::reflect {
     template<typename T, typename Kind>
     concept EntryOf = requires { typename T::kind; }
         && std::same_as<typename T::kind, Kind>;
+}
 
 
-    template<typename T>
-    concept TableConstraint = requires { typename T::table_constraint_tag; };
+// Entry traits
 
-    template<typename T>
-    concept ColumnModifier = requires { typename T::column_modifier_tag; };
+namespace conduit::impl::reflect {
+    struct constraint_context {
+        std::string_view name;
+        std::string_view schema;
+    };
+
+    struct entry_defaults {
+        static constexpr std::array<std::string_view, 0> columns {};
+        static constexpr std::array<std::string_view, 0> references {};
+    };
+
+    template<typename E>
+    struct entry_traits : entry_defaults {};
+
+
+    template<typename E>
+    concept TableConstraint = requires(const constraint_context& ctx) {
+        { entry_traits<E>::ddl(ctx) } -> std::convertible_to<std::string>;
+    };
+
+    template<typename E>
+    concept ColumnModifier = requires {
+        { entry_traits<E>::field } -> std::convertible_to<std::string_view>;
+        { entry_traits<E>::column_ddl() } -> std::convertible_to<std::string>;
+    };
 }
 
 
@@ -94,6 +118,13 @@ namespace conduit::impl::reflect {
         }
     }
 
+    consteval std::string qualify(std::string_view schema, std::string_view table) {
+        if (schema.empty() || table.contains('.'))
+            return std::string(table);
+
+        return std::string(schema) + '.' + std::string(table);
+    }
+
     consteval std::string field_list(std::span<const std::string_view> what) {
         std::string out = "(";
 
@@ -114,14 +145,37 @@ namespace conduit::impl::reflect {
 
 namespace conduit::impl::reflect {
     template<ers::fixed_string Name>
-    struct Table {
-        using kind = kinds::table;
+    struct Schema {
+        using kind = kinds::ESchema;
         static constexpr std::string_view name = Name.to_sv();
+
+        static_assert(!Name.to_sv().empty(), "Schema<> needs a name.");
+        static_assert(!Name.to_sv().contains('.'), "Schema<> name must not be qualified.");
+    };
+
+    struct NoSchema {
+        using kind = kinds::ESchema;
+        static constexpr std::string_view name = "";
+    };
+
+    template<typename T>
+    concept SchemaType = EntryOf<T, kinds::ESchema>;
+
+
+    template<ers::fixed_string Name, SchemaType S = NoSchema>
+    struct Table {
+        using kind = kinds::ETable;
+        using schema = S;
+
+        static constexpr std::string_view name = Name.to_sv();
+
+        static_assert(std::is_same_v<S, NoSchema> || !Name.to_sv().contains('.'),
+            "Table<> name must not be qualified when a schema is given, the schema type qualifies it.");
     };
 
     template<ers::fixed_string Name>
     struct Query {
-        using kind = kinds::query;
+        using kind = kinds::EQuery;
         static constexpr std::string_view name = Name.to_sv();
     };
 }
@@ -134,13 +188,15 @@ namespace conduit::impl::reflect {
 
     template<ers::fixed_string... Fields>
     struct Pk {
-        using kind = kinds::pk;
-        using table_constraint_tag = void;
+        using kind = kinds::EPk;
+    };
 
-        static constexpr std::array<std::string_view, sizeof...(Fields)> names = { Fields.to_sv()... };
+    template<ers::fixed_string... Fields>
+    struct entry_traits<Pk<Fields...>> : entry_defaults {
+        static constexpr std::array<std::string_view, sizeof...(Fields)> columns = { Fields.to_sv()... };
 
-        static consteval std::string ddl(std::string_view name) {
-            return "CONSTRAINT " + std::string(name) + " PRIMARY KEY " + field_list(names);
+        static consteval std::string ddl(const constraint_context& ctx) {
+            return "CONSTRAINT " + std::string(ctx.name) + " PRIMARY KEY " + field_list(columns);
         }
     };
 
@@ -149,13 +205,15 @@ namespace conduit::impl::reflect {
 
     template<ers::fixed_string... Fields>
     struct Unique {
-        using kind = kinds::unique;
-        using table_constraint_tag = void;
+        using kind = kinds::EUnique;
+    };
 
-        static constexpr std::array<std::string_view, sizeof...(Fields)> names = { Fields.to_sv()... };
+    template<ers::fixed_string... Fields>
+    struct entry_traits<Unique<Fields...>> : entry_defaults {
+        static constexpr std::array<std::string_view, sizeof...(Fields)> columns = { Fields.to_sv()... };
 
-        static consteval std::string ddl(std::string_view name) {
-            return "CONSTRAINT " + std::string(name) + " UNIQUE " + field_list(names);
+        static consteval std::string ddl(const constraint_context& ctx) {
+            return "CONSTRAINT " + std::string(ctx.name) + " UNIQUE " + field_list(columns);
         }
     };
 
@@ -172,14 +230,21 @@ namespace conduit::impl::reflect {
 
     consteval std::string_view on_delete_text(EActionOnDelete what) {
         switch (what) {
-            case EActionOnDelete::Cascade: return " ON DELETE CASCADE";
-            case EActionOnDelete::SetNull: return " ON DELETE SET NULL";
-            case EActionOnDelete::SetDefault: return " ON DELETE SET DEFAULT";
-            case EActionOnDelete::Restrict: return " ON DELETE RESTRICT";
-            case EActionOnDelete::None: return "";
-        }
+            case EActionOnDelete::Cascade:
+                return " ON DELETE CASCADE";
 
-        return "";
+            case EActionOnDelete::SetNull:
+                return " ON DELETE SET NULL";
+
+            case EActionOnDelete::SetDefault:
+                return " ON DELETE SET DEFAULT";
+
+            case EActionOnDelete::Restrict:
+                return " ON DELETE RESTRICT";
+
+            default:
+                return "";
+        }
     }
 
     template<
@@ -189,20 +254,25 @@ namespace conduit::impl::reflect {
         EActionOnDelete OnDelete = EActionOnDelete::None
     >
     struct Fk {
-        using kind = kinds::fk;
-        using table_constraint_tag = void;
+        using kind = kinds::EFk;
+    };
 
-        static constexpr std::string_view field = Field.to_sv();
-        static constexpr std::string_view ref_table = RefTable.to_sv();
-        static constexpr std::string_view ref_column = RefColumn.to_sv();
-        static constexpr EActionOnDelete on_delete = OnDelete;
+    template<
+        ers::fixed_string Field,
+        ers::fixed_string RefTable,
+        ers::fixed_string RefColumn,
+        EActionOnDelete OnDelete
+    >
+    struct entry_traits<Fk<Field, RefTable, RefColumn, OnDelete>> : entry_defaults {
+        static constexpr std::array<std::string_view, 1> columns = { Field.to_sv() };
+        static constexpr std::array<std::string_view, 1> references = { RefTable.to_sv() };
 
-        static consteval std::string ddl(std::string_view name) {
-            return "CONSTRAINT " + std::string(name)
-                + " FOREIGN KEY (" + std::string(field)
-                + ") REFERENCES " + std::string(ref_table)
-                + " (" + std::string(ref_column) + ')'
-                + std::string(on_delete_text(on_delete));
+        static consteval std::string ddl(const constraint_context& ctx) {
+            return "CONSTRAINT " + std::string(ctx.name)
+                + " FOREIGN KEY (" + std::string(Field.to_sv())
+                + ") REFERENCES " + qualify(ctx.schema, RefTable.to_sv())
+                + " (" + std::string(RefColumn.to_sv()) + ')'
+                + std::string(on_delete_text(OnDelete));
         }
     };
 
@@ -211,11 +281,13 @@ namespace conduit::impl::reflect {
 
     template<ers::fixed_string Name, ers::fixed_string Expr>
     struct Check {
-        using kind = kinds::check;
-        using table_constraint_tag = void;
+        using kind = kinds::ECheck;
+    };
 
-        static consteval std::string ddl(std::string_view name) {
-            return "CONSTRAINT " + std::string(name)
+    template<ers::fixed_string Name, ers::fixed_string Expr>
+    struct entry_traits<Check<Name, Expr>> : entry_defaults {
+        static consteval std::string ddl(const constraint_context& ctx) {
+            return "CONSTRAINT " + std::string(ctx.name)
                 + " CHECK (" + std::string(Expr.to_sv()) + ")";
         }
     };
@@ -225,23 +297,35 @@ namespace conduit::impl::reflect {
 // Column metadata
 
 namespace conduit::impl::reflect {
+    // Default
+
     template<ers::fixed_string Field, auto Value>
     struct Default {
-        using kind = kinds::def;
-        using column_modifier_tag = void;
+        using kind = kinds::EDefault;
+    };
 
+    template<ers::fixed_string Field, auto Value>
+    struct entry_traits<Default<Field, Value>> : entry_defaults {
         static constexpr std::string_view field = Field.to_sv();
-        static constexpr auto value = Value;
+        static constexpr std::array<std::string_view, 1> columns = { field };
 
         static consteval std::string column_ddl() {
             return " DEFAULT " + sql_literal<Value>();
         }
     };
 
+
+    // Identity
+
     template<ers::fixed_string Field>
     struct Identity {
-        using kind = kinds::identity;
+        using kind = kinds::EIdentity;
+    };
+
+    template<ers::fixed_string Field>
+    struct entry_traits<Identity<Field>> : entry_defaults {
         static constexpr std::string_view field = Field.to_sv();
+        static constexpr std::array<std::string_view, 1> columns = { field };
     };
 }
 
@@ -251,7 +335,7 @@ namespace conduit::impl::reflect {
 namespace conduit::impl::reflect {
     template<ers::fixed_string Name = "", ers::fixed_string Type = "">
     struct column_t {
-        using kind = kinds::column;
+        using kind = kinds::EColumn;
         static constexpr std::string_view name = Name.to_sv();
         static constexpr std::string_view type = Type.to_sv();
     };

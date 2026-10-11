@@ -64,4 +64,8 @@ namespace conduit::impl::reflect {
 
     template<typename T>
     constexpr size_t column_count = column_list<T>.size();
+
+
+    template<std::meta::info M>
+    using entry_type = typename [:std::meta::remove_cv(std::meta::type_of(M)):];
 }

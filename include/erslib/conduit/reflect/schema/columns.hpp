@@ -16,30 +16,38 @@ namespace conduit::impl::reflect {
 
 
     template<std::meta::info M>
-    constexpr std::string_view column_name = [] consteval -> std::string_view {
+    consteval std::string_view resolve_column_name() {
         template for (constexpr auto it : std::define_static_array(std::meta::annotations_of(M))) {
-            using entry = typename [:std::meta::remove_cv(std::meta::type_of(it)):];
+            using entry = entry_type<it>;
 
-            if constexpr (EntryOf<entry, kinds::column>)
+            if constexpr (EntryOf<entry, kinds::EColumn>)
                 if constexpr (!entry::name.empty())
                     return entry::name;
         }
 
         return std::define_static_string(std::meta::identifier_of(M));
-    }();
+    }
 
     template<std::meta::info M>
-    constexpr std::string_view sql_type_name = [] consteval -> std::string_view {
-        template for (constexpr auto it : std::define_static_array(std::meta::annotations_of(M))) {
-            using entry = typename [:std::meta::remove_cv(std::meta::type_of(it)):];
+    constexpr std::string_view column_name = resolve_column_name<M>();
 
-            if constexpr (EntryOf<entry, kinds::column>)
+
+    template<std::meta::info M>
+    consteval std::string_view resolve_sql_type_name() {
+        template for (constexpr auto it : std::define_static_array(std::meta::annotations_of(M))) {
+            using entry = entry_type<it>;
+
+            if constexpr (EntryOf<entry, kinds::EColumn>)
                 if constexpr (!entry::type.empty())
                     return entry::type;
         }
 
         return sql_type<member_type<M>>::name;
-    }();
+    }
+
+    template<std::meta::info M>
+    constexpr std::string_view sql_type_name = resolve_sql_type_name<M>();
+
 
     template<std::meta::info M>
     constexpr bool is_nullable = sql_type<member_type<M>>::nullable;

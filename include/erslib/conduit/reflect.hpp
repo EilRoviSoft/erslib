@@ -11,6 +11,8 @@
 
 namespace conduit::ddl {
     using impl::reflect::create_table;
+    using impl::reflect::create_schema;
+    using impl::reflect::schema_ddl;
 }
 
 
@@ -37,6 +39,11 @@ namespace conduit::reflect {
     using impl::reflect::declaration_members;
     using impl::reflect::table_name;
     using impl::reflect::query_label;
+    using impl::reflect::schema_of;
+    using impl::reflect::schema_name;
+    using impl::reflect::qualified_name;
+    using impl::reflect::entities_of;
+    using impl::reflect::SchemaType;
     using impl::reflect::column_name;
     using impl::reflect::column_count;
     using impl::reflect::member_type;
@@ -62,6 +69,14 @@ namespace conduit::reflect {
 namespace conduit::reflect {
     using impl::reflect::EActionOnDelete;
 
+    using impl::reflect::constraint_context;
+    using impl::reflect::entry_defaults;
+    using impl::reflect::entry_traits;
+    using impl::reflect::TableConstraint;
+    using impl::reflect::ColumnModifier;
+
+    using impl::reflect::Schema;
+    using impl::reflect::NoSchema;
     using impl::reflect::Table;
     using impl::reflect::Query;
 
@@ -111,4 +126,13 @@ namespace conduit::reflect {
 
     using impl::reflect::QueryFn;
     using impl::reflect::query_fn;
+}
+
+
+// Schema creation
+
+#include <erslib/conduit/reflect/create_tables.hpp>
+
+namespace conduit {
+    using impl::reflect::create_tables_by_schema;
 }

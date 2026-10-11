@@ -14,8 +14,13 @@ conduit::impl::JoinClause::JoinClause(std::string table, std::string alias, std:
 }
 
 ers::Status conduit::impl::JoinClause::render(Context& ctx) const {
-    for (auto* s : { &_table, &_alias, &_left, &_right }) {
+    for (auto* s : { &_table, &_left, &_right }) {
         if (auto st = check_identifier(*s, slot()); !st)
+            return st;
+    }
+
+    if (!_alias.empty()) {
+        if (auto st = check_identifier(_alias, slot()); !st)
             return st;
     }
 

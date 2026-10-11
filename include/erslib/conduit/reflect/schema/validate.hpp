@@ -12,32 +12,17 @@
 
 namespace conduit::impl::reflect {
     template<typename T>
-    constexpr bool declaration_is_valid = [] consteval {
+    consteval bool validate_declaration() {
         template for (constexpr auto it : declaration_list<T>) {
-            using entry = typename [:std::meta::type_of(it):];
-
-            if constexpr (EntryOf<entry, kinds::pk>) {
-                for (const std::string_view name : entry::names) {
-                    if (!has_column<T>(name))
-                        return false;
-                }
-            } else if constexpr (EntryOf<entry, kinds::unique>) {
-                for (const std::string_view name : entry::names) {
-                    if (!has_column<T>(name))
-                        return false;
-                }
-            } else if constexpr (EntryOf<entry, kinds::fk>) {
-                if (!has_column<T>(entry::field))
-                    return false;
-            } else if constexpr (EntryOf<entry, kinds::def>) {
-                if (!has_column<T>(entry::field))
-                    return false;
-            } else if constexpr (EntryOf<entry, kinds::identity>) {
-                if (!has_column<T>(entry::field))
+            for (const std::string_view column : entry_traits<entry_type<it>>::columns) {
+                if (!has_column<T>(column))
                     return false;
             }
         }
 
         return true;
-    }();
+    }
+
+    template<typename T>
+    constexpr bool declaration_is_valid = validate_declaration<T>();
 }

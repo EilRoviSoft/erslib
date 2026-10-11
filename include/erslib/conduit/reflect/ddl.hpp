@@ -1,6 +1,7 @@
 #pragma once
 
 // std
+#include <array>
 #include <string>
 #include <string_view>
 
@@ -17,7 +18,7 @@ namespace conduit::impl::reflect {
         );
 
         std::string out = "CREATE TABLE IF NOT EXISTS ";
-        out += table_name<T>;
+        out += qualified_name<T>;
         out += " (\n";
 
         template for (constexpr auto m : column_list<T>) {
@@ -32,22 +33,25 @@ namespace conduit::impl::reflect {
                 out += " NOT NULL";
 
             template for (constexpr auto it : declaration_list<T>) {
-                using entry = typename [:std::meta::type_of(it):];
+                using entry = entry_type<it>;
 
                 if constexpr (ColumnModifier<entry>)
-                    if constexpr (entry::field == column_name<m>)
-                        out += entry::column_ddl();
+                    if constexpr (entry_traits<entry>::field == column_name<m>)
+                        out += entry_traits<entry>::column_ddl();
             }
 
             out += ",\n";
         }
 
         template for (constexpr auto it : declaration_list<T>) {
-            using entry = typename [:std::meta::type_of(it):];
+            using entry = entry_type<it>;
 
             if constexpr (TableConstraint<entry>) {
                 out += "    ";
-                out += entry::ddl(std::define_static_string(std::meta::identifier_of(it)));
+                out += entry_traits<entry>::ddl({
+                    .name = std::define_static_string(std::meta::identifier_of(it)),
+                    .schema = schema_name<T>
+                });
                 out += ",\n";
             }
         }
@@ -59,4 +63,28 @@ namespace conduit::impl::reflect {
 
         return std::define_static_string(out);
     }
+
+
+    template<SchemaType S>
+    consteval std::string_view create_schema() {
+        static_assert(!std::is_same_v<S, NoSchema>, "NoSchema is not a schema that can be created.");
+
+        return std::define_static_string("CREATE SCHEMA IF NOT EXISTS " + std::string(S::name));
+    }
+
+    template<SchemaType S>
+    consteval auto build_schema_ddl() {
+        std::array<std::string_view, entities_of<S>.size() + 1> out {};
+        size_t i = 0;
+
+        out[i++] = create_schema<S>();
+
+        template for (constexpr auto it : entities_of<S>)
+            out[i++] = create_table<typename [:it:]>();
+
+        return out;
+    }
+
+    template<SchemaType S>
+    constexpr auto schema_ddl = build_schema_ddl<S>();
 }
