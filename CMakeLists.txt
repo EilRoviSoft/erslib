@@ -28,6 +28,10 @@ option(ERSLIB_BUILD_CONDUIT "Build erslib::conduit target" OFF)
 option(ERSLIB_BUILD_MODKIT "Build erslib::modkit target" OFF)
 option(ERSLIB_BUILD_EASY_ECS "Build erslib::easy_ecs target" OFF)
 option(ERSLIB_BUILD_LUASCHEMA "Build erslib::luaschema target" OFF)
+option(ERSLIB_BUILD_CRYPTO "Build erslib::crypto target" OFF)
+option(ERSLIB_BUILD_LOGGING "Build erslib::logging target" OFF)
+option(ERSLIB_BUILD_WEB "Build erslib::web target" OFF)
+option(ERSLIB_WEB_USE_BOOST_ASIO "erslib::web uses Boost.Asio instead of standalone Asio" OFF)
 
 option(ERSLIB_ENABLE_REFLECTION "Use C++26 static reflection (P2996)" OFF)
 
@@ -109,6 +113,7 @@ target_sources(erslib_core
 
         "src/erslib/core/assert.cpp"
 
+        "src/erslib/core/algorithm/split/args.cpp"
         "src/erslib/core/algorithm/split/regular.cpp"
         "src/erslib/core/algorithm/split/smart.cpp"
 
@@ -118,6 +123,7 @@ target_sources(erslib_core
 
         "src/erslib/core/random/entropy.cpp"
 
+        "src/erslib/core/thread_safe/rate_limiter.cpp"
         "src/erslib/core/thread_safe/shuffle_seed.cpp"
 
         "src/erslib/core/type/diagnostic.cpp"
@@ -265,6 +271,117 @@ if(ERSLIB_BUILD_CONDUIT)
     erslib_required_package(erslib_conduit libpqxx libpqxx::pqxx)
 
     list(APPEND ERSLIB_TARGETS erslib_conduit)
+endif()
+
+
+#----------------------------------------------------------------------------------------------------------------------
+# erslib::crypto
+#----------------------------------------------------------------------------------------------------------------------
+
+
+if(ERSLIB_BUILD_CRYPTO)
+    erslib_add_library(erslib_crypto crypto)
+
+    target_sources(erslib_crypto
+        PRIVATE
+            "src/erslib/crypto/hash.cpp"
+            "src/erslib/crypto/password.cpp"
+            "src/erslib/crypto/random.cpp"
+    )
+
+    target_link_libraries(erslib_crypto
+        PUBLIC
+            erslib_core
+    )
+
+    find_package(botan CONFIG REQUIRED)
+
+    if(TARGET botan::botan-static)
+        target_link_libraries(erslib_crypto PRIVATE botan::botan-static)
+    else()
+        target_link_libraries(erslib_crypto PRIVATE botan::botan)
+    endif()
+
+    list(APPEND ERSLIB_TARGETS erslib_crypto)
+endif()
+
+
+#----------------------------------------------------------------------------------------------------------------------
+# erslib::logging
+#----------------------------------------------------------------------------------------------------------------------
+
+
+if(ERSLIB_BUILD_LOGGING)
+    erslib_add_library(erslib_logging logging)
+
+    target_sources(erslib_logging
+        PRIVATE
+            "src/erslib/logging/diagnostic.cpp"
+            "src/erslib/logging/factory.cpp"
+    )
+
+    target_link_libraries(erslib_logging
+        PUBLIC
+            erslib_core
+    )
+
+    erslib_required_package(erslib_logging quill quill::quill)
+
+    list(APPEND ERSLIB_TARGETS erslib_logging)
+endif()
+
+
+#----------------------------------------------------------------------------------------------------------------------
+# erslib::web
+#----------------------------------------------------------------------------------------------------------------------
+
+
+if(ERSLIB_BUILD_WEB)
+    if(NOT ERSLIB_BUILD_CONTRIB)
+        message(FATAL_ERROR "ERSLIB_BUILD_WEB requires ERSLIB_BUILD_CONTRIB")
+    endif()
+
+    erslib_add_library(erslib_web web)
+
+    target_sources(erslib_web
+        PRIVATE
+            "src/erslib/web/request.cpp"
+            "src/erslib/web/response.cpp"
+
+            "src/erslib/web/middleware/body_limit.cpp"
+            "src/erslib/web/middleware/cors.cpp"
+            "src/erslib/web/middleware/json_body.cpp"
+            "src/erslib/web/middleware/rate_limit.cpp"
+    )
+
+    target_link_libraries(erslib_web
+        PUBLIC
+            erslib_core
+            erslib_contrib
+    )
+
+    erslib_required_package(erslib_web Crow Crow::Crow)
+
+    if(ERSLIB_WEB_USE_BOOST_ASIO)
+        erslib_required_package(erslib_web boost_asio Boost::asio)
+        target_compile_definitions(erslib_web PUBLIC CROW_USE_BOOST)
+    endif()
+
+    if(ERSLIB_BUILD_LOGGING)
+        target_sources(erslib_web
+            PRIVATE
+                "src/erslib/web/log.cpp"
+        )
+
+        target_link_libraries(erslib_web
+            PUBLIC
+                erslib_logging
+        )
+
+        target_compile_definitions(erslib_web PUBLIC ERSLIB_WEB_HAS_LOGGING)
+    endif()
+
+    list(APPEND ERSLIB_TARGETS erslib_web)
 endif()
 
 

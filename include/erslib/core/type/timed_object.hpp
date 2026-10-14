@@ -28,7 +28,7 @@ namespace ers::impl {
         }
 
         ITimedObject(Clock::duration lifetime, T value, Clock::time_point created_at = Clock::now()) :
-            m_expiring(value, lifetime, created_at) {
+            m_expiring(std::move(value), created_at, lifetime) {
         }
 
 

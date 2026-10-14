@@ -23,6 +23,8 @@ namespace ers::impl {
     timestamp_t floor_to_pg_precision(timestamp_t what);
     std::string timestamp_to_iso8601(timestamp_t what);
     Result<timestamp_t> timestamp_from_iso8601(std::string_view text);
+
+    timestamp_t pg_now();
 }
 
 
@@ -32,4 +34,6 @@ namespace ers {
     using impl::floor_to_pg_precision;
     using impl::timestamp_from_iso8601;
     using impl::timestamp_to_iso8601;
+
+    using impl::pg_now;
 }

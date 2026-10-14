@@ -1,5 +1,6 @@
 {
   "dependencies": [
+    "boost-asio",
     "boost-container",
     "boost-multi-index",
     "boost-optional",
@@ -8,7 +9,9 @@
     "boost-smart-ptr",
     "boost-thread",
     "boost-unordered",
+    "botan",
     "cpptrace",
+    "crow",
     "doctest",
     "frozen",
     "libpqxx",

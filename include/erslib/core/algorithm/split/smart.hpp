@@ -18,6 +18,9 @@ namespace ers::impl::algo {
 
 
     private:
+        size_t _pending_skip = 0;
+
+
         void _advance();
     };
 }

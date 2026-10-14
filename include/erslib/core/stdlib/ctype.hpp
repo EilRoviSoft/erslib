@@ -36,19 +36,20 @@ namespace ers::impl {
     }
 
     constexpr bool is_cntrl(char c) noexcept {
-        return c < 0x20 || c == 0x7F;
+        const auto u = static_cast<unsigned char>(c);
+        return u < 0x20 || u == 0x7F;
     }
 
     constexpr bool is_graph(char c) noexcept {
-        return is_in_range(c, 0x21, 0x5E);
+        return is_in_range(c, 0x21, 0x7E);
     }
 
     constexpr bool is_print(char c) noexcept {
-        return is_in_range(c, 0x20, 0x5F);
+        return is_in_range(c, 0x20, 0x7E);
     }
 
     constexpr bool is_space(char c) noexcept {
-        return c == ' ' || is_in_range(c, '\t', '\t' + 5);
+        return c == ' ' || is_in_range(c, '\t', '\r');
     }
 
     constexpr bool is_blank(char c) noexcept {

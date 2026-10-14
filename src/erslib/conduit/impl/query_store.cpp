@@ -8,7 +8,7 @@
 #include <erslib/core/filesystem.hpp>
 
 
-namespace fs = std::filesystem;
+conduit::impl::QueryStore conduit::impl::queries;
 
 
 namespace {

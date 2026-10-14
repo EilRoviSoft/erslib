@@ -1,11 +1,15 @@
 #pragma once
 
 // std
+#include <algorithm>
 #include <array>
+#include <concepts>
 #include <cstddef>
+#include <span>
 #include <string>
 
 // ers
+#include <erslib/core/stdlib/ctype.hpp>
 #include <erslib/core/trait/string.hpp>
 #include <erslib/core/type/fixed_string.hpp>
 
@@ -98,6 +102,46 @@ namespace ers::impl::util {
 }
 
 
+namespace ers::impl::util {
+    constexpr std::string_view trim_left(std::string_view text) noexcept {
+        while (!text.empty() && is_space(text.front()))
+            text.remove_prefix(1);
+
+        return text;
+    }
+
+    constexpr std::string_view trim_right(std::string_view text) noexcept {
+        while (!text.empty() && is_space(text.back()))
+            text.remove_suffix(1);
+
+        return text;
+    }
+
+    constexpr std::string_view trim(std::string_view text) noexcept {
+        return trim_right(trim_left(text));
+    }
+}
+
+
+namespace ers::impl::util {
+    template<std::predicate<char> Pred>
+    std::string keep_if(std::string_view text, Pred&& pred, size_t max_length = std::string::npos) {
+        std::string out;
+        out.reserve(std::min(text.size(), max_length));
+
+        for (char c : text) {
+            if (out.size() == max_length)
+                break;
+
+            if (pred(c))
+                out.push_back(c);
+        }
+
+        return out;
+    }
+}
+
+
 // Exports
 
 namespace ers::util {
@@ -110,4 +154,10 @@ namespace ers::util {
 
     using impl::util::replace;
     using impl::util::quote;
+
+    using impl::util::trim_left;
+    using impl::util::trim_right;
+    using impl::util::trim;
+
+    using impl::util::keep_if;
 }

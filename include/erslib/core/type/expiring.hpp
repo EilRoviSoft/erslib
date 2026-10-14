@@ -2,6 +2,7 @@
 
 // std
 #include <chrono>
+#include <memory>
 
 
 namespace ers::impl {
@@ -34,8 +35,8 @@ namespace ers::impl {
         constexpr T&& operator*() && { return std::move(value); }
         constexpr const T&& operator*() const && { return std::move(value); }
 
-        constexpr T* operator->() { return value; }
-        constexpr const T* operator->() const { return value; }
+        constexpr T* operator->() { return std::addressof(value); }
+        constexpr const T* operator->() const { return std::addressof(value); }
     };
 }
 

@@ -3,10 +3,8 @@
 // std
 #include <chrono>
 #include <cstddef>
-#include <cstdint>
 #include <format>
 #include <ratio>
-#include <type_traits>
 
 // ers
 #include <erslib/core/stdlib/ctype.hpp>
@@ -220,4 +218,8 @@ ers::Result<std::chrono::time_point<std::chrono::system_clock>> ers::impl::times
 
 
     return timestamp_t(std::chrono::floor<duration_t>(utc.time_since_epoch()));
+}
+
+ers::timestamp_t ers::impl::pg_now() {
+    return floor_to_pg_precision(clock_t::now());
 }

@@ -303,3 +303,8 @@ namespace ers {
 
     using impl::Status;
 }
+
+
+// Macro
+
+#define ERS_TRY(EXPR) if (!(EXPR)) return (EXPR).error()

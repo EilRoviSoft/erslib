@@ -7,6 +7,7 @@
 
 #include <erslib/contrib/json/concept.hpp>
 #include <erslib/contrib/json/convert.hpp>
+#include <erslib/contrib/json/read.hpp>
 #include <erslib/contrib/json/schema.hpp>
 
 
@@ -28,6 +29,11 @@ namespace utl {
 
     using impl::from_string;
     using impl::from_file;
+
+    using impl::try_from_string;
+    using impl::try_from_file;
+
+    using impl::read_as;
 
     using impl::literals::operator ""_json;
 }

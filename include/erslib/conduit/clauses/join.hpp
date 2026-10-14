@@ -25,7 +25,7 @@ namespace conduit::impl {
 
 
     namespace clauses {
-        Clause join_with_alias(std::string table, std::string alias, std::string left, EOp op, std::string right);
+        Clause join(std::string table, std::string alias, std::string left, EOp op, std::string right);
         Clause join(std::string table, std::string left, EOp op, std::string right);
     }
 }

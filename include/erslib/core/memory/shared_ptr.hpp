@@ -1,6 +1,6 @@
 #pragma once
 
-#ifndef __CLANG__
+#ifndef __clang__
 
 
 // std

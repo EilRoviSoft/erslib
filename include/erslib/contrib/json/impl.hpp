@@ -30,6 +30,7 @@
 #include <erslib/core/hashing/rapid.hpp>
 #include <erslib/core/type/general.hpp>
 #include <erslib/core/type/optional.hpp>
+#include <erslib/core/type/result.hpp>
 #include <erslib/core/util/string.hpp>
 
 // export
@@ -597,12 +598,23 @@ namespace utl::impl {
     [[nodiscard]]
     Node ERSLIB_EXPORT from_string(
         const std::string& chars,
-        std::size_t recursion_limit = impl::default_recursion_limit
+        std::size_t recursion_limit = default_recursion_limit
     );
     [[nodiscard]]
     Node ERSLIB_EXPORT from_file(
         const fs::path& filepath,
-        std::size_t recursion_limit = impl::default_recursion_limit
+        std::size_t recursion_limit = default_recursion_limit
+    );
+
+    [[nodiscard]]
+    ers::Result<Node> ERSLIB_EXPORT try_from_string(
+        const std::string& chars,
+        std::size_t recursion_limit = default_recursion_limit
+    );
+    [[nodiscard]]
+    ers::Result<Node> ERSLIB_EXPORT try_from_file(
+        const fs::path& filepath,
+        std::size_t recursion_limit = default_recursion_limit
     );
 
     namespace literals {

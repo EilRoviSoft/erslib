@@ -1341,6 +1341,20 @@ namespace utl::impl {
         return from_string(chars, recursion_limit);
     }
 
+
+    ers::Result<Node> try_from_string(const std::string& chars, std::size_t recursion_limit) try {
+        return from_string(chars, recursion_limit);
+    } catch (const std::exception& e) {
+        return ers::make_error("Malformed JSON: {}", e.what());
+    }
+
+    ers::Result<Node> try_from_file(const fs::path& filepath, std::size_t recursion_limit) try {
+        return from_file(filepath, recursion_limit);
+    } catch (const std::exception& e) {
+        return ers::make_error("Cannot read '{}': {}", filepath.generic_string(), e.what());
+    }
+
+
     Node literals::operator ""_json(const char* cstr, std::size_t size) {
         return from_string(std::string(cstr, size));
     }

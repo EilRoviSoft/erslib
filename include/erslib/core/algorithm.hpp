@@ -5,6 +5,7 @@
 
 #include <erslib/core/algorithm/container.hpp>
 #include <erslib/core/algorithm/hash.hpp>
+#include <erslib/core/algorithm/split/args.hpp>
 #include <erslib/core/algorithm/split/regular.hpp>
 #include <erslib/core/algorithm/split/smart.hpp>
 
@@ -15,6 +16,8 @@ namespace ers::algo {
     using impl::algo::keys_sorted_by_value;
     using impl::algo::insert_sorted;
     using impl::algo::combine;
+
+    using impl::algo::split_args;
 
     using RegularSplitter = impl::algo::SplitProcessor<impl::algo::RegularSplitIterator>;
     using SmartSplitter = impl::algo::SplitProcessor<impl::algo::SmartSplitIterator>;

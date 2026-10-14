@@ -43,7 +43,7 @@ ers::Status conduit::impl::JoinClause::render(Context& ctx) const {
 }
 
 
-conduit::impl::Clause conduit::impl::clauses::join_with_alias(std::string table, std::string alias, std::string left, EOp op, std::string right) {
+conduit::impl::Clause conduit::impl::clauses::join(std::string table, std::string alias, std::string left, EOp op, std::string right) {
     return make_clause<JoinClause>(std::move(table), std::move(alias), std::move(left), std::move(right), op);
 }
 

@@ -49,14 +49,16 @@ namespace ers::modkit::impl {
 
         template<typename T, typename K>
         Result<Handle<T>> get(const K& k) const {
-            auto result = m_data.get(k);
+            auto result = m_data.visit(k, [](const Object& what) {
+                return what.template get<resource_type_t<T>>().view();
+            });
 
 
             if (!result)
                 return make_error("Element with key {} is not found", k);
 
 
-            return result->template get<resource_type_t<T>>().view();
+            return std::move(*result);
         }
 
 

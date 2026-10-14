@@ -55,3 +55,15 @@ TEST_CASE("require_field") {
         REQUIRE(s == obj["str"].as<string>());
     }
 }
+
+TEST_CASE("read_as") {
+    auto json = utl::from_string(R"({"a": 5, "b": -1, "c": "x", "d": true, "e": 1.5})");
+
+    REQUIRE(utl::read_as<u32>(json, "a") == 5u);
+    REQUIRE(!utl::read_as<u32>(json, "b"));
+    REQUIRE(!utl::read_as<u32>(json, "c"));
+    REQUIRE(utl::read_as<std::string>(json, "c") == "x");
+    REQUIRE(utl::read_as<bool>(json, "d") == true);
+    REQUIRE(utl::read_as<f64>(json, "a") == 5.0);
+    REQUIRE(!utl::read_as<i64>(json, "missing"));
+}

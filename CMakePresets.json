@@ -20,7 +20,11 @@
                 "ERSLIB_BUILD_CONDUIT": "ON",
                 "ERSLIB_BUILD_MODKIT": "ON",
                 "ERSLIB_BUILD_EASY_ECS": "ON",
-                "ERSLIB_BUILD_LUASCHEMA": "ON"
+                "ERSLIB_BUILD_LUASCHEMA": "ON",
+                "ERSLIB_BUILD_CRYPTO": "ON",
+                "ERSLIB_BUILD_LOGGING": "ON",
+                "ERSLIB_BUILD_WEB": "ON",
+                "ERSLIB_WEB_USE_BOOST_ASIO": "ON"
             }
         },
         {
