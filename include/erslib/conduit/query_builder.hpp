@@ -158,3 +158,8 @@ namespace conduit::ext {
     using impl::WhereOpClause;
     using impl::WhereOrClause;
 }
+
+
+// Defines
+
+#define ERS_CONDUIT_WITH_ORM using namespace conduit::orm

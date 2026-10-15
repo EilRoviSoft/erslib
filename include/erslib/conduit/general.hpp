@@ -67,4 +67,11 @@ namespace conduit {
     using impl::with_conn;
     using impl::with_tx;
     using impl::with_query;
+
+    using impl::TryQueryResult;
+
+    using impl::try_invoke;
+    using impl::try_with_conn;
+    using impl::try_with_tx;
+    using impl::try_with_query;
 }

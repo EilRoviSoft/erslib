@@ -20,6 +20,27 @@ namespace ers::impl {
 }
 
 
+namespace ers::impl {
+    template<typename T>
+    struct as_result {
+        using type = Result<T>;
+    };
+
+    template<>
+    struct as_result<void> {
+        using type = Status;
+    };
+
+    template<typename T>
+    struct as_result<Result<T>> {
+        using type = Result<T>;
+    };
+
+    template<typename T>
+    using as_result_t = typename as_result<std::remove_cvref_t<T>>::type;
+}
+
+
 // Exports
 
 namespace ers {
@@ -28,4 +49,7 @@ namespace ers {
 
     using impl::result_traits;
     using impl::flattened_result_t;
+
+    using impl::as_result;
+    using impl::as_result_t;
 }

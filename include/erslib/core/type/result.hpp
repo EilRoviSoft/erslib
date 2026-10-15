@@ -342,6 +342,17 @@ namespace ers::impl {
         }
 
 
+        template<typename T>
+        Result(const Result<T>& other) :
+            m_error(other.has_error() ? optional<error_type>(other.error()) : nullopt) {
+        }
+
+        template<typename T>
+        Result(Result<T>&& other) :
+            m_error(other.has_error() ? optional<error_type>(std::move(other).extract_error()) : nullopt) {
+        }
+
+
         [[nodiscard]] constexpr bool has_value() const noexcept { return !m_error.has_value(); }
         [[nodiscard]] constexpr bool has_error() const noexcept { return m_error.has_value(); }
 
