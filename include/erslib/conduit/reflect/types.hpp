@@ -279,13 +279,13 @@ namespace conduit::impl::reflect {
 
     // Check
 
-    template<ers::fixed_string Name, ers::fixed_string Expr>
+    template<ers::fixed_string Expr>
     struct Check {
         using kind = kinds::ECheck;
     };
 
-    template<ers::fixed_string Name, ers::fixed_string Expr>
-    struct entry_traits<Check<Name, Expr>> : entry_defaults {
+    template<ers::fixed_string Expr>
+    struct entry_traits<Check<Expr>> : entry_defaults {
         static consteval std::string ddl(const constraint_context& ctx) {
             return "CONSTRAINT " + std::string(ctx.name)
                 + " CHECK (" + std::string(Expr.to_sv()) + ")";

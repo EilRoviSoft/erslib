@@ -341,9 +341,6 @@ namespace ers::impl {
             m_error(std::move(error)) {
         }
 
-        constexpr Result(Result&& other) noexcept :
-            m_error(other.has_error() ? optional(other.error()) : nullopt) {
-        }
 
         [[nodiscard]] constexpr bool has_value() const noexcept { return !m_error.has_value(); }
         [[nodiscard]] constexpr bool has_error() const noexcept { return m_error.has_value(); }

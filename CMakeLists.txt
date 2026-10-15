@@ -129,6 +129,7 @@ target_sources(erslib_core
 
         "src/erslib/core/type/diagnostic.cpp"
         "src/erslib/core/type/uuid.cpp"
+        "src/erslib/core/type/version.cpp"
 
         "src/erslib/core/util/file.cpp"
         "src/erslib/core/util/string.cpp"
