@@ -5,8 +5,9 @@
 #include <ranges>
 
 // ers
-#include <erslib/core/fwd.hpp>
 #include <erslib/core/algorithm.hpp>
+#include <erslib/core/assert.hpp>
+#include <erslib/core/fwd.hpp>
 #include <erslib/core/macro.hpp>
 #include <erslib/core/util/tuple.hpp>
 #include <erslib/easy_ecs/component.hpp>

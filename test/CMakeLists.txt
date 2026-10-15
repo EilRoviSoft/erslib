@@ -42,37 +42,55 @@ find_package(doctest CONFIG REQUIRED)
 #----------------------------------------------------------------------------------------------------------------------
 
 
-file(GLOB SIMPLE_SOURCES CONFIGURE_DEPENDS
-    "${CMAKE_CURRENT_SOURCE_DIR}/simple/*.cpp"
-)
-source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${SIMPLE_SOURCES})
+add_library(test_simple_main OBJECT "simple.cpp")
+target_link_libraries(test_simple_main PUBLIC doctest::doctest)
+target_compile_definitions(test_simple_main PUBLIC DOCTEST_CONFIG_USE_STD_HEADERS)
 
+set(SIMPLE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/simple")
 
-add_executable(test_simple)
-target_sources(test_simple PRIVATE ${SIMPLE_SOURCES} "simple.cpp")
-
-target_link_libraries(test_simple
-    PRIVATE
-        erslib::core erslib::contrib erslib::conduit erslib::modkit erslib::easy_ecs erslib::luaschema
-        doctest::doctest
+file(GLOB SIMPLE_MODULES CONFIGURE_DEPENDS
+    LIST_DIRECTORIES true
+    RELATIVE "${SIMPLE_DIR}"
+    "${SIMPLE_DIR}/*"
 )
 
-target_compile_definitions(test_simple
-    PRIVATE
-        DOCTEST_CONFIG_USE_STD_HEADERS
-)
+# Builds every per-module test, so "test_simple" still exists as a single target in VS
+add_custom_target(test_simple)
 
+foreach(MODULE IN LISTS SIMPLE_MODULES)
+    if(NOT IS_DIRECTORY "${SIMPLE_DIR}/${MODULE}")
+        continue()
+    endif()
 
-if(NOT IS_TOP_LEVEL)
-    win_copy_deps_to_target_dir(test_simple erslib::core erslib::contrib erslib::modkit erslib::easy_ecs erslib::luaschema)
+    if(NOT TARGET erslib::${MODULE})
+        message(STATUS "Skipping simple tests for '${MODULE}': erslib::${MODULE} is not built")
+        continue()
+    endif()
+
+    set(TEST_TARGET "test_simple_${MODULE}")
+
+    file(GLOB_RECURSE TEST_SOURCES CONFIGURE_DEPENDS "${SIMPLE_DIR}/${MODULE}/*.cpp")
+    source_group(TREE "${SIMPLE_DIR}/${MODULE}" FILES ${TEST_SOURCES})
+
+    add_executable(${TEST_TARGET} ${TEST_SOURCES})
+    target_link_libraries(${TEST_TARGET} PRIVATE test_simple_main erslib::${MODULE})
+
+    if(NOT IS_TOP_LEVEL)
+        win_copy_deps_to_target_dir(${TEST_TARGET} erslib::${MODULE})
+    endif()
+
+    add_test(NAME ${TEST_TARGET} COMMAND ${TEST_TARGET})
+    add_dependencies(test_simple ${TEST_TARGET})
+
+    message(STATUS "Discovered simple test: ${MODULE} -> Target: ${TEST_TARGET}")
+endforeach()
+
+if(TARGET erslib_core)
+    target_compile_definitions(erslib_core
+        PRIVATE
+            ERS_ASSERT_INFO
+    )
 endif()
-
-target_compile_definitions(erslib_core
-    PRIVATE
-        ERS_ASSERT_INFO
-)
-
-add_test(NAME test_simple COMMAND test_simple)
 
 
 #----------------------------------------------------------------------------------------------------------------------
@@ -147,7 +165,8 @@ function(add_sandbox_test)
         )
     endif()
 
-    add_test(NAME ${TEST_TARGET} COMMAND ${TEST_TARGET})
+    # Sandboxes are interactive (windows, manual checks), so they're not registered with
+    # CTest and never show up in Test Explorer / ctest runs. Launch them as startup items.
 
     message(STATUS "Discovered sandbox test: ${TEST_NAME} -> Target: ${TEST_TARGET}")
 endfunction()
