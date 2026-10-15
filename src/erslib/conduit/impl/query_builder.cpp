@@ -110,7 +110,7 @@ ers::Status conduit::impl::QueryBuilder::_render_custom(Context& ctx, const Slot
 
     for (const auto& it : _clauses) {
         if (same_slot(it->slot(), binding.slot))
-            group.push_back(&it);
+            group.emplace_back(&it);
     }
 
     if (group.empty()) {

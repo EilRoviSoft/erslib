@@ -156,7 +156,7 @@ std::vector<ers::modkit::impl::stage_order_info_t> ers::modkit::impl::resolve_st
     for (const auto& phase : phases_order) {
         for (const auto& mod : mods_order) {
             for (const auto& index : indexes_per_mod[mod][phase]) {
-                stages_order.emplace_back(stage_order_info_t {
+                stages_order.push_back({
                     .mod   = mod,
                     .phase = phase,
                     .index = index

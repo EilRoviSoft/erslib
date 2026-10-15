@@ -18,12 +18,12 @@ namespace ers::impl {
 
             if (pos == std::string_view::npos) {
                 if (start < sv.size())
-                    result.push_back(sv.substr(start));
+                    result.emplace_back(sv.substr(start));
                 break;
             }
 
             if (pos > start)
-                result.push_back(sv.substr(start, pos - start));
+                result.emplace_back(sv.substr(start, pos - start));
             start = pos + 1;
         }
 

@@ -18,7 +18,7 @@ quill::Logger* ers::logging::impl::make_logger(const logger_options_t& options) 
 
     std::vector<std::shared_ptr<quill::Sink>> sinks;
 
-    sinks.push_back(quill::Frontend::create_or_get_sink<quill::RotatingFileSink>(
+    sinks.emplace_back(quill::Frontend::create_or_get_sink<quill::RotatingFileSink>(
         options.file.string(),
         [&options] {
             quill::RotatingFileSinkConfig cfg;
@@ -36,7 +36,7 @@ quill::Logger* ers::logging::impl::make_logger(const logger_options_t& options) 
     ));
 
     if (options.mirror_to_console)
-        sinks.push_back(quill::Frontend::create_or_get_sink<quill::ConsoleSink>(options.name + "_console"));
+        sinks.emplace_back(quill::Frontend::create_or_get_sink<quill::ConsoleSink>(options.name + "_console"));
 
     auto* logger = quill::Frontend::create_or_get_logger(
         options.name,

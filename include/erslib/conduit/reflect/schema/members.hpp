@@ -19,10 +19,10 @@ namespace conduit::impl::reflect {
             stack.pop_back();
 
             for (const auto member : std::meta::nonstatic_data_members_of(current, std::meta::access_context::current()))
-                out.push_back(member);
+                out.emplace_back(member);
 
             for (const auto base : std::meta::bases_of(current, std::meta::access_context::current()))
-                stack.push_back(std::meta::type_of(base));
+                stack.emplace_back(std::meta::type_of(base));
         }
 
         return out;

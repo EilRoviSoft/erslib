@@ -98,14 +98,14 @@ namespace conduit::impl::reflect {
 
             if constexpr (Entity<T>) {
                 if constexpr (std::is_same_v<schema_of<T>, S>) {
-                    nodes.push_back(it);
+                    nodes.emplace_back(it);
                     names.emplace_back(qualified_name<T>);
 
                     auto& deps = refs.emplace_back();
 
                     template for (constexpr auto d : declaration_list<T>) {
                         for (const std::string_view table : entry_traits<entry_type<d>>::references)
-                            deps.push_back(qualify(S::name, table));
+                            deps.emplace_back(qualify(S::name, table));
                     }
                 }
             }
@@ -144,7 +144,7 @@ namespace conduit::impl::reflect {
                     return fail("foreign key in '" + names[i] + "' references unknown table '" + ref + "'.");
 
                 pending[i]++;
-                dependants[j].push_back(i);
+                dependants[j].emplace_back(i);
             }
         }
 
@@ -174,7 +174,7 @@ namespace conduit::impl::reflect {
             }
 
             done[next] = true;
-            order.push_back(nodes[next]);
+            order.emplace_back(nodes[next]);
 
             for (const size_t it : dependants[next])
                 pending[it]--;

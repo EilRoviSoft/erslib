@@ -265,7 +265,7 @@ namespace {
                 sdl_vertex.tex_coord.x = vertex.tex_coord.x;
                 sdl_vertex.tex_coord.y = vertex.tex_coord.y;
 
-                geometry.vertices.push_back(sdl_vertex);
+                geometry.vertices.emplace_back(sdl_vertex);
             }
 
             geometry.indices.assign(indices.begin(), indices.end());

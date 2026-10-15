@@ -25,10 +25,13 @@ namespace ers::impl {
 
 
     template<typename T>
-    inline constexpr bool is_result_v = false;
+    struct is_result : std::false_type {};
 
     template<typename T>
-    inline constexpr bool is_result_v<Result<T>> = true;
+    struct is_result<Result<T>> : std::true_type {};
+
+    template<typename T>
+    inline constexpr bool is_result_v = is_result<T>::value;
 }
 
 

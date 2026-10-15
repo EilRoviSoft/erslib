@@ -6,6 +6,8 @@
 #include <cstring>
 #include <span>
 #include <string>
+#include <tuple>
+#include <type_traits>
 #include <utility>
 
 
@@ -145,5 +147,31 @@ template<typename T, typename Policy>
 struct ers::THashBase<T, Policy> {
     constexpr size_t operator()(T what, size_t seed) const noexcept {
         return ers::THashBase<std::underlying_type_t<T>, Policy> {}(std::to_underlying(what), seed);
+    }
+};
+
+
+// Specializations for composite types
+
+template<typename First, typename Second, typename Policy>
+struct ers::THashBase<std::pair<First, Second>, Policy> {
+    using type = std::pair<First, Second>;
+
+    constexpr size_t operator()(const type& what, size_t seed = 0) const {
+        seed = THashBase<std::remove_cvref_t<First>, Policy> {}(what.first, seed);
+        return THashBase<std::remove_cvref_t<Second>, Policy> {}(what.second, seed);
+    }
+};
+
+template<typename... Ts, typename Policy>
+struct ers::THashBase<std::tuple<Ts...>, Policy> {
+    using type = std::tuple<Ts...>;
+
+    constexpr size_t operator()(const type& what, size_t seed = 0) const {
+        std::apply([&seed]<typename... T>(const T&... part) {
+            ((seed = THashBase<std::remove_cvref_t<T>, Policy> {}(part, seed)), ...);
+        }, what);
+
+        return seed;
     }
 };
