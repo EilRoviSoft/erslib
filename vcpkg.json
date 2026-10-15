@@ -9,6 +9,7 @@
     "boost-smart-ptr",
     "boost-thread",
     "boost-unordered",
+    "boost-uuid",
     "botan",
     "cpptrace",
     "crow",

@@ -48,7 +48,13 @@ namespace utl::impl {
         return ers::nullopt;
     }
 
-    template<JsonReadable T>
+
+    template<typename T>
+    concept NodeReadable = requires(const Node& node) {
+        { read_as<T>(node) } -> std::same_as<ers::optional<T>>;
+    };
+
+    template<NodeReadable T>
     ers::optional<T> read_as(const Node& json, std::string_view key) {
         if (!json.is_object())
             return ers::nullopt;
@@ -59,3 +65,26 @@ namespace utl::impl {
         return ers::nullopt;
     }
 }
+
+
+// Some niche implementations
+
+#ifdef _HAS_BOOST_UUID
+
+// ers
+#include <erslib/core/type/uuid.hpp>
+
+namespace utl::impl {
+    template<std::same_as<ers::uuid> T>
+    ers::optional<T> read_as(const Node& node) {
+        if (const auto* value = node.get_if<String>()) {
+            if (auto r = ers::uuid_from_string(*value))
+                return *r;
+        }
+
+        return ers::nullopt;
+    }
+}
+
+
+#endif

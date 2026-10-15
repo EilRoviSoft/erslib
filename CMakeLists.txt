@@ -118,6 +118,7 @@ target_sources(erslib_core
         "src/erslib/core/algorithm/split/smart.cpp"
 
         "src/erslib/core/convert/pg_time.cpp"
+        "src/erslib/core/convert/time.cpp"
 
         "src/erslib/core/exception/internal.cpp"
 
@@ -127,6 +128,7 @@ target_sources(erslib_core
         "src/erslib/core/thread_safe/shuffle_seed.cpp"
 
         "src/erslib/core/type/diagnostic.cpp"
+        "src/erslib/core/type/uuid.cpp"
 
         "src/erslib/core/util/file.cpp"
         "src/erslib/core/util/string.cpp"
@@ -138,6 +140,7 @@ erslib_optional_package(erslib_core boost_optional Boost::multi_index _HAS_BOOST
 erslib_optional_package(erslib_core boost_optional Boost::optional _HAS_BOOST_OPTIONAL)
 erslib_optional_package(erslib_core boost_smart_ptr Boost::smart_ptr _HAS_BOOST_SMART_PTR)
 erslib_optional_package(erslib_core boost_thread Boost::thread _HAS_BOOST_THREAD)
+erslib_optional_package(erslib_core boost_uuid Boost::uuid _HAS_BOOST_UUID)
 erslib_optional_package(erslib_core cpptrace cpptrace::cpptrace _HAS_CPPTRACE)
 
 if(ERSLIB_ENABLE_REFLECTION)

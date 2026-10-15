@@ -9,6 +9,7 @@
 #include <erslib/conduit/traits/scalar.hpp>
 #include <erslib/conduit/traits/string.hpp>
 #include <erslib/conduit/traits/time.hpp>
+#include <erslib/conduit/traits/uuid.hpp>
 #include <erslib/conduit/traits/vec2.hpp>
 #include <erslib/conduit/traits/vector.hpp>
 

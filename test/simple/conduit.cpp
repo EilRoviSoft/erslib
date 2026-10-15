@@ -88,6 +88,17 @@ TEST_CASE("conduit: where variants") {
     CHECK(contains(sql_of(select_from("t") | where_in("a", std::vector<int> {}, true)), "WHERE TRUE"));
 }
 
+TEST_CASE("conduit: vectors bind as escaped array literals") {
+    using conduit::impl::sql_value;
+
+    CHECK(sql_value<std::vector<int>>::to_text({ 1, -2, 3 }) == "{1,-2,3}");
+    CHECK(sql_value<std::vector<bool>>::to_text({ true, false }) == "{t,f}");
+    CHECK(sql_value<std::vector<std::string>>::to_text({}) == "{}");
+    CHECK(sql_value<std::vector<std::string>>::to_text({ "a b", "x,y", "q\"t", "b\\s", "", "NULL", "{}" })
+        == R"({"a b","x,y","q\"t","b\\s","","NULL","{}"})");
+    CHECK(sql_value<std::vector<ers::optional<std::string>>>::to_text({ "a", ers::nullopt }) == R"({"a",NULL})");
+}
+
 TEST_CASE("conduit: identifiers are validated, values are bound") {
     CHECK_FALSE((select_from("users") | where("id; DROP TABLE users", "="_op, 1)).to_sql().has_value());
     CHECK_FALSE((select_from("users") | columns("1")).to_sql().has_value());

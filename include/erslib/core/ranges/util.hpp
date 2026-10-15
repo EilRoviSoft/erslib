@@ -22,3 +22,12 @@ namespace ers::impl::views {
         });
     }
 }
+
+namespace ers::impl::ranges {
+    template<std::ranges::input_range R, typename Proj>
+    auto collect(R&& range, Proj proj) {
+        return std::forward<R>(range)
+            | std::views::transform(proj)
+            | std::ranges::to<std::vector>();
+    }
+}

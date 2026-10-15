@@ -15,3 +15,7 @@ namespace ers::views {
     using impl::views::mem_filter;
     using impl::views::mem_transform;
 }
+
+namespace ers::ranges {
+    using impl::ranges::collect;
+}

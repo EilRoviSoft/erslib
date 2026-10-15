@@ -21,6 +21,10 @@ namespace conduit::impl {
 namespace conduit::impl {
     template<typename T>
     struct sql_value {
+        static std::string to_text(const T& what) {
+            return std::format("{}", what);
+        }
+
         static void bind(pqxx::params& out, const T& what) {
             out.append(what);
         }

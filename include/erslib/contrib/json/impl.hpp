@@ -597,7 +597,7 @@ namespace utl::impl {
 
     [[nodiscard]]
     Node ERSLIB_EXPORT from_string(
-        const std::string& chars,
+        std::string_view chars,
         std::size_t recursion_limit = default_recursion_limit
     );
     [[nodiscard]]
@@ -608,7 +608,7 @@ namespace utl::impl {
 
     [[nodiscard]]
     ers::Result<Node> ERSLIB_EXPORT try_from_string(
-        const std::string& chars,
+        std::string_view chars,
         std::size_t recursion_limit = default_recursion_limit
     );
     [[nodiscard]]

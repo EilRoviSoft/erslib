@@ -1309,7 +1309,7 @@ namespace utl::impl {
 // ===============================
 
 namespace utl::impl {
-    Node from_string(const std::string& chars, std::size_t recursion_limit) {
+    Node from_string(std::string_view chars, std::size_t recursion_limit) {
         parser parser(chars, recursion_limit);
 
         // skip leading whitespace
@@ -1342,7 +1342,7 @@ namespace utl::impl {
     }
 
 
-    ers::Result<Node> try_from_string(const std::string& chars, std::size_t recursion_limit) try {
+    ers::Result<Node> try_from_string(std::string_view chars, std::size_t recursion_limit) try {
         return from_string(chars, recursion_limit);
     } catch (const std::exception& e) {
         return ers::make_error("Malformed JSON: {}", e.what());

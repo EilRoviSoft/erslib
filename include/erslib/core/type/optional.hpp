@@ -1,5 +1,9 @@
 #pragma once
 
+// std
+#include <version>
+
+
 #if __cpp_lib_optional >= 202506L
 
 

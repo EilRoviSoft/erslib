@@ -1,6 +1,9 @@
 #pragma once
 
 // std
+#include <functional>
+#include <type_traits>
+#include <utility>
 #include <variant>
 
 // ers
@@ -14,6 +17,87 @@
 namespace ers::impl {
     template<typename T>
     class Result;
+
+
+    struct ok_t {};
+
+    constexpr ok_t ok;
+
+
+    template<typename T>
+    inline constexpr bool is_result_v = false;
+
+    template<typename T>
+    inline constexpr bool is_result_v<Result<T>> = true;
+}
+
+
+// Monadic operations
+
+namespace ers::impl {
+    struct ResultMonad {
+        template<typename Self, typename F>
+        constexpr auto and_then(this Self&& self, F&& f) {
+            using R = std::remove_cvref_t<decltype(_call(std::forward<Self>(self), std::forward<F>(f)))>;
+
+            static_assert(is_result_v<R>, "and_then: the callable must return ers::Result");
+
+            if (!self)
+                return R(_error(std::forward<Self>(self)));
+
+            return R(_call(std::forward<Self>(self), std::forward<F>(f)));
+        }
+
+        template<typename Self, typename F>
+        constexpr auto transform(this Self&& self, F&& f) {
+            using U = std::remove_cvref_t<decltype(_call(std::forward<Self>(self), std::forward<F>(f)))>;
+
+            if (!self)
+                return Result<U>(_error(std::forward<Self>(self)));
+
+            if constexpr (std::is_void_v<U>) {
+                _call(std::forward<Self>(self), std::forward<F>(f));
+                return Result<U>(ok);
+            } else
+                return Result<U>(_call(std::forward<Self>(self), std::forward<F>(f)));
+        }
+
+        template<typename Self, typename F>
+        constexpr auto or_else(this Self&& self, F&& f) {
+            using R = std::remove_cvref_t<Self>;
+
+            if (self)
+                return R(std::forward<Self>(self));
+
+            return R(std::invoke(std::forward<F>(f), _error(std::forward<Self>(self))));
+        }
+
+        template<typename Self, typename U>
+        constexpr auto value_or(this Self&& self, U&& fallback)
+            requires (!std::is_void_v<typename std::remove_cvref_t<Self>::value_type>) {
+            using T = typename std::remove_cvref_t<Self>::value_type;
+
+            return self ? T(std::forward<Self>(self).value()) : T(std::forward<U>(fallback));
+        }
+
+
+    private:
+        template<typename Self, typename F>
+        static constexpr decltype(auto) _call(Self&& self, F&& f) {
+            if constexpr (std::is_void_v<typename std::remove_cvref_t<Self>::value_type>)
+                return std::invoke(std::forward<F>(f));
+            else
+                return std::invoke(std::forward<F>(f), std::forward<Self>(self).value());
+        }
+
+        template<typename Self>
+        static constexpr Diagnostic _error(Self&& self) {
+            if constexpr (std::is_rvalue_reference_v<Self&&> && !std::is_const_v<std::remove_reference_t<Self>>)
+                return std::move(self).extract_error();
+            else
+                return self.error();
+        }
+    };
 }
 
 
@@ -21,7 +105,7 @@ namespace ers::impl {
 
 namespace ers::impl {
     template<typename T>
-    class [[nodiscard]] Result {
+    class [[nodiscard]] Result : public ResultMonad {
     public:
         using value_type = T;
         using error_type = Diagnostic;
@@ -121,7 +205,7 @@ namespace ers::impl {
 
 namespace ers::impl {
     template<typename T>
-    class [[nodiscard]] Result<T&> {
+    class [[nodiscard]] Result<T&> : public ResultMonad {
     public:
         using value_type = T;
         using error_type = Diagnostic;
@@ -138,9 +222,7 @@ namespace ers::impl {
             m_variant(value) {
         }
 
-        constexpr Result(value_type&& value) noexcept :
-            m_variant(std::move(value)) {
-        }
+        constexpr Result(value_type&& value) = delete;
 
         constexpr Result(const error_type& error) :
             m_variant(std::in_place_index<1>, error) {
@@ -161,10 +243,7 @@ namespace ers::impl {
             m_variant = value;
             return *this;
         }
-        constexpr Result& operator=(value_type&& value) {
-            m_variant = std::move(value);
-            return *this;
-        }
+        constexpr Result& operator=(value_type&& value) = delete;
 
         constexpr Result& operator=(const error_type& error) {
             m_variant = error;
@@ -221,11 +300,11 @@ namespace ers::impl {
     Result(T) -> Result<T>;
 
     template<typename T>
-    constexpr void swap(Result<T>& lhs, Result<T>& rhs) noexcept(noexcept(lhs.swap(rhs))) {
-        lhs.swap(rhs);
+    constexpr void swap(Result<T>& lhs, Result<T>& rhs) noexcept(noexcept(std::swap(lhs.m_variant, rhs.m_variant))) {
+        std::swap(lhs.m_variant, rhs.m_variant);
     }
 
-    template<typename T, typename E>
+    template<typename T>
     constexpr bool operator==(const Result<T>& lhs, const Result<T>& rhs) {
         if (lhs.has_value() != rhs.has_value())
             return false;
@@ -241,12 +320,8 @@ namespace ers::impl {
 // Result<void, ...>
 
 namespace ers::impl {
-    struct ok_t {};
-
-    constexpr ok_t ok;
-
     template<>
-    class [[nodiscard]] Result<void> {
+    class [[nodiscard]] Result<void> : public ResultMonad {
     public:
         using value_type = void;
         using error_type = Diagnostic;
@@ -263,9 +338,8 @@ namespace ers::impl {
             m_error(std::move(error)) {
         }
 
-        template<typename T>
         constexpr Result(Result&& other) noexcept :
-            m_error(other.has_error() ? optional<error_type>(other.error()) : nullopt) {
+            m_error(other.has_error() ? optional(other.error()) : nullopt) {
         }
 
         [[nodiscard]] constexpr bool has_value() const noexcept { return !m_error.has_value(); }
@@ -307,4 +381,4 @@ namespace ers {
 
 // Macro
 
-#define ERS_TRY(EXPR) if (!(EXPR)) return (EXPR).error()
+#define ERS_TRY(EXPR) if (auto&& _ers_try = (EXPR); !_ers_try) return std::move(_ers_try).extract_error()
