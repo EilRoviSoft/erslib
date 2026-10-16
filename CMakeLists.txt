@@ -352,7 +352,6 @@ if(ERSLIB_BUILD_WEB)
             "src/erslib/web/request.cpp"
             "src/erslib/web/response.cpp"
 
-            "src/erslib/web/middleware/body_limit.cpp"
             "src/erslib/web/middleware/cors.cpp"
             "src/erslib/web/middleware/json_body.cpp"
             "src/erslib/web/middleware/rate_limit.cpp"

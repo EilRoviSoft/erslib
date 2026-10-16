@@ -7,6 +7,9 @@
 
 // ers
 #include <erslib/web.hpp>
+#include <erslib/web/middleware/cors.hpp>
+#include <erslib/web/middleware/json_body.hpp>
+#include <erslib/web/middleware/rate_limit.hpp>
 
 
 // Definitions
@@ -62,24 +65,6 @@ TEST_CASE("web: request helpers") {
     REQUIRE(ers::web::query_number<u32>(qs, "missing", 20, 1, 100) == 20);
     REQUIRE(ers::web::query_flag(qs, "flag"));
     REQUIRE(!ers::web::query_flag(qs, "limit"));
-}
-
-TEST_CASE("web: body limit") {
-    ers::web::BodyLimit limit;
-    ers::web::BodyLimit::context ctx;
-
-    limit.set_limit(4);
-
-    auto small = make_request("abcd");
-    crow::response small_res;
-    limit.before_handle(small, small_res, ctx);
-    REQUIRE(!small_res.is_completed());
-
-    auto big = make_request("abcde");
-    crow::response big_res;
-    limit.before_handle(big, big_res, ctx);
-    REQUIRE(big_res.is_completed());
-    REQUIRE(big_res.code == 413);
 }
 
 TEST_CASE("web: cors") {
