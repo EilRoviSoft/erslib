@@ -50,3 +50,11 @@ namespace ers::web::impl {
         void _apply(const crow::request& req, crow::response& res) const;
     };
 }
+
+
+// Exports
+
+namespace ers::web {
+    using impl::cors_options_t;
+    using impl::Cors;
+}

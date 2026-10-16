@@ -6,11 +6,6 @@
 #include <erslib/web/request.hpp>
 #include <erslib/web/response.hpp>
 
-#include <erslib/web/middleware/body_limit.hpp>
-#include <erslib/web/middleware/cors.hpp>
-#include <erslib/web/middleware/json_body.hpp>
-#include <erslib/web/middleware/rate_limit.hpp>
-
 #ifdef ERSLIB_WEB_HAS_LOGGING
 #include <erslib/web/log.hpp>
 #endif
@@ -31,17 +26,6 @@ namespace ers::web {
     using impl::bearer_token;
     using impl::query_number;
     using impl::query_flag;
-
-    using impl::BodyLimit;
-
-    using impl::cors_options_t;
-    using impl::Cors;
-
-    using impl::JsonBody;
-
-    using impl::RateLimitPolicy;
-    using impl::KeyedRateLimit;
-    using impl::refuse_too_many;
 
 #ifdef ERSLIB_WEB_HAS_LOGGING
     using impl::LogHandler;

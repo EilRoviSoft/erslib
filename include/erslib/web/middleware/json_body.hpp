@@ -29,3 +29,10 @@ namespace ers::web::impl {
         void after_handle(crow::request&, crow::response&, context&);
     };
 }
+
+
+// Exports
+
+namespace ers::web {
+    using impl::JsonBody;
+}

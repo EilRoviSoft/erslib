@@ -79,3 +79,12 @@ namespace ers::web::impl {
         optional<thread_safe::RateLimiter> _limiter;
     };
 }
+
+
+// Exports
+
+namespace ers::web {
+    using impl::RateLimitPolicy;
+    using impl::KeyedRateLimit;
+    using impl::refuse_too_many;
+}
