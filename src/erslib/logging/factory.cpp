@@ -14,7 +14,16 @@
 
 quill::Logger* ers::logging::impl::make_logger(const logger_options_t& options) {
     static std::once_flag backend_started;
-    std::call_once(backend_started, [] { quill::Backend::start(); });
+    std::call_once(backend_started, [] {
+        quill::BackendOptions backend_options;
+
+        backend_options.check_printable_char = [](char c) {
+            return static_cast<unsigned char>(c) >= 0x80
+                || (c >= ' ' && c <= '~') || c == '\n' || c == '\t' || c == '\r';
+        };
+
+        quill::Backend::start(backend_options);
+    });
 
     std::vector<std::shared_ptr<quill::Sink>> sinks;
 
