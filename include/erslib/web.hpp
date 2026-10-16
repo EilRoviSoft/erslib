@@ -3,7 +3,6 @@
 
 // Includes
 
-#include <erslib/web/context.hpp>
 #include <erslib/web/request.hpp>
 #include <erslib/web/response.hpp>
 
@@ -27,8 +26,6 @@ namespace ers::web {
     using impl::bearer_token;
     using impl::query_number;
     using impl::query_flag;
-
-    using impl::ContextWith;
 
 #ifdef ERSLIB_WEB_HAS_LOGGING
     using impl::LogHandler;
