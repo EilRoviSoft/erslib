@@ -41,6 +41,27 @@ std::string ers::web::impl::bearer_token(const crow::request& req) {
     return header.substr(bearer_prefix.size());
 }
 
+ers::optional<std::string> ers::web::impl::read_cookie(const crow::request& req, std::string_view name) {
+    auto [first, last] = req.headers.equal_range("Cookie");
+
+    for (auto it = first; it != last; ++it) {
+        std::string_view rest = it->second;
+
+        while (!rest.empty()) {
+            auto end = rest.find(';');
+            auto pair = util::trim(rest.substr(0, end));
+            rest = end == std::string_view::npos ? std::string_view() : rest.substr(end + 1);
+
+            auto equals = pair.find('=');
+
+            if (equals != std::string_view::npos && pair.substr(0, equals) == name)
+                return std::string(pair.substr(equals + 1));
+        }
+    }
+
+    return nullopt;
+}
+
 
 // Query string
 

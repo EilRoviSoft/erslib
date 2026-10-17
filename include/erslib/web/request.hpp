@@ -2,7 +2,6 @@
 
 // std
 #include <algorithm>
-#include <cstddef>
 #include <string>
 #include <string_view>
 
@@ -27,6 +26,7 @@ namespace ers::web::impl {
 
     optional<std::string> ERSLIB_EXPORT read_header(const crow::request& req, std::string_view name, size_t max_length = 256);
     std::string ERSLIB_EXPORT bearer_token(const crow::request& req);
+    optional<std::string> ERSLIB_EXPORT read_cookie(const crow::request& req, std::string_view name);
 
 
     template<typename T>

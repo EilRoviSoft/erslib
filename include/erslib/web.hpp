@@ -23,6 +23,7 @@ namespace ers::web {
 
     using impl::read_body;
     using impl::read_header;
+    using impl::read_cookie;
     using impl::bearer_token;
     using impl::query_number;
     using impl::query_flag;
