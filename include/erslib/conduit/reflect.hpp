@@ -136,3 +136,20 @@ namespace conduit::reflect {
 namespace conduit {
     using impl::reflect::create_tables_by_schema;
 }
+
+
+// Migrations
+
+#include <erslib/conduit/reflect/migrate.hpp>
+
+namespace conduit::ddl {
+    using impl::reflect::canonical_declaration;
+}
+
+namespace conduit::reflect {
+    using impl::reflect::table_declarations;
+}
+
+namespace conduit {
+    using impl::reflect::migrate;
+}

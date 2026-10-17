@@ -75,3 +75,22 @@ namespace conduit {
     using impl::try_with_tx;
     using impl::try_with_query;
 }
+
+
+// Migrations
+
+#include <erslib/conduit/impl/migrate.hpp>
+
+namespace conduit {
+    using impl::EApplyOn;
+    using impl::EMigrationEvent;
+
+    using impl::migrate_options_t;
+    using impl::migration_event_t;
+    using impl::migration_report_t;
+    using impl::migration_target_t;
+    using impl::table_declaration_t;
+
+    using impl::service_schema;
+    using impl::run_migrations;
+}

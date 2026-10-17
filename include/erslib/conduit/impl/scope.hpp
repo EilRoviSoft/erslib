@@ -172,6 +172,11 @@ namespace conduit::impl {
         return try_invoke([&] { return with_tx(source, std::forward<Fn>(fn), name); }, name);
     }
 
+    template<TransactionCallable Fn>
+    auto try_with_tx(pqxx::connection& conn, Fn&& fn, std::string_view name = {}) {
+        return try_invoke([&] { return with_tx(conn, std::forward<Fn>(fn), name); }, name);
+    }
+
     template<typename Tx = pqxx::work, ConnectionSource Source, Executable Q>
     auto try_with_query(Source& source, std::string_view name, Q query) {
         return try_invoke([&] { return with_query<Tx>(source, name, std::move(query)); }, name);

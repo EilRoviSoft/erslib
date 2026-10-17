@@ -4,9 +4,9 @@
 #include <array>
 #include <charconv>
 #include <concepts>
+#include <ranges>
 #include <span>
 #include <string>
-#include <string_view>
 #include <type_traits>
 
 // ers
@@ -125,18 +125,24 @@ namespace conduit::impl::reflect {
         return std::string(schema) + '.' + std::string(table);
     }
 
-    consteval std::string field_list(std::span<const std::string_view> what) {
-        std::string out = "(";
+    template<std::ranges::input_range R>
+    consteval std::string join(const R& what, std::string_view separator) {
+        std::string out;
+        bool first = true;
 
-        for (size_t i = 0; i < what.size(); i++) {
-            if (i != 0)
-                out += ", ";
+        for (const auto& it : what) {
+            if (!first)
+                out += separator;
 
-            out += what[i];
+            out += it;
+            first = false;
         }
 
-        out += ')';
         return out;
+    }
+
+    consteval std::string field_list(std::span<const std::string_view> what) {
+        return '(' + join(what, ", ") + ')';
     }
 }
 

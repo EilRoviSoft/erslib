@@ -10,61 +10,76 @@
 
 
 namespace conduit::impl::reflect {
+    template<Entity T, std::meta::info M>
+    consteval std::string column_definition() {
+        std::string out = std::string(column_name<M>) + ' ' + std::string(sql_type_name<M>);
+
+        if constexpr (is_identity_column<T, M>)
+            out += " GENERATED ALWAYS AS IDENTITY";
+        else if constexpr (!is_nullable<M>)
+            out += " NOT NULL";
+
+        template for (constexpr auto it : declaration_list<T>) {
+            using entry = entry_type<it>;
+
+            if constexpr (ColumnModifier<entry>)
+                if constexpr (entry_traits<entry>::field == column_name<M>)
+                    out += entry_traits<entry>::column_ddl();
+        }
+
+        return out;
+    }
+
     template<Entity T>
-    consteval std::string_view create_table() {
+    consteval std::vector<std::string> table_definitions() {
         static_assert(
             declaration_is_valid<T>,
             "Declaration names a column that does not exist on the entity"
         );
 
-        std::string out = "CREATE TABLE IF NOT EXISTS ";
-        out += qualified_name<T>;
-        out += " (\n";
+        std::vector<std::string> out;
 
-        template for (constexpr auto m : column_list<T>) {
-            out += "    ";
-            out += column_name<m>;
-            out += ' ';
-            out += sql_type_name<m>;
-
-            if constexpr (is_identity_column<T, m>)
-                out += " GENERATED ALWAYS AS IDENTITY";
-            else if constexpr (!is_nullable<m>)
-                out += " NOT NULL";
-
-            template for (constexpr auto it : declaration_list<T>) {
-                using entry = entry_type<it>;
-
-                if constexpr (ColumnModifier<entry>)
-                    if constexpr (entry_traits<entry>::field == column_name<m>)
-                        out += entry_traits<entry>::column_ddl();
-            }
-
-            out += ",\n";
-        }
+        template for (constexpr auto m : column_list<T>)
+            out.emplace_back(column_definition<T, m>());
 
         template for (constexpr auto it : declaration_list<T>) {
             using entry = entry_type<it>;
 
             if constexpr (TableConstraint<entry>) {
-                out += "    ";
-                out += entry_traits<entry>::ddl({
+                out.emplace_back(entry_traits<entry>::ddl({
                     .name = std::define_static_string(std::meta::identifier_of(it)),
                     .schema = schema_name<T>
-                });
-                out += ",\n";
+                }));
             }
         }
 
-        if (out.ends_with(",\n"))
-            out.resize(out.size() - 2);
-
-        out += "\n)";
-
-        return std::define_static_string(out);
+        return out;
     }
 
 
+    template<Entity T>
+    consteval std::string_view create_table() {
+        auto lines = table_definitions<T>();
+
+        for (auto& it : lines)
+            it.insert(0, "    ");
+
+        return std::define_static_string(
+            "CREATE TABLE IF NOT EXISTS " + std::string(qualified_name<T>) + " (\n" + join(lines, ",\n") + "\n)"
+        );
+    }
+
+    template<Entity T>
+    consteval std::string_view canonical_declaration() {
+        auto lines = table_definitions<T>();
+        std::ranges::sort(lines);
+
+        return std::define_static_string(join(lines, "\n"));
+    }
+}
+
+
+namespace conduit::impl::reflect {
     template<SchemaType S>
     consteval std::string_view create_schema() {
         static_assert(!std::is_same_v<S, NoSchema>, "NoSchema is not a schema that can be created.");
