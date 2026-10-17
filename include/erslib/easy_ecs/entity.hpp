@@ -55,7 +55,7 @@ namespace ecs::impl {
 }
 
 
-// Exports
+// Exports ---------------------------------------------------------------------
 
 namespace ecs {
     using impl::make_canonical_name;

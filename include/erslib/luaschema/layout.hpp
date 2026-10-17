@@ -14,7 +14,7 @@
 // std::string type;
 
 
-// Main implementation
+// Includes --------------------------------------------------------------------
 
 #include <erslib/luaschema/impl/field.hpp>
 #include <erslib/luaschema/impl/layout.hpp>
@@ -46,7 +46,7 @@
 #include <erslib/luaschema/properties/with_types.hpp>
 
 
-// Exports
+// Exports ---------------------------------------------------------------------
 
 namespace ers::luaschema {
     namespace properties = impl::properties;

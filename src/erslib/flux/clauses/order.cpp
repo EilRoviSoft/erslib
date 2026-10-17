@@ -8,6 +8,8 @@
 #include <erslib/flux/slots/order.hpp>
 
 
+// Implementation --------------------------------------------------------------
+
 // OrderClause
 
 flux::impl::OrderClause::OrderClause(std::string column, EOrder order) :

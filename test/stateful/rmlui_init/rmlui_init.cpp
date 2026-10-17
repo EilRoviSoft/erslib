@@ -17,7 +17,7 @@ namespace {
             return 0.0;
         }
 
-        bool LogMessage(Rml::Log::Type, const Rml::String& message) override {
+        bool LogMessage(Rml::Log::Type, const Rml::String&) override {
             return true;
         }
     };

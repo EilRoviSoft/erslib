@@ -4,6 +4,8 @@
 #include <quill/LogMacros.h>
 
 
+// Implementation --------------------------------------------------------------
+
 // Member functions
 
 ers::web::impl::LogHandler::LogHandler(quill::Logger* logger) :

@@ -11,7 +11,7 @@
 #include <erslib/export.hpp>
 
 
-// Scalar expressions
+// Implementation --------------------------------------------------------------
 
 
 // AliasClause

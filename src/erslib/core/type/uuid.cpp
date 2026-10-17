@@ -5,7 +5,7 @@
 #include <boost/uuid/uuid_io.hpp>
 
 
-// Implementation
+// Implementation --------------------------------------------------------------
 
 std::string ers::impl::uuid_to_string(const uuid& what) {
     return boost::uuids::to_string(what);
@@ -19,7 +19,7 @@ ers::Result<boost::uuids::uuid> ers::impl::uuid_from_string(std::string_view tex
 }
 
 
-// Formatter
+// Specializations -------------------------------------------------------------
 
 std::string std::formatter<boost::uuids::uuid>::format(const ers::uuid& v, std::format_context& ctx) const {
     return ers::uuid_to_string(v);

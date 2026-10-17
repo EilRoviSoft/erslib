@@ -21,7 +21,7 @@ namespace ers::impl::algo {
 
 
     public:
-        // Constructor
+        // Member functions
 
         explicit SplitProcessor(std::string_view content, std::string_view delims = " ") :
             m_storage(content),
@@ -63,7 +63,7 @@ namespace ers::impl::algo {
 
 
     public:
-        // Constructors
+        // Member functions
 
         TSplitIterator() = default;
         explicit TSplitIterator(const parent_type& parent, size_t offset) :
@@ -100,7 +100,7 @@ namespace ers::impl::algo {
         }
 
 
-        // Comparing
+        // Operators
 
         bool operator==(const TSplitIterator& other) const {
             return m_parent == other.m_parent && m_offset == other.m_offset;

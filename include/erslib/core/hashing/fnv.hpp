@@ -4,10 +4,12 @@
 #include <erslib/core/hashing/base.hpp>
 
 
-// Implementation
+// Details ---------------------------------------------------------------------
 
 #include "impl/fnv.hpp"
 
+
+// Implementation --------------------------------------------------------------
 
 // Algos usage
 

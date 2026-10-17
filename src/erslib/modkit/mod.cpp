@@ -16,7 +16,7 @@ using std::string_literals::operator ""s;
 using namespace ers::luaschema;
 
 
-// Internal
+// Details ---------------------------------------------------------------------
 
 namespace {
     ers::Result<ers::modkit::DependencyContainer> parse_dependencies(const utl::Json::array_type& array) {
@@ -99,7 +99,7 @@ namespace {
 }
 
 
-// Mod
+// Implementation --------------------------------------------------------------
 
 ers::modkit::impl::Mod::Mod(fs::path dir) :
     m_dir(std::move(dir)) {

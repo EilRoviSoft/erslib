@@ -4,7 +4,7 @@
 #include <chrono>
 
 
-// Implementation
+// Implementation --------------------------------------------------------------
 
 void ers::web::impl::refuse_too_many(crow::response& res, thread_safe::RateLimiter::duration wait) {
     auto seconds = std::chrono::ceil<std::chrono::seconds>(wait).count();

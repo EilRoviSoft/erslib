@@ -14,7 +14,7 @@ namespace ers::modkit::impl {
 }
 
 
-// Exports
+// Exports ---------------------------------------------------------------------
 
 namespace ers::modkit::util {
     using impl::is_stage_naming_scheme;

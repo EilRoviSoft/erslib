@@ -4,6 +4,8 @@
 #include <ranges>
 
 
+// Implementation --------------------------------------------------------------
+
 // Accessors
 
 flux::impl::LayoutView flux::impl::Layout::bindings() const noexcept {
@@ -73,7 +75,7 @@ ers::Status flux::impl::Layout::append(SlotBinding binding) {
 }
 
 
-// Checkers
+// Validators
 
 ers::Status flux::impl::Layout::_check_insertable(SlotRef slot) const {
     if (!slot)

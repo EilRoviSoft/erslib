@@ -8,14 +8,14 @@
 #include <erslib/core/type/time.hpp>
 
 
-// Details
+// Details ---------------------------------------------------------------------
 
 namespace ers::impl {
     static constexpr std::string_view default_timestamp_fmt = "%Y-%m-%dT%H:%M:%S";
 }
 
 
-// Implementation
+// Implementation --------------------------------------------------------------
 
 namespace ers::impl {
     template<typename Clock>
@@ -44,7 +44,7 @@ namespace ers::impl {
 }
 
 
-// Exports
+// Exports ---------------------------------------------------------------------
 
 namespace ers {
     using impl::timestamp_from_string;

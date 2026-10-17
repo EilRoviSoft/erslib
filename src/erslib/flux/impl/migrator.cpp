@@ -11,6 +11,8 @@
 #include <erslib/core/util/string.hpp>
 
 
+// Implementation --------------------------------------------------------------
+
 // Free functions
 
 flux::impl::EMigrationEvent flux::impl::decide_outcome(EDatabaseState state, const migration_t& what, u32 baseline) {

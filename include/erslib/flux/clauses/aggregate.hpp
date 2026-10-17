@@ -17,6 +17,8 @@
 #include <erslib/export.hpp>
 
 
+// Implementation --------------------------------------------------------------
+
 // AggregateClause
 
 namespace flux::impl {

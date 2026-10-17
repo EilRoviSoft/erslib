@@ -5,6 +5,8 @@
 #include <utility>
 
 
+// Implementation --------------------------------------------------------------
+
 // Accessors
 
 const ers::web::impl::cors_options_t& ers::web::impl::Cors::options() const {

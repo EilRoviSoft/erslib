@@ -7,7 +7,7 @@
 #include <erslib/core/type/result.hpp>
 
 
-// Definition
+// Implementation --------------------------------------------------------------
 
 namespace ers::impl {
     struct version_t {

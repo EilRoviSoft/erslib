@@ -12,7 +12,7 @@
 #include <erslib/core/util/string.hpp>
 
 
-// Definitions
+// Details ---------------------------------------------------------------------
 
 namespace {
     const std::regex versioned_name(R"(^(\d{4})_([a-z0-9_]+)\.(existing|fresh|always)\.sql$)");
@@ -83,7 +83,7 @@ namespace {
 }
 
 
-// Implementation
+// Implementation --------------------------------------------------------------
 
 ers::Result<flux::impl::migration_t> flux::impl::parse_migration(std::string_view filename, std::string sql) {
     std::string name(filename);

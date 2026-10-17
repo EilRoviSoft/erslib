@@ -22,7 +22,7 @@ namespace ers::luaschema::impl {
         virtual ~IParser() = default;
 
 
-        // Checkers
+        // Validators
 
         virtual Status exec(parser_context& ctx, sol::table table, std::string_view field, void* dst) const = 0;
     };

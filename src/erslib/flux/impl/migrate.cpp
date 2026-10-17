@@ -17,7 +17,7 @@
 #endif
 
 
-// Details
+// Details ---------------------------------------------------------------------
 
 namespace {
     constexpr std::string_view schema_name = ERSLIB_FLUX_SCHEMA;
@@ -80,7 +80,9 @@ namespace {
 }
 
 
-// Service class
+// Implementation --------------------------------------------------------------
+
+// PqxxMigrationStore
 
 flux::impl::PqxxMigrationStore::PqxxMigrationStore(pqxx::work& tx) :
     _tx(tx) {
@@ -158,7 +160,7 @@ void flux::impl::PqxxMigrationStore::forget(std::string_view schema, std::string
 }
 
 
-// Public free functions
+// Free functions
 
 std::string_view flux::impl::service_schema() {
     return schema_name;

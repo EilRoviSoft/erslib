@@ -5,22 +5,16 @@ namespace ers::impl::pattern {
     template<typename T>
     class TProxy {
     public:
-        // Constructor
+        // Member functions
 
         TProxy(T& value) :
             _value(&value) {
         }
 
-
-        // Copy constructor
-
         TProxy(const TProxy& another) {
             this->_value = another._value;
         }
         TProxy& operator=(const TProxy& another) = default;
-
-
-        // Move constructor
 
         TProxy(TProxy&& another) noexcept {
             this->_value = another._value;

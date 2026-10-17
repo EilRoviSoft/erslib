@@ -1,13 +1,13 @@
 #pragma once
 
 
-// Includes
+// Includes --------------------------------------------------------------------
 
 #include <erslib/core/exception/logic_error.hpp>
 #include <erslib/core/exception/runtime_error.hpp>
 
 
-// Exports
+// Exports ---------------------------------------------------------------------
 
 namespace ers {
     ERS_MAKE_EXCEPTION_EXPORTS(impl, logic_error);

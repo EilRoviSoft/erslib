@@ -13,6 +13,8 @@
 #include <erslib/export.hpp>
 
 
+// Implementation --------------------------------------------------------------
+
 // ESeverity
 
 namespace ers::impl {
@@ -167,7 +169,7 @@ namespace ers::impl {
 #undef DEFINE_DIAGNOSTIC
 
 
-// Exports
+// Exports ---------------------------------------------------------------------
 
 namespace ers {
     using impl::make_debug;

@@ -12,7 +12,7 @@
 #include <erslib/core/type/ref.hpp>
 
 
-// Forward decl
+// Details ---------------------------------------------------------------------
 
 namespace ers::impl {
     template<typename T>
@@ -34,6 +34,8 @@ namespace ers::impl {
     inline constexpr bool is_result_v = is_result<T>::value;
 }
 
+
+// Implementation --------------------------------------------------------------
 
 // Monadic operations
 
@@ -118,7 +120,7 @@ namespace ers::impl {
             "Result<T&&> is not allowed. Use Result<T> instead.");
 
 
-        // Constructors
+        // Member functions
 
         constexpr Result()
             requires std::is_default_constructible_v<value_type> :
@@ -214,7 +216,7 @@ namespace ers::impl {
         using error_type = Diagnostic;
 
 
-        // Constructors
+        // Member functions
 
         constexpr Result()
             requires std::is_default_constructible_v<value_type> :
@@ -375,7 +377,7 @@ namespace ers::impl {
 }
 
 
-// Exports
+// Exports ---------------------------------------------------------------------
 
 namespace ers {
     using impl::Result;
@@ -390,6 +392,6 @@ namespace ers {
 }
 
 
-// Macro
+// Macros ----------------------------------------------------------------------
 
 #define ERS_TRY(EXPR) if (auto&& _ers_try = (EXPR); !_ers_try) return std::move(_ers_try).extract_error()

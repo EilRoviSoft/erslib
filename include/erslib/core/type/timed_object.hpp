@@ -21,7 +21,7 @@ namespace ers::impl {
         using value_type = expiring_t<T, Clock>;
 
 
-        // Constructors
+        // Member functions
 
         explicit ITimedObject(Clock::duration lifetime) :
             m_expiring(T(), {}, lifetime) {
@@ -48,9 +48,6 @@ namespace ers::impl {
             m_expiring = std::move(other.m_expiring);
             return *this;
         }
-
-
-        // Destructors
 
         virtual ~ITimedObject() = default;
 

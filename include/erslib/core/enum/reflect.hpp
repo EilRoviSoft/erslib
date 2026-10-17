@@ -20,6 +20,8 @@
 #include <erslib/core/enum/traits/resolved_to.hpp>
 
 
+// Details ---------------------------------------------------------------------
+
 // Per-enumerator name resolution
 
 namespace ers::impl::enum_utils {
@@ -73,7 +75,7 @@ namespace ers::impl::enum_utils {
 }
 
 
-// Public conversion API
+// Implementation --------------------------------------------------------------
 
 namespace ers::impl::enum_utils {
     template<typename E>

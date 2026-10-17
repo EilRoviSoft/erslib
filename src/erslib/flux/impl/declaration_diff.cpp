@@ -10,7 +10,7 @@
 #include <erslib/core/formatter/range.hpp>
 
 
-// Definitions
+// Details ---------------------------------------------------------------------
 
 namespace {
     std::vector<std::string_view> sorted_lines(std::string_view text) {
@@ -64,7 +64,7 @@ namespace {
 }
 
 
-// Implementation
+// Implementation --------------------------------------------------------------
 
 std::vector<std::string> flux::impl::diff_declarations(std::string_view recorded, std::string_view declared) {
     auto before = sorted_lines(recorded);

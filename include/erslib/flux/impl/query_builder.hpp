@@ -15,6 +15,8 @@
 #include <erslib/export.hpp>
 
 
+// Implementation --------------------------------------------------------------
+
 // Query
 
 namespace flux::impl {

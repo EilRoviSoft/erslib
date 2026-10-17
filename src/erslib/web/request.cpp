@@ -5,12 +5,14 @@
 #include <erslib/core/util/string.hpp>
 
 
-// Definitions
+// Details ---------------------------------------------------------------------
 
 namespace {
     constexpr std::string_view bearer_prefix = "Bearer ";
 }
 
+
+// Implementation --------------------------------------------------------------
 
 // Body
 

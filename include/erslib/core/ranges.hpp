@@ -1,13 +1,13 @@
 #pragma once
 
 
-// Includes
+// Includes --------------------------------------------------------------------
 
 #include <erslib/core/ranges/filter.hpp>
 #include <erslib/core/ranges/util.hpp>
 
 
-// Exports
+// Exports ---------------------------------------------------------------------
 
 namespace ers::views {
     using impl::views::filter;

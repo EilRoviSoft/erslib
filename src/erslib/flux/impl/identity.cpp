@@ -1,7 +1,7 @@
 #include "erslib/flux/impl/identity.hpp"
 
 
-// Internal
+// Details ---------------------------------------------------------------------
 
 namespace {
     bool is_head_char(char c) {
@@ -14,7 +14,7 @@ namespace {
 }
 
 
-// Implementation
+// Implementation --------------------------------------------------------------
 
 bool flux::impl::is_identifier(std::string_view name) {
     if (name.empty())

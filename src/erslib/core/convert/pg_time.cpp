@@ -10,7 +10,7 @@
 #include <erslib/core/stdlib/ctype.hpp>
 
 
-// Details
+// Details ---------------------------------------------------------------------
 
 namespace {
     using pg_precision_t = std::chrono::microseconds;
@@ -99,7 +99,7 @@ namespace {
 }
 
 
-// Implementation
+// Implementation --------------------------------------------------------------
 
 ers::timestamp_t ers::impl::floor_to_pg_precision(timestamp_t what) {
     if constexpr (!std::ratio_less_v<typename duration_t::period, std::micro>)

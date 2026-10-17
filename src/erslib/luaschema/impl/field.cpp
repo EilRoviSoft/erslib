@@ -7,7 +7,7 @@
 #include <erslib/luaschema/impl/context.hpp>
 
 
-// Field
+// Implementation --------------------------------------------------------------
 
 ers::luaschema::impl::Field::Field(std::string name) :
     _name(std::move(name)) {

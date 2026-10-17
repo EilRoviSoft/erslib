@@ -28,7 +28,7 @@ namespace ers::impl {
 }
 
 
-// Export
+// Exports ---------------------------------------------------------------------
 
 namespace ers {
     using impl::floor_to_pg_precision;

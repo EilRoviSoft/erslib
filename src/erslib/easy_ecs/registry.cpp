@@ -9,6 +9,8 @@
 #include <erslib/core/hashing/rapid.hpp>
 
 
+// Implementation --------------------------------------------------------------
+
 // Tracking
 
 size_t ecs::impl::Registry::track_entity(IEntity& entity) {

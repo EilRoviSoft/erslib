@@ -29,7 +29,7 @@ namespace ers::impl::type {
 }
 
 
-// Exports
+// Exports ---------------------------------------------------------------------
 
 namespace ers::type {
     using impl::type::u8;

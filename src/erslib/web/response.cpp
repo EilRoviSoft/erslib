@@ -4,7 +4,7 @@
 #include <string>
 
 
-// Utility
+// Details ---------------------------------------------------------------------
 
 namespace {
     void write_json(crow::response& res, crow::status code, const utl::Json& body) {
@@ -15,7 +15,7 @@ namespace {
 }
 
 
-// Implementation
+// Implementation --------------------------------------------------------------
 
 utl::Json ers::web::impl::failure_json(std::string_view message) {
     utl::Json out;

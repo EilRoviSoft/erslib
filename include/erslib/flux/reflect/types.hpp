@@ -14,6 +14,8 @@
 #include <erslib/core/type/general.hpp>
 
 
+// Implementation --------------------------------------------------------------
+
 // Entry kinds
 
 namespace flux::impl::reflect::kinds {

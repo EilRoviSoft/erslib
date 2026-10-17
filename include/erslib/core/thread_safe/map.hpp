@@ -27,7 +27,7 @@ namespace ers::impl::thread_safe {
         using const_iterator = container_type::const_iterator;
 
 
-        // Constructor
+        // Member functions
 
         Map() = default;
 
@@ -59,13 +59,10 @@ namespace ers::impl::thread_safe {
             return *this;
         }
 
-
-        // Destructor
-
         ~Map() = default;
 
 
-        // Capacity
+        // Observers
 
         [[nodiscard]]
         bool empty() const {
@@ -80,7 +77,7 @@ namespace ers::impl::thread_safe {
         }
 
 
-        // I/O
+        // Modifiers
 
         template<typename T>
         bool set(const T& k, mapped_type v = mapped_type()) {
@@ -112,7 +109,7 @@ namespace ers::impl::thread_safe {
         }
 
 
-        // Lookup
+        // Accessors
 
         template<typename T>
         [[nodiscard]]
@@ -149,7 +146,7 @@ namespace ers::impl::thread_safe {
 }
 
 
-// Exports
+// Exports ---------------------------------------------------------------------
 
 namespace ers::thread_safe {
     using impl::thread_safe::Map;

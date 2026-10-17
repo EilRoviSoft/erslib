@@ -12,13 +12,15 @@
 #include <erslib/core/type/result.hpp>
 
 
-// Forward declaration
+// Details ---------------------------------------------------------------------
 
 namespace ers::modkit::impl {
     template<typename T>
     class TResource;
 }
 
+
+// Implementation --------------------------------------------------------------
 
 // Control block
 
@@ -56,7 +58,7 @@ namespace ers::modkit::impl {
 
 
     public:
-        // Constructor
+        // Member functions
 
         Handle() = default;
 
@@ -81,9 +83,6 @@ namespace ers::modkit::impl {
             other.m_cb = nullptr;
             return *this;
         }
-
-
-        // Destructor
 
         ~Handle() {
             _release();
@@ -142,7 +141,7 @@ namespace ers::modkit::impl {
         using control_block_type = control_block_t<T>;
 
 
-        // Constructor
+        // Member functions
 
         explicit TResource(control_block_type::ctor_fn ctor, control_block_type::dtor_fn dtor = default_dtor<T>) :
             m_cb(make_holder<control_block_type>(std::move(ctor), std::move(dtor))) {
@@ -175,7 +174,7 @@ namespace ers::modkit::impl {
 }
 
 
-// Exports
+// Exports ---------------------------------------------------------------------
 
 namespace ers::modkit {
     using impl::Handle;

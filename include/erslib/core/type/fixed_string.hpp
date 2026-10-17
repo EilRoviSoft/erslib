@@ -4,7 +4,7 @@
 #include <erslib/core/hashing/base.hpp>
 
 
-// Definition
+// Implementation --------------------------------------------------------------
 
 namespace ers::impl {
     template<size_t N>
@@ -47,7 +47,7 @@ namespace ers::impl {
 }
 
 
-// Exports
+// Exports ---------------------------------------------------------------------
 
 namespace ers {
     using impl::fixed_string;

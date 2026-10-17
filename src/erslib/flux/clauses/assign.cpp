@@ -4,7 +4,7 @@
 #include <erslib/flux/slots/set.hpp>
 
 
-// AssignClause
+// Implementation --------------------------------------------------------------
 
 flux::impl::AssignClause::AssignClause(std::string column, binder_t binder) :
     IClause(&slots::set),

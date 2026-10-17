@@ -5,7 +5,7 @@
 #include <erslib/easy_ecs/registry.hpp>
 
 
-// IEntity
+// Implementation --------------------------------------------------------------
 
 void ecs::impl::IEntity::init(Registry& registry) {
     if (_id) {

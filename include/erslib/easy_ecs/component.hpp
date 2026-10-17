@@ -20,7 +20,7 @@ namespace ecs::impl {
 }
 
 
-// Exports
+// Exports ---------------------------------------------------------------------
 
 namespace ecs {
     using impl::ComponentTag;

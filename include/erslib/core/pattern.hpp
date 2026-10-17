@@ -1,14 +1,14 @@
 #pragma once
 
 
-// Includes
+// Includes --------------------------------------------------------------------
 
 #include <erslib/core/pattern/builder.hpp>
 #include <erslib/core/pattern/counter.hpp>
 #include <erslib/core/pattern/proxy.hpp>
 
 
-// Exports
+// Exports ---------------------------------------------------------------------
 
 namespace ers::pattern {
     using impl::pattern::IBuilder;

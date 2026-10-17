@@ -13,7 +13,7 @@
 using namespace flux::impl;
 
 
-// Impl
+// Details ---------------------------------------------------------------------
 
 namespace {
     constexpr SlotBinding insert_layout[] = {
@@ -36,7 +36,7 @@ namespace {
 }
 
 
-// Public API
+// Implementation --------------------------------------------------------------
 
 QueryBuilder layouts::insert_into(std::string table) {
     QueryBuilder q(insert_layout);

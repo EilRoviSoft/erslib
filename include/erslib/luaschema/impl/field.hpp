@@ -14,7 +14,7 @@
 #include <erslib/core/type/result.hpp>
 
 
-// Field
+// Implementation --------------------------------------------------------------
 
 namespace ers::luaschema::impl {
     class Field {

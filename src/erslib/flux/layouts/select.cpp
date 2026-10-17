@@ -19,7 +19,7 @@
 using namespace flux::impl;
 
 
-// Impl
+// Details ---------------------------------------------------------------------
 
 namespace {
     inline constexpr Slot select_kw {
@@ -54,7 +54,7 @@ namespace {
 }
 
 
-// Public API
+// Implementation --------------------------------------------------------------
 
 QueryBuilder layouts::select_from(std::string table, std::string alias) {
     QueryBuilder q(select_layout);

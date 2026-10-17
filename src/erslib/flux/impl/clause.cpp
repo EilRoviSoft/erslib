@@ -4,7 +4,7 @@
 #include <erslib/flux/impl/identity.hpp>
 
 
-// IClause
+// Implementation --------------------------------------------------------------
 
 flux::impl::IClause::IClause(SlotRef slot) :
     _slot(slot) {

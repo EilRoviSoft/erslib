@@ -22,7 +22,7 @@ namespace ers::luaschema::impl {
         virtual ~IVerifier() = default;
 
 
-        // Checkers
+        // Validators
 
         virtual Status exec(verify_context& ctx, sol::table table, std::string_view field) const = 0;
 

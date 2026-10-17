@@ -18,7 +18,7 @@
 namespace fs = std::filesystem;
 
 
-// SDL3 lifetimes
+// SDL3 lifetimes --------------------------------------------------------------
 
 namespace {
     class SdlLifetime {
@@ -91,7 +91,7 @@ namespace {
 }
 
 
-// RmlUi lifetimes
+// RmlUi lifetimes -------------------------------------------------------------
 
 namespace {
     class RmlLifetime {
@@ -211,7 +211,7 @@ namespace {
 }
 
 
-// Main implementation
+// Implementation --------------------------------------------------------------
 
 namespace {
     class SdlRmlSystemInterface final : public Rml::SystemInterface {
@@ -405,7 +405,7 @@ namespace {
 }
 
 
-// Input helpers
+// Input helpers ---------------------------------------------------------------
 
 namespace {
     int get_key_modifier_state() {

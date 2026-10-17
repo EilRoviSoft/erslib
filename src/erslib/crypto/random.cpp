@@ -5,7 +5,7 @@
 #include <botan/hex.h>
 
 
-// Utility
+// Details ---------------------------------------------------------------------
 
 namespace {
     Botan::RandomNumberGenerator& rng() {
@@ -15,7 +15,7 @@ namespace {
 }
 
 
-// Implementation
+// Implementation --------------------------------------------------------------
 
 std::vector<std::byte> ers::crypto::impl::random_bytes(size_t count) {
     std::vector<std::byte> out(count);

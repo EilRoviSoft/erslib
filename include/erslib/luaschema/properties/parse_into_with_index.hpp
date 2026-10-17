@@ -20,7 +20,7 @@ namespace ers::luaschema::impl {
         }
 
 
-        // Parsers
+        // Executors
 
         Status exec(parser_context& ctx, sol::table table, std::string_view field, void* dst) const override {
             sol::object obj = table[field];

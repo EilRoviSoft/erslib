@@ -11,6 +11,8 @@
 #include <erslib/export.hpp>
 
 
+// Implementation --------------------------------------------------------------
+
 // OrderClause
 
 namespace flux::impl {

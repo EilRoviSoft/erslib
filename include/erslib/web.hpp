@@ -1,7 +1,7 @@
 #pragma once
 
 
-// Includes
+// Includes --------------------------------------------------------------------
 
 #include <erslib/web/request.hpp>
 #include <erslib/web/response.hpp>
@@ -11,7 +11,7 @@
 #endif
 
 
-// Exports
+// Exports ---------------------------------------------------------------------
 
 namespace ers::web {
     using impl::failure_json;

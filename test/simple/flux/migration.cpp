@@ -19,6 +19,8 @@ using namespace flux::impl;
 using namespace std::string_view_literals;
 
 
+// Details ---------------------------------------------------------------------
+
 namespace {
     migration_t parsed(std::string_view filename, std::string sql = "SELECT 1;") {
         auto result = parse_migration(filename, std::move(sql));
@@ -115,10 +117,7 @@ namespace {
 }
 
 
-//----------------------------------------------------------------------------------------------------------------------
-// source
-//----------------------------------------------------------------------------------------------------------------------
-
+// Source ----------------------------------------------------------------------
 
 TEST_CASE("core hashing: Fnv1AHash is FNV-1a 64 at compile time") {
     static_assert(ers::Fnv1AHash<std::string_view> {}("") == 0xcbf29ce484222325ull);
@@ -186,10 +185,7 @@ TEST_CASE("flux migrations: misplaced and malformed directives are rejected") {
 }
 
 
-//----------------------------------------------------------------------------------------------------------------------
-// outcome and diff
-//----------------------------------------------------------------------------------------------------------------------
-
+// Outcome and diff ------------------------------------------------------------
 
 TEST_CASE("flux migrations: outcome depends on database state, mode and baseline") {
     struct row_t {
@@ -236,10 +232,7 @@ TEST_CASE("flux migrations: diff lists removed lines, then added ones") {
 }
 
 
-//----------------------------------------------------------------------------------------------------------------------
-// migrator
-//----------------------------------------------------------------------------------------------------------------------
-
+// Migrator --------------------------------------------------------------------
 
 TEST_CASE("flux migrations: a fresh database is built from code, existing migrations are stamped") {
     Scenario s;
@@ -397,10 +390,7 @@ TEST_CASE("flux migrations: a failing migration is named and not recorded") {
 }
 
 
-//----------------------------------------------------------------------------------------------------------------------
-// reflection
-//----------------------------------------------------------------------------------------------------------------------
-
+// Reflection ------------------------------------------------------------------
 
 #ifdef ERSLIB_HAS_REFLECTION
 

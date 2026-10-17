@@ -5,7 +5,7 @@
 #include <erslib/modkit/mod.hpp>
 
 
-// Dependency
+// Implementation --------------------------------------------------------------
 
 ers::Result<ers::modkit::impl::dependency_t> ers::modkit::impl::dependency_t::parse(
     std::string_view source

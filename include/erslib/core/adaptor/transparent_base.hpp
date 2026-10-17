@@ -9,7 +9,7 @@
 #include <erslib/core/trait/member.hpp>
 
 
-// Helpers
+// Details ---------------------------------------------------------------------
 
 namespace ers::impl {
     template<typename... Ts>
@@ -199,6 +199,8 @@ namespace ers::impl {
     };
 }
 
+
+// Implementation --------------------------------------------------------------
 
 // Generic implementations
 

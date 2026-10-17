@@ -1,7 +1,7 @@
 #pragma once
 
 
-// Includes
+// Includes --------------------------------------------------------------------
 
 #include <erslib/core/meta/enum.hpp>
 #include <erslib/core/meta/type_hash.hpp>
@@ -9,7 +9,7 @@
 #include <erslib/core/meta/type_name.hpp>
 
 
-// Exports
+// Exports ---------------------------------------------------------------------
 
 namespace ers::meta {
     using impl::meta::enumerator_of;

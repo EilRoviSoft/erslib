@@ -8,7 +8,7 @@
 #include <sol/state_view.hpp>
 
 
-// Utility
+// Implementation --------------------------------------------------------------
 
 namespace ers::luaschema::impl {
     template<typename T, typename... Args>
@@ -20,7 +20,7 @@ namespace ers::luaschema::impl {
 }
 
 
-// Exports
+// Exports ---------------------------------------------------------------------
 
 namespace ers::luaschema {
     using impl::tunnel_error;

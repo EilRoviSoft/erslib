@@ -4,6 +4,8 @@
 #include <erslib/core/hashing/base.hpp>
 
 
+// Implementation --------------------------------------------------------------
+
 // Algos usage
 
 namespace ers::impl {

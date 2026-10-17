@@ -9,14 +9,14 @@
 #include <botan/hex.h>
 
 
-// Definitions
+// Details ---------------------------------------------------------------------
 
 namespace {
     constexpr size_t chunk_size = 1 << 16;
 }
 
 
-// Implementation
+// Implementation --------------------------------------------------------------
 
 std::string ers::crypto::impl::sha256_hex(std::span<const std::byte> bytes) {
     auto hasher = Botan::HashFunction::create_or_throw("SHA-256");

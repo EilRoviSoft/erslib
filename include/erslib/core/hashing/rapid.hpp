@@ -4,10 +4,12 @@
 #include <erslib/core/hashing/base.hpp>
 
 
-// Implementation
+// Details ---------------------------------------------------------------------
 
 #include "impl/rapid.hpp"
 
+
+// Implementation --------------------------------------------------------------
 
 // Algos usage
 

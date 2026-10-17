@@ -15,6 +15,8 @@
 #include <erslib/flux/reflect/types.hpp>
 
 
+// Implementation --------------------------------------------------------------
+
 // Discovery
 
 namespace flux::impl::reflect {

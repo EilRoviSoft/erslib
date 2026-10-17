@@ -7,6 +7,8 @@
 #include <erslib/core/exception.hpp>
 
 
+// Implementation --------------------------------------------------------------
+
 // Modifiers
 
 void flux::impl::QueryBuilder::add(Clause clause) {

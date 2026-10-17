@@ -9,6 +9,8 @@
 #include <meta>
 
 
+// Implementation --------------------------------------------------------------
+
 // Enumerator lookup
 
 namespace ers::impl::meta {

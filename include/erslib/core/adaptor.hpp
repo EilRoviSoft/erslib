@@ -1,14 +1,14 @@
 #pragma once
 
 
-// Includes
+// Includes --------------------------------------------------------------------
 
 #include <erslib/core/adaptor/transparent_base.hpp>
 #include <erslib/core/adaptor/transparent_string.hpp>
 #include <erslib/core/adaptor/ranges.hpp>
 
 
-// Exports
+// Exports ---------------------------------------------------------------------
 
 namespace ers::adaptor {
     using impl::adaptor::hash;

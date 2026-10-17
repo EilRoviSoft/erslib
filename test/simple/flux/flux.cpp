@@ -13,6 +13,8 @@
 using namespace flux::orm;
 
 
+// Details ---------------------------------------------------------------------
+
 namespace {
     bool contains(std::string_view haystack, std::string_view needle) {
         return haystack.find(needle) != std::string_view::npos;
@@ -25,10 +27,7 @@ namespace {
 }
 
 
-//----------------------------------------------------------------------------------------------------------------------
-// query builder
-//----------------------------------------------------------------------------------------------------------------------
-
+// Query builder ---------------------------------------------------------------
 
 TEST_CASE("flux: select renders slots in layout order") {
     const auto sql = sql_of(select_from("users")
@@ -174,10 +173,7 @@ TEST_CASE("flux: with_query accepts anything shaped like exec(tx) -> QueryResult
 }
 
 
-//----------------------------------------------------------------------------------------------------------------------
-// reflection
-//----------------------------------------------------------------------------------------------------------------------
-
+// Reflection ------------------------------------------------------------------
 
 #ifdef ERSLIB_HAS_REFLECTION
 

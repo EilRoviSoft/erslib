@@ -1,7 +1,7 @@
 #pragma once
 
 
-// Includes
+// Includes --------------------------------------------------------------------
 
 #include <erslib/core/algorithm/container.hpp>
 #include <erslib/core/algorithm/hash.hpp>
@@ -10,7 +10,7 @@
 #include <erslib/core/algorithm/split/smart.hpp>
 
 
-// Exports
+// Exports ---------------------------------------------------------------------
 
 namespace ers::algo {
     using impl::algo::keys_sorted_by_value;

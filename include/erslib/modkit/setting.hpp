@@ -113,7 +113,7 @@ namespace ers::modkit::impl {
 }
 
 
-// Exports
+// Exports ---------------------------------------------------------------------
 
 namespace ers::modkit {
     using impl::BoolSetting;

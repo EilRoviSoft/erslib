@@ -14,7 +14,7 @@
 #include <erslib/flux/traits/vector.hpp>
 
 
-// Exports
+// Exports ---------------------------------------------------------------------
 
 namespace flux {
     using impl::sql_type;

@@ -9,7 +9,7 @@
 using namespace flux::impl;
 
 
-// Impl
+// Details ---------------------------------------------------------------------
 
 namespace {
     constexpr SlotBinding exists_layout[] = {
@@ -27,7 +27,7 @@ namespace {
 }
 
 
-// Public API
+// Implementation --------------------------------------------------------------
 
 QueryBuilder layouts::exists_in(std::string table) {
     QueryBuilder q(exists_layout);

@@ -8,6 +8,8 @@
 #include <erslib/core/hashing/base.hpp>
 
 
+// Implementation --------------------------------------------------------------
+
 // Generic implementations
 
 namespace ers::impl {

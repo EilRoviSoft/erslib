@@ -8,7 +8,7 @@
 #include <erslib/core/filesystem.hpp>
 
 
-// ConnectionPool
+// Implementation --------------------------------------------------------------
 
 flux::impl::ConnectionPool::ConnectionPool(std::string db_connection_string, pool_options_t pool_opts) :
     _db_connection_string(std::move(db_connection_string)),

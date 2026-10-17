@@ -1,7 +1,7 @@
 #pragma once
 
 
-// Includes
+// Includes --------------------------------------------------------------------
 
 #include <erslib/core/memory/any.hpp>
 #include <erslib/core/memory/deleter.hpp>
@@ -9,7 +9,7 @@
 #include <erslib/core/memory/shared_ptr.hpp>
 
 
-// Exports
+// Exports ---------------------------------------------------------------------
 
 namespace ers {
     using impl::TAny;

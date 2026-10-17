@@ -50,7 +50,7 @@ namespace ers::impl {
 }
 
 
-// Exports
+// Exports ---------------------------------------------------------------------
 
 namespace ers::thread_safe {
     using impl::ShuffleSeeds;

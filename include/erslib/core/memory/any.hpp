@@ -11,15 +11,12 @@
 #include <erslib/core/concept/sbo.hpp>
 
 
-// Forward declaration
+// Details ---------------------------------------------------------------------
 
 namespace ers::impl {
     template<size_t Size, size_t Align>
     class TAny;
 }
-
-
-// Details
 
 namespace ers::impl {
     template<size_t Size, size_t Align>
@@ -162,7 +159,7 @@ namespace ers::impl {
 }
 
 
-// Implementation
+// Implementation --------------------------------------------------------------
 
 namespace ers::impl {
     template<size_t Size, size_t Align>
@@ -177,7 +174,7 @@ namespace ers::impl {
         struct placeholder_t {};
 
 
-        // Default Constructor
+        // Member functions
 
         TAny() :
             m_mr(nullptr),
@@ -186,9 +183,6 @@ namespace ers::impl {
             m_policy(ESboPolicy::Empty),
             m_storage { .heap = nullptr } {
         }
-
-
-        // Copy
 
         TAny(const TAny& other) :
             m_type(meta::type_hash_v<placeholder_t>),
@@ -211,9 +205,6 @@ namespace ers::impl {
             return *this;
         }
 
-
-        // Move
-
         TAny(TAny&& other) noexcept :
             m_mr(other.m_mr),
             m_vtable(other.m_vtable),
@@ -230,9 +221,6 @@ namespace ers::impl {
 
             return *this;
         }
-
-
-        // Value initializer
 
         template<typename T>
             requires (!std::is_same_v<T, TAny>)
@@ -254,9 +242,6 @@ namespace ers::impl {
             return *this;
         }
 
-
-        // Value in-place initializer
-
         template<typename T, typename... Args>
         explicit TAny(std::in_place_type_t<T>, Args&&... args) :
             m_mr(nullptr),
@@ -275,9 +260,6 @@ namespace ers::impl {
             m_storage { .heap = nullptr } {
             emplace_with_resource<T>(provided_mr, std::forward<Args>(args)...);
         }
-
-
-        // Destructor
 
         ~TAny() {
             _soft_reset();
@@ -366,7 +348,7 @@ namespace ers::impl {
         const T& get() const { return *_data_as<T>(); }
 
 
-        // Helper functions
+        // Generators
 
         template<typename T, typename... Args>
         static TAny make(Args&&... args) {

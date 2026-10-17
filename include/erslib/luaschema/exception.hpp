@@ -7,7 +7,7 @@
 #include <erslib/core/exception.hpp>
 
 
-// Exception types
+// Implementation --------------------------------------------------------------
 
 namespace ers::luaschema::impl {
     ERS_MAKE_EXCEPTION_TYPE(lua_error, std::runtime_error);
@@ -16,7 +16,7 @@ namespace ers::luaschema::impl {
 }
 
 
-// Exports
+// Exports ---------------------------------------------------------------------
 
 namespace ers::luaschema {
     using impl::lua_error;

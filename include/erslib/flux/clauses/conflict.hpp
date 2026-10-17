@@ -16,7 +16,7 @@
 #include <erslib/export.hpp>
 
 
-// ConflictUpdateClause
+// Implementation --------------------------------------------------------------
 
 namespace flux::impl {
     // Renders the whole action: "DO UPDATE SET a = excluded.a, b = excluded.b".

@@ -14,6 +14,8 @@
 #include <erslib/core/type/optional.hpp>
 
 
+// Implementation --------------------------------------------------------------
+
 // Concepts
 
 namespace flux::impl {
@@ -135,7 +137,7 @@ namespace flux::impl {
         }
 
 
-        // Iterators for CRTP
+        // Iterators
 
         Iterator begin() const { return Iterator(_content.begin(), _state); }
         Iterator end() const { return Iterator(_content.end(), _state); }

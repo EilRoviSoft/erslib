@@ -7,7 +7,7 @@
 //#include <erslib/modkit/resource.hpp>
 
 
-// TextureResource
+// Implementation --------------------------------------------------------------
 
 //namespace ers::modkit::impl {
 //    class TextureResource : public TResource<sf::Texture> {

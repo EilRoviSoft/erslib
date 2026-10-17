@@ -4,7 +4,7 @@
 #include <erslib/flux/slots/values.hpp>
 
 
-// ValuesClause
+// Implementation --------------------------------------------------------------
 
 flux::impl::ValuesClause::ValuesClause(std::vector<binder_t> binders) :
     IClause(&slots::values),

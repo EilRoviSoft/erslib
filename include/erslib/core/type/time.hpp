@@ -13,7 +13,7 @@ namespace ers::impl {
 }
 
 
-// Exports
+// Exports ---------------------------------------------------------------------
 
 namespace ers {
     using impl::clock_t;

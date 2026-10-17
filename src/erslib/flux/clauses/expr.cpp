@@ -5,6 +5,8 @@
 #include <erslib/flux/slots/column.hpp>
 
 
+// Implementation --------------------------------------------------------------
+
 // AliasClause
 
 flux::impl::AliasClause::AliasClause(Clause inner, std::string alias) :

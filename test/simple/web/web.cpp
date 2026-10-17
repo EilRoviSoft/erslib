@@ -12,7 +12,7 @@
 #include <erslib/web/middleware/rate_limit.hpp>
 
 
-// Definitions
+// Details ---------------------------------------------------------------------
 
 namespace {
     struct no_context {};
@@ -37,7 +37,7 @@ namespace {
 }
 
 
-// Implementation
+// Implementation --------------------------------------------------------------
 
 TEST_CASE("web: responses") {
     auto res = ers::web::make_failure(crow::BAD_REQUEST, "bad");

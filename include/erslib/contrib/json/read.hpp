@@ -67,7 +67,7 @@ namespace utl::impl {
 }
 
 
-// Some niche implementations
+// Specializations -------------------------------------------------------------
 
 #ifdef _HAS_BOOST_UUID
 

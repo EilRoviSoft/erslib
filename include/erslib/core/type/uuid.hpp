@@ -25,7 +25,7 @@ namespace ers::impl {
 }
 
 
-// Exports
+// Exports ---------------------------------------------------------------------
 
 namespace ers {
     using impl::uuid;
@@ -34,6 +34,8 @@ namespace ers {
     using impl::uuid_from_string;
 }
 
+
+// Specializations -------------------------------------------------------------
 
 // Hashing
 

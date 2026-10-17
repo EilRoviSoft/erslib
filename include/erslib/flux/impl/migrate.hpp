@@ -17,7 +17,9 @@
 #include <erslib/export.hpp>
 
 
-// Service class
+// Implementation --------------------------------------------------------------
+
+// PqxxMigrationStore
 
 namespace flux::impl {
     class PqxxMigrationStore final : public IMigrationLedger, public IMigrationDatabase {
@@ -57,7 +59,7 @@ namespace flux::impl {
 }
 
 
-// Public free functions for execution
+// Free functions
 
 namespace flux::impl {
     std::string_view ERSLIB_EXPORT service_schema();

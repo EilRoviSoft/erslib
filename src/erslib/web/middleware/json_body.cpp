@@ -8,6 +8,8 @@
 #include <erslib/web/response.hpp>
 
 
+// Implementation --------------------------------------------------------------
+
 // Handlers
 
 void ers::web::impl::JsonBody::before_handle(crow::request& req, crow::response& res, context& ctx) {

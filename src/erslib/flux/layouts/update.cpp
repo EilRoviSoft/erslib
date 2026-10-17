@@ -12,7 +12,7 @@
 using namespace flux::impl;
 
 
-// Impl
+// Details ---------------------------------------------------------------------
 
 namespace {
     ////&slots::from,
@@ -29,7 +29,7 @@ namespace {
 }
 
 
-// Public API
+// Implementation --------------------------------------------------------------
 
 QueryBuilder layouts::update(std::string table) {
     QueryBuilder q(update_layout);

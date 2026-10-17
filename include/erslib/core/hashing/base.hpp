@@ -13,6 +13,8 @@
 #include <vector>
 
 
+// Implementation --------------------------------------------------------------
+
 // Definition
 
 namespace ers::hashing {

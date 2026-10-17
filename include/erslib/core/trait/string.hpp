@@ -4,7 +4,7 @@
 #include <string>
 
 
-// Declaration
+// Implementation --------------------------------------------------------------
 //
 // string_traits_impl is a customization point: specialize it to teach the string utilities how to
 // size/append/index a new string-like type. Explicit specializations must live in the template's true
@@ -26,14 +26,14 @@ namespace ers::impl {
 }
 
 
-// Exports
+// Exports ---------------------------------------------------------------------
 
 namespace ers {
     using impl::string_traits;
 }
 
 
-// Specializations
+// Specializations -------------------------------------------------------------
 
 template<>
 struct ers::string_traits_impl<char> {

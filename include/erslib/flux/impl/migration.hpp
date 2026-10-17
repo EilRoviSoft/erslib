@@ -13,7 +13,7 @@
 #include <erslib/core/type/result.hpp>
 
 
-// Details
+// Implementation --------------------------------------------------------------
 
 namespace flux::impl {
     inline constexpr u32 declaration_format = 1;

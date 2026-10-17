@@ -5,7 +5,7 @@
 #include <erslib/flux/slots/from.hpp>
 
 
-// IdentityClause
+// Implementation --------------------------------------------------------------
 
 flux::impl::IdentityClause::IdentityClause(SlotRef slot, std::string name, std::string alias) :
     IClause(slot),

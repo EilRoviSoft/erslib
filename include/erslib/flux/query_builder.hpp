@@ -9,7 +9,7 @@
 // ).exec(tx).get_as<std::vector<User>>();
 
 
-// Main implementation
+// Includes --------------------------------------------------------------------
 
 #include <erslib/flux/impl/clause.hpp>
 #include <erslib/flux/impl/layout.hpp>
@@ -67,7 +67,7 @@
 #include <erslib/flux/slots/where.hpp>
 
 
-// Exports
+// Exports ---------------------------------------------------------------------
 
 namespace flux {
     namespace string_literals {
@@ -160,6 +160,6 @@ namespace flux::ext {
 }
 
 
-// Defines
+// Macros ----------------------------------------------------------------------
 
 #define ERS_FLUX_WITH_ORM using namespace flux::orm

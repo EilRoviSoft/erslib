@@ -1,12 +1,12 @@
 #pragma once
 
 
-// Imports
+// Includes --------------------------------------------------------------------
 
 #include <erslib/core/random/entropy.hpp>
 
 
-// Exports
+// Exports ---------------------------------------------------------------------
 
 namespace ers::random {
     using impl::entropy;

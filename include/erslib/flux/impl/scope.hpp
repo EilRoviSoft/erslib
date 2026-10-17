@@ -14,7 +14,7 @@
 #include <erslib/core/trait/result.hpp>
 
 
-// Definitions
+// Details ---------------------------------------------------------------------
 
 namespace flux::impl {
     template<typename T>
@@ -23,6 +23,8 @@ namespace flux::impl {
     };
 }
 
+
+// Implementation --------------------------------------------------------------
 
 // Throwing counterparts
 

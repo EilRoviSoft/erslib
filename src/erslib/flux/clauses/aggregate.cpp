@@ -4,7 +4,7 @@
 #include <erslib/flux/slots/column.hpp>
 
 
-// Internal
+// Details ---------------------------------------------------------------------
 
 namespace {
     using namespace flux::impl;
@@ -18,6 +18,8 @@ namespace {
     }
 }
 
+
+// Implementation --------------------------------------------------------------
 
 // AggregateClause
 

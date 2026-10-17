@@ -10,7 +10,7 @@
 using namespace flux::impl;
 
 
-// Impl
+// Details ---------------------------------------------------------------------
 
 namespace {
     ////&slots::using,
@@ -26,7 +26,7 @@ namespace {
 }
 
 
-// Public API
+// Implementation --------------------------------------------------------------
 
 flux::impl::QueryBuilder flux::impl::layouts::delete_from(std::string table) {
     QueryBuilder q(delete_layout);

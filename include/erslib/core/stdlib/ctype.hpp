@@ -8,6 +8,8 @@
 #include <erslib/core/stdlib/compare.hpp>
 
 
+// Implementation --------------------------------------------------------------
+
 // Char implementation
 
 namespace ers::impl {
@@ -100,7 +102,7 @@ namespace ers::impl {
 }
 
 
-// Export
+// Exports ---------------------------------------------------------------------
 
 namespace ers {
     using impl::is_digit;

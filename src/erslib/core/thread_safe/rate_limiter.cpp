@@ -10,6 +10,8 @@
 #include <erslib/core/exception.hpp>
 
 
+// Implementation --------------------------------------------------------------
+
 // Member functions
 
 ers::impl::RateLimiter::RateLimiter(size_t burst, duration interval, size_t capacity) :
@@ -83,7 +85,7 @@ size_t ers::impl::RateLimiter::maintain(time_point now) {
 }
 
 
-// Internal
+// Observers
 
 bool ers::impl::RateLimiter::_is_blocked(time_point arrival, time_point now) const {
     return arrival - now > _tolerance;

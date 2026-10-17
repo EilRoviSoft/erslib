@@ -5,7 +5,7 @@
 #include <erslib/flux/slots/offset.hpp>
 
 
-// BoundClause
+// Implementation --------------------------------------------------------------
 
 flux::impl::BoundClause::BoundClause(SlotRef slot, i64 amount) :
     IClause(slot),

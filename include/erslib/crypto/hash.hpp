@@ -20,7 +20,7 @@ namespace ers::crypto::impl {
 }
 
 
-// Exports
+// Exports ---------------------------------------------------------------------
 
 namespace ers::crypto {
     using impl::sha256_hex;

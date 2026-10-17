@@ -1,7 +1,7 @@
 #pragma once
 
 
-// Includes
+// Includes --------------------------------------------------------------------
 
 #include <erslib/contrib/json/impl.hpp>
 
@@ -11,7 +11,7 @@
 #include <erslib/contrib/json/schema.hpp>
 
 
-// Exports
+// Exports ---------------------------------------------------------------------
 
 namespace utl {
     using impl::EFormat;

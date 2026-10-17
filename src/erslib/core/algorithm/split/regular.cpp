@@ -1,13 +1,13 @@
 #include "erslib/core/algorithm/split/regular.hpp"
 
-// Forward declaration
+// Details ---------------------------------------------------------------------
 
 namespace ers::impl::algo {
     template class TSplitIterator<RegularSplitIterator>;
 }
 
 
-// Implementation
+// Implementation --------------------------------------------------------------
 
 ers::impl::algo::RegularSplitIterator::RegularSplitIterator(const SplitProcessor<RegularSplitIterator>& parent, size_t offset) :
     TSplitIterator(parent, offset) {

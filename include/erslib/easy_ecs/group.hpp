@@ -14,7 +14,7 @@
 #include <erslib/easy_ecs/entity.hpp>
 
 
-// Forward declaration
+// Details ---------------------------------------------------------------------
 
 namespace ecs::impl {
     template<typename Iterator, typename... Tags>
@@ -27,9 +27,6 @@ namespace ecs::impl {
     class GroupWithEntityIdIterator;
 }
 
-
-// Internal
-
 // It's needed to avoid errors with calling forward-declared types.
 
 namespace ecs::impl {
@@ -41,6 +38,8 @@ namespace ecs::impl {
 }
 
 
+// Implementation --------------------------------------------------------------
+
 // IGroup
 
 namespace ecs::impl {
@@ -51,7 +50,7 @@ namespace ecs::impl {
         virtual ~IGroup() = default;
 
 
-        // Checkers
+        // Validators
 
         [[nodiscard]]
         virtual bool is_valid(const Registry& registry, const IEntity& entity) const = 0;
@@ -174,7 +173,7 @@ namespace ecs::impl {
 
 
     public:
-        // Constructors
+        // Member functions
 
         TGroupIterator() = default;
         explicit TGroupIterator(const parent_type& parent, internal_iterator it) :
@@ -204,7 +203,7 @@ namespace ecs::impl {
         }
 
 
-        // Comparing
+        // Operators
 
         bool operator==(const TGroupIterator& other) const {
             return m_parent == other.m_parent && m_it == other.m_it;
@@ -278,7 +277,7 @@ namespace ecs::impl {
 }
 
 
-// Exports
+// Exports ---------------------------------------------------------------------
 
 namespace ecs {
     using impl::IGroup;

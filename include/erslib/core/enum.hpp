@@ -1,13 +1,13 @@
 #pragma once
 
 
-// Includes
+// Includes --------------------------------------------------------------------
 
 #include <erslib/core/enum/reflect.hpp>
 #include <erslib/core/enum/case_styles.hpp>
 
 
-// Exports
+// Exports ---------------------------------------------------------------------
 
 namespace ers::enum_utils {
     using impl::case_style_traits;

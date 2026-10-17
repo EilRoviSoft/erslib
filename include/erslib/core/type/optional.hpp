@@ -43,7 +43,7 @@ namespace ers::impl {
 #endif
 
 
-// Exports
+// Exports ---------------------------------------------------------------------
 
 namespace ers {
     using impl::optional;

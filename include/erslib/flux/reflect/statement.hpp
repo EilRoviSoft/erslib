@@ -20,7 +20,7 @@
 #include <erslib/flux/reflect/schema.hpp>
 
 
-// Implementation
+// Details ---------------------------------------------------------------------
 
 namespace flux::impl::reflect {
     template<typename Tag>
@@ -91,7 +91,7 @@ namespace flux::impl::reflect {
 }
 
 
-// QueryCall
+// Implementation --------------------------------------------------------------
 
 namespace flux::impl::reflect {
     template<Statement Tag>
@@ -253,7 +253,7 @@ namespace flux::impl::reflect {
 }
 
 
-// Shortcuts
+// Macros ----------------------------------------------------------------------
 
 #define ERS_DECLARE_QUERY(NS, NAME, LABEL) \
     namespace NS { \

@@ -4,6 +4,8 @@
 #include <ranges>
 
 
+// Implementation --------------------------------------------------------------
+
 // Member functions
 
 ers::impl::ShuffleSeeds::ShuffleSeeds(duration_t lifetime, u64 seed) :
@@ -65,7 +67,7 @@ size_t ers::impl::ShuffleSeeds::maintain(timestamp_t now) {
 }
 
 
-// Internal
+// Generators
 
 i64 ers::impl::ShuffleSeeds::_mint() {
     return static_cast<i64>(_rng());

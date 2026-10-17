@@ -19,7 +19,7 @@
 #include <erslib/modkit/fwd.hpp>
 
 
-// Internal
+// Details ---------------------------------------------------------------------
 
 namespace ers::modkit::impl {
     struct ModIdentity {
@@ -52,12 +52,12 @@ namespace ers::modkit::impl {
 }
 
 
-// Mod
+// Implementation --------------------------------------------------------------
 
 namespace ers::modkit::impl {
     class Mod {
     public:
-        // Types definition
+        // Member types
 
         using identity_type = ModIdentity;
         using metadata_type = ModMetadata;
@@ -65,7 +65,7 @@ namespace ers::modkit::impl {
         using runtime_type = ModRuntime;
 
 
-        // Constructor
+        // Member functions
 
         explicit Mod(fs::path dir);
 
@@ -118,7 +118,7 @@ namespace ers::modkit::impl {
 }
 
 
-// Exports
+// Exports ---------------------------------------------------------------------
 
 namespace ers::modkit {
     using impl::Mod;

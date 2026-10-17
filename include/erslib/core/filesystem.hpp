@@ -6,7 +6,7 @@
 namespace fs = std::filesystem;
 
 
-// Includes
+// Includes --------------------------------------------------------------------
 
 #include <erslib/core/constant/filesystem.hpp>
 #include <erslib/core/exception/filesystem_error.hpp>
@@ -14,7 +14,7 @@ namespace fs = std::filesystem;
 #include <erslib/core/util/file.hpp>
 
 
-// Exports
+// Exports ---------------------------------------------------------------------
 
 namespace ers {
     using impl::path_separator;

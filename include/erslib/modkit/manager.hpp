@@ -25,12 +25,12 @@ namespace ers::modkit::impl {
         using const_iterator = container_type::const_iterator;
 
 
-        // Constructor
+        // Member functions
 
         ResourceManager() = default;
 
 
-        // Capacity
+        // Observers
 
         [[nodiscard]]
         bool empty() const { return m_data.empty(); }
@@ -39,7 +39,7 @@ namespace ers::modkit::impl {
         size_t size() const { return m_data.size(); }
 
 
-        // I/O
+        // Modifiers
 
         template<typename T, typename K, typename... Args>
         bool set(const K& k, Args&&... args) {
@@ -68,7 +68,7 @@ namespace ers::modkit::impl {
 }
 
 
-// Exports
+// Exports ---------------------------------------------------------------------
 
 namespace ers::modkit {
     using impl::ResourceManager;

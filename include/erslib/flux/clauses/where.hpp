@@ -7,7 +7,7 @@
 #include <erslib/export.hpp>
 
 
-// IWhere
+// Implementation --------------------------------------------------------------
 
 namespace flux::impl {
     class ERSLIB_EXPORT IWhereClause : public IClause {

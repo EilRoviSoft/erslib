@@ -4,14 +4,14 @@
 #include <frozen/unordered_set.h>
 
 
-// Forward declaration
+// Details ---------------------------------------------------------------------
 
 namespace ers::impl::algo {
     template class TSplitIterator<SmartSplitIterator>;
 }
 
 
-// Implementation
+// Implementation --------------------------------------------------------------
 
 ers::impl::algo::SmartSplitIterator::SmartSplitIterator(const SplitProcessor<SmartSplitIterator>& parent, std::size_t offset) :
     TSplitIterator(parent, offset) {

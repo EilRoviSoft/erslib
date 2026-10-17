@@ -1,7 +1,7 @@
 #pragma once
 
 
-// Includes
+// Includes --------------------------------------------------------------------
 
 #include <erslib/core/concept/callable.hpp>
 #include <erslib/core/concept/constexpr.hpp>
@@ -13,7 +13,7 @@
 #include <erslib/core/concept/util.hpp>
 
 
-// Exports
+// Exports ---------------------------------------------------------------------
 
 namespace ers {
     using impl::Callable;
