@@ -649,12 +649,12 @@ namespace utl::impl {
 }
 
 
-#define UTL_JSON_NODE_TYPE_LITERAL(ENUMERATOR, TYPE)                                                                   \
-    ers::util::concat_literals<                                                                                             \
-        "'" #ENUMERATOR "' aka '",                                                                                     \
-        ers::meta::type_literal_v<TYPE>,                                                                                    \
-        "'"                                                                                                            \
-    >().to_sv()
+#define UTL_JSON_NODE_TYPE_LITERAL(ENUMERATOR, TYPE)   \
+    ers::util::concat_literals_v<                      \
+        "'" #ENUMERATOR "' aka '",                     \
+        ers::meta::type_literal_v<TYPE>,               \
+        "'"                                            \
+    >.to_sv()
 
 #define UTL_IDENTITY(...) __VA_ARGS__
 

@@ -1,6 +1,7 @@
 #pragma once
 
 // std
+#include <algorithm>
 #include <array>
 #include <bit>
 #include <cstring>
@@ -9,6 +10,7 @@
 #include <tuple>
 #include <type_traits>
 #include <utility>
+#include <vector>
 
 
 // Definition
@@ -89,14 +91,23 @@ template<typename Policy>
 struct ers::THashBase<std::string_view, Policy> {
     using type = std::string_view;
 
-    size_t operator()(
+    constexpr size_t operator()(
         type what, size_t seed = 0
     ) const noexcept requires (hashing::RawBytesBackend<Policy>) {
-        const auto bytes = reinterpret_cast<const std::byte*>(what.data());
-        return hashing::backend<Policy>::process_raw_bytes({ bytes, what.size() }, seed);
+        if consteval {
+            std::vector<std::byte> bytes(what.size());
+            std::ranges::transform(what, bytes.begin(), [](char it) {
+                return static_cast<std::byte>(it);
+            });
+
+            return hashing::backend<Policy>::process_raw_bytes(bytes, seed);
+        } else {
+            auto bytes = reinterpret_cast<const std::byte*>(what.data());
+            return hashing::backend<Policy>::process_raw_bytes({ bytes, what.size() }, seed);
+        }
     }
 
-    size_t operator()(
+    constexpr size_t operator()(
         type what, size_t seed = 0
     ) const noexcept requires (!hashing::RawBytesBackend<Policy>) {
         return hashing::backend<Policy>::process_value(what, seed);
@@ -107,11 +118,10 @@ template<typename Policy>
 struct ers::THashBase<std::string, Policy> {
     using type = std::string;
 
-    size_t operator()(
+    constexpr size_t operator()(
         const type& what, size_t seed = 0
-    ) const requires (hashing::RawBytesBackend<Policy>) {
-        const auto bytes = reinterpret_cast<const std::byte*>(what.data());
-        return hashing::backend<Policy>::process_raw_bytes({ bytes, what.size() }, seed);
+    ) const noexcept requires (hashing::RawBytesBackend<Policy>) {
+        return THashBase<std::string_view, Policy> {}(what, seed);
     }
 
     size_t operator()(

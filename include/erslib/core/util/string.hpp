@@ -24,23 +24,24 @@ namespace ers::impl::util {
         return std::string_view { arr, arr.size() };
     }
 
+
     template<fixed_string... Args>
 	constexpr auto concat_literals() {
-        fixed_string<(Args.size() + ...) + 1> result;
+        fixed_string<(Args.strlen() + ...) + 1> result;
         size_t ptr = 0;
 
-
         auto append = [&](const auto& s) {
-            for (size_t i = 0; i < s.size(); i++)
-                result.value[ptr + i] = s.value[i];
-            ptr += s.size();
+            for (const char it : s.to_sv())
+                result.value[ptr++] = it;
         };
 
         (append(Args), ...);
-        result.value[ptr] = '\0';
-
         return result;
     }
+
+    template<fixed_string... Args>
+    inline constexpr auto concat_literals_v = concat_literals<Args...>();
+
 
     template<typename... Args>
     std::string concat_strings(Args&&... args) {
@@ -146,18 +147,25 @@ namespace ers::impl::util {
 
 namespace ers::util {
     using impl::util::concat_chars;
+    
     using impl::util::concat_literals;
+    using impl::util::concat_literals_v;
+    
     using impl::util::concat_strings;
+
 
     using impl::util::starts_with_seq;
     using impl::util::ends_with_seq;
 
+
     using impl::util::replace;
     using impl::util::quote;
+
 
     using impl::util::trim_left;
     using impl::util::trim_right;
     using impl::util::trim;
+
 
     using impl::util::keep_if;
 }

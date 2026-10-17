@@ -22,5 +22,6 @@
     "rmlui",
     "sdl3",
     "sol2"
-  ]
+  ],
+  "builtin-baseline": "d9d4599ab67bd4e3297e5a43c837e04104e280d8"
 }
