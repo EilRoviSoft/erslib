@@ -24,7 +24,7 @@ option(ERSLIB_INSTALL "Generate target for installing erslib" ${IS_TOP_LEVEL})
 option(ERSLIB_STANDALONE "Build as standalone project (includes tests/executables)" OFF)
 
 option(ERSLIB_BUILD_CONTRIB "Build erslib::contrib target" OFF)
-option(ERSLIB_BUILD_CONDUIT "Build erslib::conduit target" OFF)
+option(ERSLIB_BUILD_FLUX "Build erslib::flux target" OFF)
 option(ERSLIB_BUILD_MODKIT "Build erslib::modkit target" OFF)
 option(ERSLIB_BUILD_EASY_ECS "Build erslib::easy_ecs target" OFF)
 option(ERSLIB_BUILD_LUASCHEMA "Build erslib::luaschema target" OFF)
@@ -218,67 +218,67 @@ endif()
 
 
 #----------------------------------------------------------------------------------------------------------------------
-# erslib::conduit
+# erslib::flux
 #----------------------------------------------------------------------------------------------------------------------
 
 
-if(ERSLIB_BUILD_CONDUIT)
-    erslib_add_library(erslib_conduit conduit)
+if(ERSLIB_BUILD_FLUX)
+    erslib_add_library(erslib_flux flux)
 
-    target_sources(erslib_conduit
+    target_sources(erslib_flux
         PRIVATE
-            "src/erslib/conduit/impl/clause.cpp"
-            "src/erslib/conduit/impl/connection_pool.cpp"
-            "src/erslib/conduit/impl/context.cpp"
-            "src/erslib/conduit/impl/database.cpp"
-            "src/erslib/conduit/impl/declaration_diff.cpp"
-            "src/erslib/conduit/impl/identity.cpp"
-            "src/erslib/conduit/impl/layout.cpp"
-            "src/erslib/conduit/impl/migrate.cpp"
-            "src/erslib/conduit/impl/migration_source.cpp"
-            "src/erslib/conduit/impl/migrator.cpp"
-            "src/erslib/conduit/impl/options.cpp"
-            "src/erslib/conduit/impl/query_builder.cpp"
-            "src/erslib/conduit/impl/query_store.cpp"
+            "src/erslib/flux/impl/clause.cpp"
+            "src/erslib/flux/impl/connection_pool.cpp"
+            "src/erslib/flux/impl/context.cpp"
+            "src/erslib/flux/impl/database.cpp"
+            "src/erslib/flux/impl/declaration_diff.cpp"
+            "src/erslib/flux/impl/identity.cpp"
+            "src/erslib/flux/impl/layout.cpp"
+            "src/erslib/flux/impl/migrate.cpp"
+            "src/erslib/flux/impl/migration_source.cpp"
+            "src/erslib/flux/impl/migrator.cpp"
+            "src/erslib/flux/impl/options.cpp"
+            "src/erslib/flux/impl/query_builder.cpp"
+            "src/erslib/flux/impl/query_store.cpp"
 
-            "src/erslib/conduit/clauses/aggregate.cpp"
-            "src/erslib/conduit/clauses/assign.cpp"
-            "src/erslib/conduit/clauses/bound.cpp"
-            "src/erslib/conduit/clauses/conflict.cpp"
-            "src/erslib/conduit/clauses/distinct.cpp"
-            "src/erslib/conduit/clauses/exists.cpp"
-            "src/erslib/conduit/clauses/expr.cpp"
-            "src/erslib/conduit/clauses/group.cpp"
-            "src/erslib/conduit/clauses/join.cpp"
-            "src/erslib/conduit/clauses/order.cpp"
-            "src/erslib/conduit/clauses/raw.cpp"
-            "src/erslib/conduit/clauses/returning.cpp"
-            "src/erslib/conduit/clauses/target.cpp"
-            "src/erslib/conduit/clauses/values.cpp"
-            "src/erslib/conduit/clauses/where_any.cpp"
-            "src/erslib/conduit/clauses/where_between.cpp"
-            "src/erslib/conduit/clauses/where_column.cpp"
-            "src/erslib/conduit/clauses/where_in.cpp"
-            "src/erslib/conduit/clauses/where_null.cpp"
-            "src/erslib/conduit/clauses/where_op.cpp"
-            "src/erslib/conduit/clauses/where_or.cpp"
+            "src/erslib/flux/clauses/aggregate.cpp"
+            "src/erslib/flux/clauses/assign.cpp"
+            "src/erslib/flux/clauses/bound.cpp"
+            "src/erslib/flux/clauses/conflict.cpp"
+            "src/erslib/flux/clauses/distinct.cpp"
+            "src/erslib/flux/clauses/exists.cpp"
+            "src/erslib/flux/clauses/expr.cpp"
+            "src/erslib/flux/clauses/group.cpp"
+            "src/erslib/flux/clauses/join.cpp"
+            "src/erslib/flux/clauses/order.cpp"
+            "src/erslib/flux/clauses/raw.cpp"
+            "src/erslib/flux/clauses/returning.cpp"
+            "src/erslib/flux/clauses/target.cpp"
+            "src/erslib/flux/clauses/values.cpp"
+            "src/erslib/flux/clauses/where_any.cpp"
+            "src/erslib/flux/clauses/where_between.cpp"
+            "src/erslib/flux/clauses/where_column.cpp"
+            "src/erslib/flux/clauses/where_in.cpp"
+            "src/erslib/flux/clauses/where_null.cpp"
+            "src/erslib/flux/clauses/where_op.cpp"
+            "src/erslib/flux/clauses/where_or.cpp"
 
-            "src/erslib/conduit/layouts/delete.cpp"
-            "src/erslib/conduit/layouts/exists.cpp"
-            "src/erslib/conduit/layouts/insert.cpp"
-            "src/erslib/conduit/layouts/select.cpp"
-            "src/erslib/conduit/layouts/update.cpp"
+            "src/erslib/flux/layouts/delete.cpp"
+            "src/erslib/flux/layouts/exists.cpp"
+            "src/erslib/flux/layouts/insert.cpp"
+            "src/erslib/flux/layouts/select.cpp"
+            "src/erslib/flux/layouts/update.cpp"
     )
 
-    target_link_libraries(erslib_conduit
+    target_link_libraries(erslib_flux
         PUBLIC
             erslib_core
     )
 
     find_package(PostgreSQL)
-    erslib_required_package(erslib_conduit libpqxx libpqxx::pqxx)
+    erslib_required_package(erslib_flux libpqxx libpqxx::pqxx)
 
-    list(APPEND ERSLIB_TARGETS erslib_conduit)
+    list(APPEND ERSLIB_TARGETS erslib_flux)
 endif()
 
 

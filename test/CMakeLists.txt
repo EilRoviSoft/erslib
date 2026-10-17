@@ -113,7 +113,7 @@ function(add_stateful_test)
 
     target_link_libraries(${TEST_TARGET}
         PRIVATE
-            erslib::core erslib::contrib erslib::conduit erslib::modkit erslib::easy_ecs erslib::luaschema
+            erslib::core erslib::contrib erslib::flux erslib::modkit erslib::easy_ecs erslib::luaschema
             doctest::doctest
     )
 
@@ -148,7 +148,7 @@ function(add_sandbox_test)
 
     target_link_libraries(${TEST_TARGET}
         PRIVATE
-            erslib::core erslib::contrib erslib::conduit erslib::modkit erslib::easy_ecs erslib::luaschema
+            erslib::core erslib::contrib erslib::flux erslib::modkit erslib::easy_ecs erslib::luaschema
     )
 
     target_compile_definitions(${TEST_TARGET}

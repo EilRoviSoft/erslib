@@ -1,4 +1,4 @@
-# conduit reflect
+# flux reflect
 
 You can describe a table once, as a struct + a `Declaration` specialization. The `CREATE TABLE` statement and the ability to read query results straight into that struct are the outputs of this.
 
@@ -9,13 +9,13 @@ Needs `ERSLIB_ENABLE_REFLECTION=ON` and GCC 16.1 or newer. Everything below sits
 
 ```cpp
 struct Image {
-    uint32_t id = conduit::undefined_id;
+    uint32_t id = flux::undefined_id;
     std::string url;
     std::string path;
 };
 
 template<>
-struct conduit::reflect::Declaration<Image> : Table<"images"> {
+struct flux::reflect::Declaration<Image> : Table<"images"> {
     Pk<"id"> images_pk;
     Unique<"url"> images_url_key;
     Unique<"path"> images_path_key;
@@ -30,7 +30,7 @@ The template arguments are column names. Keep the member names unique across the
 
 ```cpp
 template<>
-struct conduit::reflect::Declaration<ProductImage> : Table<"product_images"> {
+struct flux::reflect::Declaration<ProductImage> : Table<"product_images"> {
     Pk<"product_id", "image_id"> product_images_pk;
     Unique<"product_id", "position"> product_images_position_key;
 
@@ -53,18 +53,18 @@ Renaming a column, overriding its SQL type, or leaving a field out of the table 
 
 ```cpp
 struct Product {
-    uint32_t id = conduit::undefined_id;
+    uint32_t id = flux::undefined_id;
     int32_t price;
 
-    [[=conduit::reflect::Column<"descr">]]
+    [[=flux::reflect::Column<"descr">]]
     ers::optional<std::string> description;
 
-    [[=conduit::reflect::Column<"", "VARCHAR(120)">]]
+    [[=flux::reflect::Column<"", "VARCHAR(120)">]]
     std::string title;
 
     uint32_t sku;
 
-    [[=conduit::reflect::Skip]]
+    [[=flux::reflect::Skip]]
     int cache;
 };
 ```
@@ -73,7 +73,7 @@ struct Product {
 ## Getting the DDL
 
 ```cpp
-constexpr std::string_view ddl = conduit::ddl::create_table<Image>();
+constexpr std::string_view ddl = flux::ddl::create_table<Image>();
 ```
 
 It is the only `consteval` DDL, so the text is built during compilation and costs nothing at runtime (except actually running it):
@@ -96,7 +96,7 @@ Include `reflect.hpp` and `exec_as` / `exec_one` start accepting your entities:
 
 ```cpp
 auto collections = db.with_tx([limit](pqxx::read_transaction& tx) {
-    ERS_QUICK_CONDUIT_USING;
+    ERS_QUICK_FLUX_USING;
     return (select_from("collections")
         | order_by_random()
         | with_limit(limit)
@@ -122,17 +122,17 @@ auto inserted = (insert_into("images")
 Queries you write by hand do not have to repeat names you have already written down:
 
 ```cpp
-conduit::reflect::table_name<Image>                        // "images"
-conduit::reflect::primary_key<Image>                       // span of column names
-conduit::reflect::pk_constraint<Image>                     // "images_pk"
-conduit::reflect::identity_column<Image>                   // "id", empty when there is none
-conduit::reflect::has_identity<Image>
-conduit::reflect::column_count<Product>
-conduit::reflect::column_name<^^Product::description>      // "descr"
-conduit::reflect::sql_type_name<^^Product::title>          // "VARCHAR(120)"
-conduit::reflect::is_nullable<^^Product::description>      // true
-conduit::reflect::is_pk_column<Image, ^^Image::id>         // true
-conduit::reflect::is_identity_column<Image, ^^Image::id>   // true
+flux::reflect::table_name<Image>                        // "images"
+flux::reflect::primary_key<Image>                       // span of column names
+flux::reflect::pk_constraint<Image>                     // "images_pk"
+flux::reflect::identity_column<Image>                   // "id", empty when there is none
+flux::reflect::has_identity<Image>
+flux::reflect::column_count<Product>
+flux::reflect::column_name<^^Product::description>      // "descr"
+flux::reflect::sql_type_name<^^Product::title>          // "VARCHAR(120)"
+flux::reflect::is_nullable<^^Product::description>      // true
+flux::reflect::is_pk_column<Image, ^^Image::id>         // true
+flux::reflect::is_identity_column<Image, ^^Image::id>   // true
 ```
 
 ```cpp
@@ -141,7 +141,7 @@ auto saved = (insert_into("images")
     | values(img.url, img.path)
     | on_conflict_constraint("images_url_key")
     | do_update("path")
-    | returning(std::string(conduit::reflect::identity_column<Image>))
+    | returning(std::string(flux::reflect::identity_column<Image>))
 ).exec_one<Image>(tx);
 ```
 
@@ -157,7 +157,7 @@ struct CascadeHit {
 };
 
 template<>
-struct conduit::reflect::Declaration<CascadeHit> {};
+struct flux::reflect::Declaration<CascadeHit> {};
 ```
 
 `exec_as<CascadeHit>` now works, and `create_table<CascadeHit>()` does not compile, which is the point. The two concepts are `RowType`, meaning there is a `Declaration` and rows can be read into it, and `Entity`, meaning there is also a `Table` and DDL can be generated.
@@ -169,7 +169,7 @@ Two traits, specialized the usual way. `sql_type` says what a C++ type looks lik
 
 ```cpp
 template<>
-struct conduit::reflect::sql_type<Money> {
+struct flux::reflect::sql_type<Money> {
     static constexpr std::string_view name = "NUMERIC(12, 2)";
     static constexpr bool nullable = false;
 };
@@ -179,7 +179,7 @@ struct conduit::reflect::sql_type<Money> {
 
 ```cpp
 template<>
-struct conduit::reflect::sql_value<Money> {
+struct flux::reflect::sql_value<Money> {
     static void bind(pqxx::params& out, const Money& what) {
         out.append(what.to_string());
     }
