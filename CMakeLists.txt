@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.28)
 
 project(erslib
-    VERSION 1.2.0
+    VERSION 1.2.1
     DESCRIPTION "EilRoviSoft's universal library"
     LANGUAGES CXX
 )
@@ -227,47 +227,51 @@ if(ERSLIB_BUILD_FLUX)
 
     target_sources(erslib_flux
         PRIVATE
-            "src/erslib/flux/impl/clause.cpp"
-            "src/erslib/flux/impl/connection_pool.cpp"
-            "src/erslib/flux/impl/context.cpp"
-            "src/erslib/flux/impl/database.cpp"
-            "src/erslib/flux/impl/declaration_diff.cpp"
-            "src/erslib/flux/impl/identity.cpp"
-            "src/erslib/flux/impl/layout.cpp"
-            "src/erslib/flux/impl/migrate.cpp"
-            "src/erslib/flux/impl/migration_source.cpp"
-            "src/erslib/flux/impl/migrator.cpp"
-            "src/erslib/flux/impl/options.cpp"
-            "src/erslib/flux/impl/query_builder.cpp"
-            "src/erslib/flux/impl/query_store.cpp"
+            "src/erslib/flux/sql/context.cpp"
+            "src/erslib/flux/sql/identifier.cpp"
 
-            "src/erslib/flux/clauses/aggregate.cpp"
-            "src/erslib/flux/clauses/assign.cpp"
-            "src/erslib/flux/clauses/bound.cpp"
-            "src/erslib/flux/clauses/conflict.cpp"
-            "src/erslib/flux/clauses/distinct.cpp"
-            "src/erslib/flux/clauses/exists.cpp"
-            "src/erslib/flux/clauses/expr.cpp"
-            "src/erslib/flux/clauses/group.cpp"
-            "src/erslib/flux/clauses/join.cpp"
-            "src/erslib/flux/clauses/order.cpp"
-            "src/erslib/flux/clauses/raw.cpp"
-            "src/erslib/flux/clauses/returning.cpp"
-            "src/erslib/flux/clauses/target.cpp"
-            "src/erslib/flux/clauses/values.cpp"
-            "src/erslib/flux/clauses/where_any.cpp"
-            "src/erslib/flux/clauses/where_between.cpp"
-            "src/erslib/flux/clauses/where_column.cpp"
-            "src/erslib/flux/clauses/where_in.cpp"
-            "src/erslib/flux/clauses/where_null.cpp"
-            "src/erslib/flux/clauses/where_op.cpp"
-            "src/erslib/flux/clauses/where_or.cpp"
+            "src/erslib/flux/query/clause.cpp"
+            "src/erslib/flux/query/layout.cpp"
+            "src/erslib/flux/query/query_builder.cpp"
+            "src/erslib/flux/query/query_store.cpp"
+            "src/erslib/flux/query/render.cpp"
 
-            "src/erslib/flux/layouts/delete.cpp"
-            "src/erslib/flux/layouts/exists.cpp"
-            "src/erslib/flux/layouts/insert.cpp"
-            "src/erslib/flux/layouts/select.cpp"
-            "src/erslib/flux/layouts/update.cpp"
+            "src/erslib/flux/query/clauses/aggregate.cpp"
+            "src/erslib/flux/query/clauses/assign.cpp"
+            "src/erslib/flux/query/clauses/bound.cpp"
+            "src/erslib/flux/query/clauses/conflict.cpp"
+            "src/erslib/flux/query/clauses/distinct.cpp"
+            "src/erslib/flux/query/clauses/exists.cpp"
+            "src/erslib/flux/query/clauses/expr.cpp"
+            "src/erslib/flux/query/clauses/group.cpp"
+            "src/erslib/flux/query/clauses/identity.cpp"
+            "src/erslib/flux/query/clauses/join.cpp"
+            "src/erslib/flux/query/clauses/order.cpp"
+            "src/erslib/flux/query/clauses/raw.cpp"
+            "src/erslib/flux/query/clauses/returning.cpp"
+            "src/erslib/flux/query/clauses/values.cpp"
+            "src/erslib/flux/query/clauses/where_any.cpp"
+            "src/erslib/flux/query/clauses/where_between.cpp"
+            "src/erslib/flux/query/clauses/where_column.cpp"
+            "src/erslib/flux/query/clauses/where_in.cpp"
+            "src/erslib/flux/query/clauses/where_null.cpp"
+            "src/erslib/flux/query/clauses/where_op.cpp"
+            "src/erslib/flux/query/clauses/where_or.cpp"
+
+            "src/erslib/flux/query/layouts/delete.cpp"
+            "src/erslib/flux/query/layouts/exists.cpp"
+            "src/erslib/flux/query/layouts/insert.cpp"
+            "src/erslib/flux/query/layouts/select.cpp"
+            "src/erslib/flux/query/layouts/update.cpp"
+
+            "src/erslib/flux/connection/connection_pool.cpp"
+            "src/erslib/flux/connection/database.cpp"
+            "src/erslib/flux/connection/options.cpp"
+
+            "src/erslib/flux/migration/declaration_diff.cpp"
+            "src/erslib/flux/migration/migrate.cpp"
+            "src/erslib/flux/migration/migrator.cpp"
+            "src/erslib/flux/migration/source.cpp"
     )
 
     target_link_libraries(erslib_flux

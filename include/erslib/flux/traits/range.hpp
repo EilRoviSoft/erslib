@@ -3,8 +3,8 @@
 // ers
 #include <erslib/core/trait/container.hpp>
 #include <erslib/core/type/result.hpp>
-#include <erslib/flux/impl/generator.hpp>
-#include <erslib/flux/impl/traits.hpp>
+#include <erslib/flux/result/collector.hpp>
+#include <erslib/flux/result/row.hpp>
 
 
 template<typename T>

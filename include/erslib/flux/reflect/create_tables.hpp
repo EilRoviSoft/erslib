@@ -10,7 +10,7 @@
 
 // ers
 #include <erslib/core/type/result.hpp>
-#include <erslib/flux/impl/scope.hpp>
+#include <erslib/flux/connection/scope.hpp>
 #include <erslib/flux/reflect/ddl.hpp>
 
 

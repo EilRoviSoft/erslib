@@ -11,60 +11,60 @@
 
 // Includes --------------------------------------------------------------------
 
-#include <erslib/flux/impl/clause.hpp>
-#include <erslib/flux/impl/layout.hpp>
-#include <erslib/flux/impl/query_builder.hpp>
-#include <erslib/flux/impl/slot.hpp>
+#include <erslib/flux/query/clause.hpp>
+#include <erslib/flux/query/layout.hpp>
+#include <erslib/flux/query/query_builder.hpp>
+#include <erslib/flux/query/slot.hpp>
 
 // Clauses
 
-#include <erslib/flux/clauses/aggregate.hpp>
-#include <erslib/flux/clauses/assign.hpp>
-#include <erslib/flux/clauses/bound.hpp>
-#include <erslib/flux/clauses/conditional.hpp>
-#include <erslib/flux/clauses/conflict.hpp>
-#include <erslib/flux/clauses/dinstinct.hpp>
-#include <erslib/flux/clauses/exists.hpp>
-#include <erslib/flux/clauses/expr.hpp>
-#include <erslib/flux/clauses/group.hpp>
-#include <erslib/flux/clauses/join.hpp>
-#include <erslib/flux/clauses/order.hpp>
-#include <erslib/flux/clauses/raw.hpp>
-#include <erslib/flux/clauses/returning.hpp>
-#include <erslib/flux/clauses/target.hpp>
-#include <erslib/flux/clauses/values.hpp>
-#include <erslib/flux/clauses/where.hpp>
-#include <erslib/flux/clauses/where_any.hpp>
-#include <erslib/flux/clauses/where_between.hpp>
-#include <erslib/flux/clauses/where_column.hpp>
-#include <erslib/flux/clauses/where_in.hpp>
-#include <erslib/flux/clauses/where_null.hpp>
-#include <erslib/flux/clauses/where_op.hpp>
-#include <erslib/flux/clauses/where_or.hpp>
+#include <erslib/flux/query/clauses/aggregate.hpp>
+#include <erslib/flux/query/clauses/assign.hpp>
+#include <erslib/flux/query/clauses/bound.hpp>
+#include <erslib/flux/query/clauses/conditional.hpp>
+#include <erslib/flux/query/clauses/conflict.hpp>
+#include <erslib/flux/query/clauses/distinct.hpp>
+#include <erslib/flux/query/clauses/exists.hpp>
+#include <erslib/flux/query/clauses/expr.hpp>
+#include <erslib/flux/query/clauses/group.hpp>
+#include <erslib/flux/query/clauses/join.hpp>
+#include <erslib/flux/query/clauses/order.hpp>
+#include <erslib/flux/query/clauses/raw.hpp>
+#include <erslib/flux/query/clauses/returning.hpp>
+#include <erslib/flux/query/clauses/identity.hpp>
+#include <erslib/flux/query/clauses/values.hpp>
+#include <erslib/flux/query/clauses/where.hpp>
+#include <erslib/flux/query/clauses/where_any.hpp>
+#include <erslib/flux/query/clauses/where_between.hpp>
+#include <erslib/flux/query/clauses/where_column.hpp>
+#include <erslib/flux/query/clauses/where_in.hpp>
+#include <erslib/flux/query/clauses/where_null.hpp>
+#include <erslib/flux/query/clauses/where_op.hpp>
+#include <erslib/flux/query/clauses/where_or.hpp>
 
 // Layouts
 
-#include <erslib/flux/layouts/delete.hpp>
-#include <erslib/flux/layouts/exists.hpp>
-#include <erslib/flux/layouts/insert.hpp>
-#include <erslib/flux/layouts/select.hpp>
-#include <erslib/flux/layouts/update.hpp>
+#include <erslib/flux/query/layouts/delete.hpp>
+#include <erslib/flux/query/layouts/exists.hpp>
+#include <erslib/flux/query/layouts/insert.hpp>
+#include <erslib/flux/query/layouts/select.hpp>
+#include <erslib/flux/query/layouts/update.hpp>
 
 // Slots
 
-#include <erslib/flux/slots/column.hpp>
-#include <erslib/flux/slots/conflict.hpp>
-#include <erslib/flux/slots/dinstinct.hpp>
-#include <erslib/flux/slots/from.hpp>
-#include <erslib/flux/slots/group.hpp>
-#include <erslib/flux/slots/join.hpp>
-#include <erslib/flux/slots/limit.hpp>
-#include <erslib/flux/slots/offset.hpp>
-#include <erslib/flux/slots/order.hpp>
-#include <erslib/flux/slots/returning.hpp>
-#include <erslib/flux/slots/set.hpp>
-#include <erslib/flux/slots/values.hpp>
-#include <erslib/flux/slots/where.hpp>
+#include <erslib/flux/query/slots/column.hpp>
+#include <erslib/flux/query/slots/conflict.hpp>
+#include <erslib/flux/query/slots/distinct.hpp>
+#include <erslib/flux/query/slots/from.hpp>
+#include <erslib/flux/query/slots/group.hpp>
+#include <erslib/flux/query/slots/join.hpp>
+#include <erslib/flux/query/slots/limit.hpp>
+#include <erslib/flux/query/slots/offset.hpp>
+#include <erslib/flux/query/slots/order.hpp>
+#include <erslib/flux/query/slots/returning.hpp>
+#include <erslib/flux/query/slots/set.hpp>
+#include <erslib/flux/query/slots/values.hpp>
+#include <erslib/flux/query/slots/where.hpp>
 
 
 // Exports ---------------------------------------------------------------------

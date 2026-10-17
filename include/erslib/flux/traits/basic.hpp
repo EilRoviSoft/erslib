@@ -2,7 +2,7 @@
 
 // ers
 #include <erslib/core/type/general.hpp>
-#include <erslib/flux/impl/traits.hpp>
+#include <erslib/flux/sql/value.hpp>
 
 
 namespace flux::impl {

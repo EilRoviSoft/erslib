@@ -6,8 +6,8 @@
 #include <type_traits>
 
 // ers
-#include <erslib/flux/impl/generator.hpp>
-#include <erslib/flux/impl/traits.hpp>
+#include <erslib/flux/result/row.hpp>
+#include <erslib/flux/sql/value.hpp>
 
 
 namespace flux::impl {

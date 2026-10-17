@@ -10,8 +10,8 @@
 #include <erslib/core/convert/pg_time.hpp>
 #include <erslib/core/exception.hpp>
 #include <erslib/core/type/time.hpp>
-#include <erslib/flux/impl/generator.hpp>
-#include <erslib/flux/impl/traits.hpp>
+#include <erslib/flux/result/row.hpp>
+#include <erslib/flux/sql/value.hpp>
 
 
 template<>

@@ -4,7 +4,7 @@
 #include <string>
 
 // ers
-#include <erslib/flux/impl/traits.hpp>
+#include <erslib/flux/sql/value.hpp>
 
 
 template<>

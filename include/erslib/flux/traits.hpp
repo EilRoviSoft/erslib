@@ -1,6 +1,6 @@
 #pragma once
 
-#include <erslib/flux/impl/traits.hpp>
+#include <erslib/flux/sql/value.hpp>
 
 #include <erslib/flux/traits/basic.hpp>
 #include <erslib/flux/traits/bool.hpp>

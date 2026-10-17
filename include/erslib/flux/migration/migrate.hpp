@@ -1,0 +1,29 @@
+#pragma once
+
+// std
+#include <span>
+#include <string>
+
+// pqxx
+#include <pqxx/pqxx>
+
+// ers
+#include <erslib/core/filesystem.hpp>
+#include <erslib/core/type/result.hpp>
+#include <erslib/flux/migration/options.hpp>
+#include <erslib/flux/migration/report.hpp>
+
+// export
+#include <erslib/export.hpp>
+
+
+namespace flux::impl {
+    std::string_view ERSLIB_EXPORT service_schema();
+
+    ers::Result<migration_report_t> ERSLIB_EXPORT run_migrations(
+        pqxx::connection& conn,
+        std::span<const migration_target_t> targets,
+        const std::filesystem::path& root,
+        const migrate_options_t& options = {}
+    );
+}

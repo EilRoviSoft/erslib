@@ -2,8 +2,9 @@
 
 // ers
 #include <erslib/core/type/optional.hpp>
-#include <erslib/flux/impl/generator.hpp>
-#include <erslib/flux/impl/traits.hpp>
+#include <erslib/flux/result/collector.hpp>
+#include <erslib/flux/result/row.hpp>
+#include <erslib/flux/sql/value.hpp>
 
 
 template<typename T>

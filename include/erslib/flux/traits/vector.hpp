@@ -9,8 +9,8 @@
 // ers
 #include <erslib/core/type/optional.hpp>
 #include <erslib/core/type/result.hpp>
-#include <erslib/flux/impl/generator.hpp>
-#include <erslib/flux/impl/traits.hpp>
+#include <erslib/flux/result/row.hpp>
+#include <erslib/flux/sql/value.hpp>
 
 
 namespace flux::impl {

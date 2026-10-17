@@ -9,10 +9,10 @@
 #include <vector>
 
 // ers
-#include <erslib/flux/impl/declaration_diff.hpp>
-#include <erslib/flux/impl/migration_source.hpp>
-#include <erslib/flux/impl/migrator.hpp>
 #include <erslib/core/hashing/fnv.hpp>
+#include <erslib/flux/migration/declaration_diff.hpp>
+#include <erslib/flux/migration/migrator.hpp>
+#include <erslib/flux/migration/source.hpp>
 
 
 using namespace flux::impl;

@@ -5,9 +5,9 @@
 #include <string_view>
 
 // ers
-#include <erslib/flux/traits.hpp>
 #include <erslib/flux/reflect/schema/members.hpp>
 #include <erslib/flux/reflect/types.hpp>
+#include <erslib/flux/traits.hpp>
 
 
 namespace flux::impl::reflect {
