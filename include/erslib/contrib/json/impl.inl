@@ -102,3 +102,98 @@ namespace utl::impl {
         return it != object->end() ? &it->second : nullptr;
     }
 }
+
+
+// Array access ----------------------------------------------------------------
+
+namespace utl::impl {
+    template<JsonTraits Traits>
+    auto TNode<Traits>::operator[](std::size_t index) -> TNode& {
+        return array_or_throw(index)[index];
+    }
+
+    template<JsonTraits Traits>
+    auto TNode<Traits>::operator[](std::size_t index) const -> const TNode& {
+        return array_or_throw(index)[index];
+    }
+
+
+    template<JsonTraits Traits>
+    auto TNode<Traits>::at(std::size_t index) -> TNode& {
+        return const_cast<TNode&>(std::as_const(*this).at(index));
+    }
+
+    template<JsonTraits Traits>
+    auto TNode<Traits>::at(std::size_t index) const -> const TNode& {
+        const auto& array = array_or_throw(index);
+
+        if (index >= array.size()) {
+            throw ers::make_out_of_range_error("Index {} is out of range for a JSON array of size {}",
+                index, array.size());
+        }
+
+        return array[index];
+    }
+
+
+    template<JsonTraits Traits>
+    auto TNode<Traits>::try_at(std::size_t index) -> ers::optional<TNode&> {
+        auto* array = get_if<array_type>();
+        if (!array || index >= array->size())
+            return ers::nullopt;
+        return (*array)[index];
+    }
+
+    template<JsonTraits Traits>
+    auto TNode<Traits>::try_at(std::size_t index) const -> ers::optional<const TNode&> {
+        const auto* array = get_if<array_type>();
+        if (!array || index >= array->size())
+            return ers::nullopt;
+        return (*array)[index];
+    }
+
+
+    template<JsonTraits Traits>
+    void TNode<Traits>::push_back(const TNode& value) {
+        emplace_back(value);
+    }
+
+    template<JsonTraits Traits>
+    void TNode<Traits>::push_back(TNode&& value) {
+        emplace_back(std::move(value));
+    }
+
+    template<JsonTraits Traits>
+    template<class... Args>
+        requires std::constructible_from<TNode<Traits>, Args...>
+    auto TNode<Traits>::emplace_back(Args&&... args) -> TNode& {
+        if (is_null())
+            _data.template emplace<array_type>();
+
+        auto* array = get_if<array_type>();
+        if (!array) {
+            throw ers::make_conversion_error("Can't append to a JSON {}",
+                ers::enum_utils::to_string(type()));
+        }
+
+        array->emplace_back(std::forward<Args>(args)...);
+        return array->back();
+    }
+
+
+    template<JsonTraits Traits>
+    auto TNode<Traits>::array_or_throw(std::size_t index) -> array_type& {
+        return const_cast<array_type&>(std::as_const(*this).array_or_throw(index));
+    }
+
+    template<JsonTraits Traits>
+    auto TNode<Traits>::array_or_throw(std::size_t index) const -> const array_type& {
+        const auto* array = get_if<array_type>();
+        if (!array) {
+            throw ers::make_conversion_error("Can't access index {} of a JSON {}",
+                index, ers::enum_utils::to_string(type()));
+        }
+
+        return *array;
+    }
+}

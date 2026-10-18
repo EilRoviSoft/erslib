@@ -5,7 +5,7 @@
 #include <erslib/contrib/json.hpp>
 
 
-// Basic tests
+// Basic tests -----------------------------------------------------------------
 
 TEST_CASE("construction picks the right type") {
     CHECK(utl::Json().is_null());
@@ -57,7 +57,7 @@ TEST_CASE("assignment from a child") {
 }
 
 
-// Advanced tests with custom traits
+// Object access tests with custom traits --------------------------------------
 
 #include <map>
 
@@ -117,11 +117,11 @@ TEST_CASE("const access throws on a missing key or a non-object") {
     const auto& view = json;
     CHECK(view["a"].as_integral() == 1);
     CHECK(view.at("a").as_integral() == 1);
-    CHECK_THROWS_AS(view.at("b"), ers::out_of_range_error);
+    CHECK_THROWS_AS(std::ignore = view.at("b"), ers::out_of_range_error);
     CHECK_THROWS_AS(view["b"], ers::out_of_range_error);
 
     const utl::Json number = 5;
-    CHECK_THROWS_AS(number.at("a"), ers::conversion_error);
+    CHECK_THROWS_AS(std::ignore = number.at("a"), ers::conversion_error);
 }
 
 TEST_CASE("try_at and contains don't throw") {
@@ -171,4 +171,103 @@ TEST_CASE("custom key type goes through string_adaptor") {
     CHECK(json.as_object().begin()->first.value == "a");
     CHECK(json.contains("a"));
     CHECK(json.at("a").as_integral() == 1);
+}
+
+
+// Array access test with custom traits ----------------------------------------
+
+#include <deque>
+
+
+struct deque_traits : utl::default_traits {
+    template<class Node>
+    using array_type = std::deque<Node>;
+};
+
+
+TEST_CASE("index access on an array") {
+    utl::Json json = utl::Array { utl::Json(1), utl::Json(2) };
+
+    CHECK(json[0].as_integral() == 1);
+    CHECK(json.at(1).as_integral() == 2);
+
+    json[0] = "x";
+    CHECK(json.at(0).as_string() == "x");
+
+    const auto& view = json;
+    CHECK(view[1].as_integral() == 2);
+    CHECK(view.at(1).as_integral() == 2);
+}
+
+TEST_CASE("index access checks the type and the range") {
+    utl::Json json = utl::Array { utl::Json(1) };
+
+    CHECK_THROWS_AS(std::ignore = json.at(1), ers::out_of_range_error);
+
+    utl::Json object;
+    object["a"] = 1;
+    CHECK_THROWS_AS(std::ignore = object[0], ers::conversion_error);
+    CHECK_THROWS_AS(std::ignore = object.at(0), ers::conversion_error);
+
+    CHECK_THROWS_AS(json["0"], ers::conversion_error);
+}
+
+TEST_CASE("try_at by index doesn't throw") {
+    utl::Json json = utl::Array { utl::Json(1) };
+
+    CHECK(json.try_at(0));
+    CHECK_FALSE(json.try_at(1));
+
+    if (auto element = json.try_at(0))
+        *element = 2;
+    CHECK(json[0].as_integral() == 2);
+
+    const utl::Json number = 5;
+    CHECK_FALSE(number.try_at(0));
+}
+
+TEST_CASE("push_back creates an array from null") {
+    utl::Json json;
+
+    json["items"].push_back(1);
+    json["items"].push_back("x");
+
+    REQUIRE(json["items"].is_array());
+    CHECK(json["items"].as_array().size() == 2);
+    CHECK(json["items"][1].as_string() == "x");
+}
+
+TEST_CASE("push_back on a non-array throws") {
+    utl::Json json = 5;
+    CHECK_THROWS_AS(json.push_back(1), ers::conversion_error);
+}
+
+TEST_CASE("emplace_back returns the new element") {
+    utl::Json json;
+
+    auto& element = json.emplace_back();
+    element["a"] = 1;
+
+    CHECK(json[0]["a"].as_integral() == 1);
+}
+
+TEST_CASE("push_back of an own element survives reallocation") {
+    utl::Json json = utl::Array { utl::Json("first"), utl::Json(2) };
+
+    for (int i = 0; i < 16; ++i)
+        json.push_back(json[0]);
+
+    CHECK(json.as_array().size() == 18);
+    CHECK(json[17].as_string() == "first");
+}
+
+TEST_CASE("deque as the array type") {
+    utl::TNode<deque_traits> json;
+
+    json.push_back(1);
+    json.emplace_back("x");
+
+    CHECK(json[0].as_integral() == 1);
+    CHECK(json.at(1).as_string() == "x");
+    CHECK_FALSE(json.try_at(2));
 }

@@ -298,6 +298,26 @@ namespace utl::impl {
         [[nodiscard]] bool contains(std::string_view key) const;
 
 
+        // -- Array access --
+        // ------------------
+
+        [[nodiscard]] TNode& operator[](std::size_t index);
+        [[nodiscard]] const TNode& operator[](std::size_t index) const;
+
+        [[nodiscard]] TNode& at(std::size_t index);
+        [[nodiscard]] const TNode& at(std::size_t index) const;
+
+        [[nodiscard]] ers::optional<TNode&> try_at(std::size_t index);
+        [[nodiscard]] ers::optional<const TNode&> try_at(std::size_t index) const;
+
+        void push_back(const TNode& value);
+        void push_back(TNode&& value);
+
+        template<class... Args>
+            requires std::constructible_from<TNode, Args...>
+        TNode& emplace_back(Args&&... args);
+
+
     private:
         variant_type _data {};
 
@@ -315,6 +335,9 @@ namespace utl::impl {
 
         [[nodiscard]] TNode* find_child(std::string_view key);
         [[nodiscard]] const TNode* find_child(std::string_view key) const;
+
+        [[nodiscard]] array_type& array_or_throw(std::size_t index);
+        [[nodiscard]] const array_type& array_or_throw(std::size_t index) const;
 
 
         // -- Asserts --
