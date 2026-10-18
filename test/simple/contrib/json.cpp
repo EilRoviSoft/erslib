@@ -1,69 +1,55 @@
 // doctest
 #include <doctest/doctest.h>
 
-// contrib
-#include <erslib/contrib/json.hpp>
-
 // ers
 #include <erslib/contrib/json.hpp>
 
 
-using integral = utl::Json::integral_type;
-using floating = utl::Json::floating_type;
-using string = utl::Json::string_type;
-
-
-TEST_CASE("assignment") {
-    utl::Json obj;
-
-    obj["hello"] = "world";
+TEST_CASE("construction picks the right type") {
+    CHECK(utl::Json().is_null());
+    CHECK(utl::Json(nullptr).is_null());
+    CHECK(utl::Json(true).is_bool());
+    CHECK(utl::Json(5).is_integral());
+    CHECK(utl::Json(5u).is_integral());
+    CHECK(utl::Json(1.5).is_floating());
+    CHECK(utl::Json(1.5f).is_floating());
+    CHECK(utl::Json("x").is_string());
+    CHECK(utl::Json(std::string_view("x")).is_string());
+    CHECK(utl::Json(std::string("x")).is_string());
+    CHECK(utl::Json(utl::Object{}).is_object());
+    CHECK(utl::Json(utl::Array{}).is_array());
 }
 
-
-TEST_CASE("require_field") {
-    utl::Json obj;
-
-    obj["int"] = 42;
-    obj["float"] = 3.14;
-    obj["str"] = "hello world";
-
-
-    SUBCASE("Require") {
-        utl::JsonSchema schema(obj);
-
-        schema.require<integral>("int");
-        schema.require<floating>("float");
-        schema.require<string>("str");
-
-        REQUIRE(schema.finalize());
-    }
-
-    SUBCASE("Require and Write") {
-        utl::JsonSchema schema(obj);
-
-        integral i;
-        floating f;
-        string s;
-
-        schema.require_and_write("int", i);
-        schema.require_and_write("float", f);
-        schema.require_and_write("str", s);
-
-        REQUIRE(schema.finalize());
-        REQUIRE(i == obj["int"].as<integral>());
-        REQUIRE(f - obj["float"].as<floating>() < std::numeric_limits<float>::epsilon());
-        REQUIRE(s == obj["str"].as<string>());
-    }
+TEST_CASE("type matches the variant index") {
+    CHECK(utl::Json().type() == utl::ENodeType::None);
+    CHECK(utl::Json(utl::Object{}).type() == utl::ENodeType::Object);
+    CHECK(utl::Json(true).type() == utl::ENodeType::Bool);
 }
 
-TEST_CASE("read_as") {
-    auto json = utl::from_string(R"({"a": 5, "b": -1, "c": "x", "d": true, "e": 1.5})");
+TEST_CASE("integral range is checked") {
+    CHECK_THROWS(utl::Json(std::numeric_limits<u64>::max()));
+}
 
-    REQUIRE(utl::read_as<u32>(json, "a") == 5u);
-    REQUIRE(!utl::read_as<u32>(json, "b"));
-    REQUIRE(!utl::read_as<u32>(json, "c"));
-    REQUIRE(utl::read_as<std::string>(json, "c") == "x");
-    REQUIRE(utl::read_as<bool>(json, "d") == true);
-    REQUIRE(utl::read_as<f64>(json, "a") == 5.0);
-    REQUIRE(!utl::read_as<i64>(json, "missing"));
+TEST_CASE("assignment from a value") {
+    utl::Json json;
+
+    json = 5;
+    CHECK(json.as_integral() == 5);
+
+    json = "x";
+    CHECK(json.as_string() == "x");
+}
+
+TEST_CASE("assignment from a child") {
+    utl::Array array;
+    array.emplace_back(utl::Array { utl::Json(1), utl::Json(2) });
+
+    utl::Json json = std::move(array);
+
+    json = std::move(json.as_array()[0]);
+    REQUIRE(json.is_array());
+    CHECK(json.as_array().size() == 2);
+
+    json = json.as_array()[1];
+    CHECK(json.as_integral() == 2);
 }
