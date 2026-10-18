@@ -379,3 +379,126 @@ TEST_CASE("expected is not treated as optional") {
     static_assert(utl::impl::json_detail::classify<std::expected<int, std::string>, utl::Json>()
         == utl::impl::json_detail::ESourceKind::None);
 }
+
+
+// I/O tests
+
+struct custom_string_traits : utl::default_traits {
+    using string_type = test_key;
+};
+
+
+TEST_CASE("parse scalars and nesting") {
+    CHECK(utl::from_string("null").is_null());
+    CHECK(utl::from_string(" true ").as_bool());
+    CHECK(utl::from_string("-42").as_integral() == -42);
+    CHECK(utl::from_string("1.5e2").as_floating() == 150.0);
+    CHECK(utl::from_string(R"("x")").as_string() == "x");
+
+    const auto json = utl::from_string(R"({ "a": [1, {"b": null}], "c": "d" })");
+    CHECK(json["a"][1].contains("b"));
+    CHECK(json["c"].as_string() == "d");
+}
+
+TEST_CASE("parse escapes and unicode") {
+    CHECK(utl::from_string(R"("a\"b\\c\n\t\/")").as_string() == "a\"b\\c\n\t/");
+    CHECK(utl::from_string(R"("\u00e9")").as_string() == "\xC3\xA9");
+    CHECK(utl::from_string(R"("\ud83d\ude00")").as_string() == "\xF0\x9F\x98\x80");
+}
+
+TEST_CASE("parse rejects invalid input") {
+    for (std::string_view input : {
+             "", "   ", "01", "1.", "-", "-inf", "+1", ".5", "[1,]", "{\"a\":1,}", "[1 2]", "{\"a\" 1}",
+             "tru", "nul", "\"abc", "\"a\x01\"", R"("\x")", R"("\ud83d")", R"("\ude00")", R"("\ud83d\u0041")",
+             "1 2", "{} x"
+         }) {
+        CAPTURE(input);
+        CHECK_THROWS_AS(static_cast<void>(utl::from_string(input)), ers::parse_error);
+    }
+}
+
+TEST_CASE("integers and floats are kept apart") {
+    CHECK(utl::from_string("9223372036854775807").is_integral());
+    CHECK(utl::from_string("-9223372036854775808").is_integral());
+    CHECK_THROWS_AS(static_cast<void>(utl::from_string("9223372036854775808")), ers::parse_error);
+    CHECK_THROWS_AS(static_cast<void>(utl::from_string("-9223372036854775809")), ers::parse_error);
+
+    CHECK(utl::from_string("1").is_integral());
+    CHECK(utl::from_string("1.0").is_floating());
+    CHECK(utl::from_string("1e0").is_floating());
+}
+
+TEST_CASE("recursion limit") {
+    const auto nested = [](std::size_t depth) {
+        return std::string(depth, '[') + std::string(depth, ']');
+    };
+
+    CHECK_NOTHROW(static_cast<void>(utl::from_string(nested(1000))));
+    CHECK_THROWS_AS(static_cast<void>(utl::from_string(nested(1001))), ers::parse_error);
+    CHECK_THROWS_AS(static_cast<void>(utl::from_string(nested(11), 10)), ers::parse_error);
+}
+
+TEST_CASE("serialize numbers") {
+    CHECK(utl::Json(2.0).to_string(utl::EFormat::Minimized) == "2.0");
+    CHECK(utl::Json(1.5).to_string(utl::EFormat::Minimized) == "1.5");
+    CHECK(utl::Json(1e300).to_string(utl::EFormat::Minimized) == "1e+300");
+    CHECK(utl::Json(std::numeric_limits<double>::quiet_NaN()).to_string(utl::EFormat::Minimized) == "null");
+    CHECK(utl::Json(std::numeric_limits<i64>::min()).to_string(utl::EFormat::Minimized) == "-9223372036854775808");
+}
+
+TEST_CASE("serialize escapes strings and keys") {
+    utl::TNode<plain_map_traits> json;
+    json["k\"ey"] = std::string("a\x01\"\\\n");
+
+    CHECK(json.to_string(utl::EFormat::Minimized) == R"({"k\"ey":"a\u0001\"\\\n"})");
+}
+
+TEST_CASE("pretty format") {
+    const auto json = utl::from_string<utl::TNode<plain_map_traits>>(R"({"b":[true,null],"a":1,"e":{},"f":[]})");
+
+    CHECK(json.to_string() ==
+        "{\n"
+        "    \"a\": 1,\n"
+        "    \"b\": [\n"
+        "        true,\n"
+        "        null\n"
+        "    ],\n"
+        "    \"e\": {},\n"
+        "    \"f\": []\n"
+        "}");
+}
+
+TEST_CASE("round trip") {
+    constexpr std::string_view source = R"({"a":[1,2.5,"x\u0001",true,null,{"b":-3}],"c":"\u00e9"})";
+
+    const auto first = utl::from_string<utl::TNode<plain_map_traits>>(source);
+    const auto text = first.to_string(utl::EFormat::Minimized);
+    const auto second = utl::from_string<utl::TNode<plain_map_traits>>(text);
+
+    CHECK(second.to_string(utl::EFormat::Minimized) == text);
+    CHECK(second["a"][1].is_floating());
+    CHECK(second["c"].as_string() == "\xC3\xA9");
+}
+
+TEST_CASE("custom string type goes through string_adaptor") {
+    const auto json = utl::from_string<utl::TNode<custom_string_traits>>(R"({"a":"x"})");
+
+    CHECK(json["a"].as_string().value == "x");
+    CHECK(json.to_string(utl::EFormat::Minimized) == R"({"a":"x"})");
+}
+
+TEST_CASE("try_from_string and files") {
+    CHECK_FALSE(utl::try_from_string("{"));
+    CHECK(utl::try_from_string("{}"));
+
+    const auto path = std::filesystem::temp_directory_path() / "erslib_json_test" / "file.json";
+
+    utl::Json json;
+    json["a"] = 1;
+    json.to_file(path);
+
+    CHECK(utl::from_file(path)["a"].as_integral() == 1);
+    CHECK_FALSE(utl::try_from_file(path.parent_path() / "missing.json"));
+
+    std::filesystem::remove_all(path.parent_path());
+}

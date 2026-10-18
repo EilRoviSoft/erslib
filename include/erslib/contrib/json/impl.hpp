@@ -15,6 +15,7 @@
 #include <erslib/core/adaptor.hpp>
 #include <erslib/core/enum.hpp>
 #include <erslib/core/exception.hpp>
+#include <erslib/core/filesystem.hpp>
 #include <erslib/core/hashing/rapid.hpp>
 #include <erslib/core/type/general.hpp>
 #include <erslib/core/type/optional.hpp>
@@ -463,6 +464,15 @@ namespace utl::impl {
         TNode& emplace_back(Args&&... args);
 
 
+        // -- Serialization --
+        // -------------------
+
+        [[nodiscard]]
+        std::string to_string(EFormat format = EFormat::Pretty) const;
+        
+        void to_file(const fs::path& path, EFormat format = EFormat::Pretty) const;
+
+
     private:
         variant_type _data {};
 
@@ -515,3 +525,4 @@ namespace utl::impl {
 // Implementation --------------------------------------------------------------
 
 #include <erslib/contrib/json/impl.inl>
+#include <erslib/contrib/json/io.inl>
