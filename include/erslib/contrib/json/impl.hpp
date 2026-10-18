@@ -13,9 +13,11 @@
 
 // ers
 #include <erslib/core/adaptor.hpp>
+#include <erslib/core/enum.hpp>
 #include <erslib/core/exception.hpp>
 #include <erslib/core/hashing/rapid.hpp>
 #include <erslib/core/type/general.hpp>
+#include <erslib/core/type/optional.hpp>
 
 // export
 #include <erslib/export.hpp>
@@ -29,7 +31,7 @@
 
 // Traits ----------------------------------------------------------------------
 
-namespace utl::impl {
+namespace utl {
     template<class S>
     struct string_adaptor;
 
@@ -45,8 +47,10 @@ namespace utl::impl {
             return value;
         }
     };
+}
 
 
+namespace utl::impl {
     template<class T>
     using flat_object =
 #ifdef _HAS_BOOST_UNORDERED
@@ -84,6 +88,10 @@ namespace utl::impl {
         && requires(std::string utf8, const typename Traits::string_type& value) {
             { string_adaptor<typename Traits::string_type>::from_utf8(std::move(utf8)) } -> std::same_as<typename Traits::string_type>;
             { string_adaptor<typename Traits::string_type>::to_utf8(value) } -> std::convertible_to<std::string_view>;
+        }
+        && requires(std::string utf8) {
+            { string_adaptor<typename Traits::template object_type<int>::key_type>::from_utf8(std::move(utf8)) }
+            -> std::same_as<typename Traits::template object_type<int>::key_type>;
         };
 }
 
@@ -275,6 +283,21 @@ namespace utl::impl {
         [[nodiscard]] const null_type& as_null() const { return as<null_type>(); }
 
 
+        // -- Object access --
+        // -------------------
+
+        TNode& operator[](std::string_view key);
+        [[nodiscard]] const TNode& operator[](std::string_view key) const;
+
+        [[nodiscard]] TNode& at(std::string_view key);
+        [[nodiscard]] const TNode& at(std::string_view key) const;
+
+        [[nodiscard]] ers::optional<TNode&> try_at(std::string_view key);
+        [[nodiscard]] ers::optional<const TNode&> try_at(std::string_view key) const;
+
+        [[nodiscard]] bool contains(std::string_view key) const;
+
+
     private:
         variant_type _data {};
 
@@ -288,6 +311,10 @@ namespace utl::impl {
 
             return static_cast<integral_type>(value);
         }
+
+
+        [[nodiscard]] TNode* find_child(std::string_view key);
+        [[nodiscard]] const TNode* find_child(std::string_view key) const;
 
 
         // -- Asserts --
@@ -313,3 +340,8 @@ namespace utl::impl {
 
     using Node = TNode<default_traits>;
 }
+
+
+// Implementation --------------------------------------------------------------
+
+#include <erslib/contrib/json/impl.inl>

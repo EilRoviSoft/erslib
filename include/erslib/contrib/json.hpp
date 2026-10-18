@@ -17,7 +17,6 @@ namespace utl {
     using Json = Node;
 
     using impl::default_traits;
-    using impl::string_adaptor;
 
     using Object = Node::object_type;
     using Array = Node::array_type;
