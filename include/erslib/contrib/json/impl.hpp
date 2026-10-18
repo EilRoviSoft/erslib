@@ -32,7 +32,7 @@
 // Traits ----------------------------------------------------------------------
 
 namespace utl {
-    template<class S>
+    template<typename S>
     struct string_adaptor;
 
     template<>
@@ -51,7 +51,7 @@ namespace utl {
 
 
 namespace utl::impl {
-    template<class T>
+    template<typename T>
     using flat_object =
 #ifdef _HAS_BOOST_UNORDERED
         boost::unordered_flat_map<
@@ -65,10 +65,10 @@ namespace utl::impl {
 
 
     struct default_traits {
-        template<class Node>
+        template<typename Node>
         using object_type = flat_object<Node>;
 
-        template<class Node>
+        template<typename Node>
         using array_type = std::vector<Node>;
 
         using string_type = std::string;
@@ -77,7 +77,7 @@ namespace utl::impl {
     };
 
 
-    template<class Traits>
+    template<typename Traits>
     concept JsonTraits = requires {
             typename Traits::string_type;
             typename Traits::template object_type<int>;
@@ -96,7 +96,7 @@ namespace utl::impl {
 }
 
 
-// Node ------------------------------------------------------------------------
+// Details ---------------------------------------------------------------------
 
 namespace utl::impl {
     enum class EFormat : u8 {
@@ -121,7 +121,159 @@ namespace utl::impl {
 
 
     template<JsonTraits Traits>
+    class TNode;
+}
+
+
+// Conversion ------------------------------------------------------------------
+
+namespace utl::impl::json_detail {
+    enum class ESourceKind : u8 {
+        None,
+        Node,
+        OtherNode,
+        Null,
+        Boolean,
+        String,
+        Integral,
+        Floating,
+        Optional,
+        Object,
+        Array,
+    };
+}
+
+
+namespace utl::impl::json_detail {
+    template<typename T>
+    constexpr bool is_node_v = false;
+
+    template<typename Traits>
+    constexpr bool is_node_v<TNode<Traits>> = true;
+}
+
+
+namespace utl::impl {
+    template<class T>
+    concept BoolLike = std::same_as<T, bool> || std::same_as<T, std::vector<bool>::reference>;
+
+
+    template<typename T>
+    concept Utf8Viewable = std::convertible_to<const T&, std::string_view>;
+
+    template<typename T>
+    concept AdaptedString = requires(const T & value) {
+        { string_adaptor<T>::to_utf8(value) } -> std::convertible_to<std::string_view>;
+    };
+
+    template<typename T>
+    concept StringLike = Utf8Viewable<T> || AdaptedString<T>;
+
+
+    template<typename T>
+    concept OptionalLike = requires(T& value) {
+        { value.has_value() } -> std::convertible_to<bool>;
+        *value;
+        value.reset();
+    };
+
+
+    template<typename T>
+    concept MapLike = std::ranges::input_range<T> && requires {
+        typename T::key_type;
+        typename T::mapped_type;
+    };
+}
+
+
+namespace utl::impl::json_detail {
+    template<typename T, typename Node>
+    consteval ESourceKind classify() {
+        using U = std::remove_cvref_t<T>;
+
+        if constexpr (std::same_as<U, Node>) {
+            return ESourceKind::Node;
+        } else if constexpr (is_node_v<U>) {
+            return ESourceKind::OtherNode;
+        } else if constexpr (std::same_as<U, null_type_impl> || std::same_as<U, std::nullptr_t>) {
+            return ESourceKind::Null;
+        } else if constexpr (BoolLike<U>) {
+            return ESourceKind::Boolean;
+        } else if constexpr (StringLike<U>) {
+            return ESourceKind::String;
+        } else if constexpr (std::integral<U>) {
+            return ESourceKind::Integral;
+        } else if constexpr (std::floating_point<U>) {
+            return ESourceKind::Floating;
+        } else if constexpr (OptionalLike<U>) {
+            if constexpr (classify<decltype(*std::declval<const U&>()), Node>() != ESourceKind::None)
+                return ESourceKind::Optional;
+            else
+                return ESourceKind::None;
+        } else if constexpr (MapLike<U>) {
+            if constexpr (StringLike<typename U::key_type>) {
+                if constexpr (classify<typename U::mapped_type, Node>() != ESourceKind::None)
+                    return ESourceKind::Object;
+                else
+                    return ESourceKind::None;
+            } else
+                return ESourceKind::None;
+        } else if constexpr (std::ranges::input_range<U>) {
+            using item_type = std::remove_cvref_t<std::ranges::range_reference_t<U>>;
+
+            if constexpr (std::same_as<item_type, U>) {
+                return ESourceKind::None;
+            } else {
+                if constexpr (classify<std::ranges::range_reference_t<U>, Node>() != ESourceKind::None)
+                    return ESourceKind::Array;
+                else
+                    return ESourceKind::None;
+            }
+        } else
+            return ESourceKind::None;
+    }
+}
+
+
+namespace utl::impl::json_detail {
+    template<typename T, typename Node>
+    concept ConvertibleSource = classify<T, Node>() != ESourceKind::None
+        && classify<T, Node>() != ESourceKind::Node;
+
+
+    template<typename String, typename Source>
+    [[nodiscard]]
+    String to_string_type(Source&& value) {
+        using source_t = std::remove_cvref_t<Source>;
+
+        if constexpr (std::same_as<source_t, String>) {
+            return std::forward<Source>(value);
+        } else if constexpr (Utf8Viewable<source_t>) {
+            auto view = static_cast<std::string_view>(value);
+            return string_adaptor<String>::from_utf8(static_cast<std::string>(view));
+        } else {
+            auto&& utf8 = string_adaptor<source_t>::to_utf8(value);
+
+            if constexpr (std::same_as<std::remove_cvref_t<decltype(utf8)>, std::string>) {
+                return string_adaptor<String>::from_utf8(static_cast<std::string>(std::move(utf8)));
+            } else {
+                auto view = static_cast<std::string_view>(utf8);
+                return string_adaptor<String>::from_utf8(static_cast<std::string>(view));
+            }
+        }
+    }
+}
+
+
+// Implementation --------------------------------------------------------------
+
+namespace utl::impl {
+    template<JsonTraits Traits>
     class TNode {
+        template<JsonTraits>
+        friend class TNode;
+
+
     public:
         // -- Public Traits --
         // -------------------
@@ -163,16 +315,9 @@ namespace utl::impl {
             _data(std::in_place_type<bool_type>, value) {
         }
 
-        template<std::integral T>
-            requires (!std::same_as<T, bool>)
-        TNode(T value) :
-            _data(std::in_place_type<integral_type>, checked_integral(value)) {
-        }
-
-        template<std::floating_point T>
-        TNode(T value) noexcept :
-            _data(std::in_place_type<floating_type>, static_cast<floating_type>(value)) {
-        }
+        template<class T>
+            requires json_detail::ConvertibleSource<T, TNode>
+        TNode(T&& value);
 
         TNode(const char* value) :
             TNode(std::string_view(value)) {
@@ -229,7 +374,7 @@ namespace utl::impl {
         }
 
 
-        template<class T>
+        template<typename T>
         [[nodiscard]] bool is() const noexcept {
             return std::holds_alternative<T>(_data);
         }
@@ -246,22 +391,22 @@ namespace utl::impl {
         // -- Getters --
         // -------------
 
-        template<class T>
+        template<typename T>
         [[nodiscard]] T* get_if() noexcept {
             return std::get_if<T>(&_data);
         }
 
-        template<class T>
+        template<typename T>
         [[nodiscard]] const T* get_if() const noexcept {
             return std::get_if<T>(&_data);
         }
 
-        template<class T>
+        template<typename T>
         [[nodiscard]] T& as() {
             return std::get<T>(_data);
         }
 
-        template<class T>
+        template<typename T>
         [[nodiscard]] const T& as() const {
             return std::get<T>(_data);
         }
@@ -313,7 +458,7 @@ namespace utl::impl {
         void push_back(const TNode& value);
         void push_back(TNode&& value);
 
-        template<class... Args>
+        template<typename... Args>
             requires std::constructible_from<TNode, Args...>
         TNode& emplace_back(Args&&... args);
 
@@ -324,7 +469,9 @@ namespace utl::impl {
 
         template<std::integral T>
         [[nodiscard]] static integral_type checked_integral(T value) {
-            if (!std::in_range<integral_type>(value)) {
+            using integer_t = std::conditional_t<std::is_signed_v<T>, std::make_signed_t<T>, std::make_unsigned_t<T>>;
+
+            if (!std::in_range<integral_type>(static_cast<integer_t>(value))) {
                 throw ers::make_out_of_range_error("Integer {} doesn't fit into the JSON integral type",
                     value);
             }

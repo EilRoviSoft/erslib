@@ -21,6 +21,63 @@ namespace utl::impl::json_detail {
 }
 
 
+// Conversion ------------------------------------------------------------------
+
+namespace utl::impl {
+    template<JsonTraits Traits>
+    template<class T>
+        requires json_detail::ConvertibleSource<T, TNode<Traits>>
+    TNode<Traits>::TNode(T&& value) {
+        using source_t = std::remove_cvref_t<T>;
+        using json_detail::ESourceKind;
+
+        constexpr auto kind = json_detail::classify<T, TNode>();
+
+        if constexpr (kind == ESourceKind::OtherNode) {
+            std::visit([this]<typename Alternative>(Alternative&& alternative) {
+                *this = TNode(std::forward<Alternative>(alternative));
+            }, std::forward_like<T>(value._data));
+        } else if constexpr (kind == ESourceKind::Null) {
+        } else if constexpr (kind == ESourceKind::Boolean) {
+            _data.template emplace<bool_type>(value);
+        } else if constexpr (kind == ESourceKind::String) {
+            _data.template emplace<string_type>(json_detail::to_string_type<string_type>(std::forward<T>(value)));
+        } else if constexpr (kind == ESourceKind::Integral) {
+            _data.template emplace<integral_type>(checked_integral(value));
+        } else if constexpr (kind == ESourceKind::Floating) {
+            _data.template emplace<floating_type>(static_cast<floating_type>(value));
+        } else if constexpr (kind == ESourceKind::Optional) {
+            if (value.has_value())
+                *this = TNode(std::forward_like<T>(*value));
+        } else if constexpr (kind == ESourceKind::Object) {
+            if constexpr (std::same_as<source_t, object_type>) {
+                _data.template emplace<object_type>(std::forward<T>(value));
+            } else {
+                using key_type = typename object_type::key_type;
+
+                auto& object = _data.template emplace<object_type>();
+                if constexpr (std::ranges::sized_range<source_t> && requires { object.reserve(std::size_t {}); })
+                    object.reserve(std::ranges::size(value));
+
+                for (auto&& [key, item] : value)
+                    object.try_emplace(json_detail::to_string_type<key_type>(key), std::forward_like<T>(item));
+            }
+        } else if constexpr (kind == ESourceKind::Array) {
+            if constexpr (std::same_as<source_t, array_type>) {
+                _data.template emplace<array_type>(std::forward<T>(value));
+            } else {
+                auto& array = _data.template emplace<array_type>();
+                if constexpr (std::ranges::sized_range<source_t> && requires { array.reserve(std::size_t {}); })
+                    array.reserve(std::ranges::size(value));
+
+                for (auto&& item : value)
+                    array.emplace_back(std::forward_like<T>(item));
+            }
+        }
+    }
+}
+
+
 // Object access ---------------------------------------------------------------
 
 namespace utl::impl {

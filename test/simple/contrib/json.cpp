@@ -1,6 +1,20 @@
 // doctest
 #include <doctest/doctest.h>
 
+// std
+#include <array>
+#include <deque>
+#include <expected>
+#include <filesystem>
+#include <list>
+#include <map>
+#include <optional>
+#include <set>
+#include <span>
+#include <unordered_map>
+#include <utility>
+#include <vector>
+
 // ers
 #include <erslib/contrib/json.hpp>
 
@@ -59,8 +73,6 @@ TEST_CASE("assignment from a child") {
 
 // Object access tests with custom traits --------------------------------------
 
-#include <map>
-
 
 struct test_key {
     std::string value;
@@ -118,7 +130,7 @@ TEST_CASE("const access throws on a missing key or a non-object") {
     CHECK(view["a"].as_integral() == 1);
     CHECK(view.at("a").as_integral() == 1);
     CHECK_THROWS_AS(std::ignore = view.at("b"), ers::out_of_range_error);
-    CHECK_THROWS_AS(view["b"], ers::out_of_range_error);
+    CHECK_THROWS_AS(std::ignore = view["b"], ers::out_of_range_error);
 
     const utl::Json number = 5;
     CHECK_THROWS_AS(std::ignore = number.at("a"), ers::conversion_error);
@@ -175,8 +187,6 @@ TEST_CASE("custom key type goes through string_adaptor") {
 
 
 // Array access test with custom traits ----------------------------------------
-
-#include <deque>
 
 
 struct deque_traits : utl::default_traits {
@@ -270,4 +280,102 @@ TEST_CASE("deque as the array type") {
     CHECK(json[0].as_integral() == 1);
     CHECK(json.at(1).as_string() == "x");
     CHECK_FALSE(json.try_at(2));
+}
+
+
+// Exotic assignment tests
+
+
+TEST_CASE("standard containers become arrays") {
+    utl::Json numbers = std::vector { 1, 2, 3 };
+    REQUIRE(numbers.is_array());
+    CHECK(numbers[2].as_integral() == 3);
+
+    utl::Json strings = std::list { "a", "b" };
+    CHECK(strings[1].as_string() == "b");
+
+    utl::Json set = std::set<std::string> { "b", "a" };
+    CHECK(set[0].as_string() == "a");
+
+    utl::Json flags = std::array { true, false };
+    CHECK(flags[0].as_bool());
+    CHECK_FALSE(flags[1].as_bool());
+
+    utl::Json bits = std::vector { true, false };
+    CHECK(bits[0].as_bool());
+}
+
+TEST_CASE("maps with string keys become objects") {
+    utl::Json json = std::map<std::string, int> { { "a", 1 }, { "b", 2 } };
+    REQUIRE(json.is_object());
+    CHECK(json["b"].as_integral() == 2);
+
+    utl::Json nested = std::unordered_map<std::string, std::vector<double>> { { "x", { 1.5, 2.5 } } };
+    CHECK(nested["x"][1].as_floating() == 2.5);
+}
+
+TEST_CASE("optional becomes a value or null") {
+    utl::Json engaged = std::optional { 5 };
+    CHECK(engaged.as_integral() == 5);
+
+    utl::Json empty = std::optional<int> {};
+    CHECK(empty.is_null());
+
+    utl::Json json;
+    json["price"] = ers::optional<i64> {};
+    CHECK(json["price"].is_null());
+}
+
+TEST_CASE("unsupported types are rejected at compile time") {
+    static_assert(!std::constructible_from<utl::Json, std::pair<int, int>>);
+    static_assert(!std::constructible_from<utl::Json, std::map<int, int>>);
+    static_assert(std::constructible_from<utl::Json, std::span<const utl::Json>>);
+}
+
+TEST_CASE("non-const lvalues of alternative types") {
+    std::string string = "x";
+    utl::Json from_string = string;
+    CHECK(from_string.as_string() == "x");
+    CHECK(string == "x");
+
+    utl::Object object;
+    object.try_emplace("a", 1);
+    utl::Json from_object = object;
+    CHECK(from_object["a"].as_integral() == 1);
+    CHECK(object.size() == 1);
+}
+
+TEST_CASE("char is a number") {
+    CHECK(utl::Json('a').as_integral() == 'a');
+}
+
+TEST_CASE("conversion between instantiations") {
+    utl::Json flat;
+    flat["a"]["b"] = utl::Array { utl::Json(1), utl::Json("x") };
+    flat["c"] = 1.5;
+
+    utl::TNode<plain_map_traits> plain = flat;
+    CHECK(plain["a"]["b"][1].as_string() == "x");
+    CHECK(plain["c"].as_floating() == 1.5);
+
+    utl::TNode<custom_key_traits> custom = plain;
+    CHECK(custom.contains("a"));
+
+    utl::TNode<deque_traits> deque = std::move(custom);
+    CHECK(deque["a"]["b"][0].as_integral() == 1);
+
+    flat = deque;
+    CHECK(flat["a"]["b"][1].as_string() == "x");
+}
+
+TEST_CASE("moving a container moves its strings") {
+    std::vector source { std::string(64, 'x') };
+
+    utl::Json json = std::move(source);
+    CHECK(json[0].as_string().size() == 64);
+}
+
+TEST_CASE("expected is not treated as optional") {
+    static_assert(utl::impl::json_detail::classify<std::expected<int, std::string>, utl::Json>()
+        == utl::impl::json_detail::ESourceKind::None);
 }
