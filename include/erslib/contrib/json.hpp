@@ -18,11 +18,17 @@ namespace utl {
     using impl::ENodeType;
     using impl::type_label;
 
-    using impl::TNode;
-    using impl::default_traits;
 
-    using impl::Node;
-    using Json = Node;
+    using impl::TNode;
+
+    using impl::default_traits;
+    using impl::Json;
+
+    using impl::ordered_traits;
+    using impl::OrderedJson;
+
+    using impl::JsonPointer;
+
 
     using impl::Object;
     using impl::Array;
@@ -31,6 +37,7 @@ namespace utl {
     using impl::Floating;
     using impl::Bool;
     using impl::Null;
+
 
     using impl::from_string;
     using impl::from_file;
