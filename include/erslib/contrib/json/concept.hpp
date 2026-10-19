@@ -9,5 +9,6 @@
 
 namespace utl::impl {
     template<typename T>
-    concept JsonCompatible = ers::variant_traits<Node::variant_type>::contains_v<T> || is_json_convertible_v<T>;
+    concept JsonCompatible = ers::variant_traits<Node::variant_type>::contains_v<T>
+        || json_detail::ConvertibleSource<T, Node>;
 }

@@ -1,20 +1,8 @@
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ DmitriBogdanov/UTL ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//
-// Module:        utl::json
-// Documentation: https://github.com/DmitriBogdanov/UTL/blob/master/docs/module_json.md
-// Source repo:   https://github.com/DmitriBogdanov/UTL
-//
-// This project is licensed under the MIT License
-//
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 #pragma once
 
-// _______________________ INCLUDES _______________________
-
 // std
-#include <filesystem>
-#include <initializer_list>
+#include <concepts>
+#include <cstddef>
 #include <string>
 #include <string_view>
 #include <type_traits>
@@ -25,17 +13,15 @@
 
 // ers
 #include <erslib/core/adaptor.hpp>
+#include <erslib/core/enum.hpp>
 #include <erslib/core/exception.hpp>
-#include <erslib/core/meta.hpp>
+#include <erslib/core/filesystem.hpp>
 #include <erslib/core/hashing/rapid.hpp>
 #include <erslib/core/type/general.hpp>
 #include <erslib/core/type/optional.hpp>
-#include <erslib/core/type/result.hpp>
-#include <erslib/core/util/string.hpp>
 
 // export
 #include <erslib/export.hpp>
-
 
 #ifdef _HAS_BOOST_UNORDERED
 
@@ -44,37 +30,32 @@
 #endif
 
 
-// ____________________ DEVELOPER DOCS ____________________
+// Traits ----------------------------------------------------------------------
 
-// Reasonably simple (if we discount reflection) parser / serializer, doesn't use any intrinsics or compiler-specific
-// stuff. Unlike some other implementations, doesn't include the tokenizing step - we parse everything in a single 1D
-// scan over the data, constructing recursive JSON struct on the fly. The main reason we can do this so easily is
-// due to a nice quirk of JSON: when parsing nodes, we can always determine node type based on a single first
-// character, see 'parser::parse_node()'.
-//
-// Struct reflection is implemented through macros - alternative way would be to use templates with __PRETTY_FUNCTION__
-// (or __FUNCSIG__) and do some constexpr string parsing to perform "magic" reflection without requiring macros, but
-// that relies on the implementation-defined format of those strings and adds quite a lot more complexity.
-// 'nlohmann_json' provides similar macros but also has a way of specializing things manually.
-//
-// Proper type trait and 'if constexpr' recursive introspection are a key to making APIs that can convert stuff
-// between JSON and other types seamlessly, which is exactly what we do here, it even accounts for reflection.
+namespace utl {
+    template<typename S>
+    struct string_adaptor;
 
-// ____________________ IMPLEMENTATION ____________________
+    template<>
+    struct string_adaptor<std::string> {
+        [[nodiscard]]
+        static std::string from_utf8(std::string&& value) noexcept {
+            return std::move(value);
+        }
 
-
-namespace fs = std::filesystem;
+        [[nodiscard]]
+        static std::string_view to_utf8(const std::string& value) noexcept {
+            return value;
+        }
+    };
+}
 
 
 namespace utl::impl {
-    // ===================================
-    // --- JSON type conversion trait ---
-    // ===================================
-
-    template<class T>
-    using object_type_impl =
+    template<typename T>
+    using flat_object =
 #ifdef _HAS_BOOST_UNORDERED
-        boost::unordered_flat_map <
+        boost::unordered_flat_map<
 #else
         std::unordered_map<
 #endif
@@ -83,188 +64,237 @@ namespace utl::impl {
             ers::adaptor::equal<std::string>
         >;
 
-    template<class T>
-    using array_type_impl = std::vector<T>;
-    using string_type_impl = std::string;
-    using integral_type_impl = i64;
-    using floating_type_impl = f64;
-    using bool_type_impl = bool;
 
-    struct null_type_impl {
-        // so we can check 'Null == Null'
-        [[nodiscard]] bool operator==(const null_type_impl&) const noexcept {
-            return true;
+    struct default_traits {
+        template<typename Node>
+        using object_type = flat_object<Node>;
+
+        template<typename Node>
+        using array_type = std::vector<Node>;
+
+        using string_type = std::string;
+        using integral_type = i64;
+        using floating_type = f64;
+    };
+
+
+    template<typename Traits>
+    concept JsonTraits = requires {
+            typename Traits::string_type;
+            typename Traits::template object_type<int>;
+            typename Traits::template array_type<int>;
         }
+        && std::signed_integral<typename Traits::integral_type>
+        && std::floating_point<typename Traits::floating_type>
+        && requires(std::string utf8, const typename Traits::string_type& value) {
+            { string_adaptor<typename Traits::string_type>::from_utf8(std::move(utf8)) } -> std::same_as<typename Traits::string_type>;
+            { string_adaptor<typename Traits::string_type>::to_utf8(value) } -> std::convertible_to<std::string_view>;
+        }
+        && requires(std::string utf8) {
+            { string_adaptor<typename Traits::template object_type<int>::key_type>::from_utf8(std::move(utf8)) }
+            -> std::same_as<typename Traits::template object_type<int>::key_type>;
+        };
+}
+
+
+// Details ---------------------------------------------------------------------
+
+namespace utl::impl {
+    enum class EFormat : u8 {
+        Pretty,
+        Minimized,
     };
-
-    // ===================
-    // --- Misc. utils ---
-    // ===================
-
-    // --- Type trait ---
-    // -------------------
-
-#define UTL_JSON_DEFINE_TRAIT(TRAIT_NAME, ...)                                                                         \
-    template<class T, class = void>                                                                                    \
-    struct TRAIT_NAME : std::false_type {};                                                                            \
-                                                                                                                       \
-    template<class T>                                                                                                  \
-    struct TRAIT_NAME<T, std::void_t<decltype(__VA_ARGS__)>> : std::true_type {};                                      \
-                                                                                                                       \
-    template<class T>                                                                                                  \
-    constexpr bool TRAIT_NAME##_v = TRAIT_NAME<T>::value
-
-    UTL_JSON_DEFINE_TRAIT(_has_begin, std::declval<std::decay_t<T>>().begin());
-    UTL_JSON_DEFINE_TRAIT(_has_end, std::declval<std::decay_t<T>>().end());
-    UTL_JSON_DEFINE_TRAIT(_has_input_it, std::next(std::declval<T>().begin()));
-
-    UTL_JSON_DEFINE_TRAIT(_has_key_type, std::declval<typename std::decay_t<T>::key_type>());
-    UTL_JSON_DEFINE_TRAIT(_has_mapped_type, std::declval<typename std::decay_t<T>::mapped_type>());
-
-#undef UTL_JSON_DEFINE_TRAIT
-
-#define UTL_JSON_TYPE_TRAIT_CONJUNCTION(TRAIT_NAME, ...)                                                               \
-    template<class T>                                                                                                  \
-    struct TRAIT_NAME : std::conjunction<__VA_ARGS__> {};                                                              \
-                                                                                                                       \
-    template<class T>                                                                                                  \
-    constexpr bool TRAIT_NAME##_v = TRAIT_NAME<T>::value
-
-    // Note:
-    // The reason we use 'struct trait_name : std::conjunction<...>' instead of 'using trait_name = std::conjunction<...>'
-    // is because 1st option allows for recursive type trait, while 'using' syntax doesn't. We have some recursive type
-    // trait here in form of 'is_json_type_convertible<>', which expands over the 'T' checking that 'T', 'T::value_type'
-    // (if exists), 'T::mapped_type' (if exists) and their other layered value/mapped types are all satisfying the
-    // necessary convertibility trait. This allows us to make a trait which fully deduces whether some
-    // complex datatype can be converted to a JSON recursively.
-
-    UTL_JSON_TYPE_TRAIT_CONJUNCTION(is_object_like,
-        _has_begin<T>,
-        _has_end<T>,
-        _has_key_type<T>,
-        _has_mapped_type<T>
-    );
-    UTL_JSON_TYPE_TRAIT_CONJUNCTION(is_array_like,
-        _has_begin<T>,
-        _has_end<T>,
-        _has_input_it<T>,
-        std::negation<std::is_convertible<T, std::string>>,
-        std::negation<std::is_same<std::decay_t<T>, std::string_view>>
-    );
-    UTL_JSON_TYPE_TRAIT_CONJUNCTION(is_string_like,
-        std::disjunction<std::is_convertible<T, std::string>, std::is_same<std::decay_t<T>, std::string_view>>
-    );
-    UTL_JSON_TYPE_TRAIT_CONJUNCTION(is_integral_like,
-        std::is_integral<T>,
-        std::negation<std::is_same<T, bool>>
-    );
-    UTL_JSON_TYPE_TRAIT_CONJUNCTION(is_floating_like, std::is_floating_point<T>);
-    UTL_JSON_TYPE_TRAIT_CONJUNCTION(is_bool_like, std::is_same<T, bool_type_impl>);
-    UTL_JSON_TYPE_TRAIT_CONJUNCTION(is_null_like, std::is_same<T, null_type_impl>);
-
-
-    struct dummy_type {};
-
-
-    template<class T, class = void>
-    struct possible_value_type {
-        using type = dummy_type;
-    };
-
-    template<class T>
-    struct possible_value_type<T, std::void_t<decltype(std::declval<typename std::decay_t<T>::value_type>())>> {
-        using type = typename T::value_type;
-    };
-
-    template<class T, class = void>
-    struct possible_mapped_type {
-        using type = dummy_type;
-    };
-
-    template<class T>
-    struct possible_mapped_type<T, std::void_t<decltype(std::declval<typename std::decay_t<T>::mapped_type>())>> {
-        using type = typename T::mapped_type;
-    };
-
-#define UTL_JSON_TYPE_TRAIT_DISJUNCTION(TRAIT_NAME, ...)                                                               \
-    template<class T>                                                                                                  \
-    struct TRAIT_NAME : std::disjunction<__VA_ARGS__> {};                                                              \
-                                                                                                                       \
-    template<class T>                                                                                                  \
-    constexpr bool TRAIT_NAME##_v = TRAIT_NAME<T>::value
-
-    UTL_JSON_TYPE_TRAIT_DISJUNCTION(is_directly_json_convertible,
-        is_string_like<T>,
-        is_integral_like<T>,
-        is_floating_like<T>,
-        is_bool_like<T>,
-        is_null_like<T>);
-
-    UTL_JSON_TYPE_TRAIT_CONJUNCTION(
-        is_json_convertible,
-        std::disjunction<
-        is_directly_json_convertible<T>,
-        std::conjunction<is_array_like<T>, is_json_convertible<typename possible_value_type<T>::type>>,
-        std::conjunction<is_object_like<T>, is_json_convertible<typename possible_mapped_type<T>::type>>>,
-        std::negation<std::is_same<T, dummy_type>>);
-
-#undef UTL_JSON_TYPE_TRAIT_CONJUNCTION
-#undef UTL_JSON_TYPE_TRAIT_DISJUNCTION
-
-    // Workaround for 'static_assert(false)' making program ill-formed even
-    // when placed inside an 'if constexpr' branch that never compiles.
-    // 'static_assert(_always_false_v<T)' on the other hand doesn't,
-    // which means we can use it to mark branches that should never compile.
-    template<class>
-    constexpr bool always_false_v = false;
-
-    // Note:
-    // It is critical that 'object_type_impl' can be instantiated with incomplete type 'T'.
-    // This allows us to declare recursive classes like this:
-    //
-    //    'struct Recursive { std::map<std::string, Recursive> data; }'
-    //
-    // Technically, there is nothing stopping any dynamically allocated container from supporting
-    // incomplete types, since dynamic allocation inherently means pointer indirection at some point,
-    // which makes 'sizeof(Container)' independent of 'T'.
-    //
-    // This requirement was only standardized for 'std::vector' and 'std::list' due to ABI breaking concerns.
-    // Neither 'std::unordered_map' nor 'boost::unordered_flat_map' are required to support incomplete types by
-    // the standard/library docs, but both work here in practice: on libstdc++, libc++ and MSVC STL,
-    // 'std::unordered_map' is bucket-chained (node-based), same as 'std::map', so it never needs 'sizeof(Node)'
-    // for its own layout. 'boost::unordered_flat_map' is genuinely open-addressed (elements live in one
-    // contiguous heap-allocated table), but that table is reached through a pointer member rather than stored
-    // inline, so instantiating the class template still doesn't require 'Node' to be complete - only calling
-    // an actual member function (insert, find, the destructor, ...) does, and by then 'Node' is fully defined.
-    // This is implementation-defined behaviour, not a language guarantee - a hash map that stores its table
-    // inline instead of through a pointer would break this.
-    //
-    // We could make a more pedantic choice and add a redundant level of indirection, but that both complicates
-    // implementation needlessly and reduces performance. A perfect solution would be to write our own map implementation
-    // tailored for JSON use cases and providing explicit support for heterogeneous lookup and incomplete types, but that
-    // alone would be grander in scale than this entire parser for a mostly non-critical benefit.
-
-    // ==================
-    // --- Node class ---
-    // ==================
-
-    enum class EFormat : u8 { Pretty, Minimized };
 
     enum class ENodeType : u8 {
-        None = 0, Object = 1, Array = 2, String = 3, Integral = 4, Floating = 5, Bool = 6
+        None = 0,
+        Object = 1,
+        Array = 2,
+        String = 3,
+        Integral = 4,
+        Floating = 5,
+        Bool = 6,
     };
 
-    class ERSLIB_EXPORT Node {
+
+    [[nodiscard]]
+    constexpr std::string_view type_label(ENodeType value) noexcept {
+        return ers::enum_utils::to_string(value);
+    }
+
+
+    struct null_type_impl {
+        [[nodiscard]] bool operator==(const null_type_impl&) const noexcept = default;
+    };
+
+
+    template<JsonTraits Traits>
+    class TNode;
+}
+
+
+// Conversion ------------------------------------------------------------------
+
+namespace utl::impl::json_detail {
+    enum class ESourceKind : u8 {
+        None,
+        Node,
+        OtherNode,
+        Null,
+        Boolean,
+        String,
+        Integral,
+        Floating,
+        Optional,
+        Object,
+        Array,
+    };
+}
+
+
+namespace utl::impl::json_detail {
+    template<typename T>
+    constexpr bool is_node_v = false;
+
+    template<typename Traits>
+    constexpr bool is_node_v<TNode<Traits>> = true;
+}
+
+
+namespace utl::impl {
+    template<class T>
+    concept BoolLike = std::same_as<T, bool> || std::same_as<T, std::vector<bool>::reference>;
+
+
+    template<typename T>
+    concept Utf8Viewable = std::convertible_to<const T&, std::string_view>;
+
+    template<typename T>
+    concept AdaptedString = requires(const T & value) {
+        { string_adaptor<T>::to_utf8(value) } -> std::convertible_to<std::string_view>;
+    };
+
+    template<typename T>
+    concept StringLike = Utf8Viewable<T> || AdaptedString<T>;
+
+
+    template<typename T>
+    concept OptionalLike = requires(T& value) {
+        { value.has_value() } -> std::convertible_to<bool>;
+        *value;
+        value.reset();
+    };
+
+
+    template<typename T>
+    concept MapLike = std::ranges::input_range<T> && requires {
+        typename T::key_type;
+        typename T::mapped_type;
+    };
+}
+
+
+namespace utl::impl::json_detail {
+    template<typename T, typename Node>
+    consteval ESourceKind classify() {
+        using U = std::remove_cvref_t<T>;
+
+        if constexpr (std::same_as<U, Node>) {
+            return ESourceKind::Node;
+        } else if constexpr (is_node_v<U>) {
+            return ESourceKind::OtherNode;
+        } else if constexpr (std::same_as<U, null_type_impl> || std::same_as<U, std::nullptr_t>) {
+            return ESourceKind::Null;
+        } else if constexpr (BoolLike<U>) {
+            return ESourceKind::Boolean;
+        } else if constexpr (StringLike<U>) {
+            return ESourceKind::String;
+        } else if constexpr (std::integral<U>) {
+            return ESourceKind::Integral;
+        } else if constexpr (std::floating_point<U>) {
+            return ESourceKind::Floating;
+        } else if constexpr (OptionalLike<U>) {
+            if constexpr (classify<decltype(*std::declval<const U&>()), Node>() != ESourceKind::None)
+                return ESourceKind::Optional;
+            else
+                return ESourceKind::None;
+        } else if constexpr (MapLike<U>) {
+            if constexpr (StringLike<typename U::key_type>) {
+                if constexpr (classify<typename U::mapped_type, Node>() != ESourceKind::None)
+                    return ESourceKind::Object;
+                else
+                    return ESourceKind::None;
+            } else
+                return ESourceKind::None;
+        } else if constexpr (std::ranges::input_range<U>) {
+            using item_type = std::remove_cvref_t<std::ranges::range_reference_t<U>>;
+
+            if constexpr (std::same_as<item_type, U>) {
+                return ESourceKind::None;
+            } else {
+                if constexpr (classify<std::ranges::range_reference_t<U>, Node>() != ESourceKind::None)
+                    return ESourceKind::Array;
+                else
+                    return ESourceKind::None;
+            }
+        } else
+            return ESourceKind::None;
+    }
+}
+
+
+namespace utl::impl::json_detail {
+    template<typename T, typename Node>
+    concept ConvertibleSource = classify<T, Node>() != ESourceKind::None
+        && classify<T, Node>() != ESourceKind::Node;
+
+
+    template<typename String, typename Source>
+    [[nodiscard]]
+    String to_string_type(Source&& value) {
+        using source_t = std::remove_cvref_t<Source>;
+
+        if constexpr (std::same_as<source_t, String>) {
+            return std::forward<Source>(value);
+        } else if constexpr (Utf8Viewable<source_t>) {
+            auto view = static_cast<std::string_view>(value);
+            return string_adaptor<String>::from_utf8(static_cast<std::string>(view));
+        } else {
+            auto&& utf8 = string_adaptor<source_t>::to_utf8(value);
+
+            if constexpr (std::same_as<std::remove_cvref_t<decltype(utf8)>, std::string>) {
+                return string_adaptor<String>::from_utf8(static_cast<std::string>(std::move(utf8)));
+            } else {
+                auto view = static_cast<std::string_view>(utf8);
+                return string_adaptor<String>::from_utf8(static_cast<std::string>(view));
+            }
+        }
+    }
+}
+
+
+// Implementation --------------------------------------------------------------
+
+namespace utl::impl {
+    template<JsonTraits Traits>
+    class TNode {
+        template<JsonTraits>
+        friend class TNode;
+
+
     public:
-        using object_type = object_type_impl<Node>;
-        using array_type = array_type_impl<Node>;
-        using string_type = string_type_impl;
-        using integral_type = integral_type_impl;
-        using floating_type = floating_type_impl;
-        using bool_type = bool_type_impl;
+        // -- Public Traits --
+        // -------------------
+
+        using traits_type = Traits;
+
+        using object_type = typename Traits::template object_type<TNode>;
+        using array_type = typename Traits::template array_type<TNode>;
+        using string_type = typename Traits::string_type;
+        using integral_type = typename Traits::integral_type;
+        using floating_type = typename Traits::floating_type;
+        using bool_type = bool;
         using null_type = null_type_impl;
 
-        // 'null_type' should go first to ensure default-initialization creates 'null' nodes
         using variant_type = std::variant<
             null_type,
             object_type,
@@ -276,247 +306,225 @@ namespace utl::impl {
         >;
 
 
-    private:
-        variant_type _data{};
+        // -- Constructors --
+        // ------------------
+
+        TNode() = default;
+        TNode(const TNode&) = default;
+        TNode(TNode&&) noexcept = default;
+        ~TNode() = default;
 
 
-    public:
-        // -- Getters --
-        // -------------
+        TNode(null_type) noexcept {}
+        TNode(std::nullptr_t) noexcept {}
 
-        template<class T>
-        [[nodiscard]] T& as() {
-            return std::get<T>(_data);
+        TNode(bool_type value) noexcept :
+            _data(std::in_place_type<bool_type>, value) {
         }
 
         template<class T>
-        [[nodiscard]] const T& as() const {
-            return std::get<T>(_data);
+            requires json_detail::ConvertibleSource<T, TNode>
+        TNode(T&& value);
+
+        TNode(const char* value) :
+            TNode(std::string_view(value)) {
         }
 
-        [[nodiscard]] object_type& as_object();
-        [[nodiscard]] array_type& as_array();
-        [[nodiscard]] string_type& as_string();
-        [[nodiscard]] integral_type& as_integral();
-        [[nodiscard]] floating_type& as_floating();
-        [[nodiscard]] bool_type& as_bool();
-        [[nodiscard]] null_type& as_null();
-
-        [[nodiscard]] const object_type& as_object() const;
-        [[nodiscard]] const array_type& as_array() const;
-        [[nodiscard]] const string_type& as_string() const;
-        [[nodiscard]] const integral_type& as_integral() const;
-        [[nodiscard]] const floating_type& as_floating() const;
-        [[nodiscard]] const bool_type& as_bool() const;
-        [[nodiscard]] const null_type& as_null() const;
-
-        template<class T>
-        [[nodiscard]] bool is() const noexcept {
-            return std::holds_alternative<T>(_data);
+        TNode(std::string_view value) :
+            _data(std::in_place_type<string_type>, string_adaptor<string_type>::from_utf8(std::string(value))) {
         }
 
-        [[nodiscard]] bool is_object() const noexcept;
-        [[nodiscard]] bool is_array() const noexcept;
-        [[nodiscard]] bool is_string() const noexcept;
-        [[nodiscard]] bool is_integral() const noexcept;
-        [[nodiscard]] bool is_floating() const noexcept;
-        [[nodiscard]] bool is_bool() const noexcept;
-        [[nodiscard]] bool is_null() const noexcept;
-
-        template<class T>
-        [[nodiscard]] T* get_if() noexcept {
-            return std::get_if<T>(&_data);
+        TNode(const string_type& value)
+            requires (!std::same_as<string_type, std::string_view>) :
+            _data(std::in_place_type<string_type>, value) {
+        }
+        TNode(string_type&& value) :
+            _data(std::in_place_type<string_type>, std::move(value)) {
         }
 
-        template<class T>
-        [[nodiscard]] const T* get_if() const noexcept {
-            return std::get_if<T>(&_data);
+        TNode(const object_type& value) :
+            _data(std::in_place_type<object_type>, value) {
+        }
+        TNode(object_type&& value) :
+            _data(std::in_place_type<object_type>, std::move(value)) {
         }
 
-        // -- Object methods ---
-        // ---------------------
-
-        // 'std::map<K, V>::operator[]()' and 'std::map<K, V>::at()' don't support
-        // support heterogeneous lookup, we have to reimplement them manually
-        Node& operator[](std::string_view key);
-
-        // 'std::map<K, V>::operator[]()' and 'std::map<K, V>::at()' don't support
-        // support heterogeneous lookup, we have to reimplement them manually
-        [[nodiscard]] const Node& operator[](std::string_view key) const;
-
-        // Non-const 'operator[]' inserts non-existent keys, '.at()' should throw instead
-        [[nodiscard]] Node& at(std::string_view key);
-
-        [[nodiscard]] const Node& at(std::string_view key) const;
-
-        [[nodiscard]] ers::optional<const Node&> try_at(std::string_view key) const;
-
-        [[nodiscard]] const Node& at_or_dummy(std::string_view key) const;
-
-        [[nodiscard]] bool contains(std::string_view key) const;
-
-        // same thing as 'contains(key) ? json.at(key).get<T>() : else_value' but without a second map lookup
-        template<class T>
-        [[nodiscard]] const T& value_or(std::string_view key, const T& else_value) const {
-            const auto& object = as_object();
-            const auto it = object.find(key);
-
-            if (it == object.end())
-                return else_value;
-
-            return it->second.template as<T>();
+        TNode(const array_type& value) :
+            _data(std::in_place_type<array_type>, value) {
+        }
+        TNode(array_type&& value) :
+            _data(std::in_place_type<array_type>, std::move(value)) {
         }
 
-        // same thing as 'contains(key) ? json.at(key).get<T>()'
-        template<class T>
-        [[nodiscard]] const T& value_or_throw(std::string_view key) const {
-            const auto& object = as_object();
-            const auto it = object.find(key);
-
-            if (it == object.end() || !it->second.is<T>())
-                throw ers::make_out_of_range_error("Json doesn't have key '{}'", key);
-            return it->second.as<T>();
-        }
-
-        // -- Array methods ---
-        // --------------------
-
-        [[nodiscard]] Node& operator[](std::size_t pos);
-
-        [[nodiscard]] const Node& operator[](std::size_t pos) const;
-
-        [[nodiscard]] Node& at(std::size_t pos);
-
-        [[nodiscard]] const Node& at(std::size_t pos) const;
-
-        void push_back(const Node& node);
-
-        void push_back(Node&& node);
 
         // -- Assignment --
         // ----------------
 
-        // Converting assignment
-        template<class T>
-        Node& operator=(const T& value) {
-            // Don't take types that decay to Node/object/array/string to prevent
-            // shadowing native copy/move assignment for those types
-
-            // Several "type-like" characteristics can be true at the same time,
-            // to resolve ambiguity we assign the following conversion priority:
-            // string > object > array > bool > null > floating > integral
-
-            if constexpr (is_string_like_v<T>) {
-                _data.emplace<string_type>(value);
-            }
-            else if constexpr (is_object_like_v<T>) {
-                _data.emplace<object_type>();
-                auto& object = as_object();
-                for (const auto& [key, val] : value) object[key] = val;
-            }
-            else if constexpr (is_array_like_v<T>) {
-                _data.emplace<array_type>();
-                auto& array = as_array();
-                for (const auto& elem : value) array.emplace_back(elem);
-            }
-            else if constexpr (is_bool_like_v<T>) {
-                _data.emplace<bool_type>(value);
-            }
-            else if constexpr (is_null_like_v<T>) {
-                _data.emplace<null_type>(value);
-            }
-            else if constexpr (is_floating_like_v<T>) {
-                _data.emplace<floating_type>(value);
-            }
-            else if constexpr (is_integral_like_v<T>) {
-                _data.emplace<integral_type>(value);
-            }
-            else {
-                static_assert(always_false_v<T>, "Method is a non-exhaustive visitor of std::variant<>.");
-            }
-
+        TNode& operator=(const TNode& other) {
+            auto data = other._data;
+            _data.swap(data);
             return *this;
         }
 
-        template<class T>
-            requires (
-        !std::is_same_v<std::decay_t<T>, Node>
-            && !std::is_same_v<std::decay_t<T>, object_type>
-            && !std::is_same_v<std::decay_t<T>, array_type>
-            && !std::is_same_v<std::decay_t<T>, string_type>
-            && is_json_convertible_v<T>
-            )
-            Node(const T& value) {
-            *this = value;
-        }
-
-        // "native" copy/move semantics for types that support it
-        Node& operator=(const object_type& value);
-        Node& operator=(object_type&& value);
-
-        Node& operator=(const array_type& value);
-        Node& operator=(array_type&& value);
-
-        Node& operator=(const string_type& value);
-        Node& operator=(string_type&& value);
-
-        // Support for 'std::initializer_list' type deduction,
-        // (otherwise the call is ambiguous)
-        template<class T>
-        Node& operator=(std::initializer_list<T> il) {
-            // We can't just do 'return *this = array_type(value);' because compiler doesn't realize it can
-            // convert 'std::initializer_list<T>' to 'std::vector<Node>' for all 'T' convertible to 'Node',
-            // we have to invoke 'Node()' constructor explicitly (here it happens in 'emplace_back()')
-            array_type array_value;
-            array_value.reserve(il.size());
-            for (const auto& e : il) array_value.emplace_back(e);
-            _data = std::move(array_value);
+        TNode& operator=(TNode&& other) noexcept {
+            auto data = std::move(other._data);
+            _data.swap(data);
             return *this;
         }
 
-        // -- Constructors --
+
+        // -- Type information --
+        // ----------------------
+
+        [[nodiscard]] ENodeType type() const noexcept {
+            return static_cast<ENodeType>(_data.index());
+        }
+
+
+        template<typename T>
+        [[nodiscard]] bool is() const noexcept {
+            return std::holds_alternative<T>(_data);
+        }
+
+        [[nodiscard]] bool is_object() const noexcept { return is<object_type>(); }
+        [[nodiscard]] bool is_array() const noexcept { return is<array_type>(); }
+        [[nodiscard]] bool is_string() const noexcept { return is<string_type>(); }
+        [[nodiscard]] bool is_integral() const noexcept { return is<integral_type>(); }
+        [[nodiscard]] bool is_floating() const noexcept { return is<floating_type>(); }
+        [[nodiscard]] bool is_bool() const noexcept { return is<bool_type>(); }
+        [[nodiscard]] bool is_null() const noexcept { return is<null_type>(); }
+
+
+        // -- Getters --
+        // -------------
+
+        template<typename T>
+        [[nodiscard]] T* get_if() noexcept {
+            return std::get_if<T>(&_data);
+        }
+
+        template<typename T>
+        [[nodiscard]] const T* get_if() const noexcept {
+            return std::get_if<T>(&_data);
+        }
+
+        template<typename T>
+        [[nodiscard]] T& as() {
+            return std::get<T>(_data);
+        }
+
+        template<typename T>
+        [[nodiscard]] const T& as() const {
+            return std::get<T>(_data);
+        }
+
+        [[nodiscard]] object_type& as_object() { return as<object_type>(); }
+        [[nodiscard]] array_type& as_array() { return as<array_type>(); }
+        [[nodiscard]] string_type& as_string() { return as<string_type>(); }
+        [[nodiscard]] integral_type& as_integral() { return as<integral_type>(); }
+        [[nodiscard]] floating_type& as_floating() { return as<floating_type>(); }
+        [[nodiscard]] bool_type& as_bool() { return as<bool_type>(); }
+        [[nodiscard]] null_type& as_null() { return as<null_type>(); }
+
+        [[nodiscard]] const object_type& as_object() const { return as<object_type>(); }
+        [[nodiscard]] const array_type& as_array() const { return as<array_type>(); }
+        [[nodiscard]] const string_type& as_string() const { return as<string_type>(); }
+        [[nodiscard]] const integral_type& as_integral() const { return as<integral_type>(); }
+        [[nodiscard]] const floating_type& as_floating() const { return as<floating_type>(); }
+        [[nodiscard]] const bool_type& as_bool() const { return as<bool_type>(); }
+        [[nodiscard]] const null_type& as_null() const { return as<null_type>(); }
+
+
+        // -- Object access --
+        // -------------------
+
+        TNode& operator[](std::string_view key);
+        [[nodiscard]] const TNode& operator[](std::string_view key) const;
+
+        [[nodiscard]] TNode& at(std::string_view key);
+        [[nodiscard]] const TNode& at(std::string_view key) const;
+
+        [[nodiscard]] ers::optional<TNode&> try_at(std::string_view key);
+        [[nodiscard]] ers::optional<const TNode&> try_at(std::string_view key) const;
+
+        [[nodiscard]] bool contains(std::string_view key) const;
+
+
+        // -- Array access --
         // ------------------
 
-        Node& operator=(const Node&);
-        Node& operator=(Node&&) noexcept;
+        [[nodiscard]] TNode& operator[](std::size_t index);
+        [[nodiscard]] const TNode& operator[](std::size_t index) const;
 
-        Node();
-        Node(const Node&);
-        Node(Node&&) noexcept;
-        // Note:
-        // We suffer a lot if 'object_type' move-constructor is not marked 'noexcept', if that's the case
-        // 'Node' move-constructor doesn't get 'noexcept' either which means `std::vector<Node>` will copy
-        // nodes instead of moving when it grows. 'std::map' is NOT required to be noexcept by the standard,
-        // but it is marked as such in both 'libc++' and 'libstdc++', 'VS' stdlib lacks behind in that regard.
-        // See noexcept status summary here: http://howardhinnant.github.io/container_summary.html
+        [[nodiscard]] TNode& at(std::size_t index);
+        [[nodiscard]] const TNode& at(std::size_t index) const;
 
-        Node(const object_type& value);
-        Node(object_type&& value);
-        Node(const array_type& value);
-        Node(array_type&& value);
-        Node(std::string_view value);
-        Node(const string_type& value);
-        Node(string_type&& value);
-        Node(integral_type value);
-        Node(floating_type value);
-        Node(bool_type value);
-        Node(null_type value);
+        [[nodiscard]] ers::optional<TNode&> try_at(std::size_t index);
+        [[nodiscard]] ers::optional<const TNode&> try_at(std::size_t index) const;
 
-        // --- JSON Serializing public API ---
-        // -----------------------------------
+        void push_back(const TNode& value);
+        void push_back(TNode&& value);
 
-        [[nodiscard]] std::string to_string(EFormat format = EFormat::Pretty) const;
+        template<typename... Args>
+            requires std::constructible_from<TNode, Args...>
+        TNode& emplace_back(Args&&... args);
 
-        void to_file(const fs::path& filepath, EFormat format = EFormat::Pretty) const;
 
-        // --- Type Information ---
-        // ------------------------
+        // -- Serialization --
+        // -------------------
 
-        [[nodiscard]] ENodeType type() const;
+        [[nodiscard]]
+        std::string to_string(EFormat format = EFormat::Pretty) const;
+        
+        void to_file(const fs::path& path, EFormat format = EFormat::Pretty) const;
+
+
+    private:
+        variant_type _data {};
+
+
+        template<std::integral T>
+        [[nodiscard]] static integral_type checked_integral(T value) {
+            using integer_t = std::conditional_t<std::is_signed_v<T>, std::make_signed_t<T>, std::make_unsigned_t<T>>;
+
+            if (!std::in_range<integral_type>(static_cast<integer_t>(value))) {
+                throw ers::make_out_of_range_error("Integer {} doesn't fit into the JSON integral type",
+                    value);
+            }
+
+            return static_cast<integral_type>(value);
+        }
+
+
+        [[nodiscard]] TNode* find_child(std::string_view key);
+        [[nodiscard]] const TNode* find_child(std::string_view key) const;
+
+        [[nodiscard]] array_type& array_or_throw(std::size_t index);
+        [[nodiscard]] const array_type& array_or_throw(std::size_t index) const;
+
+
+        // -- Asserts --
+        // -------------
+
+        static_assert(std::variant_size_v<variant_type> == 7);
+
+        static_assert(std::same_as<std::variant_alternative_t<std::to_underlying(ENodeType::None), variant_type>, null_type>);
+        static_assert(std::same_as<std::variant_alternative_t<std::to_underlying(ENodeType::Object), variant_type>, object_type>);
+        static_assert(std::same_as<std::variant_alternative_t<std::to_underlying(ENodeType::Array), variant_type>, array_type>);
+        static_assert(std::same_as<std::variant_alternative_t<std::to_underlying(ENodeType::String), variant_type>, string_type>);
+        static_assert(std::same_as<std::variant_alternative_t<std::to_underlying(ENodeType::Integral), variant_type>, integral_type>);
+        static_assert(std::same_as<std::variant_alternative_t<std::to_underlying(ENodeType::Floating), variant_type>, floating_type>);
+        static_assert(std::same_as<std::variant_alternative_t<std::to_underlying(ENodeType::Bool), variant_type>, bool_type>);
     };
+}
 
 
-    // Public typedefs
+// Exports ---------------------------------------------------------------------
+
+namespace utl::impl {
+    extern template class ERSLIB_EXPORT TNode<default_traits>;
+
+    using Node = TNode<default_traits>;
 
     using Object = Node::object_type;
     using Array = Node::array_type;
@@ -525,171 +533,53 @@ namespace utl::impl {
     using Floating = Node::floating_type;
     using Bool = Node::bool_type;
     using Null = Node::null_type;
+}
 
-    // ==========================
-    // --- JSON Parsing impl. ---
-    // ==========================
 
-    constexpr std::size_t default_recursion_limit = 1000;
-    // this recursion limit applies only to parsing from text, conversions from
-    // structs & containers are a separate thing and don't really need it as much
+// Storage types ---------------------------------------------------------------
 
-    struct ERSLIB_EXPORT parser {
-        std::string_view chars;
-        std::size_t recursion_limit;
-        std::size_t recursion_depth = 0;
-        // we track recursion depth to handle stack allocation errors
-        // (this can be caused malicious inputs with extreme level of nesting, for example, 100k array
-        // opening brackets, which would cause huge recursion depth causing the stack to overflow with SIGSEGV)
+namespace utl::impl::json_detail {
+    template<class T, class Node>
+    consteval auto storage_of() {
+        constexpr auto kind = classify<T, Node>();
 
-        // dynamic allocation errors can be handled with regular exceptions through std::bad_alloc
-
-        parser() = delete;
-        parser(std::string_view chars, std::size_t recursion_limit);
-
-        // Parser state
-        std::size_t skip_nonsignificant_whitespace(std::size_t cursor) const;
-
-        // Parsing methods
-        std::pair<std::size_t, Node> parse_node(std::size_t cursor);
-
-        std::size_t parse_object_pair(std::size_t cursor, Object& parent);
-
-        std::pair<std::size_t, Object> parse_object(std::size_t cursor);
-
-        std::size_t parse_array_element(std::size_t cursor, Array& parent);
-
-        std::pair<std::size_t, Array> parse_array(std::size_t cursor);
-
-        inline std::size_t parse_escaped_unicode_codepoint(std::size_t cursor, std::string& string_value) const;
-
-        std::pair<std::size_t, String> parse_string(std::size_t cursor) const;
-
-        std::pair<std::size_t, std::variant<Integral, Floating>> parse_number(std::size_t cursor) const;
-
-        std::pair<std::size_t, Bool> parse_true(std::size_t cursor) const;
-
-        std::pair<std::size_t, Bool> parse_false(std::size_t cursor) const;
-
-        std::pair<std::size_t, Null> parse_null(std::size_t cursor) const;
-    };
-
-    // ==============================
-    // --- JSON Serializing impl. ---
-    // ==============================
-
-    template<bool Prettify>
-    void serialize_json_recursion(
-        const Node& node,
-        std::string& chars,
-        std::size_t indent_level = 0,
-        bool skip_first_indent = false
-    );
-
-    extern template ERSLIB_EXPORT void serialize_json_recursion<true>(const Node&, std::string&, std::size_t, bool);
-    extern template ERSLIB_EXPORT void serialize_json_recursion<false>(const Node&, std::string&, std::size_t, bool);
+        if constexpr (kind == ESourceKind::Null)
+            return std::type_identity<typename Node::null_type> {};
+        else if constexpr (kind == ESourceKind::Boolean)
+            return std::type_identity<typename Node::bool_type> {};
+        else if constexpr (kind == ESourceKind::String)
+            return std::type_identity<typename Node::string_type> {};
+        else if constexpr (kind == ESourceKind::Integral)
+            return std::type_identity<typename Node::integral_type> {};
+        else if constexpr (kind == ESourceKind::Floating)
+            return std::type_identity<typename Node::floating_type> {};
+        else if constexpr (kind == ESourceKind::Object)
+            return std::type_identity<typename Node::object_type> {};
+        else if constexpr (kind == ESourceKind::Array)
+            return std::type_identity<typename Node::array_type> {};
+        else
+            static_assert(false, "T has no single JSON storage type");
+    }
 }
 
 namespace utl::impl {
-    // ===============================
-    // --- JSON Parsing public API ---
-    // ===============================
+    template<class T, class Node = impl::Node>
+    using json_storage_t = typename decltype(json_detail::storage_of<T, Node>())::type;
 
-    [[nodiscard]]
-    Node ERSLIB_EXPORT from_string(
-        std::string_view chars,
-        std::size_t recursion_limit = default_recursion_limit
-    );
-    [[nodiscard]]
-    Node ERSLIB_EXPORT from_file(
-        const fs::path& filepath,
-        std::size_t recursion_limit = default_recursion_limit
-    );
+    template<class T>
+    struct json_conversion {
+        using original_type = json_storage_t<T>;
+    };
 
-    [[nodiscard]]
-    ers::Result<Node> ERSLIB_EXPORT try_from_string(
-        std::string_view chars,
-        std::size_t recursion_limit = default_recursion_limit
-    );
-    [[nodiscard]]
-    ers::Result<Node> ERSLIB_EXPORT try_from_file(
-        const fs::path& filepath,
-        std::size_t recursion_limit = default_recursion_limit
-    );
 
     namespace literals {
         [[nodiscard]]
-        Node ERSLIB_EXPORT operator""_json(const char* cstr, std::size_t size);
-    } // namespace literals
-}
-
-
-// Utility for external use
-
-namespace utl::impl {
-    template<class T>
-    struct json_conversion;
-
-#define UTL_JSON_TYPE_TRAIT_CONVERSION(NAME)                                                                           \
-    template <class T>                                                                                                 \
-        requires is_##NAME##_like_v<T>                                                                                 \
-    struct json_conversion<T> {                                                                                        \
-        using original_type = Node::NAME##_type;                                                                       \
-    }
-
-    UTL_JSON_TYPE_TRAIT_CONVERSION(object);
-    UTL_JSON_TYPE_TRAIT_CONVERSION(array);
-    UTL_JSON_TYPE_TRAIT_CONVERSION(string);
-    UTL_JSON_TYPE_TRAIT_CONVERSION(integral);
-    UTL_JSON_TYPE_TRAIT_CONVERSION(floating);
-    UTL_JSON_TYPE_TRAIT_CONVERSION(bool);
-    UTL_JSON_TYPE_TRAIT_CONVERSION(null);
-
-#undef UTL_JSON_TYPE_TRAIT_CONVERSION
-}
-
-
-#define UTL_JSON_NODE_TYPE_LITERAL(ENUMERATOR, TYPE)   \
-    ers::util::concat_literals_v<                      \
-        "'" #ENUMERATOR "' aka '",                     \
-        ers::meta::type_literal_v<TYPE>,               \
-        "'"                                            \
-    >.to_sv()
-
-#define UTL_IDENTITY(...) __VA_ARGS__
-
-namespace utl::impl {
-    // Diagnostic label, e.g. "'Object' aka 'std::unordered_map<...>'".
-    constexpr std::string_view type_label(ENodeType value) noexcept {
-        using enum ENodeType;
-
-        switch (value) {
-        case None:
-            return UTL_JSON_NODE_TYPE_LITERAL(None, utl::impl::null_type_impl);
-
-        case Object:
-            return UTL_JSON_NODE_TYPE_LITERAL(Object, UTL_IDENTITY(std::unordered_map<std::string, utl::impl::Node>));
-
-        case Array:
-            return UTL_JSON_NODE_TYPE_LITERAL(Array, std::vector<utl::impl::Node>);
-
-        case String:
-            return UTL_JSON_NODE_TYPE_LITERAL(String, std::string);
-
-        case Integral:
-            return UTL_JSON_NODE_TYPE_LITERAL(Integral, i64);
-
-        case Floating:
-            return UTL_JSON_NODE_TYPE_LITERAL(Floating, double);
-
-        case Bool:
-            return UTL_JSON_NODE_TYPE_LITERAL(Bool, bool);
-
-        default:
-            return "Unknown";
-        }
+        Node ERSLIB_EXPORT operator""_json(const char* chars, std::size_t size);
     }
 }
 
-#undef UTL_IDENTITY
-#undef UTL_JSON_NODE_TYPE_LITERAL
+
+// Implementation --------------------------------------------------------------
+
+#include <erslib/contrib/json/impl.inl>
+#include <erslib/contrib/json/io.inl>

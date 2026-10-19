@@ -15,6 +15,11 @@
 
 namespace utl {
     using impl::EFormat;
+    using impl::ENodeType;
+    using impl::type_label;
+
+    using impl::TNode;
+    using impl::default_traits;
 
     using impl::Node;
     using Json = Node;
@@ -29,13 +34,12 @@ namespace utl {
 
     using impl::from_string;
     using impl::from_file;
-
     using impl::try_from_string;
     using impl::try_from_file;
 
     using impl::read_as;
 
-    using impl::literals::operator ""_json;
+    using impl::literals::operator""_json;
 }
 
 namespace utl {
@@ -43,7 +47,7 @@ namespace utl {
     using impl::load_from_json;
     using impl::save_into_json;
 
-
     using impl::JsonCompatible;
     using impl::JsonSchema;
+    using impl::json_storage_t;
 }
