@@ -212,6 +212,7 @@ if(ERSLIB_BUILD_CONTRIB)
     )
 
     erslib_optional_package(erslib_contrib boost_unordered Boost::unordered _HAS_BOOST_UNORDERED)
+	erslib_optional_package(erslib_contrib inja pantor::inja _HAS_INJA)
 
     list(APPEND ERSLIB_TARGETS erslib_contrib)
 endif()
@@ -558,6 +559,8 @@ if(ERSLIB_INSTALL AND NOT CMAKE_SKIP_INSTALL_RULES)
         DIRECTORY include/
         TYPE INCLUDE
         COMPONENT erslib_dev
+        PATTERN "export_static.hpp" EXCLUDE
+        PATTERN "export_shared.hpp" EXCLUDE
     )
 
     install(FILES "${CMAKE_CURRENT_BINARY_DIR}/include/erslib/${EXPORT_FILE_NAME}"

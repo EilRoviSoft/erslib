@@ -612,3 +612,26 @@ TEST_CASE("JsonSchema") {
     missing.require_and_write("absent", wrong);
     CHECK_FALSE(missing.finalize());
 }
+
+
+// Assignment by value flag test
+
+struct by_value_traits : utl::ordered_traits {
+    static constexpr bool assign_by_value = true;
+};
+
+TEST_CASE("move a node into its own child") {
+    utl::TNode<by_value_traits> loop;
+    loop["index"] = 1;
+
+    loop["parent"] = std::move(loop);
+
+    REQUIRE(loop.is_object());
+    CHECK(loop.as_object().size() == 1);
+    CHECK(loop["parent"]["index"].as_integral() == 1);
+}
+
+TEST_CASE("assignment style follows the traits") {
+    static_assert(std::is_nothrow_move_assignable_v<utl::Json>);
+    static_assert(std::is_nothrow_move_assignable_v<utl::TNode<by_value_traits>>);
+}

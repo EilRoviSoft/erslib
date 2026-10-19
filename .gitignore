@@ -11,6 +11,10 @@ test/stateful/flux_codegen/query/**/*.g.sql
 
 vcpkg_installed
 
+# Local copies of generate_export_header output, only for IDE include resolution; the real ones live in the build dir
+include/erslib/export_static.hpp
+include/erslib/export_shared.hpp
+
 vcpkg-configuration.json
 CMakeUserPresets.json
 erslib.code-workspace

@@ -254,3 +254,111 @@ namespace utl::impl {
         return *array;
     }
 }
+
+
+// Pointer access --------------------------------------------------------------
+
+namespace utl::impl {
+    template<JsonTraits Traits>
+    auto TNode<Traits>::operator[](const JsonPointer& pointer) -> TNode& {
+        auto* node = this;
+
+        for (const auto& token : pointer.tokens()) {
+            if (!node->is_array()) {
+                node = &(*node)[std::string_view(token)];
+                continue;
+            }
+
+            if (token == "-") {
+                node = &node->emplace_back();
+                continue;
+            }
+
+            const auto index = JsonPointer::array_index(token);
+            if (!index) {
+                throw ers::make_conversion_error("'{}' isn't an index of a JSON array",
+                    token);
+            }
+
+            node = *index == node->as_array().size()
+                ? &node->emplace_back()
+                : &node->at(*index);
+        }
+
+        return *node;
+    }
+
+    template<JsonTraits Traits>
+    auto TNode<Traits>::operator[](const JsonPointer& pointer) const -> const TNode& {
+        return at(pointer);
+    }
+
+
+    template<JsonTraits Traits>
+    auto TNode<Traits>::at(const JsonPointer& pointer) -> TNode& {
+        return const_cast<TNode&>(std::as_const(*this).at(pointer));
+    }
+
+    template<JsonTraits Traits>
+    auto TNode<Traits>::at(const JsonPointer& pointer) const -> const TNode& {
+        const auto* node = this;
+
+        for (const auto& token : pointer.tokens()) {
+            if (!node->is_array()) {
+                node = &node->at(std::string_view(token));
+                continue;
+            }
+
+            const auto index = JsonPointer::array_index(token);
+            if (!index)
+                throw ers::make_conversion_error("'{}' isn't an index of a JSON array", token);
+
+            node = &node->at(*index);
+        }
+
+        return *node;
+    }
+
+
+    template<JsonTraits Traits>
+    auto TNode<Traits>::try_at(const JsonPointer& pointer) -> ers::optional<TNode&> {
+        if (const auto* node = find_pointer(pointer))
+            return const_cast<TNode&>(*node);
+        return ers::nullopt;
+    }
+
+    template<JsonTraits Traits>
+    auto TNode<Traits>::try_at(const JsonPointer& pointer) const -> ers::optional<const TNode&> {
+        if (const auto* node = find_pointer(pointer))
+            return *node;
+        return ers::nullopt;
+    }
+
+
+    template<JsonTraits Traits>
+    bool TNode<Traits>::contains(const JsonPointer& pointer) const {
+        return find_pointer(pointer) != nullptr;
+    }
+
+
+    template<JsonTraits Traits>
+    auto TNode<Traits>::find_pointer(const JsonPointer& pointer) const -> const TNode* {
+        const auto* node = this;
+
+        for (const auto& token : pointer.tokens()) {
+            if (const auto* array = node->template get_if<array_type>()) {
+                const auto index = JsonPointer::array_index(token);
+                if (!index || *index >= array->size())
+                    return nullptr;
+
+                node = &(*array)[*index];
+            } else {
+                node = node->find_child(token);
+                if (!node)
+                    return nullptr;
+            }
+        }
+
+        return node;
+    }
+}

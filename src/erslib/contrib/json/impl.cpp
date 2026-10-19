@@ -124,7 +124,81 @@ std::string utl::impl::json_detail::read_file(const std::filesystem::path& path)
 }
 
 
-utl::impl::Node utl::impl::literals::operator""_json(const char* chars, std::size_t size) {
+// Pointer ---------------------------------------------------------------------
+
+utl::impl::JsonPointer::JsonPointer(std::string_view pointer) {
+    if (pointer.empty())
+        return;
+
+    if (pointer.front() != '/')
+        throw ers::make_parse_error("JSON pointer '{}' must start with '/'", pointer);
+
+    std::string token;
+    for (std::size_t i = 1; i < pointer.size(); ++i) {
+        const char c = pointer[i];
+
+        if (c == '/') {
+            _tokens.push_back(std::move(token));
+            token.clear();
+            continue;
+        }
+
+        if (c != '~') {
+            token += c;
+            continue;
+        }
+
+        const char next = i + 1 < pointer.size() ? pointer[i + 1] : '\0';
+        if (next != '0' && next != '1') {
+            throw ers::make_parse_error("JSON pointer '{}' has an invalid escape at position {}",
+                pointer, i);
+        }
+
+        token += next == '0' ? '~' : '/';
+        ++i;
+    }
+
+    _tokens.push_back(std::move(token));
+}
+
+
+std::optional<std::size_t> utl::impl::JsonPointer::array_index(std::string_view token) noexcept {
+    if (token.empty() || (token.size() > 1 && token.front() == '0'))
+        return std::nullopt;
+
+    std::size_t index {};
+    const auto* last = token.data() + token.size();
+    if (auto r = std::from_chars(token.data(), last, index); !r || r.ptr != last)
+        return std::nullopt;
+
+    return index;
+}
+
+
+std::string utl::impl::JsonPointer::to_string() const {
+    std::string result;
+
+    for (const auto& token : _tokens) {
+        result += '/';
+
+        for (const char c : token) {
+            if (c == '~')
+                result += "~0";
+            else if (c == '/')
+                result += "~1";
+            else
+                result += c;
+        }
+    }
+
+    return result;
+}
+
+
+// Literals --------------------------------------------------------------------
+
+
+utl::impl::Json utl::impl::literals::operator""_json(const char* chars, std::size_t size) {
     return from_string(std::string_view(chars, size));
 }
 
@@ -132,8 +206,9 @@ utl::impl::Node utl::impl::literals::operator""_json(const char* chars, std::siz
 // Instantiations --------------------------------------------------------------
 
 template class utl::impl::TNode<utl::impl::default_traits>;
+template class utl::impl::TNode<utl::impl::ordered_traits>;
 
-template utl::impl::Node utl::impl::from_string<utl::impl::Node>(std::string_view, std::size_t);
-template utl::impl::Node utl::impl::from_file<utl::impl::Node>(const std::filesystem::path&, std::size_t);
-template ers::Result<utl::impl::Node> utl::impl::try_from_string<utl::impl::Node>(std::string_view, std::size_t);
-template ers::Result<utl::impl::Node> utl::impl::try_from_file<utl::impl::Node>(const std::filesystem::path&, std::size_t);
+template utl::impl::Json utl::impl::from_string<utl::impl::Json>(std::string_view, std::size_t);
+template utl::impl::Json utl::impl::from_file<utl::impl::Json>(const std::filesystem::path&, std::size_t);
+template ers::Result<utl::impl::Json> utl::impl::try_from_string<utl::impl::Json>(std::string_view, std::size_t);
+template ers::Result<utl::impl::Json> utl::impl::try_from_file<utl::impl::Json>(const std::filesystem::path&, std::size_t);

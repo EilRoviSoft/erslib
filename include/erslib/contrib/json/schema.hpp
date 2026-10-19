@@ -18,7 +18,7 @@
 
 namespace utl::impl {
     class JsonSchema {
-        using json_iterator = Node::object_type::const_iterator;
+        using json_iterator = Json::object_type::const_iterator;
 
 
         template<typename F>
@@ -26,7 +26,7 @@ namespace utl::impl {
 
 
     public:
-        explicit JsonSchema(const Node& json) :
+        explicit JsonSchema(const Json& json) :
             m_json(json) {
         }
 
@@ -116,13 +116,13 @@ namespace utl::impl {
 
 
     protected:
-        const Node& m_json;
+        const Json& m_json;
         std::optional<ers::Diagnostic> m_error;
         std::list<std::function<void()>> m_assignments;
 
 
     private:
-        static ers::Result<json_iterator> _find(const Node::object_type& object, std::string_view name) {
+        static ers::Result<json_iterator> _find(const Json::object_type& object, std::string_view name) {
             auto it = object.find(name);
 
             if (it == object.end()) {
@@ -134,7 +134,7 @@ namespace utl::impl {
         }
 
         template<std::derived_from<IJsonConvertible> T>
-        void _defer_load(T& out, const Node& value) {
+        void _defer_load(T& out, const Json& value) {
             m_assignments.emplace_back([&out, value] {
                 if (auto s = out.load_from(value); !s)
                     throw ers::conversion_error(s.error().to_string(true));
@@ -142,7 +142,7 @@ namespace utl::impl {
         }
 
         template<JsonCompatible T>
-        static ers::Result<json_iterator> _check(const Node::object_type& object, std::string_view name) {
+        static ers::Result<json_iterator> _check(const Json::object_type& object, std::string_view name) {
             auto it = _find(object, name);
             if (!it)
                 return it.error();

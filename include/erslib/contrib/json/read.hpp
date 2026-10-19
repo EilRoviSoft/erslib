@@ -24,7 +24,7 @@ namespace utl::impl {
 
 
     template<JsonReadable T>
-    ers::optional<T> read_as(const Node& node) {
+    ers::optional<T> read_as(const Json& node) {
         if constexpr (std::same_as<T, Bool>) {
             if (const auto* value = node.get_if<Bool>())
                 return *value;
@@ -50,12 +50,12 @@ namespace utl::impl {
 
 
     template<typename T>
-    concept NodeReadable = requires(const Node& node) {
+    concept NodeReadable = requires(const Json& node) {
         { read_as<T>(node) } -> std::same_as<ers::optional<T>>;
     };
 
     template<NodeReadable T>
-    ers::optional<T> read_as(const Node& json, std::string_view key) {
+    ers::optional<T> read_as(const Json& json, std::string_view key) {
         if (!json.is_object())
             return ers::nullopt;
 
@@ -76,7 +76,7 @@ namespace utl::impl {
 
 namespace utl::impl {
     template<std::same_as<ers::uuid> T>
-    ers::optional<T> read_as(const Node& node) {
+    ers::optional<T> read_as(const Json& node) {
         if (const auto* value = node.get_if<String>()) {
             if (auto r = ers::uuid_from_string(*value))
                 return *r;

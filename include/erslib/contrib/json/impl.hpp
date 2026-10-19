@@ -3,6 +3,7 @@
 // std
 #include <concepts>
 #include <cstddef>
+#include <functional>
 #include <string>
 #include <string_view>
 #include <type_traits>
@@ -11,7 +12,11 @@
 #include <variant>
 #include <vector>
 
+// boost
+#include <boost/container/map.hpp>
+
 // ers
+#include <erslib/contrib/json/pointer.hpp>
 #include <erslib/core/adaptor.hpp>
 #include <erslib/core/enum.hpp>
 #include <erslib/core/exception.hpp>
@@ -22,6 +27,7 @@
 
 // export
 #include <erslib/export.hpp>
+
 
 #ifdef _HAS_BOOST_UNORDERED
 
@@ -51,6 +57,11 @@ namespace utl {
 }
 
 
+namespace utl::impl::json_detail {
+    struct no_extension {};
+}
+
+
 namespace utl::impl {
     template<typename T>
     using flat_object =
@@ -64,17 +75,31 @@ namespace utl::impl {
             ers::adaptor::equal<std::string>
         >;
 
-
     struct default_traits {
+        static constexpr bool assign_by_value = false;
+
+
         template<typename Node>
         using object_type = flat_object<Node>;
 
         template<typename Node>
         using array_type = std::vector<Node>;
 
+        template<typename Node>
+        using extension_type = json_detail::no_extension;
+
         using string_type = std::string;
         using integral_type = i64;
         using floating_type = f64;
+    };
+
+
+    template<typename T>
+    using ordered_object = boost::container::map<std::string, T, std::less<>>;
+
+    struct ordered_traits : default_traits {
+        template<typename Node>
+        using object_type = ordered_object<Node>;
     };
 
 
@@ -83,9 +108,11 @@ namespace utl::impl {
             typename Traits::string_type;
             typename Traits::template object_type<int>;
             typename Traits::template array_type<int>;
+            typename Traits::template extension_type<int>;
         }
         && std::signed_integral<typename Traits::integral_type>
         && std::floating_point<typename Traits::floating_type>
+        && std::same_as<std::remove_cv_t<decltype(Traits::assign_by_value)>, bool>
         && requires(std::string utf8, const typename Traits::string_type& value) {
             { string_adaptor<typename Traits::string_type>::from_utf8(std::move(utf8)) } -> std::same_as<typename Traits::string_type>;
             { string_adaptor<typename Traits::string_type>::to_utf8(value) } -> std::convertible_to<std::string_view>;
@@ -276,7 +303,7 @@ namespace utl::impl::json_detail {
 
 namespace utl::impl {
     template<JsonTraits Traits>
-    class TNode {
+    class TNode : public Traits::template extension_type<TNode<Traits>> {
         template<JsonTraits>
         friend class TNode;
 
@@ -360,13 +387,22 @@ namespace utl::impl {
         // -- Assignment --
         // ----------------
 
-        TNode& operator=(const TNode& other) {
+        TNode& operator=(TNode other) noexcept
+            requires (Traits::assign_by_value) {
+            _data.swap(other._data);
+            return *this;
+        }
+
+
+        TNode& operator=(const TNode& other)
+            requires (!Traits::assign_by_value) {
             auto data = other._data;
             _data.swap(data);
             return *this;
         }
 
-        TNode& operator=(TNode&& other) noexcept {
+        TNode& operator=(TNode&& other) noexcept
+            requires (!Traits::assign_by_value) {
             auto data = std::move(other._data);
             _data.swap(data);
             return *this;
@@ -470,6 +506,21 @@ namespace utl::impl {
         TNode& emplace_back(Args&&... args);
 
 
+        // -- Pointer access --
+        // --------------------
+
+        TNode& operator[](const JsonPointer& pointer);
+        [[nodiscard]] const TNode& operator[](const JsonPointer& pointer) const;
+
+        [[nodiscard]] TNode& at(const JsonPointer& pointer);
+        [[nodiscard]] const TNode& at(const JsonPointer& pointer) const;
+
+        [[nodiscard]] ers::optional<TNode&> try_at(const JsonPointer& pointer);
+        [[nodiscard]] ers::optional<const TNode&> try_at(const JsonPointer& pointer) const;
+
+        [[nodiscard]] bool contains(const JsonPointer& pointer) const;
+
+
         // -- Serialization --
         // -------------------
 
@@ -502,6 +553,8 @@ namespace utl::impl {
         [[nodiscard]] array_type& array_or_throw(std::size_t index);
         [[nodiscard]] const array_type& array_or_throw(std::size_t index) const;
 
+        [[nodiscard]] const TNode* find_pointer(const JsonPointer& pointer) const;
+
 
         // -- Asserts --
         // -------------
@@ -523,16 +576,18 @@ namespace utl::impl {
 
 namespace utl::impl {
     extern template class ERSLIB_EXPORT TNode<default_traits>;
+    extern template class ERSLIB_EXPORT TNode<ordered_traits>;
 
-    using Node = TNode<default_traits>;
+    using Json = TNode<default_traits>;
+    using OrderedJson = TNode<ordered_traits>;
 
-    using Object = Node::object_type;
-    using Array = Node::array_type;
-    using String = Node::string_type;
-    using Integral = Node::integral_type;
-    using Floating = Node::floating_type;
-    using Bool = Node::bool_type;
-    using Null = Node::null_type;
+    using Object = Json::object_type;
+    using Array = Json::array_type;
+    using String = Json::string_type;
+    using Integral = Json::integral_type;
+    using Floating = Json::floating_type;
+    using Bool = Json::bool_type;
+    using Null = Json::null_type;
 }
 
 
@@ -563,7 +618,7 @@ namespace utl::impl::json_detail {
 }
 
 namespace utl::impl {
-    template<class T, class Node = impl::Node>
+    template<class T, class Node = impl::Json>
     using json_storage_t = typename decltype(json_detail::storage_of<T, Node>())::type;
 
     template<class T>
@@ -574,7 +629,7 @@ namespace utl::impl {
 
     namespace literals {
         [[nodiscard]]
-        Node ERSLIB_EXPORT operator""_json(const char* chars, std::size_t size);
+        Json ERSLIB_EXPORT operator""_json(const char* chars, std::size_t size);
     }
 }
 

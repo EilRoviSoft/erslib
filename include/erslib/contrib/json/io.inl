@@ -609,8 +609,8 @@ namespace utl::impl {
     }
 
 
-    extern template ERSLIB_EXPORT Node from_string<Node>(std::string_view, std::size_t);
-    extern template ERSLIB_EXPORT Node from_file<Node>(const std::filesystem::path&, std::size_t);
-    extern template ERSLIB_EXPORT ers::Result<Node> try_from_string<Node>(std::string_view, std::size_t);
-    extern template ERSLIB_EXPORT ers::Result<Node> try_from_file<Node>(const std::filesystem::path&, std::size_t);
+    extern template ERSLIB_EXPORT Json from_string<Json>(std::string_view, std::size_t);
+    extern template ERSLIB_EXPORT Json from_file<Json>(const std::filesystem::path&, std::size_t);
+    extern template ERSLIB_EXPORT ers::Result<Json> try_from_string<Json>(std::string_view, std::size_t);
+    extern template ERSLIB_EXPORT ers::Result<Json> try_from_file<Json>(const std::filesystem::path&, std::size_t);
 }
