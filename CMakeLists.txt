@@ -212,6 +212,7 @@ if(ERSLIB_BUILD_CONTRIB)
     )
 
     erslib_optional_package(erslib_contrib boost_unordered Boost::unordered _HAS_BOOST_UNORDERED)
+	erslib_optional_package(erslib_contrib inja pantor::inja _HAS_INJA)
 
     list(APPEND ERSLIB_TARGETS erslib_contrib)
 endif()
