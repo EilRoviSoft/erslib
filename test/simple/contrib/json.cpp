@@ -20,6 +20,9 @@
 #include <erslib/core/type/version.hpp>
 
 
+using utl::operator""_json;
+
+
 // Basic tests -----------------------------------------------------------------
 
 TEST_CASE("construction picks the right type") {
@@ -184,6 +187,30 @@ TEST_CASE("custom key type goes through string_adaptor") {
     CHECK(json.as_object().begin()->first.value == "a");
     CHECK(json.contains("a"));
     CHECK(json.at("a").as_integral() == 1);
+}
+
+TEST_CASE("value_or reads the nearest type") {
+    const auto json = R"({"name":"Ann","port":465,"big":70000,"ratio":30,"flag":true,"none":null,"list":[1]})"_json;
+
+    static_assert(std::same_as<decltype(json.value_or("name", "x")), std::string>);
+    static_assert(std::same_as<decltype(json.value_or("port", 1)), i64>);
+    static_assert(std::same_as<decltype(json.value_or("port", u8(1))), i64>);
+    static_assert(std::same_as<decltype(json.value_or<u16>("port", 1)), u16>);
+    static_assert(std::same_as<decltype(json.value_or("ratio", 1.0)), f64>);
+
+    CHECK(json.value_or("name", "x") == "Ann");
+    CHECK(json.value_or("missing", "x") == "x");
+    CHECK(json.value_or("none", "x") == "x");
+    CHECK(json.value_or("port", 1) == 465);
+    CHECK(json.value_or<u16>("port", 1) == 465);
+    CHECK(json.value_or("ratio", 1.0) == 30.0);
+    CHECK(json.value_or("flag", false));
+    CHECK(json.value_or("list", utl::Array{}).size() == 1);
+
+    CHECK_THROWS(static_cast<void>(json.value_or<u16>("big", 1)));
+    CHECK_THROWS(static_cast<void>(json.value_or("name", 1)));
+    CHECK_THROWS(static_cast<void>(json.value_or("port", "x")));
+    CHECK_THROWS(static_cast<void>(utl::Json(1).value_or("k", 1)));
 }
 
 
@@ -506,10 +533,6 @@ TEST_CASE("try_from_string and files") {
 
 
 // Custom types conversion tests
-
-
-using utl::operator""_json;
-
 
 struct point_t : utl::IJsonConvertible {
     i64 x = 0;

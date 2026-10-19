@@ -145,6 +145,24 @@ namespace utl::impl {
 
 
     template<JsonTraits Traits>
+    template<typename T, typename U>
+        requires json_detail::FallbackFor<T, U, TNode<Traits>>
+    auto TNode<Traits>::value_or(std::string_view key, U&& fallback) const -> json_detail::value_or_t<T, U, TNode> {
+        using value_type = json_detail::value_or_t<T, U, TNode>;
+
+        if (!is_object()) {
+            throw ers::make_conversion_error("Can't access key '{}' of a JSON {}",
+                key, ers::enum_utils::to_string(type()));
+        }
+
+        if (const auto* child = find_child(key); child && !child->is_null())
+            return read_value<value_type>(*child, key);
+
+        return read_value<value_type>(TNode(std::forward<U>(fallback)), key);
+    }
+
+
+    template<JsonTraits Traits>
     auto TNode<Traits>::find_child(std::string_view key) -> TNode* {
         return const_cast<TNode*>(std::as_const(*this).find_child(key));
     }
@@ -360,5 +378,55 @@ namespace utl::impl {
         }
 
         return node;
+    }
+}
+
+
+// Internal implementation -----------------------------------------------------
+
+namespace utl::impl {
+    template<JsonTraits Traits>
+    template<std::integral T>
+    auto TNode<Traits>::checked_integral(T value) -> integral_type {
+        using integer_t = std::conditional_t<std::is_signed_v<T>, std::make_signed_t<T>, std::make_unsigned_t<T>>;
+
+        if (!std::in_range<integral_type>(static_cast<integer_t>(value))) {
+            throw ers::make_out_of_range_error("Integer {} doesn't fit into the JSON integral type",
+                value);
+        }
+
+        return static_cast<integral_type>(value);
+    }
+
+    template<JsonTraits Traits>
+    template<typename V>
+    V TNode<Traits>::read_value(const TNode& node, std::string_view key) {
+        if constexpr (std::same_as<V, TNode>) {
+            return node;
+        } else if constexpr (std::same_as<V, bool_type>) {
+            if (const auto* value = node.get_if<bool_type>())
+                return *value;
+        } else if constexpr (std::integral<V>) {
+            if (const auto* value = node.get_if<integral_type>()) {
+                if (!std::in_range<V>(*value)) {
+                    throw ers::make_out_of_range_error("JSON key '{}' holds {}, which doesn't fit into the requested type",
+                        key, *value);
+                }
+
+                return static_cast<V>(*value);
+            }
+        } else if constexpr (std::floating_point<V>) {
+            if (const auto* value = node.get_if<floating_type>())
+                return static_cast<V>(*value);
+
+            if (const auto* value = node.get_if<integral_type>())
+                return static_cast<V>(*value);
+        } else {
+            if (const auto* value = node.get_if<V>())
+                return *value;
+        }
+
+        throw ers::make_conversion_error("JSON key '{}' is {}, which can't be read as the requested type",
+            key, ers::enum_utils::to_string(node.type()));
     }
 }

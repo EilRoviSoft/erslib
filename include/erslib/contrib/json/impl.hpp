@@ -299,6 +299,58 @@ namespace utl::impl::json_detail {
 }
 
 
+namespace utl::impl::json_detail {
+    template<typename U, typename Node>
+    consteval auto nearest_type() {
+        constexpr auto kind = classify<U, Node>();
+
+        if constexpr (kind == ESourceKind::Node)
+            return std::type_identity<Node> {};
+        else if constexpr (kind == ESourceKind::Boolean)
+            return std::type_identity<typename Node::bool_type> {};
+        else if constexpr (kind == ESourceKind::String)
+            return std::type_identity<typename Node::string_type> {};
+        else if constexpr (kind == ESourceKind::Integral)
+            return std::type_identity<typename Node::integral_type> {};
+        else if constexpr (kind == ESourceKind::Floating)
+            return std::type_identity<typename Node::floating_type> {};
+        else if constexpr (kind == ESourceKind::Object)
+            return std::type_identity<typename Node::object_type> {};
+        else if constexpr (kind == ESourceKind::Array)
+            return std::type_identity<typename Node::array_type> {};
+        else
+            return std::type_identity<void> {};
+    }
+
+    // the JSON type a fallback of type 'U' is read as
+    template<typename U, typename Node>
+    using nearest_t = typename decltype(nearest_type<U, Node>())::type;
+
+    template<typename T, typename U, typename Node>
+    using value_or_t = std::conditional_t<std::is_void_v<T>, nearest_t<U, Node>, T>;
+
+
+    template<typename V, typename Node>
+    concept NodeValue = std::same_as<V, Node>
+        || std::same_as<V, typename Node::bool_type>
+        || (std::integral<V> && !std::same_as<V, bool>)
+        || std::floating_point<V>
+        || std::same_as<V, typename Node::string_type>
+        || std::same_as<V, typename Node::object_type>
+        || std::same_as<V, typename Node::array_type>;
+
+    // whether a value stored as 'Stored' can be read as 'V'
+    template<typename V, typename Stored, typename Node>
+    concept ReadableAs = std::same_as<V, Stored>
+        || (std::integral<V> && !std::same_as<V, bool> && std::same_as<Stored, typename Node::integral_type>)
+        || (std::floating_point<V> && (std::same_as<Stored, typename Node::integral_type> || std::same_as<Stored, typename Node::floating_type>));
+
+    template<typename T, typename U, typename Node>
+    concept FallbackFor = !std::is_void_v<nearest_t<U, Node>>
+        && (std::is_void_v<T> || (NodeValue<T, Node> && ReadableAs<T, nearest_t<U, Node>, Node>));
+}
+
+
 // Implementation --------------------------------------------------------------
 
 namespace utl::impl {
@@ -486,6 +538,11 @@ namespace utl::impl {
         [[nodiscard]] bool contains(std::string_view key) const;
 
 
+        template<typename T = void, typename U>
+            requires json_detail::FallbackFor<T, U, TNode>
+        [[nodiscard]] json_detail::value_or_t<T, U, TNode> value_or(std::string_view key, U&& fallback) const;
+
+
         // -- Array access --
         // ------------------
 
@@ -535,16 +592,10 @@ namespace utl::impl {
 
 
         template<std::integral T>
-        [[nodiscard]] static integral_type checked_integral(T value) {
-            using integer_t = std::conditional_t<std::is_signed_v<T>, std::make_signed_t<T>, std::make_unsigned_t<T>>;
+        [[nodiscard]] static integral_type checked_integral(T value);
 
-            if (!std::in_range<integral_type>(static_cast<integer_t>(value))) {
-                throw ers::make_out_of_range_error("Integer {} doesn't fit into the JSON integral type",
-                    value);
-            }
-
-            return static_cast<integral_type>(value);
-        }
+        template<typename V>
+        [[nodiscard]] static V read_value(const TNode& node, std::string_view key);
 
 
         [[nodiscard]] TNode* find_child(std::string_view key);
