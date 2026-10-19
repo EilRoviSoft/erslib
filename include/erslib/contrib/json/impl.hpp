@@ -76,6 +76,9 @@ namespace utl::impl {
         >;
 
     struct default_traits {
+        static constexpr bool assign_by_value = false;
+
+
         template<typename Node>
         using object_type = flat_object<Node>;
 
@@ -109,6 +112,7 @@ namespace utl::impl {
         }
         && std::signed_integral<typename Traits::integral_type>
         && std::floating_point<typename Traits::floating_type>
+        && std::same_as<std::remove_cv_t<decltype(Traits::assign_by_value)>, bool>
         && requires(std::string utf8, const typename Traits::string_type& value) {
             { string_adaptor<typename Traits::string_type>::from_utf8(std::move(utf8)) } -> std::same_as<typename Traits::string_type>;
             { string_adaptor<typename Traits::string_type>::to_utf8(value) } -> std::convertible_to<std::string_view>;
@@ -299,7 +303,7 @@ namespace utl::impl::json_detail {
 
 namespace utl::impl {
     template<JsonTraits Traits>
-    class TNode {
+    class TNode : public Traits::template extension_type<TNode<Traits>> {
         template<JsonTraits>
         friend class TNode;
 
@@ -383,13 +387,22 @@ namespace utl::impl {
         // -- Assignment --
         // ----------------
 
-        TNode& operator=(const TNode& other) {
+        TNode& operator=(TNode other) noexcept
+            requires (Traits::assign_by_value) {
+            _data.swap(other._data);
+            return *this;
+        }
+
+
+        TNode& operator=(const TNode& other)
+            requires (!Traits::assign_by_value) {
             auto data = other._data;
             _data.swap(data);
             return *this;
         }
 
-        TNode& operator=(TNode&& other) noexcept {
+        TNode& operator=(TNode&& other) noexcept
+            requires (!Traits::assign_by_value) {
             auto data = std::move(other._data);
             _data.swap(data);
             return *this;

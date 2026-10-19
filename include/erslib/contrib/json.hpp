@@ -17,6 +17,7 @@ namespace utl {
     using impl::EFormat;
     using impl::ENodeType;
     using impl::type_label;
+    using impl::JsonTraits;
 
 
     using impl::TNode;
