@@ -13,6 +13,7 @@
 #include <system_error>
 
 // ers
+#include <erslib/core/filesystem.hpp>
 #include <erslib/core/type/result.hpp>
 
 
@@ -30,7 +31,7 @@ namespace utl::impl::json_detail {
 
     template<class String>
     void append_string(std::string& out, const String& value) {
-        auto& utf8 = string_adaptor<String>::to_utf8(value);
+        const auto& utf8 = string_adaptor<String>::to_utf8(value);
         append_escaped(out, std::string_view(utf8));
     }
 
@@ -316,7 +317,7 @@ namespace utl::impl::json_detail {
 
             if (floating) {
                 floating_type value{};
-                if (std::from_chars(first, last, value).ec != std::errc{}) {
+                if (!std::from_chars(first, last, value)) {
                     _cursor = start;
                     _fail("Number {} doesn't fit into the JSON floating type", token);
                 }
@@ -324,7 +325,7 @@ namespace utl::impl::json_detail {
                 return Node(value);
             } else {
                 integral_type value{};
-                if (std::from_chars(first, last, value).ec != std::errc{}) {
+                if (!std::from_chars(first, last, value)) {
                     _cursor = start;
                     _fail("Integer {} doesn't fit into the JSON integral type", token);
                 }
@@ -424,7 +425,7 @@ namespace utl::impl::json_detail {
 
             auto* first = _chars.data() + _cursor;
             u16 value {};
-            if (auto r = std::from_chars(first, first + 4, value, 16); r || r.ptr != first + 4)
+            if (auto r = std::from_chars(first, first + 4, value, 16); !r || r.ptr != first + 4)
                 _fail("Invalid \\u escape '{}'", std::string_view(first, 4));
 
             _cursor += 4;

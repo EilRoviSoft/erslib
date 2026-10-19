@@ -17,6 +17,7 @@
 
 // ers
 #include <erslib/contrib/json.hpp>
+#include <erslib/core/type/version.hpp>
 
 
 // Basic tests -----------------------------------------------------------------
@@ -501,4 +502,113 @@ TEST_CASE("try_from_string and files") {
     CHECK_FALSE(utl::try_from_file(path.parent_path() / "missing.json"));
 
     std::filesystem::remove_all(path.parent_path());
+}
+
+
+// Custom types conversion tests
+
+
+using utl::operator""_json;
+
+
+struct point_t : utl::IJsonConvertible {
+    i64 x = 0;
+    i64 y = 0;
+
+
+    ers::Status load_from(const utl::Json& json) override {
+        const auto x_value = utl::read_as<i64>(json, "x");
+        const auto y_value = utl::read_as<i64>(json, "y");
+
+        if (!x_value || !y_value)
+            return ers::make_error("point needs 'x' and 'y'");
+
+        x = *x_value;
+        y = *y_value;
+        return ers::ok;
+    }
+
+    ers::Status save_into(utl::Json& json) const override {
+        json["x"] = x;
+        json["y"] = y;
+        return ers::ok;
+    }
+};
+
+
+TEST_CASE("literal") {
+    const auto json = R"({"a":[1,2]})"_json;
+    CHECK(json["a"][1].as_integral() == 2);
+}
+
+TEST_CASE("read_as") {
+    const auto json = R"({"small":300,"text":"x","list":[],"pi":3.5})"_json;
+
+    CHECK(utl::read_as<i64>(json, "small") == 300);
+    CHECK_FALSE(utl::read_as<u8>(json, "small"));
+    CHECK(utl::read_as<std::string_view>(json, "text") == "x");
+    CHECK(utl::read_as<utl::Array>(json, "list"));
+    CHECK(utl::read_as<double>(json, "pi") == 3.5);
+    CHECK_FALSE(utl::read_as<i64>(json, "missing"));
+    CHECK_FALSE(utl::read_as<i64>(json["text"], "anything"));
+}
+
+TEST_CASE("storage types") {
+    static_assert(std::same_as<utl::json_storage_t<std::string_view>, utl::String>);
+    static_assert(std::same_as<utl::json_storage_t<const utl::Array&>, utl::Array>);
+    static_assert(std::same_as<utl::json_storage_t<int>, utl::Integral>);
+    static_assert(std::same_as<utl::json_storage_t<std::vector<int>>, utl::Array>);
+    static_assert(std::same_as<utl::json_storage_t<std::map<std::string, int>>, utl::Object>);
+    static_assert(std::same_as<utl::json_storage_t<bool>, utl::Bool>);
+
+    static_assert(utl::JsonCompatible<utl::String>);
+    static_assert(utl::JsonCompatible<std::vector<std::string>>);
+    static_assert(!utl::JsonCompatible<std::pair<int, int>>);
+}
+
+TEST_CASE("type_label") {
+    CHECK(utl::type_label(utl::ENodeType::Object) == "Object");
+}
+
+TEST_CASE("IJsonConvertible round trip") {
+    const auto loaded = utl::load_from_json<point_t>(R"({"x":1,"y":-2})"_json);
+    REQUIRE(loaded);
+    CHECK(loaded->y == -2);
+
+    const auto saved = utl::save_into_json(*loaded);
+    REQUIRE(saved);
+    CHECK((*saved)["x"].as_integral() == 1);
+
+    CHECK_FALSE(utl::load_from_json<point_t>(R"({"x":1})"_json));
+}
+
+TEST_CASE("JsonSchema") {
+    const auto json = R"({"name":"mod","version":"1.2.3","count":5})"_json;
+
+    std::string name;
+    ers::version_t version {};
+    std::string contact = "default";
+    i64 count = 0;
+
+    utl::JsonSchema schema(json);
+    schema.require_and_write("name", name);
+    schema.require_and_convert("version", version, &ers::version_t::parse);
+    schema.write_if_exist("contact", contact);
+    schema.require_and_write("count", count);
+
+    REQUIRE(schema.finalize());
+    CHECK(name == "mod");
+    CHECK(version.major == 1);
+    CHECK(version.patch == 3);
+    CHECK(contact == "default");
+    CHECK(count == 5);
+
+    std::string wrong;
+    utl::JsonSchema mismatched(json);
+    mismatched.require_and_write("count", wrong);
+    CHECK_FALSE(mismatched.finalize());
+
+    utl::JsonSchema missing(json);
+    missing.require_and_write("absent", wrong);
+    CHECK_FALSE(missing.finalize());
 }

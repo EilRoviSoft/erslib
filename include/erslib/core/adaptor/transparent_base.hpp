@@ -170,7 +170,7 @@ namespace ers::impl {
 
 
     template<template<typename> typename Hash, auto Member, typename T, typename... Ts>
-        requires (Member != nullptr)
+        requires (!std::is_null_pointer_v<decltype(Member)>)
     struct hash_base<Hash, Member, T, Ts...> : hash_overloads_for<Hash, Ts...> {
         using is_transparent = void;
 

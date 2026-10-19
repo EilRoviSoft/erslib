@@ -69,8 +69,8 @@
             "displayName": "asan-gcc16.2",
             "inherits": "linux-gcc16.2",
             "cacheVariables": {
-                "CMAKE_C_FLAGS": "-fsanitize=address,undefined -fno-sanitize-recover=undefined -fno-omit-frame-pointer",
-                "CMAKE_CXX_FLAGS": "-Wall -Wextra -Wpedantic -Wno-missing-field-initializers -fsanitize=address,undefined -fno-sanitize-recover=undefined -fno-omit-frame-pointer -D_GLIBCXX_ASSERTIONS",
+                "CMAKE_C_FLAGS": "-fsanitize=address,undefined -fno-sanitize=null,nonnull-attribute,returns-nonnull-attribute -fno-sanitize-recover=undefined",
+                "CMAKE_CXX_FLAGS": "-Wall -Wextra -Wpedantic -Wno-missing-field-initializers -fsanitize=address,undefined -fno-sanitize=null,nonnull-attribute,returns-nonnull-attribute -fno-sanitize-recover=undefined -D_GLIBCXX_ASSERTIONS",
                 "CMAKE_EXE_LINKER_FLAGS": "-Wl,-rpath,/opt/gcc-16.2/lib64 -fsanitize=address,undefined",
                 "CMAKE_SHARED_LINKER_FLAGS": "-Wl,-rpath,/opt/gcc-16.2/lib64 -fsanitize=address,undefined"
             }

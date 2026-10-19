@@ -116,6 +116,12 @@ namespace utl::impl {
     };
 
 
+    [[nodiscard]]
+    constexpr std::string_view type_label(ENodeType value) noexcept {
+        return ers::enum_utils::to_string(value);
+    }
+
+
     struct null_type_impl {
         [[nodiscard]] bool operator==(const null_type_impl&) const noexcept = default;
     };
@@ -519,6 +525,57 @@ namespace utl::impl {
     extern template class ERSLIB_EXPORT TNode<default_traits>;
 
     using Node = TNode<default_traits>;
+
+    using Object = Node::object_type;
+    using Array = Node::array_type;
+    using String = Node::string_type;
+    using Integral = Node::integral_type;
+    using Floating = Node::floating_type;
+    using Bool = Node::bool_type;
+    using Null = Node::null_type;
+}
+
+
+// Storage types ---------------------------------------------------------------
+
+namespace utl::impl::json_detail {
+    template<class T, class Node>
+    consteval auto storage_of() {
+        constexpr auto kind = classify<T, Node>();
+
+        if constexpr (kind == ESourceKind::Null)
+            return std::type_identity<typename Node::null_type> {};
+        else if constexpr (kind == ESourceKind::Boolean)
+            return std::type_identity<typename Node::bool_type> {};
+        else if constexpr (kind == ESourceKind::String)
+            return std::type_identity<typename Node::string_type> {};
+        else if constexpr (kind == ESourceKind::Integral)
+            return std::type_identity<typename Node::integral_type> {};
+        else if constexpr (kind == ESourceKind::Floating)
+            return std::type_identity<typename Node::floating_type> {};
+        else if constexpr (kind == ESourceKind::Object)
+            return std::type_identity<typename Node::object_type> {};
+        else if constexpr (kind == ESourceKind::Array)
+            return std::type_identity<typename Node::array_type> {};
+        else
+            static_assert(false, "T has no single JSON storage type");
+    }
+}
+
+namespace utl::impl {
+    template<class T, class Node = impl::Node>
+    using json_storage_t = typename decltype(json_detail::storage_of<T, Node>())::type;
+
+    template<class T>
+    struct json_conversion {
+        using original_type = json_storage_t<T>;
+    };
+
+
+    namespace literals {
+        [[nodiscard]]
+        Node ERSLIB_EXPORT operator""_json(const char* chars, std::size_t size);
+    }
 }
 
 

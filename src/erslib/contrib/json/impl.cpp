@@ -112,7 +112,7 @@ std::string utl::impl::json_detail::read_file(const std::filesystem::path& path)
     if (size < 0)
         throw ers::make_path_error("Could not determine size of file '{}'", path.string());
 
-    std::string chars(static_cast<std::size_t>(size), '\0');
+    std::string chars(size, '\0');
 
     file.seekg(0);
     file.read(chars.data(), size);
@@ -121,6 +121,11 @@ std::string utl::impl::json_detail::read_file(const std::filesystem::path& path)
         throw ers::make_path_error("Could not read file '{}'", path.string());
 
     return chars;
+}
+
+
+utl::impl::Node utl::impl::literals::operator""_json(const char* chars, std::size_t size) {
+    return from_string(std::string_view(chars, size));
 }
 
 
