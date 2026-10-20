@@ -37,13 +37,22 @@ endif()
 find_package(doctest CONFIG REQUIRED)
 
 
+add_library(test_support
+	STATIC
+		"support/temp_tree.cpp"
+)
+
+target_include_directories(test_support PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
+target_link_libraries(test_support PUBLIC erslib::core)
+
+
 #----------------------------------------------------------------------------------------------------------------------
 # stateless tests
 #----------------------------------------------------------------------------------------------------------------------
 
 
 add_library(test_simple_main OBJECT "simple.cpp")
-target_link_libraries(test_simple_main PUBLIC doctest::doctest)
+target_link_libraries(test_simple_main PUBLIC doctest::doctest test_support)
 target_compile_definitions(test_simple_main PUBLIC DOCTEST_CONFIG_USE_STD_HEADERS)
 
 set(SIMPLE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/simple")
