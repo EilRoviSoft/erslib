@@ -63,7 +63,7 @@ file(GLOB SIMPLE_MODULES CONFIGURE_DEPENDS
     "${SIMPLE_DIR}/*"
 )
 
-# Builds every per-module test, so "test_simple" still exists as a single target in VS
+# Builds every per-file test, so "test_simple" and "test_simple_<module>" still exist in VS
 add_custom_target(test_simple)
 
 foreach(MODULE IN LISTS SIMPLE_MODULES)
@@ -76,22 +76,30 @@ foreach(MODULE IN LISTS SIMPLE_MODULES)
         continue()
     endif()
 
-    set(TEST_TARGET "test_simple_${MODULE}")
+    add_custom_target(test_simple_${MODULE})
+    add_dependencies(test_simple test_simple_${MODULE})
 
     file(GLOB_RECURSE TEST_SOURCES CONFIGURE_DEPENDS "${SIMPLE_DIR}/${MODULE}/*.cpp")
-    source_group(TREE "${SIMPLE_DIR}/${MODULE}" FILES ${TEST_SOURCES})
 
-    add_executable(${TEST_TARGET} ${TEST_SOURCES})
-    target_link_libraries(${TEST_TARGET} PRIVATE test_simple_main erslib::${MODULE})
+    foreach(TEST_SOURCE IN LISTS TEST_SOURCES)
+        # simple/core/sub/string.cpp -> "core/sub/string" -> test_simple_core_sub_string
+        file(RELATIVE_PATH TEST_NAME "${SIMPLE_DIR}" "${TEST_SOURCE}")
+        string(REGEX REPLACE "\\.cpp$" "" TEST_NAME "${TEST_NAME}")
+        string(MAKE_C_IDENTIFIER "test_simple_${TEST_NAME}" TEST_TARGET)
 
-    if(NOT IS_TOP_LEVEL)
-        win_copy_deps_to_target_dir(${TEST_TARGET} erslib::${MODULE})
-    endif()
+        add_executable(${TEST_TARGET} "${TEST_SOURCE}")
+        target_link_libraries(${TEST_TARGET} PRIVATE test_simple_main erslib::${MODULE})
+        set_target_properties(${TEST_TARGET} PROPERTIES FOLDER "tests/simple/${MODULE}")
 
-    add_test(NAME ${TEST_TARGET} COMMAND ${TEST_TARGET})
-    add_dependencies(test_simple ${TEST_TARGET})
+        if(NOT IS_TOP_LEVEL)
+            win_copy_deps_to_target_dir(${TEST_TARGET} erslib::${MODULE})
+        endif()
 
-    message(STATUS "Discovered simple test: ${MODULE} -> Target: ${TEST_TARGET}")
+        add_test(NAME "${TEST_NAME}" COMMAND ${TEST_TARGET})
+        add_dependencies(test_simple_${MODULE} ${TEST_TARGET})
+
+        message(STATUS "Discovered simple test: ${TEST_NAME} -> Target: ${TEST_TARGET}")
+    endforeach()
 endforeach()
 
 if(TARGET erslib_core)

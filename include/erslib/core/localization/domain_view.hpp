@@ -2,7 +2,9 @@
 
 // std
 #include <memory>
+#include <span>
 #include <string>
+#include <vector>
 
 // ers
 #include <erslib/core/localization/fwd.hpp>
@@ -15,29 +17,31 @@
 // Definition ------------------------------------------------------------------
 
 namespace ers::impl {
-    // One locale of one folder, keeps that folder alive
-    class ERSLIB_EXPORT FolderView {
+    // One locale of one domain, keeps that domain alive.
+    class ERSLIB_EXPORT DomainView {
     public:
         // Member functions
 
-        FolderView(FolderPtr folder, size_t target_locale_id) noexcept;
+        DomainView(DomainPtr domain, size_t target_locale_id) noexcept;
 
 
         // Accessors
 
-        // valid while this view lives, or while the table still holds this folder
         [[nodiscard]] std::string_view operator[](std::string_view k) const;
         [[nodiscard]] optional<std::string_view> find(std::string_view k) const noexcept;
 
-        // outlives any reload: shares ownership of the whole folder
+        // Outlives any reload: shares ownership of the whole domain.
         [[nodiscard]] std::shared_ptr<const std::string> share(std::string_view k) const;
 
-        [[nodiscard]] const FolderPtr& folder() const noexcept;
+        [[nodiscard]] std::span<const std::string_view> keys(std::string_view prefix = {}) const;
+        [[nodiscard]] std::vector<std::string_view> children(std::string_view prefix = {}) const;
+
+        [[nodiscard]] const DomainPtr& domain() const noexcept;
         [[nodiscard]] size_t locale_id() const noexcept;
 
 
     private:
-        FolderPtr _folder;
+        DomainPtr _domain;
         size_t _target_locale_id;
     };
 }

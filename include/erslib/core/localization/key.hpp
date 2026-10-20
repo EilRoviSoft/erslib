@@ -11,16 +11,7 @@
 #include <erslib/export.hpp>
 
 
-// Definition ------------------------------------------------------------------
-
 namespace ers::impl {
     // "sub/new_order.txt" -> "txt.sub.new_order", the path is relative to a first-level folder
     ERSLIB_EXPORT Result<std::string> make_localization_key(const fs::path& relative);
-}
-
-
-// Exports ---------------------------------------------------------------------
-
-namespace ers {
-    using impl::make_localization_key;
 }

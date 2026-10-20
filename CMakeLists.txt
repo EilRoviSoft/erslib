@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.28)
 
 project(erslib
-    VERSION 1.2.3
+    VERSION 1.2.4
     DESCRIPTION "EilRoviSoft's universal library"
     LANGUAGES CXX
 )
@@ -123,8 +123,8 @@ target_sources(erslib_core
         "src/erslib/core/exception/internal.cpp"
 
 		"src/erslib/core/localization/config.cpp"
-        "src/erslib/core/localization/folder.cpp"
-        "src/erslib/core/localization/folder_view.cpp"
+        "src/erslib/core/localization/domain.cpp"
+        "src/erslib/core/localization/domain_view.cpp"
         "src/erslib/core/localization/key.cpp"
         "src/erslib/core/localization/locale_table.cpp"
         "src/erslib/core/localization/locale_view.cpp"
@@ -209,6 +209,7 @@ if(ERSLIB_BUILD_CONTRIB)
 
     target_sources(erslib_contrib
         PRIVATE
+			"src/erslib/contrib/l10n.cpp"
             "src/erslib/contrib/json/impl.cpp"
     )
 

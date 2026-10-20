@@ -8,9 +8,8 @@
 // Definition ------------------------------------------------------------------
 
 namespace ers::impl {
-    // What readers see at once: folders are always built for this very config.
     struct locale_index_t {
         locale_config_ptr config;
-        StringMap<FolderPtr> folders;
+        StringMap<DomainPtr> domains;
     };
 }

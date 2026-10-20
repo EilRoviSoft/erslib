@@ -13,6 +13,13 @@ ers::optional<size_t> ers::impl::locale_config_t::id_of(std::string_view locale)
     return nullopt;
 }
 
+std::string_view ers::impl::locale_config_t::name_of(size_t locale_id) const noexcept {
+    if (locale_id < locales.size())
+        return locales[locale_id];
+    return "<common>";
+}
+
+
 bool ers::impl::locale_config_t::same_as(const locale_config_t& other) const noexcept {
     return locales == other.locales && fallback_locale_id == other.fallback_locale_id;
 }

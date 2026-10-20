@@ -18,17 +18,17 @@ ers::impl::LocaleView::LocaleView(locale_index_ptr index, size_t locale_id) noex
 
 // Accessors
 
-ers::impl::FolderView ers::impl::LocaleView::operator[](std::string_view folder) const {
-    if (auto view = find(folder))
+ers::impl::DomainView ers::impl::LocaleView::operator[](std::string_view domain) const {
+    if (auto view = find(domain))
         return std::move(*view);
 
-    throw make_out_of_range_error("No folder '{}'",
-        folder);
+    throw make_out_of_range_error("No domain '{}'",
+        domain);
 }
 
-ers::optional<ers::impl::FolderView> ers::impl::LocaleView::find(std::string_view folder) const {
-    if (auto it = _index->folders.find(folder); it != _index->folders.end())
-        return FolderView(it->second, _locale_id);
+ers::optional<ers::impl::DomainView> ers::impl::LocaleView::find(std::string_view domain) const {
+    if (auto it = _index->domains.find(domain); it != _index->domains.end())
+        return DomainView(it->second, _locale_id);
     return nullopt;
 }
 
