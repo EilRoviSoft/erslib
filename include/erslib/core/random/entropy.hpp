@@ -3,7 +3,10 @@
 // ers
 #include <erslib/core/type/general.hpp>
 
+// export
+#include "erslib/export_static.hpp"
+
 
 namespace ers::impl {
-    u64 entropy();
+    u64 ERSLIB_EXPORT entropy();
 }
