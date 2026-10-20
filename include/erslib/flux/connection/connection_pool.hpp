@@ -4,7 +4,7 @@
 #include <chrono>
 #include <condition_variable>
 #include <deque>
-#include <functional>
+#include <memory>
 #include <mutex>
 #include <string>
 #include <vector>
@@ -14,14 +14,13 @@
 
 // ers
 #include <erslib/core/filesystem.hpp>
-#include <erslib/core/memory.hpp>
 #include <erslib/core/type/result.hpp>
 #include <erslib/core/type/time.hpp>
 #include <erslib/flux/connection/options.hpp>
 
 
 namespace flux::impl {
-    class ConnectionPool : public ers::enable_shared_from_this<ConnectionPool> {
+    class ConnectionPool : public std::enable_shared_from_this<ConnectionPool> {
         friend class Connection;
 
 
@@ -94,13 +93,13 @@ namespace flux::impl {
 
 
     private:
-        Connection(ers::shared_ptr<ConnectionPool> pool, pqxx::connection* conn) noexcept;
+        Connection(std::shared_ptr<ConnectionPool> pool, pqxx::connection* conn) noexcept;
 
 
         void _release() noexcept;
 
 
-        ers::shared_ptr<ConnectionPool> _pool;
+        std::shared_ptr<ConnectionPool> _pool;
         pqxx::connection* _conn;
     };
 }

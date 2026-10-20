@@ -2,10 +2,8 @@
 
 // std
 #include <atomic>
+#include <memory>
 #include <utility>
-
-// ers
-#include <erslib/core/memory.hpp>
 
 
 namespace ers::impl::thread_safe {
@@ -15,7 +13,7 @@ namespace ers::impl::thread_safe {
     class Snapshot {
     public:
         using value_type = T;
-        using pointer = shared_ptr<const T>;
+        using pointer = std::shared_ptr<const T>;
 
 
         // Member functions
@@ -25,7 +23,7 @@ namespace ers::impl::thread_safe {
         }
 
         explicit Snapshot(T value) :
-            _value(ers::make_shared<const T>(std::move(value))) {
+            _value(std::make_shared<const T>(std::move(value))) {
         }
 
 
@@ -45,7 +43,7 @@ namespace ers::impl::thread_safe {
         // Modifiers
 
         void replace(T value) {
-            replace(ers::make_shared<const T>(std::move(value)));
+            replace(std::make_shared<const T>(std::move(value)));
         }
 
         void replace(pointer value) noexcept {
@@ -54,7 +52,7 @@ namespace ers::impl::thread_safe {
 
 
     private:
-        atomic_shared_ptr<const T> _value;
+        std::atomic<pointer> _value;
     };
 }
 

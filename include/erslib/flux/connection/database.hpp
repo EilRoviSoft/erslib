@@ -38,6 +38,6 @@ namespace flux::impl {
 
 
     private:
-        ers::shared_ptr<ConnectionPool> _pool;
+        std::shared_ptr<ConnectionPool> _pool;
     };
 }

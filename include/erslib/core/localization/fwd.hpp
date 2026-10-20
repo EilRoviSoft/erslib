@@ -1,17 +1,17 @@
 #pragma once
 
-// ers
-#include <erslib/core/memory.hpp>
+// std
+#include <memory>
 
 
 // Fwd -------------------------------------------------------------------------
 
 namespace ers::impl {
     struct locale_config_t;
-    using locale_config_ptr = shared_ptr<const locale_config_t>;
+    using locale_config_ptr = std::shared_ptr<const locale_config_t>;
 
     struct locale_index_t;
-    using locale_index_ptr = shared_ptr<const locale_index_t>;
+    using locale_index_ptr = std::shared_ptr<const locale_index_t>;
 
     class LocaleView;
     class LocaleTable;
@@ -20,7 +20,7 @@ namespace ers::impl {
     struct fingerprint_t;
 
     class Folder;
-    using FolderPtr = shared_ptr<const Folder>;
+    using FolderPtr = std::shared_ptr<const Folder>;
     class FolderView;
 }
 

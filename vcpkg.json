@@ -6,7 +6,6 @@
         "boost-optional",
         "boost-preprocessor",
         "boost-regex",
-        "boost-smart-ptr",
         "boost-thread",
         "boost-unordered",
         "boost-uuid",

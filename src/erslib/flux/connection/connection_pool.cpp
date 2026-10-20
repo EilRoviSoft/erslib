@@ -121,7 +121,7 @@ ers::Result<pqxx::connection*> flux::impl::ConnectionPool::_spawn() {
 
 // ConnectionPool::Connection
 
-flux::impl::ConnectionPool::Connection::Connection(ers::shared_ptr<ConnectionPool> pool, pqxx::connection* conn) noexcept :
+flux::impl::ConnectionPool::Connection::Connection(std::shared_ptr<ConnectionPool> pool, pqxx::connection* conn) noexcept :
     _pool(pool),
     _conn(conn) {
 }

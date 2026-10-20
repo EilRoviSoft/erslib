@@ -27,7 +27,7 @@ ers::optional<std::string_view> ers::impl::FolderView::find(std::string_view k) 
 
 std::shared_ptr<const std::string> ers::impl::FolderView::share(std::string_view k) const {
     if (const auto* text = _folder->lookup(k, _target_locale_id))
-        return shared_ptr<const std::string>(_folder, text);
+        return std::shared_ptr<const std::string>(_folder, text);
     return nullptr;
 }
 

@@ -217,7 +217,7 @@ auto ers::impl::LocaleTable::reload(const fs::path& root, std::string_view fallb
 
         // step 3.3: building
 
-        auto folder = ers::make_shared<Folder>();
+        auto folder = std::make_shared<Folder>();
         folder->_config = config;
 
         for (size_t i = 0; i < scan.files.size(); i++) {
