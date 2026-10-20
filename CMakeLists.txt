@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.28)
 
 project(erslib
-    VERSION 1.2.1
+    VERSION 1.2.3
     DESCRIPTION "EilRoviSoft's universal library"
     LANGUAGES CXX
 )
@@ -121,6 +121,13 @@ target_sources(erslib_core
         "src/erslib/core/convert/time.cpp"
 
         "src/erslib/core/exception/internal.cpp"
+
+		"src/erslib/core/localization/config.cpp"
+        "src/erslib/core/localization/folder.cpp"
+        "src/erslib/core/localization/folder_view.cpp"
+        "src/erslib/core/localization/key.cpp"
+        "src/erslib/core/localization/locale_table.cpp"
+        "src/erslib/core/localization/locale_view.cpp"
 
         "src/erslib/core/random/entropy.cpp"
 
