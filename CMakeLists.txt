@@ -234,6 +234,12 @@ if(ERSLIB_BUILD_CONTRIB)
     erslib_optional_package(erslib_contrib inja pantor::inja _HAS_INJA)
 	erslib_optional_package(erslib_contrib valijson valijson _HAS_VALIJSON)
 
+
+	if(TARGET valijson)
+		target_sources(erslib_contrib PRIVATE "src/erslib/contrib/valijson.cpp")
+	endif()
+
+
     list(APPEND ERSLIB_TARGETS erslib_contrib)
 endif()
 
