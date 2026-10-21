@@ -1,10 +1,7 @@
 #pragma once
 
 // std
-#include <exception>
 #include <memory>
-#include <string>
-#include <utility>
 
 // ers
 #include <erslib/contrib/json/impl.hpp>

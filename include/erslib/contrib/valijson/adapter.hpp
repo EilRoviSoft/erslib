@@ -133,7 +133,7 @@ namespace utl::impl::valijson_adapter {
 
 
         Member<Node> operator*() const {
-            return Member<Node>(std::string(std::string_view(_it->first)), Adapter<Node>(_it->second));
+            return Member<Node>(std::string(_it->first), Adapter<Node>(_it->second));
         }
 
         valijson::adapters::DerefProxy<Member<Node>> operator->() const { return valijson::adapters::DerefProxy(**this); }
@@ -184,7 +184,7 @@ namespace utl::impl::valijson_adapter {
 
         const_iterator find(const std::string& name) const {
             if constexpr (requires(const object_type& o, std::string_view k) { o.find(k); })
-                return _object.find(std::string_view(name));
+                return _object.find(name);
             else
                 return _object.find(typename object_type::key_type(name));
         }
@@ -262,7 +262,7 @@ namespace utl::impl::valijson_adapter {
         }
 
         bool getString(std::string& out) const {
-            return _value.is_string() && (out.assign(std::string_view(_value.as_string())), true);
+            return _value.is_string() && (out.assign(_value.as_string()), true);
         }
 
 

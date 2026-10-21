@@ -13,6 +13,10 @@
 #include <erslib/web/middleware/rate_limit.hpp>
 
 
+using std::string_literals::operator ""s;
+using namespace std::chrono_literals;
+
+
 // Details ---------------------------------------------------------------------
 
 namespace {
@@ -56,7 +60,7 @@ TEST_CASE("web: request helpers") {
     req.add_header("User-Agent", "a\x01" "b");
 
     REQUIRE(ers::web::bearer_token(req) == "abc");
-    REQUIRE(ers::web::read_header(req, "User-Agent") == std::string("ab"));
+    REQUIRE(ers::web::read_header(req, "User-Agent") == "ab"s);
     REQUIRE(!ers::web::read_header(req, "Missing"));
 
     auto qs = crow::query_string("?limit=500&offset=x&flag=true");
@@ -116,7 +120,7 @@ TEST_CASE("web: keyed rate limit") {
     limiter.before_handle(unconfigured, unconfigured_res, ctx, all);
     REQUIRE(unconfigured_res.code == 500);
 
-    limiter.configure(1, std::chrono::minutes(1), 16);
+    limiter.configure(1, 1min, 16);
 
     auto first = make_request();
     crow::response first_res;

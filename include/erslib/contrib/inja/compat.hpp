@@ -293,7 +293,7 @@ namespace utl::impl {
             } else if constexpr (std::same_as<value_t, string_t>) {
                 return _checked<string_t>();
             } else if constexpr (std::same_as<value_t, std::string>) {
-                return std::string(std::string_view(string_adaptor<string_t>::to_utf8(_checked<string_t>())));
+                return std::string(string_adaptor<string_t>::to_utf8(_checked<string_t>()));
             } else if constexpr (std::same_as<value_t, std::vector<node_type>>) {
                 const auto& array = _checked<typename node_type::array_type>();
                 return value_t(array.begin(), array.end());
@@ -343,7 +343,7 @@ namespace utl::impl {
                     return node.as_array().empty();
 
                 case ENodeType::String:
-                    return std::string_view(string_adaptor<string_t>::to_utf8(node.as_string())).empty();
+                    return node.as_string().empty();
 
                 default:
                     return false;
@@ -494,13 +494,13 @@ namespace utl::impl {
 
         [[nodiscard]]
         static std::string_view _utf8(const string_t& value) {
-            return std::string_view(string_adaptor<string_t>::to_utf8(value));
+            return string_adaptor<string_t>::to_utf8(value);
         }
 
         template<class Key>
         [[nodiscard]]
         static std::string_view _key_utf8(const Key& key) {
-            return std::string_view(string_adaptor<Key>::to_utf8(key));
+            return string_adaptor<Key>::to_utf8(key);
         }
 
 

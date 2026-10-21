@@ -45,13 +45,16 @@ namespace utl {
 
     template<>
     struct string_adaptor<std::string> {
+        using string_type = std::string;
+
+
         [[nodiscard]]
-        static std::string from_utf8(std::string&& value) noexcept {
+        static string_type from_utf8(std::string&& value) noexcept {
             return std::move(value);
         }
 
         [[nodiscard]]
-        static std::string_view to_utf8(const std::string& value) noexcept {
+        static std::string_view to_utf8(const string_type& value) noexcept {
             return value;
         }
     };

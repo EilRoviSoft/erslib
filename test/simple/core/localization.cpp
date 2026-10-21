@@ -18,6 +18,9 @@
 
 using test::TempTree;
 
+using std::string_literals::operator ""s;
+using std::string_view_literals::operator ""sv;
+
 
 namespace {
     // "key = text" per line: enough to test bundles without erslib::contrib
@@ -644,7 +647,7 @@ TEST_CASE("localization: an invalid domain keeps its previous version") {
     REQUIRE(report);
     CHECK(report->rejected.empty());
     CHECK(report->loaded == std::vector<std::string> { "colors" });
-    CHECK(table.adapt<Palette>("en").hex("black") == std::string_view("#111111"));
+    CHECK(table.adapt<Palette>("en").hex("black") == "#111111"sv);
 }
 
 TEST_CASE("localization: an invalid domain fails the first reload and a strict one") {
@@ -727,9 +730,9 @@ TEST_CASE("localization: adapters read their domain") {
     auto en = table.adapt<Palette>("en");
 
     CHECK(en.ids() == std::vector<std::string_view> { "black", "milky" });
-    CHECK(en.name("black") == std::string_view("black"));
-    CHECK(en.name("milky") == std::string_view("молочный"));
-    CHECK(en.hex("milky") == std::string_view("#F8F9FA"));
+    CHECK(en.name("black") == "black"sv);
+    CHECK(en.name("milky") == "молочный"sv);
+    CHECK(en.hex("milky") == "#F8F9FA"sv);
 
     CHECK_THROWS(static_cast<void>(table.adapt<Palette>("de")));
 }

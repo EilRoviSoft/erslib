@@ -283,7 +283,7 @@ namespace utl::impl {
 
         for (const auto& token : pointer.tokens()) {
             if (!node->is_array()) {
-                node = &(*node)[std::string_view(token)];
+                node = &(*node)[token];
                 continue;
             }
 
@@ -323,7 +323,7 @@ namespace utl::impl {
 
         for (const auto& token : pointer.tokens()) {
             if (!node->is_array()) {
-                node = &node->at(std::string_view(token));
+                node = &node->at(token);
                 continue;
             }
 

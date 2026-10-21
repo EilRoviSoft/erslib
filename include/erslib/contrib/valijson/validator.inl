@@ -7,6 +7,7 @@
 // std
 #include <exception>
 #include <string>
+#include <utility>
 
 // valijson
 #include <valijson/schema.hpp>

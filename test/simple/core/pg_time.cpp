@@ -9,6 +9,9 @@
 #include <erslib/core/convert/pg_time.hpp>
 
 
+using namespace std::chrono_literals;
+
+
 namespace {
     ers::timestamp_t parsed(std::string_view what) {
         auto r = ers::timestamp_from_iso8601(what);
@@ -36,7 +39,7 @@ TEST_CASE("pg_time: every offset form denotes the same instant") {
 
 TEST_CASE("pg_time: fractions are padded to microseconds") {
     CHECK(parsed("2026-09-17 12:00:00.5+00")
-        == parsed("2026-09-17 12:00:00+00") + std::chrono::milliseconds(500));
+        == parsed("2026-09-17 12:00:00+00") + 500ms);
 
     CHECK(ers::timestamp_to_iso8601(parsed("2026-09-17 12:00:00.123456+00"))
         == "2026-09-17 12:00:00.123456+00");

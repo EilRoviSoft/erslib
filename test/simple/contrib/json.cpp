@@ -27,6 +27,8 @@
 
 
 using utl::operator""_json;
+using std::string_literals::operator ""s;
+using std::string_view_literals::operator ""sv;
 
 
 // Basic tests -----------------------------------------------------------------
@@ -40,8 +42,8 @@ TEST_CASE("construction picks the right type") {
     CHECK(utl::Json(1.5).is_floating());
     CHECK(utl::Json(1.5f).is_floating());
     CHECK(utl::Json("x").is_string());
-    CHECK(utl::Json(std::string_view("x")).is_string());
-    CHECK(utl::Json(std::string("x")).is_string());
+    CHECK(utl::Json("x"sv).is_string());
+    CHECK(utl::Json("x"s).is_string());
     CHECK(utl::Json(utl::Object{}).is_object());
     CHECK(utl::Json(utl::Array{}).is_array());
 }
@@ -200,7 +202,7 @@ TEST_CASE("value_or reads the nearest type") {
 
     static_assert(std::same_as<decltype(json.value_or("name", "x")), std::string>);
     static_assert(std::same_as<decltype(json.value_or("port", 1)), i64>);
-    static_assert(std::same_as<decltype(json.value_or("port", u8(1))), i64>);
+    static_assert(std::same_as<decltype(json.value_or("port", static_cast<u8>(1))), i64>);
     static_assert(std::same_as<decltype(json.value_or<u16>("port", 1)), u16>);
     static_assert(std::same_as<decltype(json.value_or("ratio", 1.0)), f64>);
 
@@ -482,7 +484,7 @@ TEST_CASE("serialize numbers") {
 
 TEST_CASE("serialize escapes strings and keys") {
     utl::TNode<plain_map_traits> json;
-    json["k\"ey"] = std::string("a\x01\"\\\n");
+    json["k\"ey"] = "a\x01\"\\\n"s;
 
     CHECK(json.to_string(utl::EFormat::Minimized) == R"({"k\"ey":"a\u0001\"\\\n"})");
 }

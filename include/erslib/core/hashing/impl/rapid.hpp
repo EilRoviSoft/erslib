@@ -126,9 +126,9 @@ namespace ers::impl::hashing {
 #ifdef __SIZEOF_INT128__
         __uint128_t r = *A; r *= *B;
 #ifdef RAPIDHASH_PROTECTED
-        *A ^= (u64) r; *B ^= (u64) (r >> 64);
+        *A ^= static_cast<u64>(r); *B ^= static_cast<u64>(r >> 64);
 #else
-        *A = (u64) r; *B = (u64) (r >> 64);
+        *A = static_cast<u64>(r); *B = static_cast<u64>(r >> 64);
 #endif
 #elif defined(_MSC_VER) && (defined(_WIN64) || defined(_M_HYBRID_CHPE_ARM64))
 #if defined(_M_X64)

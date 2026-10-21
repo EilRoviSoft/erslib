@@ -37,9 +37,10 @@ struct ers::impl::as_result<flux::impl::QueryResult> {
 namespace flux::impl {
     template<std::invocable Fn>
     auto try_invoke(Fn&& fn, std::string_view name = {}) -> ers::as_result_t<std::invoke_result_t<Fn>> {
+        using std::string_view_literals::operator ""sv;
         using R = std::invoke_result_t<Fn>;
 
-        const auto label = name.empty() ? std::string_view("database call") : name;
+        const auto label = name.empty() ? "database call"sv : name;
 
         try {
             if constexpr (std::is_void_v<R>) {

@@ -15,6 +15,8 @@
 
 using namespace flux::orm;
 
+using std::string_literals::operator ""s;
+
 
 // Details ---------------------------------------------------------------------
 
@@ -58,7 +60,7 @@ TEST_CASE("flux: select without columns falls back to *") {
 TEST_CASE("flux: insert with conflict and returning") {
     const auto sql = sql_of(insert_into("images")
         | columns("url", "path")
-        | values(std::string("a.png"), std::string("/a.png"))
+        | values("a.png"s, "/a.png"s)
         | on_conflict("url")
         | do_update("path")
         | returning("id"));
@@ -72,7 +74,7 @@ TEST_CASE("flux: insert with conflict and returning") {
 }
 
 TEST_CASE("flux: update and delete") {
-    CHECK(sql_of(update("users") | assign("name", std::string("bob")) | where("id", "="_op, 1))
+    CHECK(sql_of(update("users") | assign("name", "bob"s) | where("id", "="_op, 1))
         == "UPDATE users\nSET name = $1\nWHERE id = $2");
 
     CHECK(sql_of(delete_from("users") | where("id", "="_op, 1))
@@ -112,7 +114,7 @@ TEST_CASE("flux: identifiers are validated, values are bound") {
     // a hostile value is a parameter, never text
     CHECK(contains(
         sql_of(select_from("t")
-            | where("a", "="_op, std::string("'; DROP TABLE t; --"))),
+            | where("a", "="_op, "'; DROP TABLE t; --"s)),
         "WHERE a = $1"
     ));
 }

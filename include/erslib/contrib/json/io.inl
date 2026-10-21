@@ -11,7 +11,6 @@
 #include <limits>
 #include <string>
 #include <string_view>
-#include <system_error>
 
 // ers
 #include <erslib/core/filesystem.hpp>
@@ -33,7 +32,7 @@ namespace utl::impl::json_detail {
     template<class String>
     void append_string(std::string& out, const String& value) {
         const auto& utf8 = string_adaptor<String>::to_utf8(value);
-        append_escaped(out, std::string_view(utf8));
+        append_escaped(out, utf8);
     }
 
     template<std::integral Integral>
@@ -52,7 +51,7 @@ namespace utl::impl::json_detail {
 
         std::array<char, 64> buffer;
         auto result = std::to_chars(buffer.data(), buffer.data() + buffer.size(), value);
-        if (result.ec != std::errc {})
+        if (!result)
             throw ers::make_format_error("Can't format floating value {}", value);
 
         std::string_view text(buffer.data(), result.ptr);
