@@ -20,12 +20,14 @@ flux::impl::ConnectionPool::ConnectionPool(std::string db_connection_string, poo
 ers::Result<flux::impl::ConnectionPool::Connection> flux::impl::ConnectionPool::acquire() {
     std::unique_lock lock(_mutex);
 
+
     auto can_supply = [this] {
         return !_idle.empty() || _all.size() < _pool_opts.max_size;
     };
 
     if (!_cv.wait_for(lock, _pool_opts.acquire_timeout, can_supply))
         return ers::make_error("Timed out acquiring a pooled connection");
+
 
     const auto now = ers::clock_t::now();
 
@@ -39,17 +41,13 @@ ers::Result<flux::impl::ConnectionPool::Connection> flux::impl::ConnectionPool::
         _discard(entry.conn);
     }
 
-    auto conn = _spawn();
-    if (!conn)
-        return conn.error();
 
-    return Connection(shared_from_this(), *conn);
+    auto conn = ERS_TRY(_spawn());
+
+    return Connection(shared_from_this(), conn);
 }
 flux::impl::ConnectionPool::Connection flux::impl::ConnectionPool::acquire_or_throw() {
-    auto conn = acquire();
-    if (!conn)
-        throw ers::make_runtime_error(conn.error().to_string());
-    return std::move(*conn);
+    return acquire().or_throw();
 }
 
 void flux::impl::ConnectionPool::maintain() {

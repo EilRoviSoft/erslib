@@ -21,7 +21,7 @@ std::string_view ers::impl::DomainView::operator[](std::string_view k) const {
     return (*_domain)[k, _target_locale_id];
 }
 
-ers::optional<std::string_view> ers::impl::DomainView::find(std::string_view k) const noexcept {
+ers::maybe<std::string_view> ers::impl::DomainView::find(std::string_view k) const noexcept {
     return _domain->find(k, _target_locale_id);
 }
 

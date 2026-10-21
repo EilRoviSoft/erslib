@@ -66,11 +66,7 @@ ers::Result<ers::modkit::impl::dependency_t> ers::modkit::impl::dependency_t::pa
 
     if (has_version_bounds) {
         it++;
-
-        if (auto r = version_t::parse(*it); r)
-            result.version = *r;
-        else
-            return r.error();
+        result.version = ERS_TRY(version_t::parse(*it));
     }
 
 

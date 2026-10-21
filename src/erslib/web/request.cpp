@@ -23,11 +23,11 @@ ers::Result<utl::Json> ers::web::impl::read_body(const crow::request& req) {
 
 // Headers
 
-ers::optional<std::string> ers::web::impl::read_header(const crow::request& req, std::string_view name, size_t max_length) {
+ers::maybe<std::string> ers::web::impl::read_header(const crow::request& req, std::string_view name, size_t max_length) {
     auto value = util::keep_if(req.get_header_value(std::string(name)), is_print, max_length);
 
     if (value.empty())
-        return nullopt;
+        return none;
 
     return value;
 }
@@ -41,7 +41,7 @@ std::string ers::web::impl::bearer_token(const crow::request& req) {
     return header.substr(bearer_prefix.size());
 }
 
-ers::optional<std::string> ers::web::impl::read_cookie(const crow::request& req, std::string_view name) {
+ers::maybe<std::string> ers::web::impl::read_cookie(const crow::request& req, std::string_view name) {
     auto [first, last] = req.headers.equal_range("Cookie");
 
     for (auto it = first; it != last; ++it) {
@@ -59,7 +59,7 @@ ers::optional<std::string> ers::web::impl::read_cookie(const crow::request& req,
         }
     }
 
-    return nullopt;
+    return none;
 }
 
 

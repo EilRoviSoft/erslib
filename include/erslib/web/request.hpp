@@ -11,7 +11,7 @@
 
 // ers
 #include <erslib/core/convert/number.hpp>
-#include <erslib/core/type/optional.hpp>
+#include <erslib/core/type/maybe.hpp>
 #include <erslib/core/type/result.hpp>
 
 // contrib
@@ -24,9 +24,9 @@
 namespace ers::web::impl {
     Result<utl::Json> ERSLIB_EXPORT read_body(const crow::request& req);
 
-    optional<std::string> ERSLIB_EXPORT read_header(const crow::request& req, std::string_view name, size_t max_length = 256);
+    maybe<std::string> ERSLIB_EXPORT read_header(const crow::request& req, std::string_view name, size_t max_length = 256);
     std::string ERSLIB_EXPORT bearer_token(const crow::request& req);
-    optional<std::string> ERSLIB_EXPORT read_cookie(const crow::request& req, std::string_view name);
+    maybe<std::string> ERSLIB_EXPORT read_cookie(const crow::request& req, std::string_view name);
 
 
     template<typename T>

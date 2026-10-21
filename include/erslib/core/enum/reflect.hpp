@@ -13,7 +13,7 @@
 
 // ers
 #include <erslib/core/meta.hpp>
-#include <erslib/core/type/optional.hpp>
+#include <erslib/core/type/maybe.hpp>
 #include <erslib/core/enum/fwd.hpp>
 #include <erslib/core/enum/case_styles.hpp>
 #include <erslib/core/enum/traits/enumerator_style.hpp>
@@ -89,13 +89,13 @@ namespace ers::impl::enum_utils {
     }
 
     template<typename E>
-    constexpr optional<E> from_string(std::string_view name) {
+    constexpr maybe<E> from_string(std::string_view name) {
         for (const auto& [v, n] : name_table<E>::value) {
             if (n == name)
                 return v;
         }
 
-        return nullopt;
+        return none;
     }
 }
 

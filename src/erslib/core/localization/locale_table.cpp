@@ -223,10 +223,7 @@ namespace {
                 }
 
 
-                auto key = ers::impl::make_localization_key(relative);
-                ERS_TRY(key);
-
-                add(*it, part.locale_id, std::move(*key), nullptr);
+                add(*it, part.locale_id, ERS_TRY(ers::impl::make_localization_key(relative)), nullptr);
             }
         }
 
@@ -243,15 +240,11 @@ namespace {
         const ers::impl::locale_config_t& config, const scanned_file_t& file, std::string_view text,
         const std::function<ers::Status(std::string, size_t, std::string)>& insert
     ) {
-        auto entries = file.loader->parse(text);
-        ERS_TRY(entries);
+        auto entries = ERS_TRY(file.loader->parse(text));
 
 
-        for (auto& [raw_key, value] : *entries) {
-            auto split = split_locale(raw_key);
-            ERS_TRY(split);
-
-            auto [name, locale] = *split;
+        for (auto& [raw_key, value] : entries) {
+            auto [name, locale] = ERS_TRY(split_locale(raw_key));
 
 
             size_t locale_id = file.locale_id;
@@ -300,18 +293,13 @@ auto ers::impl::LocaleTable::reload(const fs::path& root) -> Result<reload_repor
 
     // step 1: locales
 
-    auto draft = make_locale_config(list_locales(root, _options.common_dir), _options.fallback_locale);
-
-    if (!draft) {
-        return make_error("'{}': {}",
-            root.generic_string(), draft.error().message());
-    }
-
+    auto draft = ERS_TRY(make_locale_config(list_locales(root, _options.common_dir), _options.fallback_locale)
+        .context("'{}'", root));
 
     auto previous = _index.get();
-    bool same_config = previous && previous->config->same_as(**draft);
+    bool same_config = previous && previous->config->same_as(*draft);
 
-    locale_config_ptr config = same_config ? previous->config : *draft;
+    locale_config_ptr config = same_config ? previous->config : draft;
 
 
     // step 2: domains
@@ -325,12 +313,8 @@ auto ers::impl::LocaleTable::reload(const fs::path& root) -> Result<reload_repor
         sources.emplace_back(common_locale_id, root / _options.common_dir);
 
 
-    auto domains = list_domains(_options, sources, *config);
-
-    if (!domains) {
-        return make_error("'{}': {}",
-            root.generic_string(), domains.error().message());
-    }
+    auto domains = ERS_TRY(list_domains(_options, sources, *config)
+        .context("'{}'", root));
 
 
     // step 3: keeping unchanged domains, building the rest
@@ -340,13 +324,9 @@ auto ers::impl::LocaleTable::reload(const fs::path& root) -> Result<reload_repor
     reload_report_t report;
 
 
-    for (const auto& [name, parts] : *domains) {
-        auto scan = scan_domain(_options, root, name, parts);
-
-        if (!scan) {
-            return make_error("Domain '{}': {}",
-                name, scan.error().message());
-        }
+    for (const auto& [name, parts] : domains) {
+        auto scan = ERS_TRY(scan_domain(_options, root, name, parts)
+            .context("Domain '{}'", root));
 
 
         auto known = _fingerprints.find(name);
@@ -360,7 +340,7 @@ auto ers::impl::LocaleTable::reload(const fs::path& root) -> Result<reload_repor
 
         // step 3.1: nothing touched the domain
 
-        if (existing && known != _fingerprints.end() && scan->fingerprint.same_metadata_as(known->second)) {
+        if (existing && known != _fingerprints.end() && scan.fingerprint.same_metadata_as(known->second)) {
             next.domains.emplace(name, std::move(existing));
             next_fingerprints.emplace(name, known->second);
             report.kept++;
@@ -371,14 +351,13 @@ auto ers::impl::LocaleTable::reload(const fs::path& root) -> Result<reload_repor
         // step 3.2: reading, the domain was touched but may be the same
 
         std::vector<std::string> texts;
-        texts.reserve(scan->files.size());
+        texts.reserve(scan.files.size());
 
 
         size_t checksum = 0;
 
-        for (const auto& file : scan->files) {
-            auto text = read_text(file.path);
-            ERS_TRY(text);
+        for (const auto& file : scan.files) {
+            auto text = ERS_TRY(read_text(file.path));
 
             checksum = RapidHash<std::string_view> {}(file.relative, checksum);
             checksum = RapidHash<std::string_view> {}(*text, checksum);
@@ -387,11 +366,11 @@ auto ers::impl::LocaleTable::reload(const fs::path& root) -> Result<reload_repor
         }
 
 
-        scan->fingerprint.checksum = checksum;
+        scan.fingerprint.checksum = checksum;
 
-        if (existing && known != _fingerprints.end() && scan->fingerprint.same_content_as(known->second)) {
+        if (existing && known != _fingerprints.end() && scan.fingerprint.same_content_as(known->second)) {
             next.domains.emplace(name, std::move(existing));
-            next_fingerprints.emplace(name, std::move(scan->fingerprint));
+            next_fingerprints.emplace(name, std::move(scan.fingerprint));
             report.kept++;
             continue;
         }
@@ -407,17 +386,14 @@ auto ers::impl::LocaleTable::reload(const fs::path& root) -> Result<reload_repor
         };
 
 
-        for (size_t i = 0; i < scan->files.size(); i++) {
-            const auto& file = scan->files[i];
+        for (size_t i = 0; i < scan.files.size(); i++) {
+            const auto& file = scan.files[i];
 
             auto inserted = file.loader
                 ? insert_bundle(*config, file, texts[i], insert)
                 : insert(file.key, file.locale_id, std::move(texts[i]));
 
-            if (!inserted) {
-                return make_error("'{}': {}",
-                    file.relative, inserted.error().message());
-            }
+            ERS_TRY(std::move(inserted).context("'{}'", file.relative));
         }
 
         domain->_seal();
@@ -428,8 +404,7 @@ auto ers::impl::LocaleTable::reload(const fs::path& root) -> Result<reload_repor
         if (auto verdict = _validate(name, domain); !verdict) {
             // nothing to keep, or keeping isn't allowed
             if (_options.on_invalid == EInvalidDomain::FailReload || !existing) {
-                return make_error("Domain '{}' is invalid: {}",
-                    name, verdict.error().message());
+                return std::move(verdict).context("Domain '{}' is invalid", name).extract_error();
             }
 
             // The old fingerprint stays, so the next reload checks the domain again.
@@ -444,7 +419,7 @@ auto ers::impl::LocaleTable::reload(const fs::path& root) -> Result<reload_repor
 
 
         next.domains.emplace(name, std::move(domain));
-        next_fingerprints.emplace(name, std::move(scan->fingerprint));
+        next_fingerprints.emplace(name, std::move(scan.fingerprint));
         report.loaded.emplace_back(name);
     }
 
@@ -536,16 +511,16 @@ ers::impl::LocaleView ers::impl::LocaleTable::operator[](std::string_view locale
     throw make_out_of_range_error("No locale '{}'", locale);
 }
 
-ers::optional<ers::impl::LocaleView> ers::impl::LocaleTable::find(std::string_view locale) const {
+ers::maybe<ers::impl::LocaleView> ers::impl::LocaleTable::find(std::string_view locale) const {
     auto index = _index.get();
 
     if (!index)
-        return nullopt;
+        return none;
 
     if (auto id = index->config->id_of(locale))
         return LocaleView(std::move(index), *id);
 
-    return nullopt;
+    return none;
 }
 
 ers::impl::LocaleView ers::impl::LocaleTable::common() const {

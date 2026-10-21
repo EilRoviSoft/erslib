@@ -31,12 +31,8 @@ struct flux::impl::sql_value<ers::timestamp_t> {
     }
 
     static ers::timestamp_t read(const auto& field) {
-        auto r = ers::timestamp_from_iso8601(field.template as<std::string_view>());
-
-        if (!r)
-            throw ers::make_parse_error("{}", r.error().message());
-
-        return *r;
+        return ers::timestamp_from_iso8601(field.template as<std::string_view>())
+            .template or_throw<ers::parse_error>();
     }
 };
 

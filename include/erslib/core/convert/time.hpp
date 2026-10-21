@@ -1,9 +1,7 @@
 #pragma once
 
-// std
-#include <sstream>
-
 // ers
+#include <erslib/core/type/maybe.hpp>
 #include <erslib/core/type/result.hpp>
 #include <erslib/core/type/time.hpp>
 
@@ -19,15 +17,13 @@ namespace ers::impl {
 
 namespace ers::impl {
     template<typename Clock>
-    Result<timestamp_t> timestamp_from_string(std::string_view sv, std::string_view fmt) {
-        typename Clock::time_point result;
-        std::stringstream iss(static_cast<std::string>(sv));
+    timestamp_t timestamp_from_string(std::string_view sv, std::string_view fmt);
 
-        if (!std::chrono::from_stream(iss, (static_cast<std::string>(fmt) + '\0').c_str(), result))
-            return make_error("Can't cast '{}' with '{}'", sv, fmt);
+    template<typename Clock>
+    Result<timestamp_t> try_timestamp_from_string(std::string_view sv, std::string_view fmt);
 
-        return result;
-    }
+    template<typename Clock>
+    maybe<timestamp_t> maybe_timestamp_from_string(std::string_view sv, std::string_view fmt);
 
 
     Result<timestamp_t> timestamp_from_local(
@@ -48,7 +44,14 @@ namespace ers::impl {
 
 namespace ers {
     using impl::timestamp_from_string;
+    using impl::try_timestamp_from_string;
+    using impl::maybe_timestamp_from_string;
 
     using impl::timestamp_from_local;
     using impl::timestamp_to_local;
 }
+
+
+// Implementation --------------------------------------------------------------
+
+#include "time.inl"

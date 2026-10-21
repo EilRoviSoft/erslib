@@ -2,12 +2,11 @@
 
 // std
 #include <string>
-#include <string_view>
 #include <type_traits>
 #include <vector>
 
 // ers
-#include <erslib/core/type/optional.hpp>
+#include <erslib/core/type/maybe.hpp>
 #include <erslib/core/type/result.hpp>
 #include <erslib/flux/result/row.hpp>
 #include <erslib/flux/sql/value.hpp>
@@ -24,7 +23,7 @@ namespace flux::impl {
     inline constexpr bool is_optional_v = false;
 
     template<typename T>
-    inline constexpr bool is_optional_v<ers::optional<T>> = true;
+    inline constexpr bool is_optional_v<ers::maybe<T>> = true;
 }
 
 

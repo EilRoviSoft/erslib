@@ -12,11 +12,12 @@
 
 
 namespace ers::impl {
-    using std::optional;
+    template<typename T>
+    using maybe = std::optional<T>;
 
 
-    using nullopt_t = std::nullopt_t;
-    inline constexpr nullopt_t nullopt = std::nullopt;
+    using none_t = std::nullopt_t;
+    inline constexpr none_t none = std::nullopt;
 }
 
 
@@ -28,11 +29,12 @@ namespace ers::impl {
 
 
 namespace ers::impl {
-    using boost::optional;
+    template<typename T>
+    using maybe = boost::optional<T>;
 
 
-    using nullopt_t = boost::none_t;
-    inline constexpr nullopt_t nullopt { nullopt_t::init_tag {} };
+    using none_t = boost::none_t;
+    inline constexpr none_t none { none_t::init_tag {} };
 }
 
 
@@ -46,8 +48,8 @@ namespace ers::impl {
 // Exports ---------------------------------------------------------------------
 
 namespace ers {
-    using impl::optional;
+    using impl::maybe;
 
-    using impl::nullopt_t;
-    using impl::nullopt;
+    using impl::none_t;
+    using impl::none;
 }

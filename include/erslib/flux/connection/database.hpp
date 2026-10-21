@@ -32,6 +32,12 @@ namespace flux::impl {
         const ConnectionPool& pool() const { return *_pool; }
 
 
+        // Connections
+
+        ers::Result<Connection> acquire() { return _pool->acquire(); }
+        Connection acquire_or_throw() { return _pool->acquire_or_throw(); }
+
+
         // Modifiers
 
         void maintain();

@@ -8,7 +8,7 @@
 #include <erslib/core/fwd.hpp>
 #include <erslib/core/localization/config.hpp>
 #include <erslib/core/localization/fwd.hpp>
-#include <erslib/core/type/optional.hpp>
+#include <erslib/core/type/maybe.hpp>
 
 // export
 #include <erslib/export.hpp>
@@ -24,10 +24,10 @@ namespace ers::impl {
 
     public:
         struct entry_t {
-            optional<std::string> common;
+            maybe<std::string> common;
 
             // Indexed by locale id, empty if only the common text exists.
-            std::vector<optional<std::string>> localized;
+            std::vector<maybe<std::string>> localized;
         };
 
         using container_type = StringMap<entry_t>;
@@ -46,7 +46,7 @@ namespace ers::impl {
         // Accessors
 
         [[nodiscard]] std::string_view operator[](std::string_view k, size_t locale_id) const;
-        [[nodiscard]] optional<std::string_view> find(std::string_view k, size_t locale_id) const noexcept;
+        [[nodiscard]] maybe<std::string_view> find(std::string_view k, size_t locale_id) const noexcept;
 
         [[nodiscard]] const std::string* lookup(std::string_view k, size_t locale_id) const noexcept;
 

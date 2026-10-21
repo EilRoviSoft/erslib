@@ -140,7 +140,7 @@ Clause clauses::string_agg(std::string column, std::string delimiter) {
 // OrderedSetAggClause
 
 OrderedSetAggClause::OrderedSetAggClause(
-    std::string_view fn, ers::optional<binder_t> arg, std::vector<std::string> order_by
+    std::string_view fn, ers::maybe<binder_t> arg, std::vector<std::string> order_by
 ) :
     IClause(&slots::column),
     _fn(fn),
@@ -180,7 +180,7 @@ Clause clauses::percentile_disc(double fraction, std::vector<std::string> order_
 }
 
 Clause clauses::mode_of(std::vector<std::string> order_by) {
-    return make_clause<OrderedSetAggClause>("mode", ers::nullopt, std::move(order_by));
+    return make_clause<OrderedSetAggClause>("mode", ers::none, std::move(order_by));
 }
 
 

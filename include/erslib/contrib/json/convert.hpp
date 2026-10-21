@@ -23,8 +23,7 @@ namespace utl::impl {
     template<std::derived_from<IJsonConvertible> T>
     static ers::Result<T> load_from_json(const Json& json) {
         T out;
-        if (auto s = out.load_from(json); !s)
-            return s.error();
+        ERS_TRY(out.load_from(json));
         return out;
     }
 

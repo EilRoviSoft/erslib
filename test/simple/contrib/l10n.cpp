@@ -45,12 +45,14 @@ TEST_CASE("l10n json: objects nest, arrays become lines") {
     })");
 
     REQUIRE(entries);
-    CHECK(*entries == pairs_t{
+    CHECK(*entries == pairs_t
+        {
             { "black.hex", "#000000" },
         { "black.name@ru", "чёрный" },
         { "brand", "Маленькая Леди" },
         { "delivery", "Бесплатно.\nСроки уточнит менеджер." },
-        });
+        }
+    );
 
     CHECK(flatten("{}")->empty());
 }

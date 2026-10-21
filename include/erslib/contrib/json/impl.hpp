@@ -23,7 +23,7 @@
 #include <erslib/core/filesystem.hpp>
 #include <erslib/core/hashing/rapid.hpp>
 #include <erslib/core/type/general.hpp>
-#include <erslib/core/type/optional.hpp>
+#include <erslib/core/type/maybe.hpp>
 
 // export
 #include <erslib/export.hpp>
@@ -532,8 +532,8 @@ namespace utl::impl {
         [[nodiscard]] TNode& at(std::string_view key);
         [[nodiscard]] const TNode& at(std::string_view key) const;
 
-        [[nodiscard]] ers::optional<TNode&> try_at(std::string_view key);
-        [[nodiscard]] ers::optional<const TNode&> try_at(std::string_view key) const;
+        [[nodiscard]] ers::maybe<TNode&> try_at(std::string_view key);
+        [[nodiscard]] ers::maybe<const TNode&> try_at(std::string_view key) const;
 
         [[nodiscard]] bool contains(std::string_view key) const;
 
@@ -552,8 +552,8 @@ namespace utl::impl {
         [[nodiscard]] TNode& at(std::size_t index);
         [[nodiscard]] const TNode& at(std::size_t index) const;
 
-        [[nodiscard]] ers::optional<TNode&> try_at(std::size_t index);
-        [[nodiscard]] ers::optional<const TNode&> try_at(std::size_t index) const;
+        [[nodiscard]] ers::maybe<TNode&> try_at(std::size_t index);
+        [[nodiscard]] ers::maybe<const TNode&> try_at(std::size_t index) const;
 
         void push_back(const TNode& value);
         void push_back(TNode&& value);
@@ -572,8 +572,8 @@ namespace utl::impl {
         [[nodiscard]] TNode& at(const JsonPointer& pointer);
         [[nodiscard]] const TNode& at(const JsonPointer& pointer) const;
 
-        [[nodiscard]] ers::optional<TNode&> try_at(const JsonPointer& pointer);
-        [[nodiscard]] ers::optional<const TNode&> try_at(const JsonPointer& pointer) const;
+        [[nodiscard]] ers::maybe<TNode&> try_at(const JsonPointer& pointer);
+        [[nodiscard]] ers::maybe<const TNode&> try_at(const JsonPointer& pointer) const;
 
         [[nodiscard]] bool contains(const JsonPointer& pointer) const;
 

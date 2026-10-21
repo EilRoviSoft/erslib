@@ -3,13 +3,12 @@
 // std
 #include <concepts>
 #include <string>
-#include <string_view>
 #include <utility>
 #include <vector>
 
 // ers
 #include <erslib/core/type/fixed_string.hpp>
-#include <erslib/core/type/optional.hpp>
+#include <erslib/core/type/maybe.hpp>
 #include <erslib/flux/query/clause.hpp>
 #include <erslib/flux/sql/binder.hpp>
 
@@ -114,12 +113,12 @@ namespace flux::impl {
 
 namespace flux::impl {
     // fn(<arg>) WITHIN GROUP (ORDER BY col[, col...]) - percentile_cont, percentile_disc, mode.
-    // mode() takes no argument, hence the optional.
+    // mode() takes no argument, hence the maybe.
     class ERSLIB_EXPORT OrderedSetAggClause : public IClause {
     public:
         // Member functions
 
-        OrderedSetAggClause(std::string_view fn, ers::optional<binder_t> arg, std::vector<std::string> order_by);
+        OrderedSetAggClause(std::string_view fn, ers::maybe<binder_t> arg, std::vector<std::string> order_by);
 
 
         // Executors
@@ -129,7 +128,7 @@ namespace flux::impl {
 
     private:
         std::string_view _fn;
-        ers::optional<binder_t> _arg;
+        ers::maybe<binder_t> _arg;
         std::vector<std::string> _order_by;
     };
 

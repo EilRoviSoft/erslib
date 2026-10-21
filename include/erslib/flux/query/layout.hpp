@@ -6,7 +6,7 @@
 #include <vector>
 
 // ers
-#include <erslib/core/type/optional.hpp>
+#include <erslib/core/type/maybe.hpp>
 #include <erslib/flux/query/slot.hpp>
 
 // export
@@ -29,7 +29,7 @@ namespace flux::impl {
 
         LayoutView bindings() const noexcept;
 
-        ers::optional<size_t> index_of(SlotRef slot) const noexcept;
+        ers::maybe<size_t> index_of(SlotRef slot) const noexcept;
 
         bool contains(SlotRef slot) const noexcept;
 

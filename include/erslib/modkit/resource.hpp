@@ -6,9 +6,9 @@
 #include <mutex>
 
 // ers
-#include <erslib/core/memory/holder.hpp>
+#include <erslib/core/memory.hpp>
 #include <erslib/core/meta/type_hash.hpp>
-#include <erslib/core/type/optional.hpp>
+#include <erslib/core/type/maybe.hpp>
 #include <erslib/core/type/result.hpp>
 
 
@@ -37,7 +37,7 @@ namespace ers::modkit::impl {
         }
 
 
-        optional<T> value = nullopt;
+        maybe<T> value = none;
         std::atomic<size_t> refs = 0;
         std::mutex mutex;
         ctor_fn ctor;
@@ -45,7 +45,7 @@ namespace ers::modkit::impl {
     };
 
     template<typename T>
-    using control_block_ptr = Holder<control_block_t<T>>;
+    using control_block_ptr = holder_ptr<control_block_t<T>>;
 }
 
 
@@ -151,10 +151,9 @@ namespace ers::modkit::impl {
         // Observers
 
         [[nodiscard]]
-        ers::Result<Handle<T>> view() const {
+        Result<Handle<T>> view() const {
             if (!m_cb->refs.load(std::memory_order_acquire)) {
-                if (auto s = m_cb->ctor(*m_cb); !s)
-                    return s.error();
+                ERS_TRY(m_cb->ctor(*m_cb));
             }
 
 
@@ -169,7 +168,7 @@ namespace ers::modkit::impl {
 
 
     protected:
-        Holder<control_block_type> m_cb;
+        holder_ptr<control_block_type> m_cb;
     };
 }
 

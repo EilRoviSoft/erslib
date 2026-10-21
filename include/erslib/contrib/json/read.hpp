@@ -6,7 +6,7 @@
 #include <utility>
 
 // ers
-#include <erslib/core/type/optional.hpp>
+#include <erslib/core/type/maybe.hpp>
 
 // contrib
 #include <erslib/contrib/json/impl.hpp>
@@ -24,7 +24,7 @@ namespace utl::impl {
 
 
     template<JsonReadable T>
-    ers::optional<T> read_as(const Json& node) {
+    ers::maybe<T> read_as(const Json& node) {
         if constexpr (std::same_as<T, Bool>) {
             if (const auto* value = node.get_if<Bool>())
                 return *value;
@@ -45,24 +45,24 @@ namespace utl::impl {
                 return *value;
         }
 
-        return ers::nullopt;
+        return ers::none;
     }
 
 
     template<typename T>
     concept NodeReadable = requires(const Json& node) {
-        { read_as<T>(node) } -> std::same_as<ers::optional<T>>;
+        { read_as<T>(node) } -> std::same_as<ers::maybe<T>>;
     };
 
     template<NodeReadable T>
-    ers::optional<T> read_as(const Json& json, std::string_view key) {
+    ers::maybe<T> read_as(const Json& json, std::string_view key) {
         if (!json.is_object())
-            return ers::nullopt;
+            return ers::none;
 
         if (auto node = json.try_at(key))
             return read_as<T>(*node);
 
-        return ers::nullopt;
+        return ers::none;
     }
 }
 
@@ -76,13 +76,10 @@ namespace utl::impl {
 
 namespace utl::impl {
     template<std::same_as<ers::uuid> T>
-    ers::optional<T> read_as(const Json& node) {
-        if (const auto* value = node.get_if<String>()) {
-            if (auto r = ers::uuid_from_string(*value))
-                return *r;
-        }
-
-        return ers::nullopt;
+    ers::maybe<T> read_as(const Json& node) {
+        if (const auto* value = node.get_if<String>())
+            return ers::uuid_from_string(*value);
+        return ers::none;
     }
 }
 

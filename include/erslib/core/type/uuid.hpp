@@ -3,9 +3,7 @@
 #ifdef _HAS_BOOST_UUID
 
 // std
-#include <exception>
 #include <string>
-#include <string_view>
 
 // boost
 #include <boost/uuid/uuid.hpp>
@@ -13,6 +11,7 @@
 
 // ers
 #include <erslib/core/hashing/base.hpp>
+#include <erslib/core/type/maybe.hpp>
 #include <erslib/core/type/result.hpp>
 
 
@@ -21,7 +20,10 @@ namespace ers::impl {
 
 
     std::string uuid_to_string(const uuid& what);
-    Result<uuid> uuid_from_string(std::string_view text);
+
+    uuid uuid_from_string(std::string_view text);
+    Result<uuid> try_uuid_from_string(std::string_view text);
+    maybe<uuid> maybe_uuid_from_string(std::string_view text);
 }
 
 
@@ -41,7 +43,7 @@ namespace ers {
 
 template<typename Policy>
 struct ers::THashBase<ers::uuid, Policy> {
-    using type = ers::uuid;
+    using type = uuid;
 
     size_t operator()(
         const type& what, size_t seed = 0

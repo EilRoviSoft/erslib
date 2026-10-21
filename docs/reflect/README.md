@@ -1,11 +1,11 @@
 # flux reflect
 
-You can describe a table once, as a struct + a `Declaration` specialization. The `CREATE TABLE` statement and the ability to read query results straight into that struct are the outputs of this.
+A table is a struct plus a `Declaration`. From that you get `CREATE TABLE` and reading rows straight into the struct.
 
-Needs `ERSLIB_ENABLE_REFLECTION=ON` and GCC 16.1 or newer. Everything below sits behind `ERSLIB_HAS_REFLECTION`.
+Needs `ERSLIB_ENABLE_REFLECTION=ON` and GCC 16.1+. Everything here is behind `ERSLIB_HAS_REFLECTION`.
 
 
-## Declaring a table
+## Tables
 
 ```cpp
 struct Image {
@@ -16,17 +16,13 @@ struct Image {
 
 template<>
 struct flux::reflect::Declaration<Image> : Table<"images"> {
-    Pk<"id"> images_pk;
+    Pk<"id"> images_pk;                 // CONSTRAINT images_pk PRIMARY KEY (id)
     Unique<"url"> images_url_key;
     Unique<"path"> images_path_key;
 };
 ```
 
-Each constraint is a member, and the member's name becomes the constraint's name in SQL, so `Pk<"id"> images_pk` gives you `CONSTRAINT images_pk PRIMARY KEY (id)`.
-
-The template arguments are column names. Keep the member names unique across the whole schema and table: Postgres puts index-backed constraints in one namespace per schema, so a second `id_pk` somewhere else will fail at `CREATE TABLE` time with a name clash.
-
-## Rest of the vocabulary
+Member name = constraint name. Postgres keeps index-backed constraints in one namespace per schema, so make them unique across the schema, not just the table.
 
 ```cpp
 template<>
@@ -34,49 +30,58 @@ struct flux::reflect::Declaration<ProductImage> : Table<"product_images"> {
     Pk<"product_id", "image_id"> product_images_pk;
     Unique<"product_id", "position"> product_images_position_key;
 
-    Fk<"product_id", "products", "id", action_on_delete::cascade> product_images_product_fk;
+    Fk<"product_id", "products", "id", EActionOnDelete::Cascade> product_images_product_fk;   // or SetNull, SetDefault, Restrict
     Fk<"image_id", "images", "id"> product_images_image_fk;
 
-    Default<"replaceable", true> product_images_replaceable;
+    Check<"position >= 0"> product_images_position_check;
+    Default<"replaceable", true> product_images_replaceable;   // name isn't used, call it anything
 };
 ```
 
-`Fk` takes the local column, the referenced table and column, and optionally one of `action_on_delete::cascade`, `set_null`, `set_default` or `restrict`. `Default` takes a column and a value, and unlike the constraints it does not use its member name for anything, so call it whatever
-reads well.
-
-Columns are `NOT NULL` unless the field is an `ers::optional`. A lone integral primary key is treated as `GENERATED ALWAYS AS IDENTITY` automatically; `Identity<"column">` exists for when you want to force that on some other column.
+- `NOT NULL` unless the field is `ers::maybe`.
+- A single integral PK becomes `GENERATED ALWAYS AS IDENTITY`. `Identity<"column">` forces it elsewhere.
 
 
-## Per-field tweaks
-
-Renaming a column, overriding its SQL type, or leaving a field out of the table are all facts about one field, so they go on the field:
+## Fields
 
 ```cpp
 struct Product {
     uint32_t id = flux::undefined_id;
-    int32_t price;
 
-    [[=flux::reflect::Column<"descr">]]
-    ers::optional<std::string> description;
+    [[=flux::reflect::Column<"descr">]]                 // other column name
+    ers::maybe<std::string> description;
 
-    [[=flux::reflect::Column<"", "VARCHAR(120)">]]
+    [[=flux::reflect::Column<"", "VARCHAR(120)">]]      // other SQL type
     std::string title;
 
-    uint32_t sku;
-
-    [[=flux::reflect::Skip]]
+    [[=flux::reflect::Skip]]                            // not a column
     int cache;
 };
 ```
 
 
-## Getting the DDL
+## Schemas
+
+```cpp
+namespace onec {
+    struct Schema : flux::reflect::Schema<"onec"> {};
+    struct Price { ... };
+}
+
+template<>
+struct flux::reflect::Declaration<onec::Price> : Table<"prices", onec::Schema> { ... };
+```
+
+Tables of a schema are collected from the namespace the schema type is in (nested ones too). A table declared outside of it won't be found. Without a schema the name stays unqualified.
+
+
+## DDL
 
 ```cpp
 constexpr std::string_view ddl = flux::ddl::create_table<Image>();
 ```
 
-It is the only `consteval` DDL, so the text is built during compilation and costs nothing at runtime (except actually running it):
+Built at compile time:
 
 ```sql
 CREATE TABLE IF NOT EXISTS images (
@@ -90,42 +95,110 @@ CREATE TABLE IF NOT EXISTS images (
 ```
 
 
-## Reading results
-
-Include `reflect.hpp` and `exec_as` / `exec_one` start accepting your entities:
+## Reading rows
 
 ```cpp
-auto collections = db.with_tx([limit](pqxx::read_transaction& tx) {
-    ERS_QUICK_FLUX_USING;
+auto collections = flux::with_tx(db.pool(), [limit](pqxx::read_transaction& tx) {
+    using namespace flux::orm;
+
     return (select_from("collections")
         | order_by_random()
         | with_limit(limit)
-    ).exec_as<Collection>(tx);
+    ).exec(tx).get_as<std::vector<Collection>>();
 }, "Collection/SelectRandomly");
 ```
 
-`exec_as<T>` hands back `ers::Result<RowGenerator<T>>` - a lazy range you can iterate or ask for a size. `exec_one<T>` hands back `ers::Result<T>` and fails unless the query returned exactly one row.
+```cpp
+result.get_as<Image>()                      // exactly one row, throws otherwise
+result.get_as<ers::maybe<Image>>()       // 0..1
+result.get_as<std::vector<Image>>()         // 0..N
+result.view_as<Image>()                     // lazy RowGenerator, 0..N
+```
 
-Columns are matched by name rather than position, which has two consequences worth knowing. `SELECT *` works. And a query that returns only some of the columns fills only those, leaving the rest at the struct's defaults, so the call below gives you an `Image` with `id` set and `url` and `path` still empty:
+Columns are matched by name, so `SELECT *` works, and missing columns keep the struct's defaults:
 
 ```cpp
 auto inserted = (insert_into("images")
     | columns("url", "path")
     | values(img.url, img.path)
     | returning("id")
-).exec_one<Image>(tx);
+).exec(tx).get_as<Image>();     // only 'id' is set
 ```
 
 
-## Reusing what the declaration knows
+## Rows that aren't tables
 
-Queries you write by hand do not have to repeat names you have already written down:
+A plain aggregate needs no `Declaration`:
+
+```cpp
+struct CascadeHit {
+    std::string source_table;
+    uint32_t id;
+    uint32_t image_id;
+};
+
+auto hits = query.exec(tx).get_as<std::vector<CascadeHit>>();
+```
+
+`RowType` = has a `Declaration`, `Entity` = also has a `Table`. So `create_table<CascadeHit>()` doesn't compile.
+
+A type constructible from `pqxx::row_ref` is read through that constructor instead.
+
+
+## SQL files
+
+```cpp
+ERS_DECLARE_QUERY(onec::queries, record_run, "onec.record_run") {
+    struct Input {          // binds as $1, $2, ... in this order
+        std::string job;
+        i64 elapsed_ms;
+        bool ok;
+    };
+
+    // using Output = ...;  // with_query returns this instead of QueryResult
+    // struct Fragments { std::string sort; };  // replaces {{sort}} as text, never user input
+};
+
+flux::with_query(db.pool(), "Onec/RecordRun", onec::queries::record_run({
+    .job        = "prices",
+    .elapsed_ms = 42,
+    .ok         = true,
+}));
+```
+
+`"onec.record_run"` is `onec/record_run.sql` in the folder loaded with `flux::queries.load_directory()`.
+
+
+## Migrations
+
+```cpp
+auto migrated = flux::migrate<core::Schema, onec::Schema>(db.pool(), root / "migrations");
+```
+
+```
+0001_name.existing.sql    // only on a database that already existed, a fresh one just marks it applied
+0002_name.fresh.sql       // only on a fresh database
+0003_name.always.sql      // both
+name.repeatable.sql       // every run
+```
+
+If a declaration changed, flux stops until an `.existing.sql` migration says what happened to the table:
+
+```sql
+-- flux: table public.images 1a2b3c4d5e6f7a8b
+-- flux: drop public.old_images
+```
+
+The error message contains the exact line to paste.
+
+
+## What the declaration knows
 
 ```cpp
 flux::reflect::table_name<Image>                        // "images"
 flux::reflect::primary_key<Image>                       // span of column names
 flux::reflect::pk_constraint<Image>                     // "images_pk"
-flux::reflect::identity_column<Image>                   // "id", empty when there is none
+flux::reflect::identity_column<Image>                   // "id", empty if none
 flux::reflect::has_identity<Image>
 flux::reflect::column_count<Product>
 flux::reflect::column_name<^^Product::description>      // "descr"
@@ -142,46 +215,27 @@ auto saved = (insert_into("images")
     | on_conflict_constraint("images_url_key")
     | do_update("path")
     | returning(std::string(flux::reflect::identity_column<Image>))
-).exec_one<Image>(tx);
+).exec(tx).get_as<Image>();
 ```
 
-## Rows that are not tables
 
-A join or an aggregate does not come from a single table, but you still want it read into a struct. Give it a `Declaration` with no `Table` base:
-
-```cpp
-struct CascadeHit {
-    std::string source_table;
-    uint32_t id;
-    uint32_t image_id;
-};
-
-template<>
-struct flux::reflect::Declaration<CascadeHit> {};
-```
-
-`exec_as<CascadeHit>` now works, and `create_table<CascadeHit>()` does not compile, which is the point. The two concepts are `RowType`, meaning there is a `Declaration` and rows can be read into it, and `Entity`, meaning there is also a `Table` and DDL can be generated.
-
-
-## Types it does not know yet
-
-Two traits, specialized the usual way. `sql_type` says what a C++ type looks like in DDL:
+## Your own types
 
 ```cpp
 template<>
-struct flux::reflect::sql_type<Money> {
+struct flux::sql_type<Money> {
     static constexpr std::string_view name = "NUMERIC(12, 2)";
     static constexpr bool nullable = false;
 };
-```
 
-`sql_value` says how a value crosses into a query and back out of a result:
-
-```cpp
 template<>
-struct flux::reflect::sql_value<Money> {
+struct flux::sql_value<Money> {
+    static std::string to_text(const Money& what) {         // used for arrays
+        return what.to_string();
+    }
+
     static void bind(pqxx::params& out, const Money& what) {
-        out.append(what.to_string());
+        out.append(to_text(what));
     }
 
     static Money read(const auto& field) {
@@ -190,4 +244,23 @@ struct flux::reflect::sql_value<Money> {
 };
 ```
 
-If you need a mapping that has nothing to do with reflection, `row_reader<T>` is the hook `exec_as` actually dispatches through, and you can specialize it directly.
+For a mapping without reflection, specialize `flux::row_reader<T>`. That's what `get_as` and `view_as` go through.
+
+
+## Your own constraints
+
+`Check` is just this, and yours can be the same:
+
+```cpp
+template<ers::fixed_string Expr>
+struct Check {
+    using kind = kinds::ECheck;
+};
+
+template<ers::fixed_string Expr>
+struct entry_traits<Check<Expr>> : entry_defaults {
+    static consteval std::string ddl(const constraint_context& ctx) {
+        return "CONSTRAINT " + std::string(ctx.name) + " CHECK (" + std::string(Expr.to_sv()) + ")";
+    }
+};
+```

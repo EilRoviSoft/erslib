@@ -31,25 +31,11 @@ namespace ers::impl::type {
 
 // Exports ---------------------------------------------------------------------
 
-namespace ers::type {
-    using impl::type::u8;
-    using impl::type::u16;
-    using impl::type::u32;
-    using impl::type::u64;
-
-    using impl::type::i8;
-    using impl::type::i16;
-    using impl::type::i32;
-    using impl::type::i64;
-
-    using impl::type::f32;
-    using impl::type::f64;
-
-
-    using impl::type::vec2;
+namespace ers {
+    using namespace impl::type;
 }
 
 
-#ifndef REMOVE_ERS_GENERAL_TYPES
-using namespace ers::type;
+#ifdef ERS_EXPOSE_GENERAL
+using namespace ers::impl::type;
 #endif

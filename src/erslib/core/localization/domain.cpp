@@ -29,11 +29,10 @@ std::string_view ers::impl::Domain::operator[](std::string_view k, size_t locale
         k, _config->locales.at(locale_id));
 }
 
-ers::optional<std::string_view> ers::impl::Domain::find(std::string_view k, size_t locale_id) const noexcept {
+ers::maybe<std::string_view> ers::impl::Domain::find(std::string_view k, size_t locale_id) const noexcept {
     if (const auto* text = lookup(k, locale_id))
         return std::string_view(*text);
-
-    return nullopt;
+    return none;
 }
 
 
@@ -118,7 +117,7 @@ ers::Status ers::impl::Domain::_insert(std::string key, size_t locale_id, std::s
     auto [it, _] = _entries.try_emplace(std::move(key));
     auto& entry = it->second;
 
-    optional<std::string>* slot;
+    maybe<std::string>* slot;
 
     if (locale_id == common_locale_id)
         slot = &entry.common;

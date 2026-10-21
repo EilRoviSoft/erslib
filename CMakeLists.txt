@@ -31,6 +31,8 @@ option(ERSLIB_BUILD_LUASCHEMA "Build erslib::luaschema target" OFF)
 option(ERSLIB_BUILD_CRYPTO "Build erslib::crypto target" OFF)
 option(ERSLIB_BUILD_LOGGING "Build erslib::logging target" OFF)
 option(ERSLIB_BUILD_WEB "Build erslib::web target" OFF)
+
+option(ERSLIB_EXPOSE_GENERAL "Expose u8/i64/... and fs into the global namespace" OFF)
 option(ERSLIB_WEB_USE_BOOST_ASIO "erslib::web uses Boost.Asio instead of standalone Asio" OFF)
 
 option(ERSLIB_ENABLE_REFLECTION "Use C++26 static reflection (P2996)" OFF)
@@ -122,7 +124,7 @@ target_sources(erslib_core
 
         "src/erslib/core/exception/internal.cpp"
 
-		"src/erslib/core/localization/config.cpp"
+        "src/erslib/core/localization/config.cpp"
         "src/erslib/core/localization/domain.cpp"
         "src/erslib/core/localization/domain_view.cpp"
         "src/erslib/core/localization/key.cpp"
@@ -149,6 +151,11 @@ erslib_optional_package(erslib_core boost_optional Boost::optional _HAS_BOOST_OP
 erslib_optional_package(erslib_core boost_thread Boost::thread _HAS_BOOST_THREAD)
 erslib_optional_package(erslib_core boost_uuid Boost::uuid _HAS_BOOST_UUID)
 erslib_optional_package(erslib_core cpptrace cpptrace::cpptrace _HAS_CPPTRACE)
+
+
+if(ERSLIB_EXPOSE_GENERAL)
+    target_compile_definitions(erslib_core PUBLIC ERS_EXPOSE_GENERAL)
+endif()
 
 if(ERSLIB_ENABLE_REFLECTION)
     include(CheckCXXSourceCompiles)
@@ -187,6 +194,11 @@ target_compile_definitions(erslib_core
         ERS_TRACE_VERBOSITY=${ERS_TRACE_VERBOSITY}
 )
 
+target_compile_options(erslib_core
+    PUBLIC
+        "$<BUILD_INTERFACE:$<$<CXX_COMPILER_ID:GNU>:SHELL:-include erslib/ide_compat.hpp>>"
+)
+
 if(ERS_TRACE_VERBOSITY STREQUAL "2")
     set(ERS_TRACE_MAX_DEPTH "0" CACHE STRING "Trace verbosity max depth")
 
@@ -209,7 +221,7 @@ if(ERSLIB_BUILD_CONTRIB)
 
     target_sources(erslib_contrib
         PRIVATE
-			"src/erslib/contrib/l10n.cpp"
+            "src/erslib/contrib/l10n.cpp"
             "src/erslib/contrib/json/impl.cpp"
     )
 
@@ -219,7 +231,7 @@ if(ERSLIB_BUILD_CONTRIB)
     )
 
     erslib_optional_package(erslib_contrib boost_unordered Boost::unordered _HAS_BOOST_UNORDERED)
-	erslib_optional_package(erslib_contrib inja pantor::inja _HAS_INJA)
+    erslib_optional_package(erslib_contrib inja pantor::inja _HAS_INJA)
 
     list(APPEND ERSLIB_TARGETS erslib_contrib)
 endif()
@@ -568,6 +580,7 @@ if(ERSLIB_INSTALL AND NOT CMAKE_SKIP_INSTALL_RULES)
         COMPONENT erslib_dev
         PATTERN "export_static.hpp" EXCLUDE
         PATTERN "export_shared.hpp" EXCLUDE
+		PATTERN "ide_compat.hpp" EXCLUDE
     )
 
     install(FILES "${CMAKE_CURRENT_BINARY_DIR}/include/erslib/${EXPORT_FILE_NAME}"

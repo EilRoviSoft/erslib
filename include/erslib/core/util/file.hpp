@@ -8,8 +8,6 @@
 #include <erslib/export.hpp>
 
 
-namespace fs = std::filesystem;
-
 namespace ers::impl::util {
-    std::string ERSLIB_EXPORT read_file(const fs::path& path);
+    std::string ERSLIB_EXPORT read_file(const std::filesystem::path& path);
 }

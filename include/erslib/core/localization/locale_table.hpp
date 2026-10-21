@@ -16,7 +16,7 @@
 #include <erslib/core/localization/locale_view.hpp>
 #include <erslib/core/localization/options.hpp>
 #include <erslib/core/thread_safe/snapshot.hpp>
-#include <erslib/core/type/optional.hpp>
+#include <erslib/core/type/maybe.hpp>
 #include <erslib/core/type/result.hpp>
 
 // export
@@ -80,7 +80,7 @@ namespace ers::impl {
         // Accessors
 
         [[nodiscard]] LocaleView operator[](std::string_view locale) const;
-        [[nodiscard]] optional<LocaleView> find(std::string_view locale) const;
+        [[nodiscard]] maybe<LocaleView> find(std::string_view locale) const;
 
         [[nodiscard]] LocaleView common() const;
 

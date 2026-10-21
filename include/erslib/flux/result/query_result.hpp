@@ -23,7 +23,7 @@ namespace flux::impl {
         const pqxx::result& raw() const noexcept { return _content; }
 
 
-        // T is a container (including ers::optional<Row>, via sql_collector<optional<T>>) ->
+        // T is a container (including ers::maybe<Row>, via sql_collector<maybe<T>>) ->
         // eager, 0..N (or 0..1) rows, never throws on row count.
         template<typename T>
             requires RowContainer<T>

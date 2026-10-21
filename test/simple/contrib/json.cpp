@@ -350,7 +350,7 @@ TEST_CASE("optional becomes a value or null") {
     CHECK(empty.is_null());
 
     utl::Json json;
-    json["price"] = ers::optional<i64> {};
+    json["price"] = ers::maybe<i64> {};
     CHECK(json["price"].is_null());
 }
 

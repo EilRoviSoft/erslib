@@ -5,7 +5,7 @@
 #include <vector>
 
 // ers
-#include <erslib/core/type/optional.hpp>
+#include <erslib/core/type/maybe.hpp>
 
 // sdl3
 #include <SDL3/SDL.h>
@@ -594,7 +594,7 @@ int main(int, char**) {
     document.get().Show();
 
 
-    ers::optional<RmlEventListenerHandle> click_listener;
+    ers::maybe<RmlEventListenerHandle> click_listener;
 
     if (auto* button = document.get().GetElementById("button")) {
         if (auto* status = document.get().GetElementById("status")) {

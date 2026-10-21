@@ -89,9 +89,16 @@ namespace ers::impl {
         }
 
 
+        Diagnostic&& wrap(std::string context) && {
+            m_context.push_back(std::move(context));
+            return std::move(*this);
+        }
+
+
     protected:
         ESeverity m_severity;
         std::string m_message;
+        std::vector<std::string> m_context;
         timestamp_t m_timestamp;
         cpptrace::raw_trace m_trace;
     };

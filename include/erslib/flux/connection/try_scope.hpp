@@ -58,11 +58,11 @@ namespace flux::impl {
 
     class TryQueryResult : public ers::Result<QueryResult> {
     public:
-        using ers::Result<QueryResult>::Result;
+        using Result::Result;
 
 
         template<typename T>
-        ers::Result<T> get_as() const {
+        Result<T> get_as() const {
             if (!*this)
                 return error();
 
@@ -70,7 +70,7 @@ namespace flux::impl {
         }
 
         template<ReadableRow T>
-        ers::Result<RowGenerator<T>> view_as() const {
+        Result<RowGenerator<T>> view_as() const {
             if (!*this)
                 return error();
 
@@ -79,14 +79,35 @@ namespace flux::impl {
     };
 
 
+    template<ConnectionSource Source>
+    auto try_acquire(Source& source) {
+        if constexpr (TryConnectionSource<Source>)
+            return source.acquire();
+        else
+            return try_invoke([&] { return source.acquire_or_throw(); });
+    }
+
+
     template<ConnectionSource Source, ConnectionHandler Fn>
     auto try_with_conn(Source& source, Fn&& fn) {
-        return try_invoke([&] { return with_conn(source, std::forward<Fn>(fn)); });
+        using R = ers::as_result_t<std::invoke_result_t<Fn, pqxx::connection&>>;
+
+        auto conn = try_acquire(source);
+        if (!conn)
+            return R(std::move(conn).extract_error());
+
+        return try_invoke([&] { return std::forward<Fn>(fn)(**conn); });
     }
 
     template<ConnectionSource Source, TransactionCallable Fn>
     auto try_with_tx(Source& source, Fn&& fn, std::string_view name = {}) {
-        return try_invoke([&] { return with_tx(source, std::forward<Fn>(fn), name); }, name);
+        using R = ers::as_result_t<std::invoke_result_t<Fn, transaction_arg_t<Fn>&>>;
+
+        auto conn = try_acquire(source);
+        if (!conn)
+            return R(std::move(conn).extract_error());
+
+        return try_invoke([&] { return with_tx(**conn, std::forward<Fn>(fn), name); }, name);
     }
 
     template<TransactionCallable Fn>
@@ -95,12 +116,20 @@ namespace flux::impl {
     }
 
     template<typename Tx = pqxx::work, ConnectionSource Source, Executable Q>
-    auto try_with_query(Source& source, std::string_view name, Q query) {
-        return try_invoke([&] { return with_query<Tx>(source, name, std::move(query)); }, name);
-    }
+    auto try_with_query(Source& source, Q query, std::string_view name = {}) {
+        using R = ers::as_result_t<decltype(with_query(std::declval<Tx&>(), std::move(query)))>;
 
-    template<typename Tx = pqxx::work, ConnectionSource Source, Executable Q>
-    auto try_with_query(Source& source, Q query) {
-        return try_with_query<Tx>(source, std::string_view {}, std::move(query));
+        auto conn = try_acquire(source);
+        if (!conn)
+            return R(std::move(conn).extract_error());
+
+        return try_invoke([&] {
+            Tx tx(**conn, name);
+
+            auto result = with_query(tx, std::move(query));
+            tx.commit();
+
+            return result;
+        }, name);
     }
 }

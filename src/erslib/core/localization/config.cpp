@@ -7,10 +7,10 @@
 
 // locale_config_t
 
-ers::optional<size_t> ers::impl::locale_config_t::id_of(std::string_view locale) const noexcept {
+ers::maybe<size_t> ers::impl::locale_config_t::id_of(std::string_view locale) const noexcept {
     if (auto it = ids.find(locale); it != ids.end())
         return it->second;
-    return nullopt;
+    return none;
 }
 
 std::string_view ers::impl::locale_config_t::name_of(size_t locale_id) const noexcept {

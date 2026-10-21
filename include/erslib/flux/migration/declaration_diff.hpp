@@ -3,11 +3,10 @@
 // std
 #include <span>
 #include <string>
-#include <string_view>
 #include <vector>
 
 // ers
-#include <erslib/core/type/optional.hpp>
+#include <erslib/core/type/maybe.hpp>
 #include <erslib/flux/migration/declaration.hpp>
 
 // export
@@ -18,7 +17,7 @@ namespace flux::impl {
     struct declaration_mismatch_t {
         std::string table;
         std::string recorded;
-        ers::optional<table_declaration_t> declared;
+        ers::maybe<table_declaration_t> declared;
     };
 
 

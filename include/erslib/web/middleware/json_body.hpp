@@ -6,7 +6,7 @@
 #include <crow/middleware.h>
 
 // ers
-#include <erslib/core/type/optional.hpp>
+#include <erslib/core/type/maybe.hpp>
 
 // contrib
 #include <erslib/contrib/json.hpp>
@@ -19,7 +19,7 @@ namespace ers::web::impl {
     class ERSLIB_EXPORT JsonBody : public crow::ILocalMiddleware {
     public:
         struct context {
-            optional<utl::Json> body;
+            maybe<utl::Json> body;
         };
 
 

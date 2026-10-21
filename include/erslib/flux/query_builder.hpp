@@ -78,6 +78,9 @@ namespace flux {
         using namespace impl::clauses;
         using namespace impl::layouts;
         using namespace string_literals;
+
+        using impl::EOrder;
+        using impl::EOp;
     }
 
     namespace clauses = impl::clauses;
@@ -95,7 +98,6 @@ namespace flux {
     using impl::WithUnion;
 
 
-    using impl::EOp;
     using impl::to_string;
     using impl::to_op;
     using impl::operator ""_op;
@@ -140,7 +142,6 @@ namespace flux::ext {
 
     using impl::JoinClause;
 
-    using impl::EOrder;
     using impl::OrderClause;
 
     using impl::RawClause;

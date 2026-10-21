@@ -12,7 +12,7 @@
 
 // ers
 #include <erslib/core/thread_safe/rate_limiter.hpp>
-#include <erslib/core/type/optional.hpp>
+#include <erslib/core/type/maybe.hpp>
 #include <erslib/web/response.hpp>
 
 // export
@@ -76,7 +76,7 @@ namespace ers::web::impl {
 
 
     private:
-        optional<thread_safe::RateLimiter> _limiter;
+        maybe<thread_safe::RateLimiter> _limiter;
     };
 }
 

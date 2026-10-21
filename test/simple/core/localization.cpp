@@ -4,7 +4,6 @@
 // std
 #include <stdexcept>
 #include <string>
-#include <string_view>
 #include <vector>
 
 // ers
@@ -97,11 +96,11 @@ namespace {
             return colors.children();
         }
 
-        ers::optional<std::string_view> hex(std::string_view id) const {
+        ers::maybe<std::string_view> hex(std::string_view id) const {
             return colors.find(std::string(id) + ".hex");
         }
 
-        ers::optional<std::string_view> name(std::string_view id) const {
+        ers::maybe<std::string_view> name(std::string_view id) const {
             return colors.find(std::string(id) + ".name");
         }
 

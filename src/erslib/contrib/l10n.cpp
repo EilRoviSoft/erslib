@@ -89,10 +89,7 @@ ers::bundle_loader_t utl::impl::l10n_json_loader() {
     return {
         .suffix = std::string(l10n_json_suffix),
         .parse  = [](std::string_view text) -> ers::Result<std::vector<ers::bundle_entry_t>> {
-            auto bundle = try_from_string<Json>(text);
-            ERS_TRY(bundle);
-
-            return flatten_l10n(*bundle);
+            return flatten_l10n(ERS_TRY(try_from_string<Json>(text)));
         },
     };
 }

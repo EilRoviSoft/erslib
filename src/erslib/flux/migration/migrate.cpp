@@ -13,7 +13,7 @@
 
 
 #ifndef ERSLIB_FLUX_SCHEMA
-#  define ERSLIB_FLUX_SCHEMA "_flux"
+#define ERSLIB_FLUX_SCHEMA "_flux"
 #endif
 
 
@@ -185,10 +185,7 @@ ers::Result<flux::impl::migration_report_t> flux::impl::run_migrations(
     const fs::path& root,
     const migrate_options_t& options
 ) {
-    auto sets = load_sets(targets, root);
-
-    if (!sets)
-        return sets.error();
+    auto sets = ERS_TRY(load_sets(targets, root));
 
 
     auto result = try_with_tx(conn, [&](pqxx::work& tx) -> ers::Result<migration_report_t> {
@@ -197,13 +194,9 @@ ers::Result<flux::impl::migration_report_t> flux::impl::run_migrations(
 
         migration_report_t report;
 
-        for (const auto& [target, set] : std::views::zip(targets, *sets)) {
-            auto events = Migrator(store, store, options, target, set).run();
-
-            if (!events)
-                return events.error();
-
-            report.append_range(std::move(*events));
+        for (const auto& [target, set] : std::views::zip(targets, sets)) {
+            report.append_range(ERS_TRY(Migrator(store, store, options, target, set)
+                .run().context("Schema '{}'", target.schema)));
         }
 
         return report;

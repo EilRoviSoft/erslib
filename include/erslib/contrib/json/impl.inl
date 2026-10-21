@@ -124,17 +124,17 @@ namespace utl::impl {
 
 
     template<JsonTraits Traits>
-    auto TNode<Traits>::try_at(std::string_view key) -> ers::optional<TNode&> {
+    auto TNode<Traits>::try_at(std::string_view key) -> ers::maybe<TNode&> {
         if (auto* child = find_child(key))
             return *child;
-        return ers::nullopt;
+        return ers::none;
     }
 
     template<JsonTraits Traits>
-    auto TNode<Traits>::try_at(std::string_view key) const -> ers::optional<const TNode&> {
+    auto TNode<Traits>::try_at(std::string_view key) const -> ers::maybe<const TNode&> {
         if (const auto* child = find_child(key))
             return *child;
-        return ers::nullopt;
+        return ers::none;
     }
 
 
@@ -212,18 +212,18 @@ namespace utl::impl {
 
 
     template<JsonTraits Traits>
-    auto TNode<Traits>::try_at(std::size_t index) -> ers::optional<TNode&> {
+    auto TNode<Traits>::try_at(std::size_t index) -> ers::maybe<TNode&> {
         auto* array = get_if<array_type>();
         if (!array || index >= array->size())
-            return ers::nullopt;
+            return ers::none;
         return (*array)[index];
     }
 
     template<JsonTraits Traits>
-    auto TNode<Traits>::try_at(std::size_t index) const -> ers::optional<const TNode&> {
+    auto TNode<Traits>::try_at(std::size_t index) const -> ers::maybe<const TNode&> {
         const auto* array = get_if<array_type>();
         if (!array || index >= array->size())
-            return ers::nullopt;
+            return ers::none;
         return (*array)[index];
     }
 
@@ -339,17 +339,17 @@ namespace utl::impl {
 
 
     template<JsonTraits Traits>
-    auto TNode<Traits>::try_at(const JsonPointer& pointer) -> ers::optional<TNode&> {
+    auto TNode<Traits>::try_at(const JsonPointer& pointer) -> ers::maybe<TNode&> {
         if (const auto* node = find_pointer(pointer))
             return const_cast<TNode&>(*node);
-        return ers::nullopt;
+        return ers::none;
     }
 
     template<JsonTraits Traits>
-    auto TNode<Traits>::try_at(const JsonPointer& pointer) const -> ers::optional<const TNode&> {
+    auto TNode<Traits>::try_at(const JsonPointer& pointer) const -> ers::maybe<const TNode&> {
         if (const auto* node = find_pointer(pointer))
             return *node;
-        return ers::nullopt;
+        return ers::none;
     }
 
 

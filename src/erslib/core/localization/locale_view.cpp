@@ -26,10 +26,10 @@ ers::impl::DomainView ers::impl::LocaleView::operator[](std::string_view domain)
         domain);
 }
 
-ers::optional<ers::impl::DomainView> ers::impl::LocaleView::find(std::string_view domain) const {
+ers::maybe<ers::impl::DomainView> ers::impl::LocaleView::find(std::string_view domain) const {
     if (auto it = _index->domains.find(domain); it != _index->domains.end())
         return DomainView(it->second, _locale_id);
-    return nullopt;
+    return none;
 }
 
 size_t ers::impl::LocaleView::locale_id() const noexcept {

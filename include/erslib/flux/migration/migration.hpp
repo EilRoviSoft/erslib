@@ -6,7 +6,7 @@
 
 // ers
 #include <erslib/core/type/general.hpp>
-#include <erslib/core/type/optional.hpp>
+#include <erslib/core/type/maybe.hpp>
 
 
 namespace flux::impl {
@@ -24,7 +24,7 @@ namespace flux::impl {
 
     struct migration_t {
         std::string id;
-        ers::optional<u32> version;
+        ers::maybe<u32> version;
         EApplyOn on = EApplyOn::Existing;
         std::string sql;
         u64 checksum = 0;

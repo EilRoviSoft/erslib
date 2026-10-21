@@ -8,7 +8,7 @@
 
 // ers
 #include <erslib/core/localization/fwd.hpp>
-#include <erslib/core/type/optional.hpp>
+#include <erslib/core/type/maybe.hpp>
 
 // export
 #include <erslib/export.hpp>
@@ -28,7 +28,7 @@ namespace ers::impl {
         // Accessors
 
         [[nodiscard]] std::string_view operator[](std::string_view k) const;
-        [[nodiscard]] optional<std::string_view> find(std::string_view k) const noexcept;
+        [[nodiscard]] maybe<std::string_view> find(std::string_view k) const noexcept;
 
         // Outlives any reload: shares ownership of the whole domain.
         [[nodiscard]] std::shared_ptr<const std::string> share(std::string_view k) const;

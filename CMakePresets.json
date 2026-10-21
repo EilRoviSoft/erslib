@@ -24,7 +24,9 @@
                 "ERSLIB_BUILD_CRYPTO": "ON",
                 "ERSLIB_BUILD_LOGGING": "ON",
                 "ERSLIB_BUILD_WEB": "ON",
-                "ERSLIB_WEB_USE_BOOST_ASIO": "ON"
+
+                "ERSLIB_WEB_USE_BOOST_ASIO": "ON",
+                "ERSLIB_EXPOSE_GENERAL": "ON"
             }
         },
         {
@@ -62,17 +64,22 @@
             "environment": {
                 "VCPKG_APP_C_COMPILER": "/usr/bin/gcc-16",
                 "VCPKG_APP_CXX_COMPILER": "/usr/bin/g++-16"
-            }
-        },
-        {
-            "name": "linux-gcc16.2-asan",
-            "displayName": "asan-gcc16.2",
-            "inherits": "linux-gcc16.2",
-            "cacheVariables": {
-                "CMAKE_C_FLAGS": "-fsanitize=address,undefined -fno-sanitize=null,nonnull-attribute,returns-nonnull-attribute -fno-sanitize-recover=undefined",
-                "CMAKE_CXX_FLAGS": "-Wall -Wextra -Wpedantic -Wno-missing-field-initializers -fsanitize=address,undefined -fno-sanitize=null,nonnull-attribute,returns-nonnull-attribute -fno-sanitize-recover=undefined -D_GLIBCXX_ASSERTIONS",
-                "CMAKE_EXE_LINKER_FLAGS": "-Wl,-rpath,/opt/gcc-16.2/lib64 -fsanitize=address,undefined",
-                "CMAKE_SHARED_LINKER_FLAGS": "-Wl,-rpath,/opt/gcc-16.2/lib64 -fsanitize=address,undefined"
+            },
+            "vendor": {
+                "microsoft.com/VisualStudioSettings/CMake/1.0": {
+                    "hostOS": [ "Linux" ],
+                    "intelliSenseMode": "linux-gcc-x64",
+                    "useCompilerDefaults": true
+                },
+                "microsoft.com/VisualStudioRemoteSettings/CMake/1.0": {
+                    "copyAdditionalIncludeDirectoriesList": [
+                        "/usr/include",
+                        "/usr/local/include",
+                        "/usr/include/x86_64-linux-gnu",
+                        "/usr/include/c++/16",
+                        "/usr/include/c++/16/x86_64-linux-gnu"
+                    ]
+                }
             }
         },
         {
@@ -90,6 +97,33 @@
             "environment": {
                 "VCPKG_APP_C_COMPILER": "/opt/gcc-16.2/bin/gcc-16.2",
                 "VCPKG_APP_CXX_COMPILER": "/opt/gcc-16.2/bin/g++-16.2"
+            },
+            "vendor": {
+                "microsoft.com/VisualStudioSettings/CMake/1.0": {
+                    "hostOS": [ "Linux" ],
+                    "intelliSenseMode": "linux-gcc-x64",
+                    "useCompilerDefaults": true
+                },
+                "microsoft.com/VisualStudioRemoteSettings/CMake/1.0": {
+                    "copyAdditionalIncludeDirectoriesList": [
+                        "/opt/gcc-16.2/include",
+                        "/opt/gcc-16.2/local/include",
+                        "/opt/gcc-16.2/include/x86_64-linux-gnu",
+                        "/opt/gcc-16.2/include/c++/16",
+                        "/opt/gcc-16.2/include/c++/16/x86_64-linux-gnu"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "linux-gcc16.2-asan",
+            "displayName": "asan-gcc16.2",
+            "inherits": "linux-gcc16.2",
+            "cacheVariables": {
+                "CMAKE_C_FLAGS": "-fsanitize=address,undefined -fno-sanitize=null,nonnull-attribute,returns-nonnull-attribute -fno-sanitize-recover=undefined",
+                "CMAKE_CXX_FLAGS": "-Wall -Wextra -Wpedantic -Wno-missing-field-initializers -fsanitize=address,undefined -fno-sanitize=null,nonnull-attribute,returns-nonnull-attribute -fno-sanitize-recover=undefined -D_GLIBCXX_ASSERTIONS",
+                "CMAKE_EXE_LINKER_FLAGS": "-Wl,-rpath,/opt/gcc-16.2/lib64 -fsanitize=address,undefined",
+                "CMAKE_SHARED_LINKER_FLAGS": "-Wl,-rpath,/opt/gcc-16.2/lib64 -fsanitize=address,undefined"
             }
         }
     ]

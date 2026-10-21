@@ -3,7 +3,9 @@
 // std
 #include <filesystem>
 
+#ifdef ERS_EXPOSE_GENERAL
 namespace fs = std::filesystem;
+#endif
 
 
 // Includes --------------------------------------------------------------------

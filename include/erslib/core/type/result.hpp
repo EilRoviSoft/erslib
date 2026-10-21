@@ -7,8 +7,9 @@
 #include <variant>
 
 // ers
+#include <erslib/core/exception.hpp>
 #include <erslib/core/type/diagnostic.hpp>
-#include <erslib/core/type/optional.hpp>
+#include <erslib/core/type/maybe.hpp>
 #include <erslib/core/type/ref.hpp>
 
 
@@ -83,6 +84,35 @@ namespace ers::impl {
             using T = typename std::remove_cvref_t<Self>::value_type;
 
             return self ? T(std::forward<Self>(self).value()) : T(std::forward<U>(fallback));
+        }
+
+        template<typename E = runtime_error, typename Self>
+        constexpr auto or_throw(this Self&& self) {
+            using T = typename std::remove_cvref_t<Self>::value_type;
+
+            if (!self)
+                throw E(_error(std::forward<Self>(self)));
+
+            if constexpr (!std::is_void_v<T>)
+                return T(std::forward<Self>(self).value());
+        }
+
+
+        template<typename Self, typename... Args>
+        constexpr auto context(this Self&& self, std::format_string<Args...> fmt, Args&&... args) {
+            using R = std::remove_cvref_t<Self>;
+            return self
+                ? R(std::forward<Self>(self))
+                : R(_error(std::forward<Self>(self)).wrap(std::format(fmt, std::forward<Args>(args)...)));
+        }
+
+        template<typename Self, std::invocable F>
+            requires std::convertible_to<std::invoke_result_t<F>, std::string>
+        constexpr auto with_context(this Self&& self, F&& make_message) {
+            using R = std::remove_cvref_t<Self>;
+            return self
+                ? R(std::forward<Self>(self))
+                : R(_error(std::forward<Self>(self)).wrap(std::invoke(std::forward<F>(make_message))));
         }
 
 
@@ -333,7 +363,7 @@ namespace ers::impl {
 
 
         Result(const ok_t) noexcept :
-            m_error(nullopt) {
+            m_error(none) {
         }
 
         Result(const error_type& error) :
@@ -346,12 +376,12 @@ namespace ers::impl {
 
         template<typename T>
         Result(const Result<T>& other) :
-            m_error(other.has_error() ? optional<error_type>(other.error()) : nullopt) {
+            m_error(other.has_error() ? optional<error_type>(other.error()) : none) {
         }
 
         template<typename T>
         Result(Result<T>&& other) :
-            m_error(other.has_error() ? optional<error_type>(std::move(other).extract_error()) : nullopt) {
+            m_error(other.has_error() ? optional<error_type>(std::move(other).extract_error()) : none) {
         }
 
 
@@ -370,10 +400,18 @@ namespace ers::impl {
 
 
     protected:
-        optional<error_type> m_error;
+        maybe<error_type> m_error;
     };
 
     using Status = Result<void>;
+}
+
+
+namespace ers::impl {
+    template<typename T>
+    constexpr T unwrap(Result<T>&& r) { return std::move(r).value(); }
+
+    constexpr void unwrap(Result<void>&&) noexcept {}
 }
 
 
@@ -394,4 +432,18 @@ namespace ers {
 
 // Macros ----------------------------------------------------------------------
 
-#define ERS_TRY(EXPR) if (auto&& _ers_try = (EXPR); !_ers_try) return std::move(_ers_try).extract_error()
+#define ERS_TRY(__VA_ARGS__) __extension__ ({ \
+    static_assert(!std::is_lvalue_reference_v<decltype((__VA_ARGS__))>, "ERS_TRY takes a temporary: write 'auto x = ERS_TRY(f())' instead of 'ERS_TRY(x)'"); \
+    auto&& _ers_try = (__VA_ARGS__); \
+    if (!_ers_try) \
+        return std::move(_ers_try).extract_error(); \
+    ers::impl::unwrap(std::move(_ers_try)); \
+})
+
+#define ERS_TRY_OR(EXPR, ...) __extension__ ({ \
+    static_assert(!std::is_lvalue_reference_v<decltype((EXPR))>, "ERS_TRY_OR takes a temporary"); \
+    auto&& _ers_try = (EXPR); \
+    if (!_ers_try) \
+        return std::invoke(__VA_ARGS__, std::move(_ers_try).extract_error()) \
+    ers::impl::unwrap(std::move(_ers_try)); \
+})

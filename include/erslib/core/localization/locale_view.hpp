@@ -6,7 +6,7 @@
 // ers
 #include <erslib/core/localization/domain_view.hpp>
 #include <erslib/core/localization/fwd.hpp>
-#include <erslib/core/type/optional.hpp>
+#include <erslib/core/type/maybe.hpp>
 
 // export
 #include <erslib/export.hpp>

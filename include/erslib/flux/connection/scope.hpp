@@ -32,10 +32,18 @@ namespace flux::impl {
 
     // Connection level - the caller owns the connection.
 
-    template<TransactionCallable Fn>
+    template<typename Tx = void, typename Fn>
     auto with_tx(pqxx::connection& conn, Fn&& fn, std::string_view name = {}) {
-        using Tx = transaction_arg_t<Fn>;
+        using T = std::conditional_t<std::is_void_v<Tx>, typename tx_type_of<Fn>::type, Tx>;
         using return_type = std::invoke_result_t<Fn, Tx&>;
+
+
+        static_assert(std::derived_from<T, pqxx::dbtransaction> && !std::is_abstract_v<T>,
+            "with_tx: the transaction type must be a concrete pqxx transaction");
+
+        static_assert(std::invocable<Fn, T&>,
+            "with_tx: 'fn' can't be called with this transaction");
+
 
         Tx tx(conn, name);
 
@@ -73,7 +81,7 @@ namespace flux::impl {
     }
 
     template<typename Tx = pqxx::work, ConnectionSource Source, Executable Q>
-    auto with_query(Source& source, std::string_view name, Q query) {
+    auto with_query(Source& source, Q query, std::string_view name = {}) {
         auto conn = source.acquire_or_throw();
         Tx tx(*conn, name);
 
@@ -81,10 +89,5 @@ namespace flux::impl {
         tx.commit();
 
         return result;
-    }
-
-    template<typename Tx = pqxx::work, ConnectionSource Source, Executable Q>
-    auto with_query(Source& source, Q query) {
-        return with_query<Tx>(source, std::string_view {}, std::move(query));
     }
 }

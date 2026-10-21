@@ -14,14 +14,14 @@ flux::impl::LayoutView flux::impl::Layout::bindings() const noexcept {
     return std::get<LayoutArray>(_repr);
 }
 
-ers::optional<size_t> flux::impl::Layout::index_of(SlotRef slot) const noexcept {
+ers::maybe<size_t> flux::impl::Layout::index_of(SlotRef slot) const noexcept {
     auto view = bindings();
     auto it = std::ranges::find_if(view, [&](const SlotBinding& candidate) {
         return same_slot(candidate.slot, slot);
     });
 
     if (it == view.end())
-        return ers::nullopt;
+        return ers::none;
 
     return static_cast<size_t>(it - view.begin());
 }

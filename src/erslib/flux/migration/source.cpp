@@ -53,13 +53,12 @@ namespace {
             std::smatch parsed;
 
             if (std::regex_match(body, parsed, table_directive)) {
-                auto hash = ers::number_from_string<u64>(parsed[2].str(), 16);
-                if (!hash)
-                    return hash.error();
+                auto hash = ERS_TRY(ers::try_number_from_string<u64>(parsed[2].str(), 16)
+                    .context("'{}'", out.id));
 
                 out.claims.push_back({
                     .table = parsed[1].str(),
-                    .hash  = *hash,
+                    .hash  = hash,
                 });
             } else if (std::regex_match(body, parsed, drop_directive)) {
                 out.drops.emplace_back(parsed[1].str());
@@ -97,14 +96,7 @@ ers::Result<flux::impl::migration_t> flux::impl::parse_migration(std::string_vie
 
     if (std::regex_match(name, match, versioned_name)) {
         out.id = std::format("{}_{}", match[1].str(), match[2].str());
-
-
-        auto version = ers::number_from_string<u32>(match[1].str());
-        ERS_TRY(version);
-
-        out.version = *version;
-
-
+        out.version = ERS_TRY(ers::try_number_from_string<u32>(match[1].str()));
         out.on = apply_on(match[3].str());
     } else if (std::regex_match(name, match, repeatable_name)) {
         out.id = match[1].str();
@@ -140,16 +132,14 @@ ers::Result<flux::impl::migration_set_t> flux::impl::load_migrations(const fs::p
             continue;
 
 
-        auto migration = parse_migration(
+        auto migration = ERS_TRY(parse_migration(
             entry.path().filename().string(),
             ers::util::read_file(entry.path())
-        );
-
-        ERS_TRY(migration);
+        ).context("'{}'", entry.path()));
 
 
-        auto& bucket = migration->version ? out.versioned : out.repeatable;
-        bucket.emplace_back(std::move(*migration));
+        auto& bucket = migration.version ? out.versioned : out.repeatable;
+        bucket.emplace_back(std::move(migration));
     }
 
 

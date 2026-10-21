@@ -3,7 +3,6 @@
 
 // std
 #include <string>
-#include <string_view>
 
 // ers
 #include <erslib/flux.hpp>
@@ -33,7 +32,7 @@ TEST_CASE("flux: select renders slots in layout order") {
     const auto sql = sql_of(select_from("users")
         | columns("id", "name")
         | where("active", "="_op, true)
-        | order_by("created_at", flux::ext::EOrder::Desc)
+        | order_by("created_at", EOrder::Desc)
         | with_limit(20)
         | with_offset(5));
 
@@ -95,7 +94,7 @@ TEST_CASE("flux: vectors bind as escaped array literals") {
     CHECK(sql_value<std::vector<std::string>>::to_text({}) == "{}");
     CHECK(sql_value<std::vector<std::string>>::to_text({ "a b", "x,y", "q\"t", "b\\s", "", "NULL", "{}" })
         == R"({"a b","x,y","q\"t","b\\s","","NULL","{}"})");
-    CHECK(sql_value<std::vector<ers::optional<std::string>>>::to_text({ "a", ers::nullopt }) == R"({"a",NULL})");
+    CHECK(sql_value<std::vector<ers::maybe<std::string>>>::to_text({ "a", ers::none }) == R"({"a",NULL})");
 }
 
 TEST_CASE("flux: identifiers are validated, values are bound") {
@@ -138,15 +137,12 @@ TEST_CASE("flux: exists_in is a standalone statement") {
 TEST_CASE("flux: exec() result dispatch") {
     static_assert(flux::ReadableRow<bool>);
     static_assert(flux::impl::RowContainer<std::vector<bool>>);
-    static_assert(flux::impl::RowContainer<ers::optional<bool>>);
+    static_assert(flux::impl::RowContainer<ers::maybe<bool>>);
 
     static_assert(std::is_same_v<decltype(std::declval<flux::QueryResult>().get_as<bool>()), bool>);
-    static_assert(std::is_same_v<
-        decltype(std::declval<flux::QueryResult>().get_as<std::vector<bool>>()), std::vector<bool>>);
-    static_assert(std::is_same_v<
-        decltype(std::declval<flux::QueryResult>().get_as<ers::optional<bool>>()), ers::optional<bool>>);
-    static_assert(std::is_same_v<
-        decltype(std::declval<flux::QueryResult>().view_as<bool>()), flux::RowGenerator<bool>>);
+    static_assert(std::is_same_v<decltype(std::declval<flux::QueryResult>().get_as<std::vector<bool>>()), std::vector<bool>>);
+    static_assert(std::is_same_v<decltype(std::declval<flux::QueryResult>().get_as<ers::maybe<bool>>()), ers::maybe<bool>>);
+    static_assert(std::is_same_v<decltype(std::declval<flux::QueryResult>().view_as<bool>()), flux::RowGenerator<bool>>);
 
     static_assert(std::is_same_v<decltype(std::declval<flux::QueryResult>().raw()), const pqxx::result&>);
 }

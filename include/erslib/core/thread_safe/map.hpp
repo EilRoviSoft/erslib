@@ -10,7 +10,7 @@
 
 // ers
 #include <erslib/core/concept/container.hpp>
-#include <erslib/core/type/optional.hpp>
+#include <erslib/core/type/maybe.hpp>
 
 
 namespace ers::impl::thread_safe {
@@ -87,23 +87,23 @@ namespace ers::impl::thread_safe {
         }
         template<typename T>
         [[nodiscard]]
-        optional<mapped_type> get(const T& k) const requires std::copy_constructible<mapped_type> {
+        maybe<mapped_type> get(const T& k) const requires std::copy_constructible<mapped_type> {
             std::shared_lock lock(this->m_mutex);
             auto it = this->m_data.find(k);
 
             if (it == this->m_data.end())
-                return nullopt;
+                return none;
 
             return it->second;
         }
 
         template<typename T, std::invocable<const mapped_type&> F>
-        optional<std::invoke_result_t<F, const mapped_type&>> visit(const T& k, F&& fn) const {
+        maybe<std::invoke_result_t<F, const mapped_type&>> visit(const T& k, F&& fn) const {
             std::shared_lock lock(this->m_mutex);
             auto it = this->m_data.find(k);
 
             if (it == this->m_data.end())
-                return nullopt;
+                return none;
 
             return std::invoke(std::forward<F>(fn), it->second);
         }

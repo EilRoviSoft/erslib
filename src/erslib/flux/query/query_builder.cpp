@@ -144,10 +144,7 @@ ers::Status flux::impl::QueryBuilder::_validate() const {
 
 ers::Result<std::string> flux::impl::QueryBuilder::to_sql() const {
     Context ctx;
-
-    if (auto s = build(ctx); !s)
-        return s.error();
-
+    ERS_TRY(build(ctx));
     return std::move(ctx.query);
 }
 
@@ -156,10 +153,7 @@ ers::Result<std::string> flux::impl::QueryBuilder::to_sql() const {
 
 flux::impl::QueryResult flux::impl::QueryBuilder::exec(pqxx::dbtransaction& tx) const {
     Context ctx(tx);
-
-    if (auto s = build(ctx); !s)
-        throw ers::make_runtime_error(s.error().to_string());
-
+    build(ctx).or_throw();
     return QueryResult(tx.exec(ctx.query, ctx.params));
 }
 

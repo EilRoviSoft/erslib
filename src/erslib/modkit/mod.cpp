@@ -28,11 +28,7 @@ namespace {
                     ers::meta::type_name_v<utl::Json::string_type>, type_label(obj.type()));
             }
 
-            auto r = ers::modkit::dependency_t::parse(obj.as_string());
-            if (!r)
-                return r.error();
-
-            result.emplace(*r);
+            result.emplace(ERS_TRY(ers::modkit::dependency_t::parse(obj.as_string())));
         }
 
         return result;
@@ -84,9 +80,8 @@ namespace {
         schema.require_and_write("description", metadata.description);
         schema.require_and_convert("dependencies", metadata.dependencies, &parse_dependencies);
 
-        if (auto s = schema.finalize(); !s)
-            throw ers::runtime_error(s.error().to_string());
-
+        schema.finalize().or_throw();
+        
 
         if (auto folder_name = m_dir.stem().string(); folder_name != identity.name) {
             throw ers::make_path_error("Mod name ('{}') should be the same as folder name ('{}').",

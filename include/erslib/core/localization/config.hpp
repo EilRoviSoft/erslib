@@ -7,7 +7,7 @@
 // ers
 #include <erslib/core/fwd.hpp>
 #include <erslib/core/localization/fwd.hpp>
-#include <erslib/core/type/optional.hpp>
+#include <erslib/core/type/maybe.hpp>
 #include <erslib/core/type/result.hpp>
 
 // export
@@ -26,7 +26,7 @@ namespace ers::impl {
         size_t fallback_locale_id = 0;
 
 
-        [[nodiscard]] optional<size_t> id_of(std::string_view locale) const noexcept;
+        [[nodiscard]] maybe<size_t> id_of(std::string_view locale) const noexcept;
 
         // "<common>" for 'common_locale_id'.
         [[nodiscard]] std::string_view name_of(size_t locale_id) const noexcept;

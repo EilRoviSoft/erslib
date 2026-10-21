@@ -9,7 +9,7 @@
 
 // ers
 #include <erslib/core/exception.hpp>
-#include <erslib/core/type/optional.hpp>
+#include <erslib/core/type/maybe.hpp>
 
 
 namespace flux::impl {
@@ -57,13 +57,13 @@ namespace flux::impl {
     }
 
     template<ReadableRow T>
-    ers::optional<T> read_at_most_one(const pqxx::result& from) {
+    ers::maybe<T> read_at_most_one(const pqxx::result& from) {
         if (from.empty())
-            return ers::nullopt;
+            return ers::none;
 
         if (from.size() > 1)
             throw ers::make_runtime_error("Expected at most 1 row, got {}.", from.size());
 
-        return ers::optional<T>(row_reader<T>::read(from.one_row_ref(), row_reader<T>::prepare(from)));
+        return ers::maybe<T>(row_reader<T>::read(from.one_row_ref(), row_reader<T>::prepare(from)));
     }
 }
