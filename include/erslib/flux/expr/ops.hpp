@@ -40,26 +40,15 @@ namespace flux::impl {
 }
 
 
-// Raw SQL: the pattern is a literal, '{}' takes the next argument, a value becomes a parameter.
+// Raw SQL: '{}' takes the next argument, a value becomes a parameter.
 
-namespace flux::impl {
-    struct sql_text {
-        std::string_view text;
+namespace flux::impl::clauses {
+    template<typename... Args>
+    Expr sql(sql_text pattern, Args&&... args) {
+        std::vector<Expr> items;
+        items.reserve(sizeof...(Args));
+        (items.emplace_back(Expr(std::forward<Args>(args))), ...);
 
-        consteval sql_text(const char* literal) :
-            text(literal) {
-        }
-    };
-
-
-    namespace clauses {
-        template<typename... Args>
-        Expr sql(sql_text pattern, Args&&... args) {
-            std::vector<Expr> items;
-            items.reserve(sizeof...(Args));
-            (items.emplace_back(Expr(std::forward<Args>(args))), ...);
-
-            return make_raw(pattern.text, std::move(items));
-        }
+        return make_raw(pattern, std::move(items));
     }
 }

@@ -16,3 +16,13 @@ std::string flux::impl::Context::bind(const binder_t& binder) {
 
     return result;
 }
+
+std::string flux::impl::Context::bind_once(const void* key, const binder_t& binder) {
+    if (auto it = bound.find(key); it != bound.end())
+        return it->second;
+
+    auto result = bind(binder);
+    bound.emplace(key, result);
+
+    return result;
+}

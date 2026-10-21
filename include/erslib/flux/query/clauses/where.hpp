@@ -1,6 +1,11 @@
 #pragma once
 
+// std
+#include <concepts>
+#include <utility>
+
 // ers
+#include <erslib/flux/expr/expr.hpp>
 #include <erslib/flux/query/clause.hpp>
 
 // export
@@ -10,17 +15,28 @@
 // Implementation --------------------------------------------------------------
 
 namespace flux::impl {
-    class ERSLIB_EXPORT IWhereClause : public IClause {
+    class ERSLIB_EXPORT WhereClause : public IClause {
     public:
         // Member functions
 
-        IWhereClause(SlotRef slot) :
-            IClause(slot) {
-        }
+        explicit WhereClause(Expr condition);
 
 
         // Executors
 
-        ers::Status render(Context& ctx) const override = 0;
+        ers::Status render(Context& ctx) const override;
+
+
+    private:
+        Expr _condition;
     };
+
+
+    namespace clauses {
+        // Expr only: 'where("flag")' must not silently bind a string.
+        template<std::same_as<Expr> T>
+        Clause where(T condition) {
+            return make_clause<WhereClause>(std::move(condition));
+        }
+    }
 }

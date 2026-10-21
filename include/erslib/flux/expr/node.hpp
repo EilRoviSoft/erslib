@@ -13,7 +13,22 @@
 
 namespace flux::impl {
     enum class EPrecedence : u8 {
-        Or, And, Not, Is, Comparison, Like, Other, AddSub, MulDiv, Unary, Cast, Primary,
+        Or,
+        And,
+        Not,
+        Is,
+        Comparison,
+        Like,
+        Other,
+        AddSub,
+        MulDiv,
+        Exponent,
+        At,
+        Collate,
+        Unary,
+        Subscript,
+        Cast,
+        Primary,
     };
 
 

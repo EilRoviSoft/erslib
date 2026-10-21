@@ -1,11 +1,16 @@
 #pragma once
 
 // std
+#include <concepts>
 #include <string>
+#include <utility>
 
 // ers
+#include <erslib/flux/expr/expr.hpp>
 #include <erslib/flux/query/clause.hpp>
-#include <erslib/flux/sql/op.hpp>
+
+// export
+#include <erslib/export.hpp>
 
 
 namespace flux::impl {
@@ -13,7 +18,7 @@ namespace flux::impl {
     public:
         // Member functions
 
-        JoinClause(std::string table, std::string alias, std::string left, std::string right, EOp op);
+        JoinClause(std::string table, std::string alias, Expr on);
 
 
         // Executors
@@ -22,13 +27,22 @@ namespace flux::impl {
 
 
     private:
-        std::string _table, _alias, _left, _right;
-        EOp _op;
+        std::string _table;
+        std::string _alias;
+        Expr _on;
     };
 
 
     namespace clauses {
-        Clause join(std::string table, std::string alias, std::string left, EOp op, std::string right);
-        Clause join(std::string table, std::string left, EOp op, std::string right);
+        // Expr only: 'join("t", "alias")' must not silently bind a string.
+        template<std::same_as<Expr> T>
+        Clause join(std::string table, std::string alias, T on) {
+            return make_clause<JoinClause>(std::move(table), std::move(alias), std::move(on));
+        }
+
+        template<std::same_as<Expr> T>
+        Clause join(std::string table, T on) {
+            return make_clause<JoinClause>(std::move(table), std::string(), std::move(on));
+        }
     }
 }

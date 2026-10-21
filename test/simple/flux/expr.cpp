@@ -2,6 +2,7 @@
 #include <doctest/doctest.h>
 
 // std
+#include <cstdint>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -162,13 +163,19 @@ TEST_CASE("flux expr: a custom node plugs in") {
 }
 
 
-// Old and new clauses ---------------------------------------------------------
+// Parameters ------------------------------------------------------------------
 
-TEST_CASE("flux expr: coexists with the old where clauses") {
-    const auto sql = (select_from("t")
-        | where("a", "="_op, 1)
-        | where(col("b") == 2 || col("c") == 3)).to_sql();
+TEST_CASE("flux expr: a param is bound once per statement") {
+    const auto at = param(5);
 
-    REQUIRE(sql);
-    CHECK(*sql == "SELECT *\nFROM t\nWHERE a = $1 AND (b = $2 OR c = $3)");
+    CHECK(where_of(col("a") > at && col("b") < at && col("c") == 5)
+        == "SELECT *\nFROM t\nWHERE a > $1 AND b < $1 AND c = $2");
+}
+
+TEST_CASE("flux expr: array helpers bind the array once") {
+    CHECK(where_of(any_or_empty(col("id"), std::vector<std::int64_t> { 1, 2 }))
+        == "SELECT *\nFROM t\nWHERE (cardinality($1::BIGINT[]) = 0 OR id = ANY($1))");
+
+    CHECK(where_of(empty_array(std::vector<std::string> {}))
+        == "SELECT *\nFROM t\nWHERE cardinality($1::TEXT[]) = 0");
 }

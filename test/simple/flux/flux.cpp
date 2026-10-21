@@ -37,7 +37,7 @@ namespace {
 TEST_CASE("flux: select renders slots in layout order") {
     const auto sql = sql_of(select_from("users")
         | columns("id", "name")
-        | where("active", "="_op, true)
+        | where(col("active") == true)
         | order_by("created_at", EOrder::Desc)
         | with_limit(20)
         | with_offset(5));
@@ -74,22 +74,32 @@ TEST_CASE("flux: insert with conflict and returning") {
 }
 
 TEST_CASE("flux: update and delete") {
-    CHECK(sql_of(update("users") | assign("name", "bob"s) | where("id", "="_op, 1))
+    CHECK(sql_of(update("users") | assign("name", "bob"s) | where(col("id") == 1))
         == "UPDATE users\nSET name = $1\nWHERE id = $2");
 
-    CHECK(sql_of(delete_from("users") | where("id", "="_op, 1))
+    CHECK(sql_of(delete_from("users") | where(col("id") == 1))
         == "DELETE FROM users\nWHERE id = $1");
 }
 
 TEST_CASE("flux: where variants") {
-    CHECK(contains(sql_of(select_from("t") | where_null("a")), "WHERE a IS NULL"));
-    CHECK(contains(sql_of(select_from("t") | where_null("a", false)), "WHERE a IS NOT NULL"));
-    CHECK(contains(sql_of(select_from("t") | where_in("a", {1, 2, 3})), "WHERE a IN ($1, $2, $3)"));
-    CHECK(contains(sql_of(select_from("t") | where("a", "<>"_op, 1)), "WHERE a <> $1"));
+    CHECK(contains(sql_of(select_from("t") | where(col("a").is_null())), "WHERE a IS NULL"));
+    CHECK(contains(sql_of(select_from("t") | where(col("a").is_not_null())), "WHERE a IS NOT NULL"));
+    CHECK(contains(sql_of(select_from("t") | where(col("a").in({ 1, 2, 3 }))), "WHERE a IN ($1, $2, $3)"));
+    CHECK(contains(sql_of(select_from("t") | where(col("a") != 1)), "WHERE a <> $1"));
 
     // "x IN ()" is not valid SQL, so an empty list collapses to a constant.
-    CHECK(contains(sql_of(select_from("t") | where_in("a", std::vector<int> {})), "WHERE FALSE"));
-    CHECK(contains(sql_of(select_from("t") | where_in("a", std::vector<int> {}, true)), "WHERE TRUE"));
+    CHECK(contains(sql_of(select_from("t") | where(col("a").in(std::vector<int> {}))), "WHERE FALSE"));
+    CHECK(contains(sql_of(select_from("t") | where(!col("a").in(std::vector<int> {}))), "WHERE NOT FALSE"));
+}
+
+TEST_CASE("flux: join takes an expression") {
+    const auto sql = sql_of(select_from("orders", "o")
+        | join("users", "u", col("u.id") == col("o.user_id"))
+        | where(col("u.active") == true));
+
+    CHECK(contains(sql, "JOIN users AS u ON u.id = o.user_id"));
+    CHECK(contains(sql, "WHERE u.active = $1"));
+    CHECK_FALSE((select_from("t") | join("x; --", col("a") == col("b"))).to_sql().has_value());
 }
 
 TEST_CASE("flux: vectors bind as escaped array literals") {
@@ -104,17 +114,17 @@ TEST_CASE("flux: vectors bind as escaped array literals") {
 }
 
 TEST_CASE("flux: identifiers are validated, values are bound") {
-    CHECK_FALSE((select_from("users") | where("id; DROP TABLE users", "="_op, 1)).to_sql().has_value());
+    CHECK_FALSE((select_from("users") | where(col("id; DROP TABLE users") == 1)).to_sql().has_value());
     CHECK_FALSE((select_from("users") | columns("1")).to_sql().has_value());
     CHECK_FALSE(select_from("users; --").to_sql().has_value());
 
     // qualified names stay legal
-    CHECK((select_from("public.users") | where("users.id", "="_op, 1)).to_sql().has_value());
+    CHECK((select_from("public.users") | where(col("users.id") == 1)).to_sql().has_value());
 
     // a hostile value is a parameter, never text
     CHECK(contains(
         sql_of(select_from("t")
-            | where("a", "="_op, "'; DROP TABLE t; --"s)),
+            | where(col("a") == "'; DROP TABLE t; --"s)),
         "WHERE a = $1"
     ));
 }
@@ -126,8 +136,8 @@ TEST_CASE("flux: a clause outside the layout is rejected") {
 TEST_CASE("flux: subqueries share the parent placeholder counter") {
     const auto sql = sql_of(select_from("users")
         | columns("id")
-        | where("active", "="_op, true)
-        | where_exists(select_from("orders") | where("user_id", "="_op, 7))
+        | where(col("active") == true)
+        | where(exists(select_from("orders") | where(col("user_id") == 7)))
         | with_limit(10));
 
     CHECK(contains(sql, "WHERE active = $1 AND EXISTS (SELECT *"));
@@ -136,7 +146,7 @@ TEST_CASE("flux: subqueries share the parent placeholder counter") {
 }
 
 TEST_CASE("flux: exists_in is a standalone statement") {
-    CHECK(sql_of(exists_in("orders") | where("user_id", "="_op, 7))
+    CHECK(sql_of(exists_in("orders") | where(col("user_id") == 7))
         == "SELECT EXISTS (\nSELECT 1 FROM orders\nWHERE user_id = $1\n) AS \"exists\"");
 }
 
@@ -296,7 +306,7 @@ TEST_CASE("flux reflect: a constraint kind defined outside the library renders")
 }
 
 TEST_CASE("flux: timestamps bind as parameters") {
-    CHECK(sql_of(select_from("images") | where("created_at", ">"_op, ers::clock_t::now()))
+    CHECK(sql_of(select_from("images") | where(col("created_at") > ers::clock_t::now()))
         == "SELECT *\nFROM images\nWHERE created_at > $1");
 }
 

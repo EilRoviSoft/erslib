@@ -25,12 +25,23 @@ namespace flux::impl {
     class Expr;
     class QueryBuilder;
 
-    ERSLIB_EXPORT std::shared_ptr<const IExprNode> make_value_node(binder_t binder);
+    // Only a literal converts, so the text never comes from a runtime string.
+    struct sql_text {
+        std::string_view text;
+
+        consteval sql_text(const char* literal) :
+            text(literal) {
+        }
+    };
+
+
+    ERSLIB_EXPORT ExprNodePtr make_value_node(binder_t binder);
+    ERSLIB_EXPORT ExprNodePtr make_param_node(binder_t binder);
 
 
     template<typename T>
     concept ExprValue = !std::same_as<std::remove_cvref_t<T>, Expr>
-        && !std::convertible_to<T, std::shared_ptr<const IExprNode>>;
+        && !std::convertible_to<T, ExprNodePtr>;
 
     template<typename T>
     concept ExprLike = std::same_as<std::remove_cvref_t<T>, Expr> || ExprValue<T>;
@@ -111,9 +122,10 @@ namespace flux::impl {
 
     // Node factories
 
+    ERSLIB_EXPORT Expr make_const(sql_text text);
     ERSLIB_EXPORT Expr make_binary(std::string_view op, Expr lhs, Expr rhs, EPrecedence precedence, bool left_associative = false);
     ERSLIB_EXPORT Expr make_fn(std::string_view name, std::vector<Expr> args);
-    ERSLIB_EXPORT Expr make_raw(std::string_view pattern, std::vector<Expr> args);
+    ERSLIB_EXPORT Expr make_raw(sql_text pattern, std::vector<Expr> args);
     ERSLIB_EXPORT Expr make_row(std::vector<Expr> items);
     ERSLIB_EXPORT Expr make_logical(bool conjunction, Expr lhs, Expr rhs);
     ERSLIB_EXPORT Expr make_not(Expr what);
@@ -222,6 +234,12 @@ namespace flux::impl::clauses {
     template<typename T>
     Expr val(T&& value) {
         return Expr(std::forward<T>(value));
+    }
+
+    // One placeholder per statement, however many times it's used.
+    template<typename T>
+    Expr param(T&& value) {
+        return Expr(make_param_node(make_binder(std::forward<T>(value))));
     }
 
     template<typename... Args>

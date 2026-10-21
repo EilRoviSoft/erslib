@@ -3,7 +3,7 @@
 // Goal is to have something like this:
 // auto users = (select_from("users")
 //     | columns("id", "name")
-//     | where("guild_id", guild_id)
+//     | where(col("guild_id") == guild_id)
 //     | order_by("created_at", EOrder::Desc)
 //     | with_limit(20)
 // ).exec(tx).get_as<std::vector<User>>();
@@ -11,6 +11,7 @@
 
 // Includes --------------------------------------------------------------------
 
+#include <erslib/flux/expr/array.hpp>
 #include <erslib/flux/expr/expr.hpp>
 #include <erslib/flux/expr/node.hpp>
 #include <erslib/flux/expr/ops.hpp>
@@ -27,7 +28,6 @@
 #include <erslib/flux/query/clauses/conditional.hpp>
 #include <erslib/flux/query/clauses/conflict.hpp>
 #include <erslib/flux/query/clauses/distinct.hpp>
-#include <erslib/flux/query/clauses/exists.hpp>
 #include <erslib/flux/query/clauses/expr.hpp>
 #include <erslib/flux/query/clauses/group.hpp>
 #include <erslib/flux/query/clauses/identity.hpp>
@@ -37,14 +37,6 @@
 #include <erslib/flux/query/clauses/returning.hpp>
 #include <erslib/flux/query/clauses/values.hpp>
 #include <erslib/flux/query/clauses/where.hpp>
-#include <erslib/flux/query/clauses/where_any.hpp>
-#include <erslib/flux/query/clauses/where_between.hpp>
-#include <erslib/flux/query/clauses/where_column.hpp>
-#include <erslib/flux/query/clauses/where_expr.hpp>
-#include <erslib/flux/query/clauses/where_in.hpp>
-#include <erslib/flux/query/clauses/where_null.hpp>
-#include <erslib/flux/query/clauses/where_op.hpp>
-#include <erslib/flux/query/clauses/where_or.hpp>
 
 // Layouts
 
@@ -74,17 +66,11 @@
 // Exports ---------------------------------------------------------------------
 
 namespace flux {
-    namespace string_literals {
-        using impl::operator ""_op;
-    }
-
     namespace orm {
         using namespace impl::clauses;
         using namespace impl::layouts;
-        using namespace string_literals;
 
         using impl::EOrder;
-        using impl::EOp;
     }
 
     namespace clauses = impl::clauses;
@@ -102,11 +88,6 @@ namespace flux {
 
     using impl::WithCte;
     using impl::WithUnion;
-
-
-    using impl::to_string;
-    using impl::to_op;
-    using impl::operator ""_op;
 }
 
 
@@ -116,6 +97,7 @@ namespace flux::ext {
     using impl::binary_op_t;
     using impl::fn_t;
     using impl::sql_text;
+    using impl::make_const;
     using impl::make_binary;
     using impl::make_fn;
     using impl::make_raw;
@@ -154,8 +136,6 @@ namespace flux::ext {
 
     using impl::ConflictUpdateClause;
 
-    using impl::ExistsClause;
-
     using impl::JoinClause;
 
     using impl::OrderClause;
@@ -166,15 +146,7 @@ namespace flux::ext {
 
     using impl::ValuesClause;
 
-    using impl::IWhereClause;
-    using impl::WhereAnyClause;
-    using impl::WhereBetweenClause;
-    using impl::WhereColumnClause;
-    using impl::WhereExprClause;
-    using impl::WhereInClause;
-    using impl::WhereNullClause;
-    using impl::WhereOpClause;
-    using impl::WhereOrClause;
+    using impl::WhereClause;
 }
 
 

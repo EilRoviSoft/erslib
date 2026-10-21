@@ -2,6 +2,7 @@
 
 // std
 #include <string>
+#include <unordered_map>
 
 // pqxx
 #include <pqxx/dbtransaction>
@@ -19,6 +20,7 @@ namespace flux::impl {
         std::string query;
         pqxx::params params;
         pqxx::placeholders<> counter;
+        std::unordered_map<const void*, std::string> bound;
 
 
         // Member functions
@@ -39,5 +41,8 @@ namespace flux::impl {
         // Modifiers
 
         std::string bind(const binder_t& binder);
+
+        // The same key gets the same placeholder within one statement.
+        std::string bind_once(const void* key, const binder_t& binder);
     };
 }

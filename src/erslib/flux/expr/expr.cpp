@@ -61,6 +61,24 @@ namespace {
     };
 
 
+    class ParamNode final : public IExprNode {
+    public:
+        explicit ParamNode(binder_t binder) :
+            _binder(std::move(binder)) {
+        }
+
+
+        ers::Status render(Context& ctx) const override {
+            ctx.query += ctx.bind_once(this, _binder);
+            return ers::ok;
+        }
+
+
+    private:
+        binder_t _binder;
+    };
+
+
     class ConstNode final : public IExprNode {
     public:
         explicit ConstNode(std::string_view text) :
@@ -485,6 +503,10 @@ namespace flux::impl {
     ExprNodePtr make_value_node(binder_t binder) {
         return std::make_shared<const ValueNode>(std::move(binder));
     }
+
+    ExprNodePtr make_param_node(binder_t binder) {
+        return std::make_shared<const ParamNode>(std::move(binder));
+    }
 }
 
 
@@ -570,8 +592,12 @@ flux::impl::Expr flux::impl::make_fn(std::string_view name, std::vector<Expr> ar
     return make_node<FnNode>(name, std::move(args));
 }
 
-flux::impl::Expr flux::impl::make_raw(std::string_view pattern, std::vector<Expr> args) {
-    return make_node<RawNode>(pattern, std::move(args));
+flux::impl::Expr flux::impl::make_const(sql_text text) {
+    return make_node<ConstNode>(text.text);
+}
+
+flux::impl::Expr flux::impl::make_raw(sql_text pattern, std::vector<Expr> args) {
+    return make_node<RawNode>(pattern.text, std::move(args));
 }
 
 flux::impl::Expr flux::impl::make_row(std::vector<Expr> items) {
@@ -609,7 +635,7 @@ flux::impl::Expr flux::impl::clauses::col(std::string_view table, std::string_vi
 }
 
 flux::impl::Expr flux::impl::clauses::null() {
-    return make_node<ConstNode>("NULL");
+    return make_const("NULL");
 }
 
 flux::impl::Expr flux::impl::clauses::exists(QueryBuilder subquery) {
