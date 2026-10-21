@@ -9,9 +9,12 @@
 #include <erslib/core/fwd.hpp>
 #include <erslib/core/type/general.hpp>
 
+// export
+#include <erslib/export.hpp>
+
 
 namespace ers::impl {
-    class RateLimiter {
+    class ERSLIB_EXPORT RateLimiter {
     public:
         // Member types
 

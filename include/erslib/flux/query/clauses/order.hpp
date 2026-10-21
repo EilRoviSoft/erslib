@@ -38,8 +38,8 @@ namespace flux::impl {
 
 
     namespace clauses {
-        Clause order_by(std::string column, EOrder order = EOrder::Asc);
-        Clause order_by_random();
+        ERSLIB_EXPORT Clause order_by(std::string column, EOrder order = EOrder::Asc);
+        ERSLIB_EXPORT Clause order_by_random();
     }
 }
 
@@ -66,6 +66,6 @@ namespace flux::impl {
 
 
     namespace clauses {
-        Clause order_by_stable_random(std::string key, i64 seed);
+        ERSLIB_EXPORT Clause order_by_stable_random(std::string key, i64 seed);
     }
 }

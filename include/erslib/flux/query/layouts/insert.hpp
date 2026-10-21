@@ -26,6 +26,6 @@ namespace flux::impl {
 
 
     namespace layouts {
-        QueryBuilder ERSLIB_EXPORT insert_into(std::string table);
+        ERSLIB_EXPORT QueryBuilder insert_into(std::string table);
     }
 }

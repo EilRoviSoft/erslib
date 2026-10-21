@@ -25,11 +25,11 @@ namespace ers::impl {
     using uuid = boost::uuids::uuid;
 
 
-    std::string ERSLIB_EXPORT uuid_to_string(const uuid& what);
+    ERSLIB_EXPORT std::string uuid_to_string(const uuid& what);
 
-    uuid ERSLIB_EXPORT uuid_from_string(std::string_view text);
-    Result<uuid> ERSLIB_EXPORT try_uuid_from_string(std::string_view text);
-    maybe<uuid> ERSLIB_EXPORT maybe_uuid_from_string(std::string_view text);
+    ERSLIB_EXPORT uuid uuid_from_string(std::string_view text);
+    ERSLIB_EXPORT Result<uuid> try_uuid_from_string(std::string_view text);
+    ERSLIB_EXPORT maybe<uuid> maybe_uuid_from_string(std::string_view text);
 }
 
 
@@ -79,7 +79,7 @@ struct std::formatter<ers::uuid> {
         return ctx.begin();
     }
 
-    std::string ERSLIB_EXPORT format(const ers::uuid& v, std::format_context& ctx) const;
+    ERSLIB_EXPORT std::string format(const ers::uuid& v, std::format_context& ctx) const;
 };
 
 

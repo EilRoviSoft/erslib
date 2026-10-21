@@ -10,6 +10,9 @@
 #include <erslib/core/pattern.hpp>
 #include <erslib/easy_ecs/fwd.hpp>
 
+// export
+#include <erslib/export.hpp>
+
 
 namespace ecs::impl {
     template<typename T>
@@ -18,7 +21,7 @@ namespace ecs::impl {
     }
 
 
-    class IEntity {
+    class ERSLIB_EXPORT IEntity {
         friend Registry;
 
     public:

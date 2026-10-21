@@ -8,9 +8,12 @@
 // ers
 #include <erslib/luaschema/impl/verifier.hpp>
 
+// export
+#include <erslib/export.hpp>
+
 
 namespace ers::luaschema::impl {
-    class InclusiveWithProperty : public IVerifier {
+    class ERSLIB_EXPORT InclusiveWithProperty : public IVerifier {
     public:
         // Member functions
 
@@ -28,7 +31,7 @@ namespace ers::luaschema::impl {
 
 
     namespace properties {
-        Verifier inclusive_with(std::string_view field);
-        Verifier inclusive_with(std::initializer_list<std::string_view> il);
+        ERSLIB_EXPORT Verifier inclusive_with(std::string_view field);
+        ERSLIB_EXPORT Verifier inclusive_with(std::initializer_list<std::string_view> il);
     }
 }

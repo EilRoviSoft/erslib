@@ -18,9 +18,12 @@
 #include <erslib/core/type/time.hpp>
 #include <erslib/flux/connection/options.hpp>
 
+// export
+#include <erslib/export.hpp>
+
 
 namespace flux::impl {
-    class ConnectionPool : public std::enable_shared_from_this<ConnectionPool> {
+    class ERSLIB_EXPORT ConnectionPool : public std::enable_shared_from_this<ConnectionPool> {
         friend class Connection;
 
 
@@ -72,7 +75,7 @@ namespace flux::impl {
     };
 
 
-    class ConnectionPool::Connection {
+    class ERSLIB_EXPORT ConnectionPool::Connection {
         friend class ConnectionPool;
 
     public:

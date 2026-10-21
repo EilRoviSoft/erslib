@@ -14,9 +14,12 @@
 #include <erslib/core/type/expiring.hpp>
 #include <erslib/core/type/time.hpp>
 
+// export
+#include <erslib/export.hpp>
+
 
 namespace ers::impl {
-    class ShuffleSeeds {
+    class ERSLIB_EXPORT ShuffleSeeds {
     public:
         // Member functions
 

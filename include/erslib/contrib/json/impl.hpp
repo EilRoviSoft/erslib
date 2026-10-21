@@ -684,7 +684,7 @@ namespace utl::impl {
 
     namespace literals {
         [[nodiscard]]
-        Json ERSLIB_EXPORT operator""_json(const char* chars, std::size_t size);
+        ERSLIB_EXPORT Json operator""_json(const char* chars, std::size_t size);
     }
 }
 

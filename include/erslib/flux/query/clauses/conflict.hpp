@@ -69,10 +69,10 @@ namespace flux::impl::clauses {
     }
 
 
-    Clause on_conflict_constraint(std::string name);
+    ERSLIB_EXPORT Clause on_conflict_constraint(std::string name);
 
 
-    Clause do_nothing();
+    ERSLIB_EXPORT Clause do_nothing();
 
     template<std::ranges::input_range R>
         requires std::constructible_from<std::string, std::ranges::range_reference_t<R>>

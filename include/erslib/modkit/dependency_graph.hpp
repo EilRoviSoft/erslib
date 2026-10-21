@@ -9,6 +9,9 @@
 // ers
 #include <erslib/modkit/mod.hpp>
 
+// export
+#include <erslib/export.hpp>
+
 
 namespace ers::modkit::impl {
     struct stage_order_info_t {
@@ -19,8 +22,8 @@ namespace ers::modkit::impl {
 }
 
 namespace ers::modkit::impl {
-    std::vector<std::string> resolve_mods_order(const ModContainer& mods, std::string_view initial_mod);
-    std::vector<stage_order_info_t> resolve_stages_order(
+    ERSLIB_EXPORT std::vector<std::string> resolve_mods_order(const ModContainer& mods, std::string_view initial_mod);
+    ERSLIB_EXPORT std::vector<stage_order_info_t> resolve_stages_order(
         const ModContainer& mods,
         std::span<const std::string> mods_order,
         std::span<const std::string> phases_order

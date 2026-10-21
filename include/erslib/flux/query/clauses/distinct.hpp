@@ -4,7 +4,10 @@
 // ers
 #include <erslib/flux/query/clauses/identity.hpp>
 
+// export
+#include <erslib/export.hpp>
+
 
 namespace flux::impl::clauses {
-    Clause distinct();
+    ERSLIB_EXPORT Clause distinct();
 }

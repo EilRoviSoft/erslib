@@ -13,5 +13,5 @@
 
 
 namespace ers::impl::algo {
-    Result<std::vector<std::string>> ERSLIB_EXPORT split_args(std::string_view line);
+    ERSLIB_EXPORT Result<std::vector<std::string>> split_args(std::string_view line);
 }

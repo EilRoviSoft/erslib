@@ -23,10 +23,10 @@ namespace utl::impl::json_detail {
     constexpr std::size_t default_recursion_limit = 1000;
 
 
-    void ERSLIB_EXPORT append_utf8(std::string& out, u32 codepoint);
-    void ERSLIB_EXPORT append_escaped(std::string& out, std::string_view value);
-    std::string ERSLIB_EXPORT pretty_error(std::size_t cursor, std::string_view chars);
-    std::string ERSLIB_EXPORT read_file(const std::filesystem::path& path);
+    ERSLIB_EXPORT void append_utf8(std::string& out, u32 codepoint);
+    ERSLIB_EXPORT void append_escaped(std::string& out, std::string_view value);
+    ERSLIB_EXPORT std::string pretty_error(std::size_t cursor, std::string_view chars);
+    ERSLIB_EXPORT std::string read_file(const std::filesystem::path& path);
 
 
     template<class String>

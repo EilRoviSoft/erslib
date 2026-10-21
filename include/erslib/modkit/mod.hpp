@@ -21,6 +21,9 @@
 #include <erslib/modkit/dependency.hpp>
 #include <erslib/modkit/fwd.hpp>
 
+// export
+#include <erslib/export.hpp>
+
 
 // Details ---------------------------------------------------------------------
 
@@ -58,7 +61,7 @@ namespace ers::modkit::impl {
 // Implementation --------------------------------------------------------------
 
 namespace ers::modkit::impl {
-    class Mod {
+    class ERSLIB_EXPORT Mod {
     public:
         // Member types
 

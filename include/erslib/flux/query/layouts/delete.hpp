@@ -20,6 +20,6 @@ namespace flux::impl {
 
 
     namespace layouts {
-        QueryBuilder ERSLIB_EXPORT delete_from(std::string table);
+        ERSLIB_EXPORT QueryBuilder delete_from(std::string table);
     }
 }

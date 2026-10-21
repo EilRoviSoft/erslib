@@ -8,7 +8,7 @@
 
 
 namespace ers::impl::algo {
-    extern template class TSplitIterator<class RegularSplitIterator>;
+    extern template class ERSLIB_EXPORT TSplitIterator<class RegularSplitIterator>;
 
     class ERSLIB_EXPORT RegularSplitIterator : public TSplitIterator<RegularSplitIterator> {
         friend class TSplitIterator;

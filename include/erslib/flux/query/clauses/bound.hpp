@@ -30,7 +30,7 @@ namespace flux::impl {
 
 
     namespace clauses {
-        Clause with_limit(i64 amount);
-        Clause with_offset(i64 amount);
+        ERSLIB_EXPORT Clause with_limit(i64 amount);
+        ERSLIB_EXPORT Clause with_offset(i64 amount);
     }
 }

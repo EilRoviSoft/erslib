@@ -91,9 +91,9 @@ namespace flux::impl {
 
 
     namespace clauses {
-        WithCte ERSLIB_EXPORT with_cte(std::string name, QueryBuilder definition, bool recursive = false);
+        ERSLIB_EXPORT WithCte with_cte(std::string name, QueryBuilder definition, bool recursive = false);
 
-        WithUnion ERSLIB_EXPORT union_with(QueryBuilder other, bool all = false);
+        ERSLIB_EXPORT WithUnion union_with(QueryBuilder other, bool all = false);
     }
 }
 
@@ -123,7 +123,7 @@ namespace flux::impl {
 // Subqueries
 
 namespace flux::impl {
-    ers::Status ERSLIB_EXPORT append_subquery(
+    ERSLIB_EXPORT ers::Status append_subquery(
         Context& ctx, const QueryBuilder& sub,
         std::string_view open, std::string_view close = ")"
     );

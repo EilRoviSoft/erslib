@@ -10,6 +10,9 @@
 #include <erslib/core/type/result.hpp>
 #include <erslib/core/type/time.hpp>
 
+// export
+#include <erslib/export.hpp>
+
 
 // Details ---------------------------------------------------------------------
 
@@ -31,13 +34,13 @@ namespace ers::impl {
     maybe<timestamp_t> maybe_timestamp_from_string(std::string_view sv, std::string_view fmt);
 
 
-    Result<timestamp_t> timestamp_from_local(
+    ERSLIB_EXPORT Result<timestamp_t> timestamp_from_local(
         std::string_view text,
         const std::chrono::time_zone& zone,
         std::string_view fmt = default_timestamp_fmt
     );
 
-    std::string timestamp_to_local(
+    ERSLIB_EXPORT std::string timestamp_to_local(
         timestamp_t what,
         const std::chrono::time_zone& zone,
         std::string_view fmt = default_timestamp_fmt

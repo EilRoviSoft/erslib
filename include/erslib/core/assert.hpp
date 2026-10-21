@@ -10,10 +10,13 @@
 // ers
 #include <erslib/core/util/string.hpp>
 
+// export
+#include <erslib/export.hpp>
+
 
 namespace ers::impl {
 #ifdef ERS_ASSERT_INFO
-    void print_message(std::string_view text);
+    ERSLIB_EXPORT void print_message(std::string_view text);
 
     template<typename... Args>
     void custom_assert(bool condition, std::string_view fmt, Args&&... args) {

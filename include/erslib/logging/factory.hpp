@@ -28,7 +28,7 @@ namespace ers::logging::impl {
     };
 
 
-    quill::Logger* ERSLIB_EXPORT make_logger(const logger_options_t& options = {});
+    ERSLIB_EXPORT quill::Logger* make_logger(const logger_options_t& options = {});
 }
 
 namespace ers::logging {

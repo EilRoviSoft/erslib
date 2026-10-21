@@ -15,9 +15,9 @@
 
 
 namespace ers::crypto::impl {
-    std::string ERSLIB_EXPORT sha256_hex(std::span<const std::byte> bytes);
-    std::string ERSLIB_EXPORT sha256_hex(std::string_view text);
-    Result<std::string> ERSLIB_EXPORT sha256_hex_file(const fs::path& path);
+    ERSLIB_EXPORT std::string sha256_hex(std::span<const std::byte> bytes);
+    ERSLIB_EXPORT std::string sha256_hex(std::string_view text);
+    ERSLIB_EXPORT Result<std::string> sha256_hex_file(const fs::path& path);
 }
 
 

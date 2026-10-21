@@ -19,9 +19,9 @@ namespace utl::impl {
     inline constexpr std::string_view l10n_json_suffix = ".l10n.json";
 
 
-    ers::Result<std::vector<ers::bundle_entry_t>> ERSLIB_EXPORT flatten_l10n(const Json& bundle);
+    ERSLIB_EXPORT ers::Result<std::vector<ers::bundle_entry_t>> flatten_l10n(const Json& bundle);
 
-    ers::bundle_loader_t ERSLIB_EXPORT l10n_json_loader();
+    ERSLIB_EXPORT ers::bundle_loader_t l10n_json_loader();
 }
 
 

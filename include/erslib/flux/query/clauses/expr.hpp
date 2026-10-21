@@ -39,7 +39,7 @@ namespace flux::impl {
 
 
     namespace clauses {
-        Clause named(Clause inner, std::string alias);
+        ERSLIB_EXPORT Clause named(Clause inner, std::string alias);
     }
 }
 
@@ -67,7 +67,7 @@ namespace flux::impl {
 
 
     namespace clauses {
-        Clause coalesce_with(Clause inner, Clause fallback);
+        ERSLIB_EXPORT Clause coalesce_with(Clause inner, Clause fallback);
     }
 }
 
@@ -95,8 +95,8 @@ namespace flux::impl {
 
 
     namespace clauses {
-        Clause subquery(QueryBuilder subquery);
-        Clause subquery_exists(QueryBuilder subquery);
+        ERSLIB_EXPORT Clause subquery(QueryBuilder subquery);
+        ERSLIB_EXPORT Clause subquery_exists(QueryBuilder subquery);
     }
 }
 
@@ -104,5 +104,5 @@ namespace flux::impl {
 // Literals
 
 namespace flux::impl::clauses {
-    Clause sql_bool(bool value, SlotRef slot = nullptr);
+    ERSLIB_EXPORT Clause sql_bool(bool value, SlotRef slot = nullptr);
 }

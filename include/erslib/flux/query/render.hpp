@@ -16,8 +16,8 @@
 
 
 namespace flux::impl {
-    ers::Status ERSLIB_EXPORT check_identifier(std::string_view name, SlotRef slot);
-    ers::Status ERSLIB_EXPORT append_identifier(Context& ctx, std::string_view name, SlotRef slot);
+    ERSLIB_EXPORT ers::Status check_identifier(std::string_view name, SlotRef slot);
+    ERSLIB_EXPORT ers::Status append_identifier(Context& ctx, std::string_view name, SlotRef slot);
 
 
     template<std::ranges::input_range R, typename Fn>
@@ -36,5 +36,5 @@ namespace flux::impl {
         return ers::ok;
     }
 
-    ers::Status ERSLIB_EXPORT append_binders(Context& ctx, std::span<const binder_t> binders, std::string_view separator = ", ");
+    ERSLIB_EXPORT ers::Status append_binders(Context& ctx, std::span<const binder_t> binders, std::string_view separator = ", ");
 }

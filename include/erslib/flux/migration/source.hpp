@@ -14,6 +14,6 @@
 
 
 namespace flux::impl {
-    ers::Result<migration_t> ERSLIB_EXPORT parse_migration(std::string_view filename, std::string sql);
-    ers::Result<migration_set_t> ERSLIB_EXPORT load_migrations(const fs::path& dir);
+    ERSLIB_EXPORT ers::Result<migration_t> parse_migration(std::string_view filename, std::string sql);
+    ERSLIB_EXPORT ers::Result<migration_set_t> load_migrations(const fs::path& dir);
 }

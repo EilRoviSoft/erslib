@@ -36,7 +36,7 @@ namespace flux::impl {
             return make_clause<AssignClause>(std::move(column), make_binder(std::forward<T>(value)));
         }
 
-        Clause assign_null(std::string column);
+        ERSLIB_EXPORT Clause assign_null(std::string column);
 
         
         template<typename T>

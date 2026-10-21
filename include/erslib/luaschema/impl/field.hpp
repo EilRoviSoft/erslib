@@ -15,11 +15,14 @@
 #include <erslib/luaschema/impl/verifier.hpp>
 #include <erslib/core/type/result.hpp>
 
+// export
+#include <erslib/export.hpp>
+
 
 // Implementation --------------------------------------------------------------
 
 namespace ers::luaschema::impl {
-    class Field {
+    class ERSLIB_EXPORT Field {
         using storage_iterator = std::list<Verifier>::const_iterator;
 
 

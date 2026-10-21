@@ -26,7 +26,7 @@ namespace flux::impl {
     };
 
 
-    EMigrationEvent ERSLIB_EXPORT decide_outcome(EDatabaseState state, const migration_t& what, u32 baseline);
+    ERSLIB_EXPORT EMigrationEvent decide_outcome(EDatabaseState state, const migration_t& what, u32 baseline);
 }
 
 

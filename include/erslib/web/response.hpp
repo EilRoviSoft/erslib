@@ -15,12 +15,12 @@
 
 
 namespace ers::web::impl {
-    utl::Json ERSLIB_EXPORT failure_json(std::string_view message);
+    ERSLIB_EXPORT utl::Json failure_json(std::string_view message);
 
-    crow::response ERSLIB_EXPORT make_response(crow::status code, const utl::Json& body);
-    crow::response ERSLIB_EXPORT make_failure(crow::status code, std::string_view message);
-    crow::response ERSLIB_EXPORT make_ok();
+    ERSLIB_EXPORT crow::response make_response(crow::status code, const utl::Json& body);
+    ERSLIB_EXPORT crow::response make_failure(crow::status code, std::string_view message);
+    ERSLIB_EXPORT crow::response make_ok();
 
-    void ERSLIB_EXPORT end_with_json(crow::response& res, crow::status code, const utl::Json& body);
-    void ERSLIB_EXPORT end_with_failure(crow::response& res, crow::status code, std::string_view message);
+    ERSLIB_EXPORT void end_with_json(crow::response& res, crow::status code, const utl::Json& body);
+    ERSLIB_EXPORT void end_with_failure(crow::response& res, crow::status code, std::string_view message);
 }

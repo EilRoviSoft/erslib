@@ -10,12 +10,15 @@
 // ers
 #include <erslib/flux/query/clause.hpp>
 
+// export
+#include <erslib/export.hpp>
+
 
 namespace flux::impl {
     namespace clauses {
-        Clause returning(std::string name);
+        ERSLIB_EXPORT Clause returning(std::string name);
 
-        Clause returning_all();
+        ERSLIB_EXPORT Clause returning_all();
 
 
         template<typename... Args>

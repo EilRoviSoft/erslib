@@ -22,6 +22,6 @@ namespace flux::impl {
     };
 
 
-    std::vector<std::string> ERSLIB_EXPORT diff_declarations(std::string_view recorded, std::string_view declared);
-    std::string ERSLIB_EXPORT describe_mismatches(std::span<const declaration_mismatch_t> what);
+    ERSLIB_EXPORT std::vector<std::string> diff_declarations(std::string_view recorded, std::string_view declared);
+    ERSLIB_EXPORT std::string describe_mismatches(std::span<const declaration_mismatch_t> what);
 }

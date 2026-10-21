@@ -26,7 +26,7 @@ namespace ers::web::impl {
     };
 
 
-    void ERSLIB_EXPORT refuse_too_many(crow::response& res, thread_safe::RateLimiter::duration wait);
+    ERSLIB_EXPORT void refuse_too_many(crow::response& res, thread_safe::RateLimiter::duration wait);
 
 
     template<RateLimitPolicy Policy>

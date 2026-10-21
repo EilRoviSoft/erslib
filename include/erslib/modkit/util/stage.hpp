@@ -5,14 +5,17 @@
 #include <string_view>
 #include <tuple>
 
+// export
+#include <erslib/export.hpp>
+
 
 // Stage is '<phase>-<index>'
 
 namespace ers::modkit::impl {
-    bool is_stage_naming_scheme(std::string_view sv);
+    ERSLIB_EXPORT bool is_stage_naming_scheme(std::string_view sv);
 
     // Returns slice of 'sv'
-    std::tuple<std::string, size_t> extract_stage_info(std::string_view sv);
+    ERSLIB_EXPORT std::tuple<std::string, size_t> extract_stage_info(std::string_view sv);
 }
 
 

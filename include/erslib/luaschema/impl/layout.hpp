@@ -13,9 +13,12 @@
 #include <erslib/luaschema/impl/field.hpp>
 #include <erslib/core/type/result.hpp>
 
+// export
+#include <erslib/export.hpp>
+
 
 namespace ers::luaschema::impl {
-    class Layout {
+    class ERSLIB_EXPORT Layout {
     public:
         using possible_property_t = std::variant<Field, Descriptor>;
 

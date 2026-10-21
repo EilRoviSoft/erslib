@@ -16,8 +16,8 @@ namespace ers::crypto::impl {
     };
 
 
-    std::string ERSLIB_EXPORT argon2_hash(std::string_view password, const argon2_params_t& params = {});
-    bool ERSLIB_EXPORT argon2_verify(std::string_view password, std::string_view hash);
+    ERSLIB_EXPORT std::string argon2_hash(std::string_view password, const argon2_params_t& params = {});
+    ERSLIB_EXPORT bool argon2_verify(std::string_view password, std::string_view hash);
 }
 
 namespace ers::crypto {

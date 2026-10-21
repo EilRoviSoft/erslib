@@ -11,7 +11,7 @@
 
 
 namespace ers::logging::impl {
-    void ERSLIB_EXPORT log(quill::Logger* logger, const Diagnostic& what);
+    ERSLIB_EXPORT void log(quill::Logger* logger, const Diagnostic& what);
 }
 
 namespace ers::logging {

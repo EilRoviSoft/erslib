@@ -10,8 +10,8 @@
 
 
 namespace ers::crypto::impl {
-    std::vector<std::byte> ERSLIB_EXPORT random_bytes(size_t count);
-    std::string ERSLIB_EXPORT random_hex(size_t byte_count);
+    ERSLIB_EXPORT std::vector<std::byte> random_bytes(size_t count);
+    ERSLIB_EXPORT std::string random_hex(size_t byte_count);
 }
 
 namespace ers::crypto {

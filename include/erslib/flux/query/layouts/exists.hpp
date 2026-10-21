@@ -13,6 +13,6 @@
 namespace flux::impl {
     namespace layouts {
         // SELECT EXISTS (SELECT 1 FROM <table> [WHERE ...]) AS exists
-        QueryBuilder ERSLIB_EXPORT exists_in(std::string table);
+        ERSLIB_EXPORT QueryBuilder exists_in(std::string table);
     }
 }

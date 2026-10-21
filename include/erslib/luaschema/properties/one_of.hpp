@@ -8,9 +8,12 @@
 // ers
 #include <erslib/luaschema/impl/descriptor.hpp>
 
+// export
+#include <erslib/export.hpp>
+
 
 namespace ers::luaschema::impl {
-    class OneOfProperty : public IDescriptor {
+    class ERSLIB_EXPORT OneOfProperty : public IDescriptor {
     public:
         // Member functions
 
@@ -28,6 +31,6 @@ namespace ers::luaschema::impl {
 
 
     namespace properties {
-        Descriptor one_of(std::initializer_list<std::string_view> il);
+        ERSLIB_EXPORT Descriptor one_of(std::initializer_list<std::string_view> il);
     }
 }

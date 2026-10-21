@@ -6,9 +6,12 @@
 // ers
 #include <erslib/luaschema/impl/verifier.hpp>
 
+// export
+#include <erslib/export.hpp>
+
 
 namespace ers::luaschema::impl {
-    class PresenceProperty : public IVerifier {
+    class ERSLIB_EXPORT PresenceProperty : public IVerifier {
     public:
         // Member functions
 
@@ -26,6 +29,6 @@ namespace ers::luaschema::impl {
 
 
     namespace properties {
-        Verifier presence(bool flag);
+        ERSLIB_EXPORT Verifier presence(bool flag);
     }
 }

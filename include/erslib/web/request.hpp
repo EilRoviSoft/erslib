@@ -22,11 +22,11 @@
 
 
 namespace ers::web::impl {
-    Result<utl::Json> ERSLIB_EXPORT read_body(const crow::request& req);
+    ERSLIB_EXPORT Result<utl::Json> read_body(const crow::request& req);
 
-    maybe<std::string> ERSLIB_EXPORT read_header(const crow::request& req, std::string_view name, size_t max_length = 256);
-    std::string ERSLIB_EXPORT bearer_token(const crow::request& req);
-    maybe<std::string> ERSLIB_EXPORT read_cookie(const crow::request& req, std::string_view name);
+    ERSLIB_EXPORT maybe<std::string> read_header(const crow::request& req, std::string_view name, size_t max_length = 256);
+    ERSLIB_EXPORT std::string bearer_token(const crow::request& req);
+    ERSLIB_EXPORT maybe<std::string> read_cookie(const crow::request& req, std::string_view name);
 
 
     template<typename T>
@@ -41,5 +41,5 @@ namespace ers::web::impl {
         return parsed ? std::clamp(*parsed, min, max) : fallback;
     }
 
-    bool ERSLIB_EXPORT query_flag(const crow::query_string& qs, const std::string& key);
+    ERSLIB_EXPORT bool query_flag(const crow::query_string& qs, const std::string& key);
 }

@@ -20,9 +20,9 @@
 
 
 namespace flux::impl {
-    std::string_view ERSLIB_EXPORT service_schema();
+    ERSLIB_EXPORT std::string_view service_schema();
 
-    ers::Result<migration_report_t> ERSLIB_EXPORT run_migrations(
+    ERSLIB_EXPORT ers::Result<migration_report_t> run_migrations(
         pqxx::connection& conn,
         std::span<const migration_target_t> targets,
         const std::filesystem::path& root,

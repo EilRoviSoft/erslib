@@ -4,9 +4,9 @@
 #include <erslib/core/type/general.hpp>
 
 // export
-#include "erslib/export_static.hpp"
+#include <erslib/export.hpp>
 
 
 namespace ers::impl {
-    u64 ERSLIB_EXPORT entropy();
+    ERSLIB_EXPORT u64 entropy();
 }

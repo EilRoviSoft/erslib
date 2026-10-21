@@ -60,23 +60,23 @@ namespace flux::impl {
         }
 
 
-        Clause count_all();
-        Clause count_of(std::string column);
-        Clause count_distinct(std::string column);
+        ERSLIB_EXPORT Clause count_all();
+        ERSLIB_EXPORT Clause count_of(std::string column);
+        ERSLIB_EXPORT Clause count_distinct(std::string column);
 
-        Clause min_of(std::string column);
-        Clause max_of(std::string column);
-        Clause sum_of(std::string column);
-        Clause avg_of(std::string column);
+        ERSLIB_EXPORT Clause min_of(std::string column);
+        ERSLIB_EXPORT Clause max_of(std::string column);
+        ERSLIB_EXPORT Clause sum_of(std::string column);
+        ERSLIB_EXPORT Clause avg_of(std::string column);
 
-        Clause array_agg_of(std::string column);
-        Clause bool_and_of(std::string column);
-        Clause bool_or_of(std::string column);
+        ERSLIB_EXPORT Clause array_agg_of(std::string column);
+        ERSLIB_EXPORT Clause bool_and_of(std::string column);
+        ERSLIB_EXPORT Clause bool_or_of(std::string column);
 
-        Clause stddev_of(std::string column);
-        Clause variance_of(std::string column);
+        ERSLIB_EXPORT Clause stddev_of(std::string column);
+        ERSLIB_EXPORT Clause variance_of(std::string column);
 
-        Clause corr_of(std::string y, std::string x);
+        ERSLIB_EXPORT Clause corr_of(std::string y, std::string x);
     }
 }
 
@@ -105,7 +105,7 @@ namespace flux::impl {
 
 
     namespace clauses {
-        Clause string_agg(std::string column, std::string delimiter);
+        ERSLIB_EXPORT Clause string_agg(std::string column, std::string delimiter);
     }
 }
 
@@ -135,10 +135,10 @@ namespace flux::impl {
 
 
     namespace clauses {
-        Clause percentile_cont(double fraction, std::vector<std::string> order_by);
-        Clause percentile_disc(double fraction, std::vector<std::string> order_by);
+        ERSLIB_EXPORT Clause percentile_cont(double fraction, std::vector<std::string> order_by);
+        ERSLIB_EXPORT Clause percentile_disc(double fraction, std::vector<std::string> order_by);
 
-        Clause mode_of(std::vector<std::string> order_by);
+        ERSLIB_EXPORT Clause mode_of(std::vector<std::string> order_by);
     }
 }
 

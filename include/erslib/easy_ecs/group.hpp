@@ -17,6 +17,9 @@
 #include <erslib/easy_ecs/component.hpp>
 #include <erslib/easy_ecs/entity.hpp>
 
+// export
+#include <erslib/export.hpp>
+
 
 // Details ---------------------------------------------------------------------
 
@@ -35,10 +38,10 @@ namespace ecs::impl {
 
 namespace ecs::impl {
     [[nodiscard]]
-    bool is_valid(const Registry& registry, size_t eid, size_t cid);
+    ERSLIB_EXPORT bool is_valid(const Registry& registry, size_t eid, size_t cid);
 
     [[nodiscard]]
-    void* get_component(const Registry& registry, size_t eid, size_t cid);
+    ERSLIB_EXPORT void* get_component(const Registry& registry, size_t eid, size_t cid);
 }
 
 
@@ -47,7 +50,7 @@ namespace ecs::impl {
 // IGroup
 
 namespace ecs::impl {
-    class IGroup {
+    class ERSLIB_EXPORT IGroup {
     public:
         // Member functions
 

@@ -40,5 +40,5 @@ namespace ers::impl {
 
 
     // Ids follow the order of 'locales'.
-    Result<locale_config_ptr> ERSLIB_EXPORT make_locale_config(std::vector<std::string> locales, std::string_view fallback_locale);
+    ERSLIB_EXPORT Result<locale_config_ptr> make_locale_config(std::vector<std::string> locales, std::string_view fallback_locale);
 }

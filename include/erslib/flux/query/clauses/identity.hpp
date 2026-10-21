@@ -34,10 +34,10 @@ namespace flux::impl {
 
 
     namespace clauses {
-        Clause identifier(SlotRef slot, std::string name, std::string alias = "");
+        ERSLIB_EXPORT Clause identifier(SlotRef slot, std::string name, std::string alias = "");
 
 
-        Clause column(std::string name);
+        ERSLIB_EXPORT Clause column(std::string name);
 
         template<typename... Args>
             requires (std::convertible_to<Args, std::string> && ...)
@@ -63,6 +63,6 @@ namespace flux::impl {
         }
 
 
-        Clause from(std::string name, std::string alias = "");
+        ERSLIB_EXPORT Clause from(std::string name, std::string alias = "");
     }
 }

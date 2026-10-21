@@ -9,5 +9,5 @@
 
 
 namespace ers::impl::util {
-    std::string ERSLIB_EXPORT read_file(const std::filesystem::path& path);
+    ERSLIB_EXPORT std::string read_file(const std::filesystem::path& path);
 }

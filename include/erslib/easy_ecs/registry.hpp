@@ -9,9 +9,12 @@
 #include <erslib/easy_ecs/group.hpp>
 #include <erslib/modkit/fwd.hpp>
 
+// export
+#include <erslib/export.hpp>
+
 
 namespace ecs::impl {
-    class Registry {
+    class ERSLIB_EXPORT Registry {
     public:
         // Tracking
 
