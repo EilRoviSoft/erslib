@@ -7,7 +7,7 @@
 
 // ers
 #include <erslib/core/memory.hpp>
-#include <erslib/core/meta/type_hash.hpp>
+#include <erslib/core/meta.hpp>
 #include <erslib/core/type/maybe.hpp>
 #include <erslib/core/type/result.hpp>
 

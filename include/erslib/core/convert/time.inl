@@ -4,7 +4,7 @@
 #include <sstream>
 
 // ers
-#include <erslib/core/exception/runtime_error.hpp>
+#include <erslib/core/exception.hpp>
 
 
 namespace ers::impl {

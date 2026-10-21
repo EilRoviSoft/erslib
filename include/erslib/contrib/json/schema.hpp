@@ -10,9 +10,9 @@
 #include <erslib/contrib/json/concept.hpp>
 #include <erslib/contrib/json/convert.hpp>
 #include <erslib/contrib/json/impl.hpp>
+#include <erslib/core/meta.hpp>
 #include <erslib/core/concept/json.hpp>
 #include <erslib/core/formatter/range.hpp>
-#include <erslib/core/meta/type_name.hpp>
 #include <erslib/core/trait/fn.hpp>
 #include <erslib/core/trait/result.hpp>
 #include <erslib/core/type/result.hpp>

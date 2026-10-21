@@ -6,7 +6,7 @@
 #include <string>
 
 // ers
-#include <erslib/core/exception/impl.hpp>
+#include <erslib/core/exception.hpp>
 #include <erslib/core/type/time.hpp>
 
 // export
