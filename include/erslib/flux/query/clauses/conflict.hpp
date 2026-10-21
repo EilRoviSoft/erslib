@@ -63,8 +63,7 @@ namespace flux::impl::clauses {
             out.reserve(std::ranges::size(names));
 
         for (auto&& it : names)
-            out.emplace_back(identifier(&slots::conflict,
-                std::string(std::forward<decltype(it)>(it))));
+            out.emplace_back(identifier(&slots::conflict, std::string(std::forward<decltype(it)>(it))));
 
         return out;
     }

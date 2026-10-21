@@ -257,6 +257,8 @@ if(ERSLIB_BUILD_FLUX)
             "src/erslib/flux/sql/context.cpp"
             "src/erslib/flux/sql/identifier.cpp"
 
+            "src/erslib/flux/expr/expr.cpp"
+
             "src/erslib/flux/query/clause.cpp"
             "src/erslib/flux/query/layout.cpp"
             "src/erslib/flux/query/query_builder.cpp"
@@ -280,6 +282,7 @@ if(ERSLIB_BUILD_FLUX)
             "src/erslib/flux/query/clauses/where_any.cpp"
             "src/erslib/flux/query/clauses/where_between.cpp"
             "src/erslib/flux/query/clauses/where_column.cpp"
+			"src/erslib/flux/query/clauses/where_expr.cpp"
             "src/erslib/flux/query/clauses/where_in.cpp"
             "src/erslib/flux/query/clauses/where_null.cpp"
             "src/erslib/flux/query/clauses/where_op.cpp"

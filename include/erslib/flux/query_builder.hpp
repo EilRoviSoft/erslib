@@ -11,6 +11,9 @@
 
 // Includes --------------------------------------------------------------------
 
+#include <erslib/flux/expr/expr.hpp>
+#include <erslib/flux/expr/node.hpp>
+#include <erslib/flux/expr/ops.hpp>
 #include <erslib/flux/query/clause.hpp>
 #include <erslib/flux/query/layout.hpp>
 #include <erslib/flux/query/query_builder.hpp>
@@ -27,16 +30,17 @@
 #include <erslib/flux/query/clauses/exists.hpp>
 #include <erslib/flux/query/clauses/expr.hpp>
 #include <erslib/flux/query/clauses/group.hpp>
+#include <erslib/flux/query/clauses/identity.hpp>
 #include <erslib/flux/query/clauses/join.hpp>
 #include <erslib/flux/query/clauses/order.hpp>
 #include <erslib/flux/query/clauses/raw.hpp>
 #include <erslib/flux/query/clauses/returning.hpp>
-#include <erslib/flux/query/clauses/identity.hpp>
 #include <erslib/flux/query/clauses/values.hpp>
 #include <erslib/flux/query/clauses/where.hpp>
 #include <erslib/flux/query/clauses/where_any.hpp>
 #include <erslib/flux/query/clauses/where_between.hpp>
 #include <erslib/flux/query/clauses/where_column.hpp>
+#include <erslib/flux/query/clauses/where_expr.hpp>
 #include <erslib/flux/query/clauses/where_in.hpp>
 #include <erslib/flux/query/clauses/where_null.hpp>
 #include <erslib/flux/query/clauses/where_op.hpp>
@@ -91,6 +95,8 @@ namespace flux {
 
 
 namespace flux {
+    using impl::Expr;
+
     using impl::QueryBuilder;
     using impl::QueryResult;
 
@@ -105,6 +111,16 @@ namespace flux {
 
 
 namespace flux::ext {
+    using impl::IExprNode;
+    using impl::EPrecedence;
+    using impl::binary_op_t;
+    using impl::fn_t;
+    using impl::sql_text;
+    using impl::make_binary;
+    using impl::make_fn;
+    using impl::make_raw;
+
+
     using impl::binder_t;
     using impl::make_binder;
 
@@ -154,6 +170,7 @@ namespace flux::ext {
     using impl::WhereAnyClause;
     using impl::WhereBetweenClause;
     using impl::WhereColumnClause;
+    using impl::WhereExprClause;
     using impl::WhereInClause;
     using impl::WhereNullClause;
     using impl::WhereOpClause;
