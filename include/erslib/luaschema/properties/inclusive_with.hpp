@@ -1,7 +1,6 @@
 #pragma once
 
 // std
-#include <initializer_list>
 #include <string>
 #include <vector>
 
