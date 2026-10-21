@@ -2,9 +2,14 @@
 
 // std
 #include <cmath>
+#include <cstddef>
+#include <iterator>
 #include <memory>
 #include <optional>
 #include <string>
+#include <string_view>
+#include <type_traits>
+#include <utility>
 
 // valijson
 #include <valijson/exceptions.hpp>

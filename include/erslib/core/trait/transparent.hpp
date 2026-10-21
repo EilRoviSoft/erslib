@@ -1,5 +1,9 @@
 #pragma once
 
+// std
+#include <functional>
+#include <type_traits>
+
 // ers
 #include <erslib/core/hashing/base.hpp>
 

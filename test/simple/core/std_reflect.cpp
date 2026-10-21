@@ -4,9 +4,11 @@
 #ifdef ERSLIB_HAS_REFLECTION
 
 // std
+#include <array>
 #include <format>
 #include <meta>
 #include <string>
+#include <vector>
 
 
 constexpr std::array names {

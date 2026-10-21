@@ -1,7 +1,11 @@
 #pragma once
 
 // std
+#include <concepts>
+#include <functional>
 #include <sstream>
+#include <type_traits>
+#include <utility>
 
 // ers
 #include <erslib/core/exception.hpp>

@@ -1,5 +1,8 @@
 #pragma once
 
+// std
+#include <memory>
+
 // ers
 #include <erslib/easy_ecs/component.hpp>
 #include <erslib/easy_ecs/entity.hpp>

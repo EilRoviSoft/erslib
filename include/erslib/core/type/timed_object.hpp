@@ -4,6 +4,7 @@
 
 // std
 #include <chrono>
+#include <utility>
 
 // boost
 #include <boost/thread/locks.hpp>

@@ -1,6 +1,9 @@
 // doctest
 #include <doctest/doctest.h>
 
+// std
+#include <string_view>
+
 // ers
 #include <erslib/core/type/version.hpp>
 

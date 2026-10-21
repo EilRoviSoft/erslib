@@ -1,5 +1,10 @@
 #include "erslib/core/localization/domain.hpp"
 
+// std
+#include <algorithm>
+#include <ranges>
+#include <utility>
+
 // ers
 #include <erslib/core/exception.hpp>
 

@@ -2,6 +2,7 @@
 
 // std
 #include <exception>
+#include <stdexcept>
 
 // ers
 #include <erslib/core/exception.hpp>

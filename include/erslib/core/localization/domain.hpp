@@ -1,7 +1,9 @@
 #pragma once
 
 // std
+#include <span>
 #include <string>
+#include <string_view>
 #include <vector>
 
 // ers

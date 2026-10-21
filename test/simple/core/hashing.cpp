@@ -1,6 +1,9 @@
 // doctest
 #include <doctest/doctest.h>
 
+// std
+#include <utility>
+
 // ers
 #include <erslib/core/fwd.hpp>
 #include <erslib/core/hashing/rapid.hpp>

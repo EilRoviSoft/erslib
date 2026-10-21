@@ -2,6 +2,7 @@
 
 // std
 #include <string>
+#include <string_view>
 
 // ers
 #include <erslib/core/adaptor/transparent_base.hpp>

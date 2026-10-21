@@ -2,6 +2,7 @@
 
 // std
 #include <algorithm>
+#include <optional>
 
 // ers
 #include <erslib/luaschema/impl/context.hpp>

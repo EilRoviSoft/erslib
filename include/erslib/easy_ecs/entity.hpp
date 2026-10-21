@@ -3,6 +3,7 @@
 // std
 #include <format>
 #include <string>
+#include <string_view>
 
 // ers
 #include <erslib/core/meta.hpp>

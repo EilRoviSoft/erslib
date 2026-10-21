@@ -1,5 +1,9 @@
 #include "erslib/luaschema/properties/one_of.hpp"
 
+// std
+#include <optional>
+#include <utility>
+
 // ers
 #include <erslib/core/formatter/range.hpp>
 

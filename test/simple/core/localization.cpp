@@ -2,8 +2,11 @@
 #include <doctest/doctest.h>
 
 // std
+#include <algorithm>
 #include <stdexcept>
 #include <string>
+#include <string_view>
+#include <utility>
 #include <vector>
 
 // ers

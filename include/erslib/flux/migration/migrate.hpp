@@ -1,8 +1,10 @@
 #pragma once
 
 // std
+#include <filesystem>
 #include <span>
 #include <string>
+#include <string_view>
 
 // pqxx
 #include <pqxx/pqxx>

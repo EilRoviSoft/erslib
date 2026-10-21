@@ -1,7 +1,9 @@
 #include "erslib/core/thread_safe/shuffle_seed.hpp"
 
 // std
+#include <mutex>
 #include <ranges>
+#include <shared_mutex>
 
 
 // Implementation --------------------------------------------------------------

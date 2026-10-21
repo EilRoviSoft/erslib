@@ -1,5 +1,8 @@
 #pragma once
 
+// std
+#include <concepts>
+
 // ers
 #include <erslib/core/hashing/base.hpp>
 

@@ -1,6 +1,7 @@
 #pragma once
 
 // std
+#include <cstddef>
 #include <ranges>
 #include <utility>
 

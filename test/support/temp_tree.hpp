@@ -3,6 +3,7 @@
 // std
 #include <chrono>
 #include <string>
+#include <string_view>
 
 // ers
 #include <erslib/core/filesystem.hpp>

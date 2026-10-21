@@ -1,6 +1,7 @@
 #pragma once
 
 // std
+#include <tuple>
 #include <type_traits>
 #include <variant>
 

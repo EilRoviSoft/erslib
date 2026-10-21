@@ -1,6 +1,7 @@
 #pragma once
 
 // std
+#include <concepts>
 #include <string_view>
 #include <type_traits>
 #include <utility>

@@ -2,6 +2,7 @@
 
 // std
 #include <format>
+#include <sstream>
 
 
 ers::Result<ers::timestamp_t> ers::impl::timestamp_from_local(

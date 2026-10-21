@@ -1,5 +1,9 @@
 #pragma once
 
+// std
+#include <cstddef>
+#include <span>
+
 // ers
 #include <erslib/core/hashing/base.hpp>
 

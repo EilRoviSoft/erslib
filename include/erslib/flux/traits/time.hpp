@@ -2,6 +2,7 @@
 
 // std
 #include <string>
+#include <string_view>
 
 // pqxx
 #include <pqxx/row>

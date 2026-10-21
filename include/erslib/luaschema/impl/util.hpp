@@ -1,5 +1,8 @@
 #pragma once
 
+// std
+#include <string>
+
 // ers
 #include <erslib/luaschema/impl/field.hpp>
 

@@ -1,5 +1,8 @@
 #pragma once
 
+// std
+#include <string_view>
+
 // ers
 #include <erslib/core/meta/impl/type_name_array.hpp>
 

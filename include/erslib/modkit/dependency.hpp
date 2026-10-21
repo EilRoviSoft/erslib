@@ -1,6 +1,8 @@
 #pragma once
 
 // std
+#include <stdexcept>
+#include <string>
 #include <string_view>
 
 // ers

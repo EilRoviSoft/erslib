@@ -1,6 +1,7 @@
 #include "erslib/flux/query/layout.hpp"
 
 // std
+#include <algorithm>
 #include <ranges>
 
 

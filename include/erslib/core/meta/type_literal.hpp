@@ -1,5 +1,9 @@
 #pragma once
 
+// std
+#include <string_view>
+#include <utility>
+
 // ers
 #include <erslib/core/meta/impl/funcsig.hpp>
 #include <erslib/core/util/fixed_string.hpp>

@@ -2,6 +2,7 @@
 
 // std
 #include <ranges>
+#include <string_view>
 
 // ers
 #include <erslib/core/algorithm.hpp>

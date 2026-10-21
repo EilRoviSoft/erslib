@@ -2,6 +2,7 @@
 
 // std
 #include <string>
+#include <string_view>
 
 // ers
 #include <erslib/core/type/result.hpp>

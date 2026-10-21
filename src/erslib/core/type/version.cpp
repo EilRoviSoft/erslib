@@ -3,6 +3,7 @@
 // std
 #include <charconv>
 #include <cstddef>
+#include <system_error>
 
 
 ers::Result<ers::impl::version_t> ers::impl::version_t::parse(std::string_view source) {

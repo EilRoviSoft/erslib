@@ -1,6 +1,10 @@
 // doctest
 #include <doctest/doctest.h>
 
+// std
+#include <string>
+#include <utility>
+
 // ers
 #include <erslib/core/memory.hpp>
 

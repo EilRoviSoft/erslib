@@ -1,7 +1,10 @@
 // std
 #include <cstdio>
 #include <filesystem>
+#include <memory>
 #include <print>
+#include <unordered_map>
+#include <utility>
 #include <vector>
 
 // ers

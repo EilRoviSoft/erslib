@@ -1,6 +1,7 @@
 #pragma once
 
 // std
+#include <concepts>
 #include <exception>
 #include <functional>
 #include <string_view>

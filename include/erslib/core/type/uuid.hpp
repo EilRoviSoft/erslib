@@ -3,7 +3,10 @@
 #ifdef _HAS_BOOST_UUID
 
 // std
+#include <cstddef>
+#include <format>
 #include <string>
+#include <string_view>
 
 // boost
 #include <boost/uuid/uuid.hpp>

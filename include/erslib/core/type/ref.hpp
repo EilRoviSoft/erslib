@@ -1,6 +1,7 @@
 #pragma once
 
 // std
+#include <functional>
 #include <optional>
 
 

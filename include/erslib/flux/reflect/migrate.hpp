@@ -3,6 +3,7 @@
 // std
 #include <array>
 #include <filesystem>
+#include <string_view>
 
 // ers
 #include <erslib/core/hashing/fnv.hpp>

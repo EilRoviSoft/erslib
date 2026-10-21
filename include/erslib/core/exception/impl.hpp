@@ -4,6 +4,8 @@
 #include <limits>
 #include <format>
 #include <string>
+#include <string_view>
+#include <utility>
 
 // export
 #include <erslib/export.hpp>

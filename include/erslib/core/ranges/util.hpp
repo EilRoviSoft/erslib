@@ -2,6 +2,8 @@
 
 // std
 #include <ranges>
+#include <utility>
+#include <vector>
 
 // ers
 #include <erslib/core/adaptor/ranges.hpp>

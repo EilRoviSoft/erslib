@@ -1,5 +1,8 @@
 #pragma once
 
+// std
+#include <type_traits>
+
 // ers
 #include <erslib/core/type/result.hpp>
 

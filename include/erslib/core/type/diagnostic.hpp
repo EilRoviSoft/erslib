@@ -4,6 +4,9 @@
 #include <chrono>
 #include <format>
 #include <string>
+#include <string_view>
+#include <utility>
+#include <vector>
 
 // ers
 #include <erslib/core/exception.hpp>

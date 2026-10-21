@@ -2,6 +2,7 @@
 
 // std
 #include <string>
+#include <utility>
 
 // ers
 #include <erslib/flux/query/clause.hpp>

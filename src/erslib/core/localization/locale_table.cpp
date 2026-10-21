@@ -2,10 +2,13 @@
 
 // std
 #include <algorithm>
+#include <exception>
 #include <format>
 #include <fstream>
+#include <functional>
 #include <iterator>
 #include <memory>
+#include <ranges>
 #include <utility>
 
 // ers

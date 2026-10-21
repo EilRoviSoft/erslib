@@ -1,5 +1,9 @@
 #include "erslib/luaschema/properties/exclusive_with.hpp"
 
+// std
+#include <optional>
+#include <utility>
+
 
 ers::luaschema::impl::ExclusiveWithProperty::ExclusiveWithProperty(std::vector<std::string> incompatible_fields) :
     IVerifier(1),

@@ -1,7 +1,10 @@
 #pragma once
 
 // std
+#include <exception>
 #include <format>
+#include <string>
+#include <utility>
 
 // sol
 #include <sol/error.hpp>

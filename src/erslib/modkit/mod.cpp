@@ -1,7 +1,10 @@
 #include "erslib/modkit/mod.hpp"
 
 // std
+#include <format>
 #include <ranges>
+#include <tuple>
+#include <utility>
 
 // ers
 #include <erslib/luaschema/error.hpp>

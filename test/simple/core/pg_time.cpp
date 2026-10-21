@@ -1,6 +1,10 @@
 // doctest
 #include <doctest/doctest.h>
 
+// std
+#include <chrono>
+#include <string_view>
+
 // ers
 #include <erslib/core/convert/pg_time.hpp>
 

@@ -2,6 +2,7 @@
 
 // std
 #include <string>
+#include <string_view>
 
 // export
 #include <erslib/export.hpp>

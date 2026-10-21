@@ -4,6 +4,7 @@
 #include <array>
 #include <charconv>
 #include <cmath>
+#include <exception>
 #include <filesystem>
 #include <format>
 #include <fstream>

@@ -1,5 +1,8 @@
 #include "erslib/luaschema/impl/util.hpp"
 
+// std
+#include <utility>
+
 // ers
 #include <erslib/luaschema/properties/presence.hpp>
 

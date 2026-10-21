@@ -4,6 +4,7 @@
 #include <concepts>
 #include <functional>
 #include <string>
+#include <string_view>
 #include <type_traits>
 
 // pqxx

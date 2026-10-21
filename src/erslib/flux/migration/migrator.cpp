@@ -2,6 +2,7 @@
 
 // std
 #include <algorithm>
+#include <exception>
 #include <format>
 #include <ranges>
 #include <utility>

@@ -3,7 +3,11 @@
 
 // std
 #include <functional>
+#include <iterator>
+#include <memory>
+#include <stdexcept>
 #include <type_traits>
+#include <utility>
 
 // boost
 #include <boost/multi_index_container.hpp>

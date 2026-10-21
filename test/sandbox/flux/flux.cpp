@@ -1,5 +1,6 @@
 // std
 #include <iostream>
+#include <string>
 
 // ers
 #include <erslib/flux/query_builder.hpp>

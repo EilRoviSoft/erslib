@@ -1,5 +1,8 @@
 #include "erslib/flux/query/layouts/insert.hpp"
 
+// std
+#include <utility>
+
 // ers
 #include <erslib/flux/query/clauses/conflict.hpp>
 #include <erslib/flux/query/clauses/identity.hpp>

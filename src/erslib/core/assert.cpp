@@ -5,6 +5,7 @@
 #include <fstream>
 #include <iostream>
 #include <memory>
+#include <type_traits>
 #include <vector>
 
 // In case we have information about assertions

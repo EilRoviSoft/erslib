@@ -1,5 +1,8 @@
 #pragma once
 
+// std
+#include <string>
+
 // ers
 #include <erslib/flux/query/clause.hpp>
 #include <erslib/flux/sql/op.hpp>

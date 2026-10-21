@@ -4,6 +4,7 @@
 #include <concepts>
 #include <cstddef>
 #include <functional>
+#include <ranges>
 #include <string>
 #include <string_view>
 #include <type_traits>

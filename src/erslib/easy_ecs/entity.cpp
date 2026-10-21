@@ -1,5 +1,8 @@
 #include "erslib/easy_ecs/entity.hpp"
 
+// std
+#include <utility>
+
 // ers
 #include <erslib/core/exception.hpp>
 #include <erslib/easy_ecs/registry.hpp>

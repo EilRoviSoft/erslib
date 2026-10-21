@@ -1,5 +1,8 @@
 #include "erslib/flux/query/layouts/exists.hpp"
 
+// std
+#include <utility>
+
 // ers
 #include <erslib/flux/query/clauses/identity.hpp>
 #include <erslib/flux/query/slots/exists.hpp>

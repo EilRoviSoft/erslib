@@ -7,6 +7,7 @@
 #include <random>
 #include <ranges>
 #include <string>
+#include <string_view>
 #include <thread>
 
 // boost

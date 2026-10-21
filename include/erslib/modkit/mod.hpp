@@ -3,7 +3,10 @@
 // std
 #include <exception>
 #include <filesystem>
+#include <functional>
+#include <memory>
 #include <string>
+#include <string_view>
 
 // boost
 #include <boost/unordered/unordered_set.hpp>

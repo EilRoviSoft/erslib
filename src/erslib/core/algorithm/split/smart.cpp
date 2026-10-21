@@ -1,6 +1,10 @@
 #include "erslib/core/algorithm/split/smart.hpp"
 
 // frozen
+// std
+#include <algorithm>
+#include <cstddef>
+
 #include <frozen/unordered_set.h>
 
 

@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <span>
 #include <string>
+#include <string_view>
 
 // ers
 #include <erslib/core/filesystem.hpp>

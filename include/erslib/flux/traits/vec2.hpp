@@ -2,6 +2,8 @@
 
 // std
 #include <charconv>
+#include <format>
+#include <string_view>
 
 // ers
 #include <erslib/core/type/general.hpp>

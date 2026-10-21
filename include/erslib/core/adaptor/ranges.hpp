@@ -1,7 +1,9 @@
 #pragma once
 
 // std
+#include <functional>
 #include <ranges>
+#include <utility>
 
 
 namespace ers::impl::adaptor {

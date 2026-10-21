@@ -1,5 +1,8 @@
 #pragma once
 
+// std
+#include <string_view>
+
 // ers
 #include <erslib/luaschema/impl/verifier.hpp>
 

@@ -2,6 +2,8 @@
 
 // std
 #include <filesystem>
+#include <string>
+#include <string_view>
 
 // ers
 #include <erslib/core/fwd.hpp>

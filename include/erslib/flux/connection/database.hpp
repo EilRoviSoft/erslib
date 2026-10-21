@@ -1,6 +1,7 @@
 #pragma once
 
 // std
+#include <memory>
 #include <string>
 
 // pqxx

@@ -3,6 +3,7 @@
 // std
 #include <chrono>
 #include <random>
+#include <string_view>
 
 // boost
 #include <boost/thread/shared_mutex.hpp>

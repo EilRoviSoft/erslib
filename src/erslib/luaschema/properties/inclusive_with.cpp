@@ -1,5 +1,9 @@
 #include "erslib/luaschema/properties/inclusive_with.hpp"
 
+// std
+#include <optional>
+#include <utility>
+
 
 ers::luaschema::impl::InclusiveWithProperty::InclusiveWithProperty(std::vector<std::string> mandatory_fields) :
     IVerifier(1),

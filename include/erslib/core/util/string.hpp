@@ -7,6 +7,8 @@
 #include <cstddef>
 #include <span>
 #include <string>
+#include <string_view>
+#include <utility>
 
 // ers
 #include <erslib/core/stdlib/ctype.hpp>

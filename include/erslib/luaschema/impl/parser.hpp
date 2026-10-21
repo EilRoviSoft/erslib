@@ -2,6 +2,8 @@
 
 // std
 #include <memory>
+#include <string_view>
+#include <utility>
 
 // sol
 #include <sol/sol.hpp>

@@ -2,6 +2,7 @@
 
 // std
 #include <memory>
+#include <utility>
 
 // sol
 #include <sol/table.hpp>

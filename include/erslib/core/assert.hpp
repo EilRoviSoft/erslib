@@ -1,8 +1,11 @@
 #pragma once
 
 // std
+#include <cstdlib>
 #include <format>
 #include <string>
+#include <string_view>
+#include <utility>
 
 // ers
 #include <erslib/core/util/string.hpp>

@@ -2,6 +2,7 @@
 
 // std
 #include <fstream>
+#include <iterator>
 
 
 std::string ERSLIB_EXPORT ers::impl::util::read_file(const std::filesystem::path& path) {

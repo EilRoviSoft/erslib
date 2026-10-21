@@ -1,5 +1,8 @@
 #include "erslib/luaschema/properties/presence.hpp"
 
+// std
+#include <optional>
+
 
 ers::luaschema::impl::PresenceProperty::PresenceProperty(bool is_required) :
     IVerifier(0),

@@ -4,6 +4,7 @@
 #include <charconv>
 #include <concepts>
 #include <expected>
+#include <string_view>
 
 // ers
 #include <erslib/core/meta.hpp>

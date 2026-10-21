@@ -5,6 +5,7 @@
 
 // std
 #include <charconv>
+#include <system_error>
 
 
 namespace {

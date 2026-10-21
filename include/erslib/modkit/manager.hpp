@@ -1,5 +1,9 @@
 #pragma once
 
+// std
+#include <string>
+#include <utility>
+
 // ers
 #include <erslib/core/hashing/rapid.hpp>
 #include <erslib/core/thread_safe/map.hpp>

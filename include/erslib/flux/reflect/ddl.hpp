@@ -1,9 +1,13 @@
 #pragma once
 
 // std
+#include <algorithm>
 #include <array>
+#include <meta>
 #include <string>
 #include <string_view>
+#include <type_traits>
+#include <vector>
 
 // ers
 #include <erslib/flux/reflect/schema.hpp>

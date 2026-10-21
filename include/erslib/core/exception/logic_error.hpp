@@ -1,6 +1,7 @@
 #pragma once
 
 // std
+#include <format>
 #include <stdexcept>
 
 // core

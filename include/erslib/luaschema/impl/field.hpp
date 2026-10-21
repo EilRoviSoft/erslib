@@ -3,6 +3,8 @@
 // std
 #include <list>
 #include <memory>
+#include <string>
+#include <string_view>
 #include <vector>
 
 // sol

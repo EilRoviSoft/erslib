@@ -1,5 +1,8 @@
 #include "erslib/flux/query/clauses/exists.hpp"
 
+// std
+#include <utility>
+
 // ers
 #include <erslib/flux/query/slots/where.hpp>
 

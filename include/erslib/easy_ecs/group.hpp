@@ -1,8 +1,12 @@
 #pragma once
 
 // std
+#include <cstddef>
 #include <memory>
 #include <ranges>
+#include <tuple>
+#include <type_traits>
+#include <utility>
 
 // ers
 #include <erslib/core/algorithm.hpp>

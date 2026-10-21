@@ -1,5 +1,8 @@
 #pragma once
 
+// std
+#include <type_traits>
+
 // ers
 #include <erslib/core/hashing/rapid.hpp>
 #include <erslib/core/meta/impl/type_name_array.hpp>

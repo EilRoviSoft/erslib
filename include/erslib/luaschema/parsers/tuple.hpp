@@ -2,6 +2,8 @@
 
 // std
 #include <tuple>
+#include <utility>
+#include <variant>
 
 // ers
 #include <erslib/luaschema/impl/context.hpp>

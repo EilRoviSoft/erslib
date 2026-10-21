@@ -29,6 +29,9 @@
 
 #pragma once
 
+// std
+#include <cstddef>
+
 // ers
 #include <erslib/core/type/general.hpp>
 

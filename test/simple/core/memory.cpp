@@ -5,6 +5,7 @@
 #include <array>
 #include <cstddef>
 #include <memory>
+#include <memory_resource>
 
 // ers
 #include <erslib/core/memory.hpp>

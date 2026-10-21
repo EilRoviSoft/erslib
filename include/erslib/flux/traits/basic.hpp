@@ -1,5 +1,8 @@
 #pragma once
 
+// std
+#include <string_view>
+
 // ers
 #include <erslib/core/type/general.hpp>
 #include <erslib/flux/sql/value.hpp>

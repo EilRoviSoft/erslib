@@ -3,9 +3,14 @@
 
 // std
 #include <array>
+#include <cstdlib>
 #include <format>
 #include <limits>
+#include <optional>
 #include <ranges>
+#include <string>
+#include <string_view>
+#include <vector>
 
 // sol
 #include <sol/sol.hpp>

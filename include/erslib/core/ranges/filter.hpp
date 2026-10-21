@@ -1,9 +1,12 @@
 #pragma once
 
 // std
+#include <algorithm>
 #include <ranges>
 #include <optional>
 #include <functional>
+#include <type_traits>
+#include <utility>
 
 
 // filer_view

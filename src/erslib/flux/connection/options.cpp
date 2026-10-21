@@ -2,6 +2,7 @@
 
 // std
 #include <format>
+#include <string_view>
 
 // ers
 #include <erslib/core/util/string.hpp>

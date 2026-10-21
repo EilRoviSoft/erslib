@@ -1,5 +1,12 @@
 #include "erslib/contrib/json/impl.hpp"
 
+// std
+#include <charconv>
+#include <filesystem>
+#include <format>
+#include <fstream>
+#include <optional>
+
 
 // Helpers ---------------------------------------------------------------------
 

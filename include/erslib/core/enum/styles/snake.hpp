@@ -1,5 +1,10 @@
 #pragma once
 
+// std
+#include <string>
+#include <string_view>
+#include <vector>
+
 // ers
 #include <erslib/core/meta.hpp>
 #include <erslib/core/enum/styles/base.hpp>
