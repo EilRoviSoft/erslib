@@ -60,16 +60,3 @@ namespace utl {
     using impl::JsonSchema;
     using impl::json_storage_t;
 }
-
-
-#ifdef _HAS_VALIJSON
-
-// ers
-#include <erslib/contrib/json/validation/validator.hpp>
-
-
-namespace utl {
-    using impl::JsonValidator;
-}
-
-#endif

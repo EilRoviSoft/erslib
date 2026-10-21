@@ -35,7 +35,7 @@ namespace flux::impl {
     template<typename Tx = void, typename Fn>
     auto with_tx(pqxx::connection& conn, Fn&& fn, std::string_view name = {}) {
         using T = std::conditional_t<std::is_void_v<Tx>, typename tx_type_of<Fn>::type, Tx>;
-        using return_type = std::invoke_result_t<Fn, Tx&>;
+        using return_type = std::invoke_result_t<Fn, T&>;
 
 
         static_assert(std::derived_from<T, pqxx::dbtransaction> && !std::is_abstract_v<T>,
@@ -45,7 +45,7 @@ namespace flux::impl {
             "with_tx: 'fn' can't be called with this transaction");
 
 
-        Tx tx(conn, name);
+        T tx(conn, name);
 
         if constexpr (std::is_void_v<return_type>) {
             std::forward<Fn>(fn)(tx);

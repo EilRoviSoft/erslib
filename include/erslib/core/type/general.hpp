@@ -1,7 +1,6 @@
 #pragma once
 
 // std
-#include <cmath>
 #include <cstdint>
 
 
@@ -16,8 +15,8 @@ namespace ers::impl::type {
     using i32 = int32_t;
     using i64 = int64_t;
 
-    using f32 = float_t;
-    using f64 = double_t;
+    using f32 = float;
+    using f64 = double;
 }
 
 namespace ers::impl::type {

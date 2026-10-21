@@ -259,7 +259,7 @@ ers::Status flux::impl::Migrator::_reconcile_declarations() {
             mismatches.push_back({
                 .table    = name,
                 .recorded = _recorded.at(name).text,
-                .declared = ers::nullopt,
+                .declared = ers::none,
             });
         }
     }

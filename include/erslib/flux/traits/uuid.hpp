@@ -34,12 +34,8 @@ struct flux::impl::sql_value<ers::uuid> {
     }
 
     static ers::uuid read(const auto& field) {
-        auto r = ers::uuid_from_string(field.template as<std::string_view>());
-
-        if (!r)
-            throw ers::make_parse_error("{}", r.error().message());
-
-        return *r;
+        const auto text = field.template as<std::string_view>();
+        return ers::try_uuid_from_string(text).template or_throw<ers::parse_error>();
     }
 };
 

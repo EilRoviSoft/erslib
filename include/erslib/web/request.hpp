@@ -36,7 +36,7 @@ namespace ers::web::impl {
         if (!raw)
             return fallback;
 
-        auto parsed = number_from_string<T>(raw);
+        auto parsed = maybe_number_from_string<T>(raw);
 
         return parsed ? std::clamp(*parsed, min, max) : fallback;
     }

@@ -22,7 +22,7 @@ namespace ers::impl {
         // Accessors
 
         [[nodiscard]] DomainView operator[](std::string_view domain) const;
-        [[nodiscard]] optional<DomainView> find(std::string_view domain) const;
+        [[nodiscard]] maybe<DomainView> find(std::string_view domain) const;
 
         // 'common_locale_id' for LocaleTable::common().
         [[nodiscard]] size_t locale_id() const noexcept;

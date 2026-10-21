@@ -1,5 +1,4 @@
 #pragma once
-#include "erslib/contrib/json/validation/adapter.hpp"
 
 #if !VALIJSON_USE_EXCEPTIONS
 #error "erslib/contrib/valijson needs VALIJSON_USE_EXCEPTIONS=1, without it a broken schema aborts the process"

@@ -23,12 +23,11 @@ namespace {
 
     // object order isn't kept, so the result is sorted
     ers::Result<pairs_t> flatten(std::string_view json) {
-        auto entries = utl::flatten_l10n(utl::from_string(json));
-        ERS_TRY(entries);
+        auto entries = ERS_TRY(utl::flatten_l10n(utl::from_string(json)));;
 
         pairs_t out;
 
-        for (auto& [key, text] : *entries)
+        for (auto& [key, text] : entries)
             out.emplace_back(std::move(key), std::move(text));
 
         std::ranges::sort(out);
@@ -45,14 +44,12 @@ TEST_CASE("l10n json: objects nest, arrays become lines") {
     })");
 
     REQUIRE(entries);
-    CHECK(*entries == pairs_t
-        {
+    CHECK(*entries == pairs_t {
             { "black.hex", "#000000" },
         { "black.name@ru", "чёрный" },
         { "brand", "Маленькая Леди" },
         { "delivery", "Бесплатно.\nСроки уточнит менеджер." },
-        }
-    );
+        });
 
     CHECK(flatten("{}")->empty());
 }

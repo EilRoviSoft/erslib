@@ -14,16 +14,19 @@
 #include <erslib/core/type/maybe.hpp>
 #include <erslib/core/type/result.hpp>
 
+// export
+#include <erslib/export.hpp>
+
 
 namespace ers::impl {
     using uuid = boost::uuids::uuid;
 
 
-    std::string uuid_to_string(const uuid& what);
+    std::string ERSLIB_EXPORT uuid_to_string(const uuid& what);
 
-    uuid uuid_from_string(std::string_view text);
-    Result<uuid> try_uuid_from_string(std::string_view text);
-    maybe<uuid> maybe_uuid_from_string(std::string_view text);
+    uuid ERSLIB_EXPORT uuid_from_string(std::string_view text);
+    Result<uuid> ERSLIB_EXPORT try_uuid_from_string(std::string_view text);
+    maybe<uuid> ERSLIB_EXPORT maybe_uuid_from_string(std::string_view text);
 }
 
 
@@ -32,8 +35,12 @@ namespace ers::impl {
 namespace ers {
     using impl::uuid;
 
+
     using impl::uuid_to_string;
+
     using impl::uuid_from_string;
+    using impl::try_uuid_from_string;
+    using impl::maybe_uuid_from_string;
 }
 
 
@@ -69,7 +76,7 @@ struct std::formatter<ers::uuid> {
         return ctx.begin();
     }
 
-    std::string format(const ers::uuid& v, std::format_context& ctx) const;
+    std::string ERSLIB_EXPORT format(const ers::uuid& v, std::format_context& ctx) const;
 };
 
 

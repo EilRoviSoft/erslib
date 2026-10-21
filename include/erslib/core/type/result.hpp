@@ -87,11 +87,12 @@ namespace ers::impl {
         }
 
         template<typename E = runtime_error, typename Self>
+            requires std::constructible_from<E, std::string>
         constexpr auto or_throw(this Self&& self) {
             using T = typename std::remove_cvref_t<Self>::value_type;
 
             if (!self)
-                throw E(_error(std::forward<Self>(self)));
+                throw E(_error(std::forward<Self>(self)).to_string());
 
             if constexpr (!std::is_void_v<T>)
                 return T(std::forward<Self>(self).value());
@@ -432,7 +433,7 @@ namespace ers {
 
 // Macros ----------------------------------------------------------------------
 
-#define ERS_TRY(__VA_ARGS__) __extension__ ({ \
+#define ERS_TRY(...) __extension__ ({ \
     static_assert(!std::is_lvalue_reference_v<decltype((__VA_ARGS__))>, "ERS_TRY takes a temporary: write 'auto x = ERS_TRY(f())' instead of 'ERS_TRY(x)'"); \
     auto&& _ers_try = (__VA_ARGS__); \
     if (!_ers_try) \
@@ -444,6 +445,6 @@ namespace ers {
     static_assert(!std::is_lvalue_reference_v<decltype((EXPR))>, "ERS_TRY_OR takes a temporary"); \
     auto&& _ers_try = (EXPR); \
     if (!_ers_try) \
-        return std::invoke(__VA_ARGS__, std::move(_ers_try).extract_error()) \
+        return std::invoke(__VA_ARGS__, std::move(_ers_try).extract_error()); \
     ers::impl::unwrap(std::move(_ers_try)); \
 })

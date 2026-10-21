@@ -360,9 +360,9 @@ auto ers::impl::LocaleTable::reload(const fs::path& root) -> Result<reload_repor
             auto text = ERS_TRY(read_text(file.path));
 
             checksum = RapidHash<std::string_view> {}(file.relative, checksum);
-            checksum = RapidHash<std::string_view> {}(*text, checksum);
+            checksum = RapidHash<std::string_view> {}(text, checksum);
 
-            texts.emplace_back(std::move(*text));
+            texts.emplace_back(std::move(text));
         }
 
 

@@ -88,7 +88,7 @@ namespace ers::impl {
             return Type(std::format(fmt, std::forward<Args>(args)...));
         }
         Type operator()(std::string_view what_arg) const {
-            return Type(what_arg.data());
+            return Type(static_cast<std::string>(what_arg));
         }
     };
 }
@@ -125,7 +125,7 @@ namespace ers::impl {
             return Type(std::format(fmt, std::forward<Args>(args)...));
         }
         Type operator()(std::string_view what_arg) const {
-            return Type(what_arg.data());
+            return Type(static_cast<std::string>(what_arg));
         }
     };
 }

@@ -8,8 +8,8 @@
 
 
 TEST_CASE("hashing: uuid and pairs") {
-    auto a = *ers::uuid_from_string("42fbbcaf-bc00-11ef-a8f8-042b581c0d88");
-    auto b = *ers::uuid_from_string("42fbbcac-bc00-11ef-a8f8-042b581c0d88");
+    auto a = ers::uuid_from_string("42fbbcaf-bc00-11ef-a8f8-042b581c0d88");
+    auto b = ers::uuid_from_string("42fbbcac-bc00-11ef-a8f8-042b581c0d88");
 
     CHECK(ers::RapidHash<ers::uuid> {}(a) == ers::RapidHash<ers::uuid> {}(a));
     CHECK(ers::RapidHash<ers::uuid> {}(a) != ers::RapidHash<ers::uuid> {}(b));

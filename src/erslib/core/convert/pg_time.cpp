@@ -16,7 +16,7 @@ namespace {
     using pg_precision_t = std::chrono::microseconds;
     using pg_time_t = std::chrono::sys_time<pg_precision_t>;
 
-    inline constexpr size_t pg_max_offset_hours = 15;
+    inline constexpr int pg_max_offset_hours = 15;
     inline constexpr size_t pg_timestamp_max_size = 34;
 }
 
