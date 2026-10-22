@@ -24,6 +24,7 @@ namespace flux::ddl {
 
 namespace flux::reflect {
     using impl::reflect::Declaration;
+    using impl::reflect::DeclarationMetadata;
 }
 
 
@@ -58,9 +59,16 @@ namespace flux::reflect {
     using impl::reflect::pk_constraint;
     using impl::reflect::is_pk_column;
     using impl::reflect::is_identity_column;
+    using impl::reflect::is_read_only_column;
+    using impl::reflect::soft_delete_column;
+    using impl::reflect::has_soft_delete;
+    using impl::reflect::pk_members;
+    using impl::reflect::insert_members;
+    using impl::reflect::update_members;
     using impl::reflect::has_identity;
     using impl::reflect::identity_column;
     using impl::reflect::declaration_is_valid;
+    using impl::reflect::metadata_is_valid;
 }
 
 
@@ -88,6 +96,8 @@ namespace flux::reflect {
 
     using impl::reflect::Default;
     using impl::reflect::Identity;
+    using impl::reflect::ReadOnly;
+    using impl::reflect::SoftDelete;
     using impl::reflect::Column;
     using impl::reflect::Skip;
 }
@@ -128,6 +138,32 @@ namespace flux::reflect {
 
     using impl::reflect::QueryFn;
     using impl::reflect::query_fn;
+}
+
+
+// CRUD
+
+#include <erslib/flux/reflect/crud/exec.hpp>
+
+namespace flux {
+    using impl::crud::TypedColumn;
+    using impl::crud::columns_of;
+    using impl::crud::columns_as;
+}
+
+namespace flux::crud {
+    using impl::crud::select;
+    using impl::crud::select_all;
+    using impl::crud::insert;
+    using impl::crud::update;
+    using impl::crud::upsert;
+    using impl::crud::erase;
+    using impl::crud::erase_forever;
+    using impl::crud::restore;
+    using impl::crud::find;
+    using impl::crud::find_all;
+    using impl::crud::where_pk;
+    using impl::crud::only;
 }
 
 

@@ -126,6 +126,113 @@ auto inserted = (insert_into("images")
 ```
 
 
+## Writing rows
+
+```cpp
+template<>
+struct flux::reflect::Declaration<User> : Table<"users"> {
+    Pk<"id"> users_pk;
+    Unique<"email"> users_email_key;
+};
+
+template<>
+struct flux::reflect::DeclarationMetadata<User> {       // optional: how the code uses the table, not the schema
+    ReadOnly<"created_at"> users_created_ro;            // the database fills it: not in INSERT/UPDATE, read back
+};
+```
+
+```cpp
+Image saved = flux::crud::insert(tx, img);                  // RETURNING *, so id and defaults are in it
+ers::maybe<Image> found = flux::crud::find<Image>(tx, 42); // composite key: find<ProductImage>(tx, product_id, image_id)
+bool updated = flux::crud::update(tx, saved);               // false if no row matched
+bool erased = flux::crud::erase<Image>(tx, 42);
+Image merged = flux::crud::upsert<"images_url_key">(tx, img);
+
+flux::crud::find<Image>(tx, "42");                          // doesn't compile: the key is a uint32_t
+```
+
+The key types are checked against the primary key fields. `insert` leaves out the identity and `ReadOnly` columns, `update` also the key.
+
+```cpp
+flux::crud::upsert(link);                                   // ON CONFLICT (product_id, image_id), by the primary key
+flux::crud::upsert<"images_url_key">(img);                  // ON CONFLICT ON CONSTRAINT, a Pk/Unique name of the declaration
+```
+
+An entity with a generated key needs the constraint name.
+
+```cpp
+constexpr auto cols = flux::columns_of<Image>;
+
+flux::crud::update(tx, img, flux::crud::only(cols.path));           // SET path = $1, checked while compiling
+flux::crud::update(tx, img, flux::crud::only("path", "url"));       // by name, a bad one fails when rendered
+
+flux::crud::find<Image, Preview>(tx, 42);                           // a projection: only the columns of Preview
+```
+
+The builders return a `QueryBuilder`, everything from [flux](../flux/README.md) works on them:
+
+```cpp
+flux::crud::select<Image>() | where(cols.url == url) | with_limit(1);   // SELECT id, url, path FROM images ...
+flux::crud::insert(img) | returning("id");
+flux::crud::erase<Image>(42);                                           // DELETE FROM images WHERE id = $1
+flux::crud::where_pk<Image>(42);                                        // just the condition
+```
+
+
+## Hidden conditions
+
+```cpp
+template<>
+struct flux::reflect::DeclarationMetadata<Note> {
+    SoftDelete<"deleted_at"> notes_soft;            // nullable: NULL while the row lives, the time of the deletion after it
+
+    static void scope(flux::QueryBuilder& q) {      // optional: for every select/update/erase of Note
+        q |= where(col("tenant") == current_tenant());
+    }
+};
+```
+
+```cpp
+flux::crud::find<Note>(tx, 42);               // ... AND deleted_at IS NULL, a deleted note is "not found"
+flux::crud::erase<Note>(tx, 42);              // UPDATE notes SET deleted_at = now() WHERE id = $1 AND ... AND deleted_at IS NULL
+flux::crud::update(tx, note);                 // skips the deleted rows, never writes deleted_at
+flux::crud::restore<Note>(tx, 42);            // SET deleted_at = NULL
+
+flux::crud::select_all<Note>();               // with the deleted rows
+flux::crud::find_all<Note>(tx, 42);
+flux::crud::erase_forever<Note>(tx, 42);      // a real DELETE
+```
+
+`scope` runs on every query, so it can read the current tenant from the thread or the request. The `_all` and `_forever` forms skip only SoftDelete, the scope still applies. `insert` and `upsert` are never changed, an `upsert` on a unique key can update a deleted row.
+
+
+## Typed columns
+
+```cpp
+constexpr auto img = flux::columns_of<Image>;       // one member per column, named like the fields
+
+where(img.url == url)                               // url = $1
+order_by(img.id, EOrder::Desc)
+columns(img.id, img.url.as("link"))
+img.id == "42"                                      // doesn't compile
+
+auto i = flux::columns_as<Image>("i");              // qualified, the alias has to outlive it
+auto p = flux::columns_as<Product>("p");
+select_from("images", "i") | join("products", "p", i.id == p.image_id);     // i.id = p.image_id
+```
+
+Your own type works the same way if it has `Expr to_expr() const`:
+
+```cpp
+struct Money : flux::ext::ExprMethods {               // is_null(), in(), as(), ... for free
+    flux::Expr to_expr() const;
+
+    template<typename U>                                    // optional: what it may be compared with
+    static constexpr bool accepts = flux::ext::IsExpr<U> || std::convertible_to<U, long>;
+};
+```
+
+
 ## Rows that aren't tables
 
 A plain aggregate needs no `Declaration`:

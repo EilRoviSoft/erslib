@@ -95,6 +95,9 @@ namespace flux {
 
 namespace flux::ext {
     using impl::IExprNode;
+    using impl::ExprMethods;
+    using impl::ExprSource;
+    using impl::IsExpr;
     using impl::ExprNodePtr;
     using impl::EPrecedence;
     using impl::binary_op_t;

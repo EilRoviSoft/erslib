@@ -34,74 +34,6 @@ ers::Status flux::impl::Expr::render(Context& ctx, EPrecedence parent) const {
 }
 
 
-flux::impl::Expr flux::impl::Expr::is_null() const {
-    return make_expr<nodes::PostfixNode>(*this, " IS NULL", EPrecedence::Is);
-}
-
-flux::impl::Expr flux::impl::Expr::is_not_null() const {
-    return make_expr<nodes::PostfixNode>(*this, " IS NOT NULL", EPrecedence::Is);
-}
-
-flux::impl::Expr flux::impl::Expr::is_distinct_from(Expr other) const {
-    return make_binary("IS DISTINCT FROM", *this, std::move(other), EPrecedence::Is);
-}
-
-flux::impl::Expr flux::impl::Expr::like(Expr pattern) const {
-    return make_binary("LIKE", *this, std::move(pattern), EPrecedence::Like);
-}
-
-flux::impl::Expr flux::impl::Expr::ilike(Expr pattern) const {
-    return make_binary("ILIKE", *this, std::move(pattern), EPrecedence::Like);
-}
-
-flux::impl::Expr flux::impl::Expr::between(Expr low, Expr high) const {
-    return make_expr<nodes::BetweenNode>(*this, std::move(low), std::move(high));
-}
-
-flux::impl::Expr flux::impl::Expr::contains(Expr other) const {
-    return make_binary("@>", *this, std::move(other), EPrecedence::Other);
-}
-
-flux::impl::Expr flux::impl::Expr::in(std::initializer_list<Expr> values) const {
-    return _in(std::vector<Expr>(values));
-}
-
-flux::impl::Expr flux::impl::Expr::in(QueryBuilder subquery) const {
-    return make_expr<nodes::InQueryNode>(*this, std::move(subquery));
-}
-
-flux::impl::Expr flux::impl::Expr::any(Expr array) const {
-    return make_expr<nodes::AnyNode>(*this, std::move(array));
-}
-
-flux::impl::Expr flux::impl::Expr::cast(std::string_view type) const {
-    return make_expr<nodes::CastNode>(*this, std::string(type));
-}
-
-flux::impl::Aliased flux::impl::Expr::as(std::string alias) const {
-    return { *this, std::move(alias) };
-}
-
-flux::impl::Expr flux::impl::Expr::_in(std::vector<Expr> items) const {
-    return make_expr<nodes::InNode>(*this, std::move(items));
-}
-
-
-// ColumnExpr
-
-flux::impl::ColumnExpr::ColumnExpr(std::string name) :
-    expr(clauses::col(std::move(name))) {
-}
-
-flux::impl::ColumnExpr::ColumnExpr(std::string_view name) :
-    expr(clauses::col(std::string(name))) {
-}
-
-flux::impl::ColumnExpr::ColumnExpr(const char* name) :
-    expr(clauses::col(name)) {
-}
-
-
 // Node factories
 
 flux::impl::Expr flux::impl::make_value(binder_t binder) {
@@ -114,6 +46,30 @@ flux::impl::Expr flux::impl::make_param(binder_t binder) {
 
 flux::impl::Expr flux::impl::make_const(sql_text text) {
     return make_expr<nodes::ConstNode>(text.text);
+}
+
+flux::impl::Expr flux::impl::make_postfix(Expr operand, sql_text suffix, EPrecedence precedence) {
+    return make_expr<nodes::PostfixNode>(std::move(operand), suffix.text, precedence);
+}
+
+flux::impl::Expr flux::impl::make_between(Expr operand, Expr low, Expr high) {
+    return make_expr<nodes::BetweenNode>(std::move(operand), std::move(low), std::move(high));
+}
+
+flux::impl::Expr flux::impl::make_in(Expr operand, std::vector<Expr> items) {
+    return make_expr<nodes::InNode>(std::move(operand), std::move(items));
+}
+
+flux::impl::Expr flux::impl::make_in(Expr operand, QueryBuilder subquery) {
+    return make_expr<nodes::InQueryNode>(std::move(operand), std::move(subquery));
+}
+
+flux::impl::Expr flux::impl::make_any(Expr operand, Expr array) {
+    return make_expr<nodes::AnyNode>(std::move(operand), std::move(array));
+}
+
+flux::impl::Expr flux::impl::make_cast(Expr operand, std::string_view type) {
+    return make_expr<nodes::CastNode>(std::move(operand), std::string(type));
 }
 
 flux::impl::Expr flux::impl::make_binary(std::string_view op, Expr lhs, Expr rhs, EPrecedence precedence, bool left_associative) {

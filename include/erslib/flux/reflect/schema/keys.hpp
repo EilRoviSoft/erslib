@@ -34,6 +34,24 @@ namespace flux::impl::reflect {
 
 
     template<typename T>
+    consteval std::vector<std::meta::info> collect_pk_members() {
+        std::vector<std::meta::info> out;
+
+        for (const std::string_view name : primary_key<T>) {
+            template for (constexpr auto m : column_list<T>) {
+                if (column_name<m> == name)
+                    out.emplace_back(m);
+            }
+        }
+
+        return out;
+    }
+
+    template<typename T>
+    constexpr auto pk_members = std::define_static_array(collect_pk_members<T>());
+
+
+    template<typename T>
     consteval std::string_view find_pk_constraint() {
         template for (constexpr auto it : declaration_list<T>) {
             using entry = entry_type<it>;

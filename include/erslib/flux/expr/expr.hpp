@@ -35,23 +35,69 @@ namespace flux::impl {
     };
 
 
+    // Anything with 'Expr to_expr() const' converts to Expr, a column of a table struct for example.
+    template<typename T>
+    concept ExprSource = requires(const T& what) {
+        { what.to_expr() } -> std::same_as<Expr>;
+    };
+
     template<typename T>
     concept ExprValue = !std::same_as<std::remove_cvref_t<T>, Expr>
+        && !ExprSource<std::remove_cvref_t<T>>
         && !std::convertible_to<T, ExprNodePtr>;
 
     template<typename T>
-    concept ExprLike = std::same_as<std::remove_cvref_t<T>, Expr> || ExprValue<T>;
+    concept IsExpr = std::same_as<std::remove_cvref_t<T>, Expr> || ExprSource<std::remove_cvref_t<T>>;
+
+    template<typename T>
+    concept ExprLike = IsExpr<T> || ExprValue<T>;
+
+    // A source can limit what it is compared with: 'template<typename U> static constexpr bool accepts'.
+    template<typename A, typename B>
+    concept AcceptsOperand = !requires { std::remove_cvref_t<A>::template accepts<std::decay_t<B>>; }
+        || std::remove_cvref_t<A>::template accepts<std::decay_t<B>>;
 
     template<typename L, typename R>
-    concept ExprOperands = ExprLike<L> && ExprLike<R>
-        && (std::same_as<std::remove_cvref_t<L>, Expr> || std::same_as<std::remove_cvref_t<R>, Expr>);
+    concept ExprOperands = ExprLike<L> && ExprLike<R> && (IsExpr<L> || IsExpr<R>)
+        && AcceptsOperand<L, R> && AcceptsOperand<R, L>;
 }
 
 
 // Implementation --------------------------------------------------------------
 
 namespace flux::impl {
-    class ERSLIB_EXPORT Expr {
+    // The builder methods of an expression, for Expr and for anything with 'Expr to_expr() const':
+    // derive from ExprMethods.
+    class ExprMethods {
+    public:
+        // Generators
+
+        Expr is_null(this const auto& self);
+        Expr is_not_null(this const auto& self);
+        Expr is_distinct_from(this const auto& self, Expr other);
+
+        Expr like(this const auto& self, Expr pattern);
+        Expr ilike(this const auto& self, Expr pattern);
+        Expr between(this const auto& self, Expr low, Expr high);
+        Expr contains(this const auto& self, Expr other);
+
+        Expr in(this const auto& self, std::initializer_list<Expr> values);
+
+        template<std::same_as<QueryBuilder> Q>
+        Expr in(this const auto& self, Q subquery);
+
+        template<std::ranges::input_range R>
+        Expr in(this const auto& self, R&& values);
+
+        Expr any(this const auto& self, Expr array);
+        Expr cast(this const auto& self, std::string_view type);
+
+        // For columns() and returning(): "<expr> AS <alias>".
+        Aliased as(this const auto& self, std::string alias);
+    };
+
+
+    class ERSLIB_EXPORT Expr : public ExprMethods {
     public:
         // Member functions
 
@@ -59,6 +105,9 @@ namespace flux::impl {
 
         template<ExprValue T>
         Expr(T&& value);
+
+        template<ExprSource T>
+        Expr(const T& source);
 
         Expr(const Expr&) = default;
         Expr(Expr&&) noexcept = default;
@@ -78,35 +127,8 @@ namespace flux::impl {
         ers::Status render(Context& ctx, EPrecedence parent = EPrecedence::Or) const;
 
 
-        // Generators
-
-        Expr is_null() const;
-        Expr is_not_null() const;
-        Expr is_distinct_from(Expr other) const;
-
-        Expr like(Expr pattern) const;
-        Expr ilike(Expr pattern) const;
-        Expr between(Expr low, Expr high) const;
-        Expr contains(Expr other) const;
-
-        Expr in(std::initializer_list<Expr> values) const;
-        Expr in(QueryBuilder subquery) const;
-
-        template<std::ranges::input_range R>
-        Expr in(R&& values) const;
-
-        Expr any(Expr array) const;
-        Expr cast(std::string_view type) const;
-
-        // For columns() and returning(): "<expr> AS <alias>".
-        Aliased as(std::string alias) const;
-
-
     private:
         ExprNodePtr _node;
-
-
-        Expr _in(std::vector<Expr> items) const;
     };
 
 
@@ -117,18 +139,18 @@ namespace flux::impl {
 
 
     // A column name or an expression, where a bare name means a column.
-    struct ERSLIB_EXPORT ColumnExpr {
+    struct ColumnExpr {
         Expr expr;
 
 
-        template<std::same_as<Expr> T>
-        ColumnExpr(T what) :
-            expr(std::move(what)) {
+        template<IsExpr T>
+        ColumnExpr(T&& what) :
+            expr(std::forward<T>(what)) {
         }
 
-        ColumnExpr(std::string name);
-        ColumnExpr(std::string_view name);
-        ColumnExpr(const char* name);
+        template<typename S>
+            requires (std::convertible_to<S, std::string_view> && !IsExpr<S>)
+        ColumnExpr(S&& name);
     };
 
 
@@ -140,6 +162,12 @@ namespace flux::impl {
     ERSLIB_EXPORT Expr make_value(binder_t binder);
     ERSLIB_EXPORT Expr make_param(binder_t binder);
     ERSLIB_EXPORT Expr make_const(sql_text text);
+    ERSLIB_EXPORT Expr make_postfix(Expr operand, sql_text suffix, EPrecedence precedence);
+    ERSLIB_EXPORT Expr make_between(Expr operand, Expr low, Expr high);
+    ERSLIB_EXPORT Expr make_in(Expr operand, std::vector<Expr> items);
+    ERSLIB_EXPORT Expr make_in(Expr operand, QueryBuilder subquery);
+    ERSLIB_EXPORT Expr make_any(Expr operand, Expr array);
+    ERSLIB_EXPORT Expr make_cast(Expr operand, std::string_view type);
     ERSLIB_EXPORT Expr make_binary(std::string_view op, Expr lhs, Expr rhs, EPrecedence precedence, bool left_associative = false);
     ERSLIB_EXPORT Expr make_fn(std::string_view name, std::vector<Expr> args);
     ERSLIB_EXPORT Expr make_raw(sql_text pattern, std::vector<Expr> args);

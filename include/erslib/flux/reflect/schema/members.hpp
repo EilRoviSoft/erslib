@@ -34,6 +34,14 @@ namespace flux::impl::reflect {
         return nonstatic_data_members_of(^^Declaration<T>, std::meta::access_context::current());
     }
 
+    template<typename T>
+    consteval std::vector<std::meta::info> metadata_members() {
+        if constexpr (requires { sizeof(DeclarationMetadata<T>); })
+            return nonstatic_data_members_of(^^DeclarationMetadata<T>, std::meta::access_context::current());
+        else
+            return {};
+    }
+
 
     consteval bool is_skipped(std::meta::info member) {
         for (const auto it : std::meta::annotations_of(member)) {
@@ -61,6 +69,9 @@ namespace flux::impl::reflect {
 
     template<typename T>
     constexpr auto declaration_list = std::define_static_array(declaration_members<T>());
+
+    template<typename T>
+    constexpr auto metadata_list = std::define_static_array(metadata_members<T>());
 
     template<typename T>
     constexpr size_t column_count = column_list<T>.size();

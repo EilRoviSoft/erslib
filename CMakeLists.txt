@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.28)
 
 project(erslib
-    VERSION 1.2.4
+    VERSION 1.2.5
     DESCRIPTION "EilRoviSoft's universal library"
     LANGUAGES CXX
 )

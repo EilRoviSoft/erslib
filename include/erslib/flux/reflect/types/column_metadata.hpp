@@ -30,6 +30,34 @@ namespace flux::impl::reflect {
     };
 
 
+    // ReadOnly
+
+    template<ers::fixed_string Field>
+    struct ReadOnly {
+        using kind = kinds::EReadOnly;
+    };
+
+    template<ers::fixed_string Field>
+    struct entry_traits<ReadOnly<Field>> : entry_defaults {
+        static constexpr std::string_view field = Field.to_sv();
+        static constexpr std::array<std::string_view, 1> columns = { field };
+    };
+
+
+    // SoftDelete
+
+    template<ers::fixed_string Field>
+    struct SoftDelete {
+        using kind = kinds::ESoftDelete;
+    };
+
+    template<ers::fixed_string Field>
+    struct entry_traits<SoftDelete<Field>> : entry_defaults {
+        static constexpr std::string_view field = Field.to_sv();
+        static constexpr std::array<std::string_view, 1> columns = { field };
+    };
+
+
     // Identity
 
     template<ers::fixed_string Field>

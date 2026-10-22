@@ -19,6 +19,8 @@ namespace flux::impl::reflect::kinds {
 
     struct EDefault {};
     struct EIdentity {};
+    struct EReadOnly {};
+    struct ESoftDelete {};
     struct EColumn {};
 }
 
