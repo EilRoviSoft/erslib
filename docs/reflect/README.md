@@ -1,6 +1,6 @@
 # flux reflect
 
-A table is a struct plus a `Declaration`. From that you get `CREATE TABLE` and reading rows straight into the struct.
+Builds on [flux](../flux/README.md). A table is a struct plus a `Declaration`. From that you get `CREATE TABLE` and reading rows straight into the struct.
 
 Needs `ERSLIB_ENABLE_REFLECTION=ON` and GCC 16.1+. Everything here is behind `ERSLIB_HAS_REFLECTION`.
 
