@@ -157,7 +157,7 @@ TEST_CASE("flux expr: a custom node plugs in") {
         flux::ext::EPrecedence precedence() const noexcept override { return flux::ext::EPrecedence::Comparison; }
     };
 
-    const flux::Expr custom(std::make_shared<const ZeroLess>(col("x") + col("y")));
+    const auto custom = flux::ext::make_expr<ZeroLess>(col("x") + col("y"));
 
     CHECK(where_of(custom && col("z") == 1) == "SELECT *\nFROM t\nWHERE 0 < x + y AND z = $1");
 }

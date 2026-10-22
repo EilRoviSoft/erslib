@@ -93,10 +93,12 @@ namespace flux {
 
 namespace flux::ext {
     using impl::IExprNode;
+    using impl::ExprNodePtr;
     using impl::EPrecedence;
     using impl::binary_op_t;
     using impl::fn_t;
     using impl::sql_text;
+    using impl::make_expr;
     using impl::make_const;
     using impl::make_binary;
     using impl::make_fn;

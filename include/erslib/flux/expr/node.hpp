@@ -1,5 +1,8 @@
 #pragma once
 
+// std
+#include <memory>
+
 // ers
 #include <erslib/core/type/general.hpp>
 #include <erslib/core/type/result.hpp>

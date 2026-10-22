@@ -3,12 +3,10 @@
 // std
 #include <concepts>
 #include <initializer_list>
-#include <memory>
 #include <ranges>
 #include <string>
 #include <string_view>
 #include <type_traits>
-#include <utility>
 #include <vector>
 
 // ers
@@ -35,10 +33,6 @@ namespace flux::impl {
     };
 
 
-    ERSLIB_EXPORT ExprNodePtr make_value_node(binder_t binder);
-    ERSLIB_EXPORT ExprNodePtr make_param_node(binder_t binder);
-
-
     template<typename T>
     concept ExprValue = !std::same_as<std::remove_cvref_t<T>, Expr>
         && !std::convertible_to<T, ExprNodePtr>;
@@ -62,9 +56,7 @@ namespace flux::impl {
         explicit Expr(ExprNodePtr node);
 
         template<ExprValue T>
-        Expr(T&& value) :
-            Expr(make_value_node(make_binder(std::forward<T>(value)))) {
-        }
+        Expr(T&& value);
 
         Expr(const Expr&) = default;
         Expr(Expr&&) noexcept = default;
@@ -99,14 +91,7 @@ namespace flux::impl {
         Expr in(QueryBuilder subquery) const;
 
         template<std::ranges::input_range R>
-        Expr in(R&& values) const {
-            std::vector<Expr> items;
-
-            for (auto&& it : values)
-                items.emplace_back(Expr(it));
-
-            return _in(std::move(items));
-        }
+        Expr in(R&& values) const;
 
         Expr any(Expr array) const;
         Expr cast(std::string_view type) const;
@@ -122,6 +107,11 @@ namespace flux::impl {
 
     // Node factories
 
+    template<std::derived_from<IExprNode> T, typename... Args>
+    Expr make_expr(Args&&... args);
+
+    ERSLIB_EXPORT Expr make_value(binder_t binder);
+    ERSLIB_EXPORT Expr make_param(binder_t binder);
     ERSLIB_EXPORT Expr make_const(sql_text text);
     ERSLIB_EXPORT Expr make_binary(std::string_view op, Expr lhs, Expr rhs, EPrecedence precedence, bool left_associative = false);
     ERSLIB_EXPORT Expr make_fn(std::string_view name, std::vector<Expr> args);
@@ -129,125 +119,28 @@ namespace flux::impl {
     ERSLIB_EXPORT Expr make_row(std::vector<Expr> items);
     ERSLIB_EXPORT Expr make_logical(bool conjunction, Expr lhs, Expr rhs);
     ERSLIB_EXPORT Expr make_not(Expr what);
-}
 
 
-// Operators
+    namespace clauses {
+        ERSLIB_EXPORT Expr col(std::string name);
+        ERSLIB_EXPORT Expr col(std::string_view table, std::string_view name);
+        ERSLIB_EXPORT Expr null();
+        ERSLIB_EXPORT Expr exists(QueryBuilder subquery);
+        ERSLIB_EXPORT Expr subquery_of(QueryBuilder subquery);
 
-namespace flux::impl {
-    template<typename L, typename R>
-        requires ExprOperands<L, R>
-    Expr operator==(L&& lhs, R&& rhs) {
-        return make_binary("=", Expr(std::forward<L>(lhs)), Expr(std::forward<R>(rhs)), EPrecedence::Comparison);
-    }
+        template<typename T>
+        Expr val(T&& value);
 
-    template<typename L, typename R>
-        requires ExprOperands<L, R>
-    Expr operator!=(L&& lhs, R&& rhs) {
-        return make_binary("<>", Expr(std::forward<L>(lhs)), Expr(std::forward<R>(rhs)), EPrecedence::Comparison);
-    }
+        // One placeholder per statement, however many times it's used.
+        template<typename T>
+        Expr param(T&& value);
 
-    template<typename L, typename R>
-        requires ExprOperands<L, R>
-    Expr operator<(L&& lhs, R&& rhs) {
-        return make_binary("<", Expr(std::forward<L>(lhs)), Expr(std::forward<R>(rhs)), EPrecedence::Comparison);
-    }
-
-    template<typename L, typename R>
-        requires ExprOperands<L, R>
-    Expr operator<=(L&& lhs, R&& rhs) {
-        return make_binary("<=", Expr(std::forward<L>(lhs)), Expr(std::forward<R>(rhs)), EPrecedence::Comparison);
-    }
-
-    template<typename L, typename R>
-        requires ExprOperands<L, R>
-    Expr operator>(L&& lhs, R&& rhs) {
-        return make_binary(">", Expr(std::forward<L>(lhs)), Expr(std::forward<R>(rhs)), EPrecedence::Comparison);
-    }
-
-    template<typename L, typename R>
-        requires ExprOperands<L, R>
-    Expr operator>=(L&& lhs, R&& rhs) {
-        return make_binary(">=", Expr(std::forward<L>(lhs)), Expr(std::forward<R>(rhs)), EPrecedence::Comparison);
-    }
-
-
-    template<typename L, typename R>
-        requires ExprOperands<L, R>
-    Expr operator+(L&& lhs, R&& rhs) {
-        return make_binary("+", Expr(std::forward<L>(lhs)), Expr(std::forward<R>(rhs)), EPrecedence::AddSub, true);
-    }
-
-    template<typename L, typename R>
-        requires ExprOperands<L, R>
-    Expr operator-(L&& lhs, R&& rhs) {
-        return make_binary("-", Expr(std::forward<L>(lhs)), Expr(std::forward<R>(rhs)), EPrecedence::AddSub, true);
-    }
-
-    template<typename L, typename R>
-        requires ExprOperands<L, R>
-    Expr operator*(L&& lhs, R&& rhs) {
-        return make_binary("*", Expr(std::forward<L>(lhs)), Expr(std::forward<R>(rhs)), EPrecedence::MulDiv, true);
-    }
-
-    template<typename L, typename R>
-        requires ExprOperands<L, R>
-    Expr operator/(L&& lhs, R&& rhs) {
-        return make_binary("/", Expr(std::forward<L>(lhs)), Expr(std::forward<R>(rhs)), EPrecedence::MulDiv, true);
-    }
-
-    template<typename L, typename R>
-        requires ExprOperands<L, R>
-    Expr operator%(L&& lhs, R&& rhs) {
-        return make_binary("%", Expr(std::forward<L>(lhs)), Expr(std::forward<R>(rhs)), EPrecedence::MulDiv, true);
-    }
-
-
-    template<typename L, typename R>
-        requires ExprOperands<L, R>
-    Expr operator&&(L&& lhs, R&& rhs) {
-        return make_logical(true, Expr(std::forward<L>(lhs)), Expr(std::forward<R>(rhs)));
-    }
-
-    template<typename L, typename R>
-        requires ExprOperands<L, R>
-    Expr operator||(L&& lhs, R&& rhs) {
-        return make_logical(false, Expr(std::forward<L>(lhs)), Expr(std::forward<R>(rhs)));
-    }
-
-    template<std::same_as<Expr> T>
-    Expr operator!(const T& what) {
-        return make_not(what);
+        template<typename... Args>
+        Expr row(Args&&... items);
     }
 }
 
 
-// Shortcuts
+// Implementation --------------------------------------------------------------
 
-namespace flux::impl::clauses {
-    ERSLIB_EXPORT Expr col(std::string name);
-    ERSLIB_EXPORT Expr col(std::string_view table, std::string_view name);
-    ERSLIB_EXPORT Expr null();
-    ERSLIB_EXPORT Expr exists(QueryBuilder subquery);
-    ERSLIB_EXPORT Expr subquery_of(QueryBuilder subquery);
-
-    template<typename T>
-    Expr val(T&& value) {
-        return Expr(std::forward<T>(value));
-    }
-
-    // One placeholder per statement, however many times it's used.
-    template<typename T>
-    Expr param(T&& value) {
-        return Expr(make_param_node(make_binder(std::forward<T>(value))));
-    }
-
-    template<typename... Args>
-    Expr row(Args&&... items) {
-        std::vector<Expr> out;
-        out.reserve(sizeof...(Args));
-        (out.emplace_back(Expr(std::forward<Args>(items))), ...);
-        return make_row(std::move(out));
-    }
-}
-
+#include "expr.inl"
