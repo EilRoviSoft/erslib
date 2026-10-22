@@ -380,12 +380,12 @@ namespace ers::impl {
 
         template<typename T>
         Result(const Result<T>& other) :
-            m_error(other.has_error() ? optional<error_type>(other.error()) : none) {
+            m_error(other.has_error() ? maybe<error_type>(other.error()) : none) {
         }
 
         template<typename T>
         Result(Result<T>&& other) :
-            m_error(other.has_error() ? optional<error_type>(std::move(other).extract_error()) : none) {
+            m_error(other.has_error() ? maybe<error_type>(std::move(other).extract_error()) : none) {
         }
 
 

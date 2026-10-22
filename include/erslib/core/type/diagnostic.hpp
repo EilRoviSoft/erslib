@@ -55,6 +55,8 @@ namespace ers {
 // cpptrace
 #include <cpptrace/cpptrace.hpp>
 
+#endif
+
 
 namespace ers::impl {
     class ERSLIB_EXPORT Diagnostic {
@@ -64,8 +66,10 @@ namespace ers::impl {
         Diagnostic(
             ESeverity severity,
             std::string message,
-            timestamp_t timestamp = std::chrono::system_clock::now(),
-            cpptrace::raw_trace trace = get_trace({ .skip = 1 })
+            timestamp_t timestamp = std::chrono::system_clock::now()
+#ifdef _HAS_CPPTRACE
+            , cpptrace::raw_trace trace = get_trace({ .skip = 1 })
+#endif
         );
 
 
@@ -74,7 +78,9 @@ namespace ers::impl {
         ESeverity severity() const noexcept { return m_severity; }
         timestamp_t timestamp() const noexcept { return m_timestamp; }
         std::string_view message() const noexcept { return m_message; }
+#ifdef _HAS_CPPTRACE
         const cpptrace::raw_trace& stacktrace() const noexcept { return m_trace; }
+#endif
 
 
         std::string to_string(bool trim = false) const;
@@ -103,54 +109,15 @@ namespace ers::impl {
         std::string m_message;
         std::vector<std::string> m_context;
         timestamp_t m_timestamp;
+#ifdef _HAS_CPPTRACE
         cpptrace::raw_trace m_trace;
-    };
-}
-
-#else
-
-namespace ers::impl {
-    class ERSLIB_EXPORT Diagnostic {
-    public:
-        // Member functions
-
-        Diagnostic(
-            ESeverity severity,
-            std::string message,
-            timestamp_t timestamp = std::chrono::system_clock::now()
-        );
-
-
-        // Observers
-
-        ESeverity severity() const noexcept { return m_severity; }
-        timestamp_t timestamp() const noexcept { return m_timestamp; }
-        std::string_view message() const noexcept { return m_message; }
-
-
-        std::string to_string(bool trim = false) const;
-
-
-        // Modifiers
-
-        Diagnostic&& extend(std::string_view message) &&;
-
-        template<typename... Args>
-            requires (sizeof...(Args) >= 1)
-        Diagnostic&& extend(std::format_string<Args...> fmt, Args&&... args) && {
-            m_message += std::format(fmt, std::forward<Args>(args)...);
-            return std::move(*this);
-        }
-
-
-    protected:
-        ESeverity m_severity;
-        std::string m_message;
-        timestamp_t m_timestamp;
-    };
-}
-
 #endif
+
+
+    private:
+        std::string _build_message() const;
+    };
+}
 
 namespace ers {
     using impl::Diagnostic;

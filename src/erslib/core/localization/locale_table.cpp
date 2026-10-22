@@ -329,7 +329,7 @@ auto ers::impl::LocaleTable::reload(const fs::path& root) -> Result<reload_repor
 
     for (const auto& [name, parts] : domains) {
         auto scan = ERS_TRY(scan_domain(_options, root, name, parts)
-            .context("Domain '{}'", root));
+            .context("Domain '{}'", name));
 
 
         auto known = _fingerprints.find(name);
@@ -416,7 +416,11 @@ auto ers::impl::LocaleTable::reload(const fs::path& root) -> Result<reload_repor
             if (known != _fingerprints.end())
                 next_fingerprints.emplace(name, known->second);
 
-            report.rejected.push_back({ .domain = name, .reason = std::string(verdict.error().message()) });
+            report.rejected.push_back({
+                .domain = name,
+                .reason = verdict.error().to_string(true)
+            });
+
             continue;
         }
 
@@ -477,8 +481,7 @@ ers::Status ers::impl::LocaleTable::add_validator(std::string_view domain, domai
         if (auto known = _fingerprints.find(domain); known != _fingerprints.end())
             _fingerprints.erase(known);
 
-        return make_error("Domain '{}' is invalid: {}",
-            domain, verdict.error().message());
+        return std::move(verdict).context("Domain '{}' is invalid", domain).extract_error();
     }
 
 

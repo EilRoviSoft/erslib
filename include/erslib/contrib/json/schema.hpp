@@ -66,7 +66,7 @@ namespace utl::impl {
                         out = std::move(value);
                     });
                 } else
-                    m_errors.push_back(std::format("field '{}': {}", name, r.error().message()));
+                    m_errors.push_back(std::format("field '{}': {}", name, r.error().to_string(true)));
             }
         }
 
@@ -165,7 +165,7 @@ namespace utl::impl {
             T value;
 
             if (auto s = value.load_from(node); !s) {
-                m_errors.push_back(std::format("field '{}': {}", name, s.error().message()));
+                m_errors.push_back(std::format("field '{}': {}", name, s.error().to_string(true)));
                 return;
             }
 
