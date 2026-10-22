@@ -5,6 +5,7 @@
 #include <vector>
 
 // ers
+#include <erslib/flux/expr/expr.hpp>
 #include <erslib/flux/query/clause.hpp>
 
 // export
@@ -16,7 +17,7 @@ namespace flux::impl {
     public:
         // Member functions
 
-        explicit ValuesClause(std::vector<binder_t> binders);
+        explicit ValuesClause(std::vector<Expr> items);
 
 
         // Executors
@@ -26,17 +27,18 @@ namespace flux::impl {
 
 
     private:
-        std::vector<binder_t> _binders;
+        std::vector<Expr> _items;
     };
 
 
     namespace clauses {
+        // A value is bound, an Expr is rendered: values(url, now()).
         template<typename... Args>
         Clause values(Args&&... args) {
-            std::vector<binder_t> binders;
-            binders.reserve(sizeof...(Args));
-            (binders.emplace_back(make_binder(std::forward<Args>(args))), ...);
-            return make_clause<ValuesClause>(std::move(binders));
+            std::vector<Expr> items;
+            items.reserve(sizeof...(Args));
+            (items.emplace_back(Expr(std::forward<Args>(args))), ...);
+            return make_clause<ValuesClause>(std::move(items));
         }
     }
 }

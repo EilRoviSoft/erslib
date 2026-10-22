@@ -1,10 +1,8 @@
 #pragma once
 
-// std
-#include <string>
-
 // ers
 #include <erslib/core/type/general.hpp>
+#include <erslib/flux/expr/expr.hpp>
 #include <erslib/flux/query/clause.hpp>
 
 // export
@@ -12,8 +10,6 @@
 
 
 // Implementation --------------------------------------------------------------
-
-// OrderClause
 
 namespace flux::impl {
     enum class EOrder : u8 { Asc, Desc };
@@ -23,7 +19,7 @@ namespace flux::impl {
     public:
         // Member functions
 
-        OrderClause(std::string column, EOrder order);
+        OrderClause(Expr what, EOrder order);
 
 
         // Executors
@@ -32,40 +28,16 @@ namespace flux::impl {
 
 
     private:
-        std::string _column;
+        Expr _what;
         EOrder _order;
     };
 
 
     namespace clauses {
-        ERSLIB_EXPORT Clause order_by(std::string column, EOrder order = EOrder::Asc);
+        ERSLIB_EXPORT Clause order_by(ColumnExpr what, EOrder order = EOrder::Asc);
         ERSLIB_EXPORT Clause order_by_random();
-    }
-}
 
-
-// StableRandomClause
-
-namespace flux::impl {
-    class ERSLIB_EXPORT StableRandomClause : public IClause {
-    public:
-        // Member functions
-
-        StableRandomClause(std::string key, i64 seed);
-
-
-        // Executors
-
-        ers::Status render(Context& ctx) const override;
-
-
-    private:
-        std::string _key;
-        i64 _seed;
-    };
-
-
-    namespace clauses {
-        ERSLIB_EXPORT Clause order_by_stable_random(std::string key, i64 seed);
+        // The same order for the same seed, for paging through a shuffled list.
+        ERSLIB_EXPORT Clause order_by_stable_random(ColumnExpr key, i64 seed);
     }
 }

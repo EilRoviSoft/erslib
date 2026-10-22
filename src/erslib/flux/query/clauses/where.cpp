@@ -1,14 +1,11 @@
 #include "erslib/flux/query/clauses/where.hpp"
 
-// ers
-#include <erslib/flux/query/slots/where.hpp>
 
-
-flux::impl::WhereClause::WhereClause(Expr condition) :
-    IClause(&slots::where),
+flux::impl::ConditionClause::ConditionClause(SlotRef slot, Expr condition) :
+    IClause(slot),
     _condition(std::move(condition)) {
 }
 
-ers::Status flux::impl::WhereClause::render(Context& ctx) const {
+ers::Status flux::impl::ConditionClause::render(Context& ctx) const {
     return _condition.render(ctx, EPrecedence::And);
 }

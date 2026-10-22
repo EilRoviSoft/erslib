@@ -78,8 +78,27 @@ flux::impl::Expr flux::impl::Expr::cast(std::string_view type) const {
     return make_expr<nodes::CastNode>(*this, std::string(type));
 }
 
+flux::impl::Aliased flux::impl::Expr::as(std::string alias) const {
+    return { *this, std::move(alias) };
+}
+
 flux::impl::Expr flux::impl::Expr::_in(std::vector<Expr> items) const {
     return make_expr<nodes::InNode>(*this, std::move(items));
+}
+
+
+// ColumnExpr
+
+flux::impl::ColumnExpr::ColumnExpr(std::string name) :
+    expr(clauses::col(std::move(name))) {
+}
+
+flux::impl::ColumnExpr::ColumnExpr(std::string_view name) :
+    expr(clauses::col(std::string(name))) {
+}
+
+flux::impl::ColumnExpr::ColumnExpr(const char* name) :
+    expr(clauses::col(name)) {
 }
 
 
@@ -147,10 +166,14 @@ flux::impl::Expr flux::impl::clauses::null() {
     return make_const("NULL");
 }
 
+flux::impl::Expr flux::impl::clauses::sql_bool(bool value) {
+    return value ? make_const("TRUE") : make_const("FALSE");
+}
+
 flux::impl::Expr flux::impl::clauses::exists(QueryBuilder subquery) {
     return make_expr<nodes::SubqueryNode>(std::move(subquery), true);
 }
 
-flux::impl::Expr flux::impl::clauses::subquery_of(QueryBuilder subquery) {
-    return make_expr<nodes::SubqueryNode>(std::move(subquery), false);
+flux::impl::Expr flux::impl::clauses::subquery(QueryBuilder query) {
+    return make_expr<nodes::SubqueryNode>(std::move(query), false);
 }

@@ -2,7 +2,6 @@
 
 // ers
 #include <erslib/flux/query/render.hpp>
-#include <erslib/flux/query/slots/column.hpp>
 #include <erslib/flux/query/slots/from.hpp>
 
 
@@ -34,10 +33,6 @@ ers::Status flux::impl::IdentityClause::render(Context& ctx) const {
 
 flux::impl::Clause flux::impl::clauses::identifier(SlotRef slot, std::string name, std::string alias) {
     return make_clause<IdentityClause>(slot, std::move(name), std::move(alias));
-}
-
-flux::impl::Clause flux::impl::clauses::column(std::string name) {
-    return identifier(&slots::column, std::move(name));
 }
 
 flux::impl::Clause flux::impl::clauses::from(std::string name, std::string alias) {

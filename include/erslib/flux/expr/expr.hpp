@@ -7,6 +7,7 @@
 #include <string>
 #include <string_view>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 // ers
@@ -22,6 +23,7 @@
 namespace flux::impl {
     class Expr;
     class QueryBuilder;
+    struct Aliased;
 
     // Only a literal converts, so the text never comes from a runtime string.
     struct sql_text {
@@ -96,12 +98,37 @@ namespace flux::impl {
         Expr any(Expr array) const;
         Expr cast(std::string_view type) const;
 
+        // For columns() and returning(): "<expr> AS <alias>".
+        Aliased as(std::string alias) const;
+
 
     private:
         ExprNodePtr _node;
 
 
         Expr _in(std::vector<Expr> items) const;
+    };
+
+
+    struct Aliased {
+        Expr expr;
+        std::string alias;
+    };
+
+
+    // A column name or an expression, where a bare name means a column.
+    struct ERSLIB_EXPORT ColumnExpr {
+        Expr expr;
+
+
+        template<std::same_as<Expr> T>
+        ColumnExpr(T what) :
+            expr(std::move(what)) {
+        }
+
+        ColumnExpr(std::string name);
+        ColumnExpr(std::string_view name);
+        ColumnExpr(const char* name);
     };
 
 
@@ -125,8 +152,9 @@ namespace flux::impl {
         ERSLIB_EXPORT Expr col(std::string name);
         ERSLIB_EXPORT Expr col(std::string_view table, std::string_view name);
         ERSLIB_EXPORT Expr null();
+        ERSLIB_EXPORT Expr sql_bool(bool value);
         ERSLIB_EXPORT Expr exists(QueryBuilder subquery);
-        ERSLIB_EXPORT Expr subquery_of(QueryBuilder subquery);
+        ERSLIB_EXPORT Expr subquery(QueryBuilder query);
 
         template<typename T>
         Expr val(T&& value);

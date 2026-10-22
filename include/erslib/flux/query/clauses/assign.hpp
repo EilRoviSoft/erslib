@@ -5,6 +5,7 @@
 #include <utility>
 
 // ers
+#include <erslib/flux/expr/expr.hpp>
 #include <erslib/flux/query/clause.hpp>
 
 // export
@@ -16,7 +17,7 @@ namespace flux::impl {
     public:
         // Member functions
 
-        AssignClause(std::string column, binder_t binder);
+        AssignClause(std::string column, Expr value);
 
 
         // Executors
@@ -26,19 +27,20 @@ namespace flux::impl {
 
     private:
         std::string _column;
-        binder_t _binder;
+        Expr _value;
     };
 
 
     namespace clauses {
+        // A value is bound, an Expr is rendered: assign("stock", col("stock") - qty).
         template<typename T>
         Clause assign(std::string column, T&& value) {
-            return make_clause<AssignClause>(std::move(column), make_binder(std::forward<T>(value)));
+            return make_clause<AssignClause>(std::move(column), Expr(std::forward<T>(value)));
         }
 
         ERSLIB_EXPORT Clause assign_null(std::string column);
 
-        
+
         template<typename T>
         Clause set(std::string column, T&& value) {
             return assign(std::move(column), std::forward<T>(value));

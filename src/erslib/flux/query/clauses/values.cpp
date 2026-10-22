@@ -1,19 +1,29 @@
 #include "erslib/flux/query/clauses/values.hpp"
 
 // ers
-#include <erslib/flux/query/render.hpp>
 #include <erslib/flux/query/slots/values.hpp>
 
 
 // Implementation --------------------------------------------------------------
 
-flux::impl::ValuesClause::ValuesClause(std::vector<binder_t> binders) :
+flux::impl::ValuesClause::ValuesClause(std::vector<Expr> items) :
     IClause(&slots::values),
-    _binders(std::move(binders)) {
+    _items(std::move(items)) {
 }
 
 ers::Status flux::impl::ValuesClause::render(Context& ctx) const {
-    if (_binders.empty())
+    if (_items.empty())
         return ers::make_error("Slot '{}' needs at least one value.", slot()->name);
-    return append_binders(ctx, _binders);
+
+    bool first = true;
+
+    for (const auto& it : _items) {
+        if (!first)
+            ctx.query += ", ";
+        first = false;
+
+        ERS_TRY(it.render(ctx));
+    }
+
+    return ers::ok;
 }

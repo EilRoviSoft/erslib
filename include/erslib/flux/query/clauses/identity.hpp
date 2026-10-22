@@ -1,11 +1,8 @@
 #pragma once
 
 // std
-#include <concepts>
-#include <ranges>
 #include <string>
 #include <utility>
-#include <vector>
 
 // ers
 #include <erslib/flux/query/clause.hpp>
@@ -35,32 +32,6 @@ namespace flux::impl {
 
     namespace clauses {
         ERSLIB_EXPORT Clause identifier(SlotRef slot, std::string name, std::string alias = "");
-
-
-        ERSLIB_EXPORT Clause column(std::string name);
-
-        template<typename... Args>
-            requires (std::convertible_to<Args, std::string> && ...)
-        auto columns(Args&&... args) {
-            std::vector<Clause> out;
-            out.reserve(sizeof...(Args));
-            (out.emplace_back(column(std::forward<Args>(args))), ...);
-            return out;
-        }
-
-        template<std::ranges::input_range R>
-            requires std::constructible_from<std::string, std::ranges::range_reference_t<R>>
-        auto columns(R&& names) {
-            std::vector<Clause> out;
-
-            if constexpr (std::ranges::sized_range<R>)
-                out.reserve(std::ranges::size(names));
-
-            for (auto&& it : names)
-                out.emplace_back(column(std::string(std::forward<decltype(it)>(it))));
-
-            return out;
-        }
 
 
         ERSLIB_EXPORT Clause from(std::string name, std::string alias = "");

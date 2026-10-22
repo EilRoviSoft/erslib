@@ -56,7 +56,7 @@ flux::with_tx(db, [&](pqxx::work& tx) -> ers::Status {
 
 ```cpp
 auto count = flux::try_with_tx(db, [](pqxx::work& tx) {
-    return (select_from("users") | named(count_all(), "n")).exec(tx).get_as<i64>();
+    return (select_from("users") | column(count_all())).exec(tx).get_as<i64>();
 }, "Users/Count");                                    // ers::Result<i64>
 
 auto users = flux::try_with_query(db, select_from("users"), "Users/All")
@@ -100,13 +100,15 @@ OFFSET $4
 ```cpp
 insert_into("images")
     | columns("url", "path")
-    | values(img.url, img.path)
+    | values(img.url, img.path)         // an Expr is rendered: values(url, now())
     | on_conflict("url")                // or on_conflict("a", "b"), on_conflict_constraint("images_url_key")
     | do_update("path")                 // SET path = excluded.path; or do_nothing()
-    | returning("id");                  // returning_all() for RETURNING *
+    | returning("id");                  // returning("id", col("at").as("created")), returning_all()
 
 update("users")
     | assign("name", name)              // set() is the same
+    | assign("visits", col("visits") + 1)
+    | assign("seen_at", now())
     | assign_null("email")
     | where(col("id") == id);
 
@@ -128,16 +130,43 @@ q |= with_limit(1); // builders are values, add to them in place or copy them
 
 ### More clauses
 
+A string is a column name, anything else is an `Expr`. `.as()` names it.
+
 ```cpp
 select_from("orders")
-    | named(count_all(), "n")                               // count(*) AS n
-    | named(sum_of("total"), "sum")                         // also min_of, max_of, avg_of, count_of, count_distinct,
-    | named(coalesce_with(max_of("total"), sql_bool(false)), "m")  // array_agg_of, bool_and_of, stddev_of, ...
-    | group_by("user_id");
+    | columns("user_id", count_all().as("n"), sum_of("total").as("sum"))
+    | column(coalesce(max_of("total"), 0).as("top"))
+    | group_by("user_id")
+    | having(count_all() > 5)
+    | order_by(sum_of("total"), EOrder::Desc);
+```
 
-select_from("items") | json_rows("items", { "position" });  // json_agg(row_to_json(items) ORDER BY position)
-select_from("u") | named(subquery(select_from("o") | count_all()), "orders");
+```sql
+SELECT user_id, count(*) AS n, sum(total) AS sum, coalesce(max(total), $1) AS top
+FROM orders
+GROUP BY user_id
+HAVING count(*) > $2
+ORDER BY sum(total) DESC
+```
 
+```cpp
+count_all()  count_of(x)  count_distinct(x)  min_of(x)  max_of(x)  sum_of(x)  avg_of(x)
+array_agg_of(x)  bool_and_of(x)  bool_or_of(x)  stddev_of(x)  variance_of(x)  corr_of(y, x)
+string_agg("name", ", ")                    // string_agg(name, $1)
+percentile_cont(0.5, { "price" })           // percentile_cont($1) WITHIN GROUP (ORDER BY price)
+mode_of({ "a" })
+json_rows("items", { "position" })          // json_agg(row_to_json(items) ORDER BY position)
+agg<"regr_slope">("y", col("x") * 2)        // anything else
+agg_distinct<"array_agg">("tag")            // array_agg(DISTINCT tag)
+
+coalesce(a, b)  nullif(a, b)  greatest(a, b)  least(a, b)  now()  concat(a, b)   // a || b
+```
+
+```cpp
+select_from("users", "u")
+    | columns("u.id", subquery(select_from("orders") | column(count_all()) | where(col("user_id") == col("u.id"))).as("orders"));
+
+select_from("products") | order_by(col("price") * col("qty"), EOrder::Desc);
 select_from("products") | order_by_stable_random("id", seed);    // same order for the same seed, for paging
 select_from("products") | order_by_random();
 select_from("users") | distinct();
@@ -276,25 +305,36 @@ where(price < 1000);
 A clause:
 
 ```cpp
-class OrderByExprClause final : public flux::ext::IClause {
+class DistinctOnClause final : public flux::ext::IClause {
 public:
-    explicit OrderByExprClause(flux::Expr what) :
-        IClause(&flux::slots::order),           // the slot decides where in the statement it goes
-        _what(std::move(what)) {
+    explicit DistinctOnClause(std::vector<flux::Expr> on) :
+        IClause(&flux::slots::distinct),        // the slot decides where in the statement it goes
+        _on(std::move(on)) {
     }
 
     ers::Status render(flux::ext::Context& ctx) const override {
-        return _what.render(ctx);
+        ctx.query += " DISTINCT ON (";
+
+        for (size_t i = 0; i < _on.size(); i++) {
+            if (i > 0)
+                ctx.query += ", ";
+
+            ERS_TRY(_on[i].render(ctx));
+        }
+
+        ctx.query += ')';
+        return ers::ok;
     }
 
 private:
-    flux::Expr _what;
+    std::vector<flux::Expr> _on;
 };
 
-select_from("items")
-    | flux::ext::make_clause<OrderByExprClause>(distance(col("embedding"), vec))
-    | with_limit(10);
-// ORDER BY embedding <-> $1
+select_from("prices")
+    | flux::ext::make_clause<DistinctOnClause>(std::vector { col("product_id") })
+    | order_by("product_id")
+    | order_by("at", EOrder::Desc);
+// SELECT DISTINCT ON (product_id) *
 ```
 
 `raw()` is the quick version of the same, `?` marks values, nothing in the text is checked:

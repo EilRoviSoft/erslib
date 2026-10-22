@@ -6,12 +6,11 @@
 // ers
 #include <erslib/flux/query/clauses/bound.hpp>
 #include <erslib/flux/query/clauses/identity.hpp>
-#include <erslib/flux/query/clauses/order.hpp>
-#include <erslib/flux/query/clauses/where.hpp>
 #include <erslib/flux/query/slots/column.hpp>
 #include <erslib/flux/query/slots/distinct.hpp>
 #include <erslib/flux/query/slots/from.hpp>
 #include <erslib/flux/query/slots/group.hpp>
+#include <erslib/flux/query/slots/having.hpp>
 #include <erslib/flux/query/slots/join.hpp>
 #include <erslib/flux/query/slots/limit.hpp>
 #include <erslib/flux/query/slots/offset.hpp>
@@ -30,7 +29,6 @@ namespace {
         .arity = EArity::Single,
     };
 
-    ////&slots::having,
     ////&slots::window,
     ////&slots::locking
 
@@ -50,6 +48,7 @@ namespace {
         bindings::join,
         bindings::where,
         bindings::group,
+        bindings::having,
         bindings::order,
         bindings::limit,
         bindings::offset,

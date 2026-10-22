@@ -11,8 +11,10 @@
 
 // Includes --------------------------------------------------------------------
 
+#include <erslib/flux/expr/aggregate.hpp>
 #include <erslib/flux/expr/array.hpp>
 #include <erslib/flux/expr/expr.hpp>
+#include <erslib/flux/expr/functions.hpp>
 #include <erslib/flux/expr/node.hpp>
 #include <erslib/flux/expr/ops.hpp>
 #include <erslib/flux/query/clause.hpp>
@@ -22,13 +24,12 @@
 
 // Clauses
 
-#include <erslib/flux/query/clauses/aggregate.hpp>
 #include <erslib/flux/query/clauses/assign.hpp>
 #include <erslib/flux/query/clauses/bound.hpp>
+#include <erslib/flux/query/clauses/column.hpp>
 #include <erslib/flux/query/clauses/conditional.hpp>
 #include <erslib/flux/query/clauses/conflict.hpp>
 #include <erslib/flux/query/clauses/distinct.hpp>
-#include <erslib/flux/query/clauses/expr.hpp>
 #include <erslib/flux/query/clauses/group.hpp>
 #include <erslib/flux/query/clauses/identity.hpp>
 #include <erslib/flux/query/clauses/join.hpp>
@@ -53,6 +54,7 @@
 #include <erslib/flux/query/slots/distinct.hpp>
 #include <erslib/flux/query/slots/from.hpp>
 #include <erslib/flux/query/slots/group.hpp>
+#include <erslib/flux/query/slots/having.hpp>
 #include <erslib/flux/query/slots/join.hpp>
 #include <erslib/flux/query/slots/limit.hpp>
 #include <erslib/flux/query/slots/offset.hpp>
@@ -98,7 +100,11 @@ namespace flux::ext {
     using impl::binary_op_t;
     using impl::fn_t;
     using impl::sql_text;
+    using impl::ColumnExpr;
+    using impl::Aliased;
+    using impl::aggregate_t;
     using impl::make_expr;
+    using impl::make_aggregate;
     using impl::make_const;
     using impl::make_binary;
     using impl::make_fn;
@@ -121,20 +127,14 @@ namespace flux::ext {
 namespace flux::ext {
     using impl::IClause;
     using impl::Clause;
+    using impl::make_clause;
 
-
-    using impl::AggregateClause;
-    using impl::JsonRowsClause;
-    using impl::OrderedSetAggClause;
-    using impl::StringAggClause;
-
-    using impl::AliasClause;
-    using impl::CoalesceClause;
-    using impl::SubqueryClause;
 
     using impl::AssignClause;
 
     using impl::BoundClause;
+
+    using impl::ColumnClause;
 
     using impl::ConflictUpdateClause;
 
@@ -148,7 +148,7 @@ namespace flux::ext {
 
     using impl::ValuesClause;
 
-    using impl::WhereClause;
+    using impl::ConditionClause;
 }
 
 

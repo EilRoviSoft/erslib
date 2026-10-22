@@ -25,6 +25,11 @@ namespace {
         return r ? *r : std::string("<error>");
     }
 
+    std::string sql_of(const flux::QueryBuilder& q) {
+        auto r = q.to_sql();
+        return r ? *r : std::string("<error>");
+    }
+
     constexpr flux::ext::binary_op_t<"%"> trgm_similar {};
     constexpr flux::ext::fn_t<"lower"> lower {};
     constexpr flux::ext::fn_t<"date_trunc"> date_trunc {};
@@ -162,6 +167,39 @@ TEST_CASE("flux expr: a custom node plugs in") {
     CHECK(where_of(custom && col("z") == 1) == "SELECT *\nFROM t\nWHERE 0 < x + y AND z = $1");
 }
 
+TEST_CASE("flux expr: a custom clause plugs in") {
+    class DistinctOnClause final : public flux::ext::IClause {
+    public:
+        explicit DistinctOnClause(std::vector<flux::Expr> on) :
+            IClause(&flux::slots::distinct),        // the slot decides where in the statement it goes
+            _on(std::move(on)) {
+        }
+
+        ers::Status render(flux::ext::Context& ctx) const override {
+            ctx.query += " DISTINCT ON (";
+
+            for (size_t i = 0; i < _on.size(); i++) {
+                if (i > 0)
+                    ctx.query += ", ";
+
+                ERS_TRY(_on[i].render(ctx));
+            }
+
+            ctx.query += ')';
+            return ers::ok;
+        }
+
+    private:
+        std::vector<flux::Expr> _on;
+    };
+
+    CHECK(sql_of(select_from("prices")
+        | flux::ext::make_clause<DistinctOnClause>(std::vector { col("product_id") })
+        | order_by("product_id")
+        | order_by("at", EOrder::Desc))
+        == "SELECT DISTINCT ON (product_id) *\nFROM prices\nORDER BY product_id ASC, at DESC");
+}
+
 
 // Parameters ------------------------------------------------------------------
 
@@ -178,4 +216,71 @@ TEST_CASE("flux expr: array helpers bind the array once") {
 
     CHECK(where_of(empty_array(std::vector<std::string> {}))
         == "SELECT *\nFROM t\nWHERE cardinality($1::TEXT[]) = 0");
+}
+
+
+// Statements ------------------------------------------------------------------
+
+TEST_CASE("flux expr: the select list takes expressions and aliases") {
+    CHECK(sql_of(select_from("orders")
+        | columns("user_id", count_all().as("n"), sum_of("total").as("sum"))
+        | column(coalesce(max_of("total"), 0).as("top"))
+        | group_by("user_id")
+        | having(count_all() > 5)
+        | order_by(sum_of("total"), EOrder::Desc))
+        == "SELECT user_id, count(*) AS n, sum(total) AS sum, coalesce(max(total), $1) AS top"
+           "\nFROM orders"
+           "\nGROUP BY user_id"
+           "\nHAVING count(*) > $2"
+           "\nORDER BY sum(total) DESC");
+}
+
+TEST_CASE("flux expr: aggregates") {
+    CHECK(sql_of(select_from("t") | columns(count_distinct("a"), corr_of("y", "x"), agg<"regr_slope">("y", col("x") * 2)))
+        == "SELECT count(DISTINCT a), corr(y, x), regr_slope(y, x * $1)\nFROM t");
+
+    CHECK(sql_of(select_from("t") | column(string_agg("name", ", ")))
+        == "SELECT string_agg(name, $1)\nFROM t");
+
+    CHECK(sql_of(select_from("t") | column(percentile_cont(0.5, { "price" })))
+        == "SELECT percentile_cont($1) WITHIN GROUP (ORDER BY price)\nFROM t");
+
+    CHECK(sql_of(select_from("t") | column(mode_of({ "a" })))
+        == "SELECT mode() WITHIN GROUP (ORDER BY a)\nFROM t");
+
+    CHECK(sql_of(select_from("items") | column(json_rows("items", { "position" })))
+        == "SELECT json_agg(row_to_json(items) ORDER BY position)\nFROM items");
+
+    CHECK(sql_of(select_from("t") | column(mode_of({}))) == "<error>");
+}
+
+TEST_CASE("flux expr: a subquery in the select list") {
+    const auto orders = select_from("orders") | column(count_all()) | where(col("user_id") == col("u.id"));
+
+    CHECK(sql_of(select_from("users", "u") | columns("u.id", subquery(orders).as("orders")))
+        == "SELECT u.id, (SELECT count(*)\nFROM orders\nWHERE user_id = u.id) AS orders\nFROM users AS u");
+}
+
+TEST_CASE("flux expr: order by an expression") {
+    CHECK(sql_of(select_from("t") | order_by(col("a") + col("b")) | order_by("c", EOrder::Desc))
+        == "SELECT *\nFROM t\nORDER BY a + b ASC, c DESC");
+
+    CHECK(sql_of(select_from("t") | order_by_stable_random("id", 42))
+        == "SELECT *\nFROM t\nORDER BY md5(id::text || $1::text) ASC");
+
+    CHECK(sql_of(select_from("t") | order_by_random()) == "SELECT *\nFROM t\nORDER BY random() ASC");
+}
+
+TEST_CASE("flux expr: assign and values take expressions") {
+    CHECK(sql_of(update("products") | assign("stock", col("stock") - 3) | assign("seen_at", now()) | where(col("id") == 1))
+        == "UPDATE products\nSET stock = stock - $1, seen_at = now()\nWHERE id = $2");
+
+    CHECK(sql_of(update("t") | assign_null("a")) == "UPDATE t\nSET a = NULL");
+
+    CHECK(sql_of(insert_into("t") | columns("a", "at") | values("x", now()) | returning("id", col("at").as("created")))
+        == "INSERT INTO t (a, at)\nVALUES ($1, now())\nRETURNING id, at AS created");
+}
+
+TEST_CASE("flux expr: a bad alias is rejected") {
+    CHECK(sql_of(select_from("t") | column(col("a").as("x; --"))) == "<error>");
 }

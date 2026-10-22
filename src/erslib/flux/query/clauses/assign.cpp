@@ -7,25 +7,22 @@
 
 // Implementation --------------------------------------------------------------
 
-flux::impl::AssignClause::AssignClause(std::string column, binder_t binder) :
+flux::impl::AssignClause::AssignClause(std::string column, Expr value) :
     IClause(&slots::set),
     _column(std::move(column)),
-    _binder(std::move(binder)) {
+    _value(std::move(value)) {
 }
 
 ers::Status flux::impl::AssignClause::render(Context& ctx) const {
-    if (auto s = append_identifier(ctx, _column, slot()); !s)
-        return s;
+    ERS_TRY(append_identifier(ctx, _column, slot()));
 
     ctx.query += " = ";
-    ctx.query += ctx.bind(_binder);
-
-    return ers::ok;
+    return _value.render(ctx);
 }
 
 
 // Shortcuts
 
 flux::impl::Clause flux::impl::clauses::assign_null(std::string column) {
-    return make_clause<AssignClause>(std::move(column), binder_t {});
+    return make_clause<AssignClause>(std::move(column), null());
 }

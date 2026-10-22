@@ -1,63 +1,36 @@
 #include "erslib/flux/query/clauses/order.hpp"
 
-// std
-#include <format>
-#include <utility>
-
 // ers
-#include <erslib/flux/query/clauses/raw.hpp>
-#include <erslib/flux/query/render.hpp>
+#include <erslib/flux/expr/functions.hpp>
 #include <erslib/flux/query/slots/order.hpp>
 
 
 // Implementation --------------------------------------------------------------
 
-// OrderClause
-
-flux::impl::OrderClause::OrderClause(std::string column, EOrder order) :
+flux::impl::OrderClause::OrderClause(Expr what, EOrder order) :
     IClause(&slots::order),
-    _column(std::move(column)),
+    _what(std::move(what)),
     _order(order) {
 }
 
 ers::Status flux::impl::OrderClause::render(Context& ctx) const {
-    if (auto s = append_identifier(ctx, _column, slot()); !s)
-        return s;
+    ERS_TRY(_what.render(ctx));
 
     ctx.query += _order == EOrder::Desc ? " DESC" : " ASC";
-
     return ers::ok;
 }
 
 
-flux::impl::Clause flux::impl::clauses::order_by(std::string column, EOrder order) {
-    return make_clause<OrderClause>(std::move(column), order);
+// Shortcuts
+
+flux::impl::Clause flux::impl::clauses::order_by(ColumnExpr what, EOrder order) {
+    return make_clause<OrderClause>(std::move(what.expr), order);
 }
 
 flux::impl::Clause flux::impl::clauses::order_by_random() {
-    return raw(&slots::order, "RANDOM()");
+    return order_by(fn_t<"random"> {}());
 }
 
-
-// StableRandomClause
-
-flux::impl::StableRandomClause::StableRandomClause(std::string key, i64 seed) :
-    IClause(&slots::order),
-    _key(std::move(key)),
-    _seed(seed) {
-}
-
-ers::Status flux::impl::StableRandomClause::render(Context& ctx) const {
-    if (auto s = check_identifier(_key, slot()); !s)
-        return s;
-
-    ctx.query += std::format("md5({}::text || {}::text)",
-        _key, ctx.bind(make_binder(_seed)));
-
-    return ers::ok;
-}
-
-
-flux::impl::Clause flux::impl::clauses::order_by_stable_random(std::string key, i64 seed) {
-    return make_clause<StableRandomClause>(std::move(key), seed);
+flux::impl::Clause flux::impl::clauses::order_by_stable_random(ColumnExpr key, i64 seed) {
+    return order_by(fn_t<"md5"> {}(concat(key.expr.cast("text"), Expr(seed).cast("text"))));
 }
