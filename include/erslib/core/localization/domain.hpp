@@ -47,18 +47,18 @@ namespace ers::impl {
 
         // Accessors
 
-        [[nodiscard]] std::string_view operator[](std::string_view k, size_t locale_id) const;
-        [[nodiscard]] maybe<std::string_view> find(std::string_view k, size_t locale_id) const noexcept;
+        std::string_view operator[](std::string_view k, size_t locale_id) const;
+        maybe<std::string_view> find(std::string_view k, size_t locale_id) const noexcept;
 
-        [[nodiscard]] const std::string* lookup(std::string_view k, size_t locale_id) const noexcept;
+        const std::string* lookup(std::string_view k, size_t locale_id) const noexcept;
 
-        [[nodiscard]] std::span<const std::string_view> keys(std::string_view prefix = {}) const;
-        [[nodiscard]] std::vector<std::string_view> children(std::string_view prefix = {}) const;
+        std::span<const std::string_view> keys(std::string_view prefix = {}) const;
+        std::vector<std::string_view> children(std::string_view prefix = {}) const;
 
 
-        [[nodiscard]] const locale_config_t& config() const noexcept;
-        [[nodiscard]] const container_type& entries() const noexcept;
-        [[nodiscard]] size_t size() const noexcept;
+        const locale_config_t& config() const noexcept;
+        const container_type& entries() const noexcept;
+        size_t size() const noexcept;
 
 
     private:
@@ -69,7 +69,17 @@ namespace ers::impl {
 
         Status _insert(std::string key, size_t locale_id, std::string text);
 
+
         // Called once every text is inserted, before the domain is shared.
         void _seal();
+
+
+        Status _resolve_references(const reference_options_t& options);
+
+        Status _resolve_slot(std::string_view key, size_t locale_id, const reference_options_t& options, std::vector<std::string>& path);
+
+        maybe<std::string>* _slot(std::string_view key, size_t locale_id) noexcept;
+
+        maybe<size_t> _supplier(const entry_t& entry, size_t locale_id) const noexcept;
     };
 }

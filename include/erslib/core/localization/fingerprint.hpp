@@ -21,11 +21,11 @@ namespace ers::impl {
         size_t checksum = 0;
 
 
-        [[nodiscard]] bool same_metadata_as(const fingerprint_t& other) const noexcept {
+        bool same_metadata_as(const fingerprint_t& other) const noexcept {
             return size == other.size && files == other.files && time == other.time && layout == other.layout;
         }
 
-        [[nodiscard]] bool same_content_as(const fingerprint_t& other) const noexcept {
+        bool same_content_as(const fingerprint_t& other) const noexcept {
             return size == other.size && files == other.files && checksum == other.checksum;
         }
     };

@@ -21,11 +21,11 @@ namespace ers::impl {
     public:
         // Accessors
 
-        [[nodiscard]] DomainView operator[](std::string_view domain) const;
-        [[nodiscard]] maybe<DomainView> find(std::string_view domain) const;
+        DomainView operator[](std::string_view domain) const;
+        maybe<DomainView> find(std::string_view domain) const;
 
         // 'common_locale_id' for LocaleTable::common().
-        [[nodiscard]] size_t locale_id() const noexcept;
+        size_t locale_id() const noexcept;
 
 
     private:

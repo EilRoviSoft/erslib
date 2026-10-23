@@ -736,3 +736,185 @@ TEST_CASE("localization: adapters read their domain") {
 
     CHECK_THROWS(static_cast<void>(table.adapt<Palette>("de")));
 }
+
+
+// References ------------------------------------------------------------------
+
+TEST_CASE("localization: references are plain text until a domain enables them") {
+    TempTree tree;
+    fill(tree);
+    tree.write("_common/colors.l10n.txt", "blue.hex = #007BFF\nsea.hex = $blue");
+
+    ers::LocaleTable table(options());
+    REQUIRE(table.reload(tree.root()));
+
+    CHECK(table["ru"]["colors"]["sea.hex"] == "$blue");
+}
+
+TEST_CASE("localization: a reference takes the same field of the named sibling, locale by locale") {
+    TempTree tree;
+    fill(tree);
+    tree.write("_common/colors.l10n.txt",
+        "blue.hex = #007BFF\nblue.name@ru = синий\nblue.name@en = blue\n"
+        "sea.hex = $blue\nsea.name@ru = $blue\nsea.name@en = sea\n");
+
+    ers::LocaleTable table(options());
+    REQUIRE(table.enable_references("colors"));
+    REQUIRE(table.reload(tree.root()));
+
+    CHECK(table["ru"]["colors"]["sea.hex"] == "#007BFF");
+    CHECK(table["en"]["colors"]["sea.hex"] == "#007BFF");
+    CHECK(table.common()["colors"]["sea.hex"] == "#007BFF");
+    CHECK(table["ru"]["colors"]["sea.name"] == "синий");
+    CHECK(table["en"]["colors"]["sea.name"] == "sea");
+}
+
+TEST_CASE("localization: a reference with a dot is a key of the domain") {
+    TempTree tree;
+    fill(tree);
+    tree.write("_common/colors.l10n.txt",
+        "blue.hex = #007BFF\nblue.name@ru = синий\n"
+        "sea.title = $blue.hex\nsea.label@ru = $blue.name\n");
+
+    ers::LocaleTable table(options());
+    REQUIRE(table.enable_references("colors"));
+    REQUIRE(table.reload(tree.root()));
+
+    CHECK(table["ru"]["colors"]["sea.title"] == "#007BFF");
+    CHECK(table["ru"]["colors"]["sea.label"] == "синий");
+}
+
+TEST_CASE("localization: references chain and do not depend on the order of keys") {
+    TempTree tree;
+    fill(tree);
+    tree.write("_common/colors.l10n.txt",
+        "midnight.hex = $navy\nnavy.hex = $blue\nblue.hex = #1F4FA3\n");
+
+    ers::LocaleTable table(options());
+    REQUIRE(table.enable_references("colors"));
+    REQUIRE(table.reload(tree.root()));
+
+    CHECK(table["ru"]["colors"]["midnight.hex"] == "#1F4FA3");
+    CHECK(table["ru"]["colors"]["navy.hex"] == "#1F4FA3");
+}
+
+TEST_CASE("localization: a doubled marker is a plain one") {
+    TempTree tree;
+    fill(tree);
+    tree.write("_common/prices.l10n.txt", "five.text = $$5\nnone.text = $$\nmiddle.text = a $b\n");
+
+    ers::LocaleTable table(options());
+    REQUIRE(table.enable_references("prices"));
+    REQUIRE(table.reload(tree.root()));
+
+    CHECK(table["ru"]["prices"]["five.text"] == "$5");
+    CHECK(table["ru"]["prices"]["none.text"] == "$");
+    CHECK(table["ru"]["prices"]["middle.text"] == "a $b");
+}
+
+TEST_CASE("localization: references that name nothing make the domain invalid") {
+    const auto message = [](std::string_view bundle, ers::reference_options_t references = {}) {
+        TempTree tree;
+        fill(tree);
+        tree.write("_common/colors.l10n.txt", bundle);
+
+        ers::LocaleTable table(options(ers::EInvalidDomain::FailReload));
+        REQUIRE(table.enable_references("colors", references));
+
+        auto report = table.reload(tree.root());
+        REQUIRE_FALSE(report);
+
+        return report.error().to_string(true);
+    };
+
+    CHECK(message("blue.hex = #007BFF\nsea.hex = $bleu").contains("sea.hex"));
+    CHECK(message("blue.hex = #007BFF\nsea.hex = $").contains("no name"));
+    CHECK(message("a.hex = $b\nb.hex = $a").contains("cycle"));
+    CHECK(message("a.hex = $a").contains("cycle"));
+    CHECK(message("a.v = $b\nb.v = $c\nc.v = $d\nd.v = text", { .max_depth = 2 }).contains("deeper"));
+    CHECK(message("blue.name@ru = синий\nsea.hex = $blue").contains("no text"));
+    CHECK(message("brand = $title\ntitle = x").contains("relative"));
+    CHECK(message("g.blue.hex = #1\ng.stripped.hex = $.blue").contains("refers to 'blue'"));
+    CHECK(message("a.hex = $a..hex").contains("not a key"));
+    CHECK(message("blue.hex = #000001\ng.stripped.hex = $blue").contains("g.blue.hex"));
+}
+
+TEST_CASE("localization: a bad reference keeps the previous version of the domain") {
+    TempTree tree;
+    fill(tree);
+    tree.write("_common/colors.l10n.txt", "blue.hex = #007BFF\nsea.hex = $blue");
+
+    ers::LocaleTable table(options());
+    REQUIRE(table.enable_references("colors"));
+    REQUIRE(table.reload(tree.root()));
+
+    tree.write("_common/colors.l10n.txt", "blue.hex = #007BFF\nsea.hex = $nowhere");
+    tree.touch("_common/colors.l10n.txt");
+
+    const auto report = table.reload(tree.root());
+
+    REQUIRE(report);
+    REQUIRE(report->rejected.size() == 1);
+    CHECK(report->rejected[0].domain == "colors");
+    CHECK(table["ru"]["colors"]["sea.hex"] == "#007BFF");
+}
+
+TEST_CASE("localization: validators and adapters see the resolved texts") {
+    TempTree tree;
+    fill(tree);
+    tree.write("_common/colors.l10n.txt",
+        "blue.hex = #007BFF\nblue.name@ru = синий\nsea.hex = $blue\nsea.name@ru = морской\n");
+
+    ers::LocaleTable table(options());
+    REQUIRE(table.attach<Palette>());
+    REQUIRE(table.enable_references("colors"));
+    REQUIRE(table.reload(tree.root()));
+
+    CHECK(table.adapt<Palette>("ru").hex("sea") == "#007BFF"sv);
+}
+
+TEST_CASE("localization: enabling references late rebuilds the loaded domain") {
+    TempTree tree;
+    fill(tree);
+    tree.write("_common/colors.l10n.txt", "blue.hex = #007BFF\nsea.hex = $blue");
+
+    ers::LocaleTable table(options());
+    REQUIRE(table.reload(tree.root()));
+    CHECK(table["ru"]["colors"]["sea.hex"] == "$blue");
+
+    REQUIRE(table.enable_references("colors"));
+    REQUIRE(table.reload(tree.root()));
+
+    CHECK(table["ru"]["colors"]["sea.hex"] == "#007BFF");
+}
+
+TEST_CASE("localization: a relative reference stays on its level and keeps its field") {
+    TempTree tree;
+    fill(tree);
+    tree.write("_common/colors.l10n.txt",
+        "blue.hex = #000001\n"
+        "g.blue.hex = #1F4FA3\n"
+        "g.stripped.hex = $blue\n");
+
+    ers::LocaleTable table(options());
+    REQUIRE(table.enable_references("colors"));
+    REQUIRE(table.reload(tree.root()));
+
+    CHECK(table["ru"]["colors"]["g.stripped.hex"] == "#1F4FA3");
+}
+
+TEST_CASE("localization: root-level keys are named with a leading dot") {
+    TempTree tree;
+    fill(tree);
+    tree.write("_common/colors.l10n.txt",
+        "brand = Маленькая Леди\n"
+        "title = $.brand\n"
+        "blue.caption = $.brand\n");
+
+    ers::LocaleTable table(options());
+    REQUIRE(table.enable_references("colors"));
+    REQUIRE(table.reload(tree.root()));
+
+    CHECK(table["ru"]["colors"]["title"] == "Маленькая Леди");
+    CHECK(table["ru"]["colors"]["blue.caption"] == "Маленькая Леди");
+}

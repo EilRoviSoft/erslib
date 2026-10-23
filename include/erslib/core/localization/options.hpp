@@ -37,5 +37,14 @@ namespace ers::impl {
     };
 
 
+    // "$blue" in "stripped-blue.hex" is the same field of the sibling "blue" ("blue.hex").
+    // "$blue.name" holds a dot and is a key of the domain as it is, "$.brand" is the key "brand" of the root.
+    // "$$" at the start is a plain '$'.
+    struct reference_options_t {
+        char marker = '$';
+        size_t max_depth = 8;
+    };
+
+
     using domain_validator_t = std::function<Status(const DomainPtr&)>;
 }

@@ -402,9 +402,19 @@ auto ers::impl::LocaleTable::reload(const fs::path& root) -> Result<reload_repor
         domain->_seal();
 
 
-        // step 3.4: validating
+        // step 3.4: references
 
-        if (auto verdict = _validate(name, domain); !verdict) {
+        auto verdict = _resolve(name, *domain);
+
+        domain->_seal();
+
+
+        // step 3.5: validating
+
+        if (verdict)
+            verdict = _validate(name, domain);
+
+        if (!verdict) {
             // nothing to keep, or keeping isn't allowed
             if (_options.on_invalid == EInvalidDomain::FailReload || !existing) {
                 return std::move(verdict).context("Domain '{}' is invalid", name).extract_error();
@@ -505,6 +515,37 @@ ers::Status ers::impl::LocaleTable::_validate(std::string_view domain, const Dom
 
 
     return ok;
+}
+
+
+// References
+
+ers::Status ers::impl::LocaleTable::enable_references(std::string_view domain, reference_options_t options) {
+    if (options.marker == '\0' || options.max_depth == 0)
+        return make_error("References need a marker and a depth of at least 1.");
+
+    std::scoped_lock lock(_reloading_mutex);
+
+    _references.insert_or_assign(std::string(domain), options);
+
+    if (auto known = _fingerprints.find(domain); known != _fingerprints.end())
+        _fingerprints.erase(known);
+
+    return ok;
+}
+
+ers::Status ers::impl::LocaleTable::_resolve(std::string_view domain, Domain& built) const {
+    auto it = _references.find(domain);
+
+    if (it == _references.end())
+        return ok;
+
+
+    try {
+        return built._resolve_references(it->second);
+    } catch (const std::exception& e) {
+        return make_error("{}", e.what());
+    }
 }
 
 

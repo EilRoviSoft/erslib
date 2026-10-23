@@ -80,26 +80,36 @@ namespace ers::impl {
 
         // Accessors
 
-        [[nodiscard]] LocaleView operator[](std::string_view locale) const;
-        [[nodiscard]] maybe<LocaleView> find(std::string_view locale) const;
+        LocaleView operator[](std::string_view locale) const;
+        maybe<LocaleView> find(std::string_view locale) const;
 
-        [[nodiscard]] LocaleView common() const;
+        LocaleView common() const;
 
 
         // T(table[locale][T::domain])
         template<DomainAdapter T>
-        [[nodiscard]] T adapt(std::string_view locale) const {
+        T adapt(std::string_view locale) const {
             return T((*this)[locale][T::domain]);
         }
 
 
-        [[nodiscard]] const locale_table_options_t& options() const noexcept;
-        [[nodiscard]] locale_config_ptr config() const;
-        [[nodiscard]] locale_index_ptr index() const;
+        const locale_table_options_t& options() const noexcept;
+        locale_config_ptr config() const;
+        locale_index_ptr index() const;
 
 
         // "<locale>: <domain>/<key>" for every text some locales have and this one lacks, common texts aren't missing.
-        [[nodiscard]] std::vector<std::string> missing() const;
+        std::vector<std::string> missing() const;
+
+
+        // References
+
+        // Texts of the domain starting with '$' are replaced, while the domain is built, by the text they name:
+        //  "stripped-blue.hex = $blue" -> the text of "blue.hex"
+        //  "x.title@ru = $blue.name"   -> the text of "blue.name" in "ru"
+        //  "brand = $.title"           -> the text of "title"
+        //  "price.text = $$5"          -> "$5"
+        Status enable_references(std::string_view domain, reference_options_t options = {});
 
 
     private:
@@ -109,9 +119,12 @@ namespace ers::impl {
 
         StringMap<fingerprint_t> _fingerprints;
         StringMap<std::vector<domain_validator_t>> _validators;
+        StringMap<reference_options_t> _references;
         std::mutex _reloading_mutex;
 
 
         Status _validate(std::string_view domain, const DomainPtr& built) const;
+
+        Status _resolve(std::string_view domain, Domain& built) const;
     };
 }

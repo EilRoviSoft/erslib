@@ -12,6 +12,7 @@ namespace ers::impl {
     using locale_index_ptr = std::shared_ptr<const locale_index_t>;
 
     struct locale_table_options_t;
+    struct reference_options_t;
     struct bundle_entry_t;
     struct bundle_loader_t;
 

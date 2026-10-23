@@ -28,14 +28,14 @@ namespace ers::impl {
         size_t fallback_locale_id = 0;
 
 
-        [[nodiscard]] maybe<size_t> id_of(std::string_view locale) const noexcept;
+        maybe<size_t> id_of(std::string_view locale) const noexcept;
 
         // "<common>" for 'common_locale_id'.
-        [[nodiscard]] std::string_view name_of(size_t locale_id) const noexcept;
+        std::string_view name_of(size_t locale_id) const noexcept;
 
 
         // Same locales with same ids and the same fallback.
-        [[nodiscard]] bool same_as(const locale_config_t& other) const noexcept;
+        bool same_as(const locale_config_t& other) const noexcept;
     };
 
 

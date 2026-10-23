@@ -30,6 +30,7 @@ namespace ers {
     using impl::bundle_entry_t;
     using impl::bundle_loader_t;
     using impl::locale_table_options_t;
+    using impl::reference_options_t;
     using impl::domain_validator_t;
 
     using impl::fingerprint_t;

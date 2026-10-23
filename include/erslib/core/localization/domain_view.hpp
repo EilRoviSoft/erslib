@@ -28,17 +28,17 @@ namespace ers::impl {
 
         // Accessors
 
-        [[nodiscard]] std::string_view operator[](std::string_view k) const;
-        [[nodiscard]] maybe<std::string_view> find(std::string_view k) const noexcept;
+        std::string_view operator[](std::string_view k) const;
+        maybe<std::string_view> find(std::string_view k) const noexcept;
 
         // Outlives any reload: shares ownership of the whole domain.
-        [[nodiscard]] std::shared_ptr<const std::string> share(std::string_view k) const;
+        std::shared_ptr<const std::string> share(std::string_view k) const;
 
-        [[nodiscard]] std::span<const std::string_view> keys(std::string_view prefix = {}) const;
-        [[nodiscard]] std::vector<std::string_view> children(std::string_view prefix = {}) const;
+        std::span<const std::string_view> keys(std::string_view prefix = {}) const;
+        std::vector<std::string_view> children(std::string_view prefix = {}) const;
 
-        [[nodiscard]] const DomainPtr& domain() const noexcept;
-        [[nodiscard]] size_t locale_id() const noexcept;
+        const DomainPtr& domain() const noexcept;
+        size_t locale_id() const noexcept;
 
 
     private:
