@@ -1,5 +1,5 @@
-// doctest
-#include <doctest/doctest.h>
+// catch2
+#include <catch2/catch_test_macros.hpp>
 
 // std
 #include <algorithm>
@@ -13,6 +13,7 @@
 #include <erslib/core/localization.hpp>
 
 // test
+#include "support/tags.hpp"
 #include "support/temp_tree.hpp"
 
 
@@ -78,7 +79,6 @@ namespace {
     }
 
 
-    // every colour needs a hex
     struct Palette {
         static constexpr std::string_view domain = "colors";
 
@@ -118,9 +118,7 @@ namespace {
 }
 
 
-// Keys ------------------------------------------------------------------------
-
-TEST_CASE("localization: keys are made of extension, subfolders and file name") {
+TEST_CASE("keys", TEST_TAGS) {
     CHECK(*ers::make_localization_key("new_order.txt") == "txt.new_order");
     CHECK(*ers::make_localization_key("sub/deep/footer.html") == "html.sub.deep.footer");
     CHECK(*ers::make_localization_key("a.b.txt") == "txt.a.b");
@@ -129,9 +127,7 @@ TEST_CASE("localization: keys are made of extension, subfolders and file name") 
 }
 
 
-// Loading ---------------------------------------------------------------------
-
-TEST_CASE("localization: loads every locale and domain") {
+TEST_CASE("load", TEST_TAGS) {
     TempTree tree;
     fill(tree);
 
@@ -155,7 +151,7 @@ TEST_CASE("localization: loads every locale and domain") {
     CHECK(table["en"]["pages"]["html.about"] == "About");
 }
 
-TEST_CASE("localization: a missing text falls back, but is still reported") {
+TEST_CASE("fallback", TEST_TAGS) {
     TempTree tree;
     fill(tree);
 
@@ -166,7 +162,7 @@ TEST_CASE("localization: a missing text falls back, but is still reported") {
     CHECK(table.missing() == std::vector<std::string> { "en: mail/html.sub.footer" });
 }
 
-TEST_CASE("localization: unknown names") {
+TEST_CASE("unknown_names", TEST_TAGS) {
     TempTree tree;
     fill(tree);
 
@@ -187,7 +183,7 @@ TEST_CASE("localization: unknown names") {
     CHECK(table["ru"]["mail"].share("txt.nope") == nullptr);
 }
 
-TEST_CASE("localization: fails without the fallback locale or a root") {
+TEST_CASE("missing_fallback", TEST_TAGS) {
     TempTree tree;
     fill(tree);
 
@@ -200,9 +196,7 @@ TEST_CASE("localization: fails without the fallback locale or a root") {
 }
 
 
-// Common texts ----------------------------------------------------------------
-
-TEST_CASE("localization: the common folder is no locale") {
+TEST_CASE("common_folder", TEST_TAGS) {
     TempTree tree;
     fill(tree);
     tree.write("_common/mail/layout.html", "<common/>");
@@ -215,12 +209,11 @@ TEST_CASE("localization: the common folder is no locale") {
     CHECK(table.config()->locales == std::vector<std::string> { "en", "ru" });
     CHECK(report->loaded == std::vector<std::string> { "brand", "mail", "pages" });
 
-    // a domain only the common folder has is still seen from every locale
     CHECK(table["en"]["brand"]["txt.name"] == "Маленькая Леди");
     CHECK(table.common()["mail"]["html.layout"] == "<common/>");
 }
 
-TEST_CASE("localization: target, then common, then fallback") {
+TEST_CASE("lookup_order", TEST_TAGS) {
     TempTree tree;
     tree.write("_common/mail/layout.html", "common");
     tree.write("ru/mail/layout.html", "ru");
@@ -238,14 +231,13 @@ TEST_CASE("localization: target, then common, then fallback") {
     CHECK_FALSE(table.common()["mail"].find("txt.footer"));
     CHECK_THROWS(static_cast<void>(table.common()["mail"]["txt.footer"]));
 
-    // common texts are never missing
     CHECK(table.missing() == std::vector<std::string> {
             "en: mail/txt.footer",
         "ru: mail/txt.new_order",
         });
 }
 
-TEST_CASE("localization: the common folder's name comes from the options") {
+TEST_CASE("common_name", TEST_TAGS) {
     TempTree tree;
     fill(tree);
     tree.write("shared/mail/layout.html", "shared");
@@ -258,9 +250,7 @@ TEST_CASE("localization: the common folder's name comes from the options") {
 }
 
 
-// Bundles ---------------------------------------------------------------------
-
-TEST_CASE("localization: a bundle inside a domain prefixes its keys") {
+TEST_CASE("bundle_in_domain", TEST_TAGS) {
     TempTree tree;
     fill(tree);
     tree.write("ru/pages/buttons.l10n.txt", "buy = Купить\ncart.add = В корзину");
@@ -275,11 +265,10 @@ TEST_CASE("localization: a bundle inside a domain prefixes its keys") {
     CHECK(pages["buttons.cart.add"] == "В корзину");
     CHECK(pages["checkout.errors.phone"] == "Неверный телефон");
 
-    // the bundle itself is no text
     CHECK_FALSE(pages.find("txt.buttons.l10n"));
 }
 
-TEST_CASE("localization: a bundle right under a locale is a domain") {
+TEST_CASE("bundle_as_domain", TEST_TAGS) {
     TempTree tree;
     fill(tree);
     tree.write("ru/ui.l10n.txt", "buy = Купить");
@@ -295,7 +284,7 @@ TEST_CASE("localization: a bundle right under a locale is a domain") {
     CHECK(table["en"]["ui"]["buttons.buy"] == "Buy");
 }
 
-TEST_CASE("localization: common bundles set locales with '@'") {
+TEST_CASE("common_bundles", TEST_TAGS) {
     TempTree tree;
     fill(tree);
     tree.write("_common/colors.l10n.txt",
@@ -328,7 +317,7 @@ TEST_CASE("localization: common bundles set locales with '@'") {
         });
 }
 
-TEST_CASE("localization: bundles and files of one domain add up") {
+TEST_CASE("mixed_domain", TEST_TAGS) {
     TempTree tree;
     fill(tree);
     tree.write("_common/colors.l10n.txt", "black.hex = #000000");
@@ -343,7 +332,7 @@ TEST_CASE("localization: bundles and files of one domain add up") {
     CHECK(table["ru"]["colors"]["black.name"] == "чёрный");
 }
 
-TEST_CASE("localization: malformed bundles fail the reload") {
+TEST_CASE("malformed_bundles", TEST_TAGS) {
     auto fails = [](std::string_view relative, std::string_view text) {
         TempTree tree;
         fill(tree);
@@ -353,10 +342,10 @@ TEST_CASE("localization: malformed bundles fail the reload") {
         return !table.reload(tree.root());
     };
 
-    CHECK(fails("ru/ui.l10n.txt", "buy@en = Buy"));         // the path already says ru
-    CHECK(fails("_common/ui.l10n.txt", "buy@de = Kaufen")); // no such locale
+    CHECK(fails("ru/ui.l10n.txt", "buy@en = Buy"));
+    CHECK(fails("_common/ui.l10n.txt", "buy@de = Kaufen"));
     CHECK(fails("_common/ui.l10n.txt", "buy@ = Buy"));
-    CHECK(fails("_common/ui.l10n.txt", "a@ru.b = x")); // '@' ends the key only
+    CHECK(fails("_common/ui.l10n.txt", "a@ru.b = x"));
     CHECK(fails("_common/ui.l10n.txt", "a..b = x"));
     CHECK(fails("_common/ui.l10n.txt", "a = x\na = y"));
     CHECK(fails("_common/ui.l10n.txt", "no separator"));
@@ -364,7 +353,7 @@ TEST_CASE("localization: malformed bundles fail the reload") {
     CHECK_FALSE(fails("_common/ui.l10n.txt", "a = x\na@ru = y"));
 }
 
-TEST_CASE("localization: a domain is defined once per locale") {
+TEST_CASE("duplicate_domain", TEST_TAGS) {
     TempTree tree;
     fill(tree);
     tree.write("ru/ui/buy.txt", "Купить");
@@ -373,7 +362,6 @@ TEST_CASE("localization: a domain is defined once per locale") {
     ers::LocaleTable table(options());
     CHECK_FALSE(table.reload(tree.root()));
 
-    // a folder in one locale and a file in another are fine
     tree.remove("ru/ui");
     tree.write("en/ui/buy.txt", "Buy");
 
@@ -381,9 +369,7 @@ TEST_CASE("localization: a domain is defined once per locale") {
 }
 
 
-// Children --------------------------------------------------------------------
-
-TEST_CASE("localization: keys and children follow segments") {
+TEST_CASE("children", TEST_TAGS) {
     TempTree tree;
     fill(tree);
     tree.write("_common/colors.l10n.txt",
@@ -410,19 +396,15 @@ TEST_CASE("localization: keys and children follow segments") {
     CHECK(colors.keys().size() == 6);
     CHECK(colors.keys("nope").empty());
 
-    // a value can have children too
     CHECK(colors["blue"] == "синий");
     CHECK(colors["blue.hex"] == "#007BFF");
 
-    // file keys work the same way
     CHECK(table["ru"]["mail"].children() == std::vector<std::string_view> { "html", "txt" });
     CHECK(table["ru"]["mail"].children("html") == std::vector<std::string_view> { "sub" });
 }
 
 
-// Reloading -------------------------------------------------------------------
-
-TEST_CASE("localization: reload keeps untouched domains as they are") {
+TEST_CASE("reload_untouched", TEST_TAGS) {
     TempTree tree;
     fill(tree);
 
@@ -442,7 +424,7 @@ TEST_CASE("localization: reload keeps untouched domains as they are") {
     CHECK(domain_of(table, "pages") == pages);
 }
 
-TEST_CASE("localization: reload keeps domains touched without changes") {
+TEST_CASE("reload_touched", TEST_TAGS) {
     TempTree tree;
     fill(tree);
 
@@ -462,7 +444,7 @@ TEST_CASE("localization: reload keeps domains touched without changes") {
     CHECK(domain_of(table, "pages") == pages);
 }
 
-TEST_CASE("localization: reload rebuilds only the changed domain") {
+TEST_CASE("reload_changed", TEST_TAGS) {
     TempTree tree;
     fill(tree);
 
@@ -490,12 +472,11 @@ TEST_CASE("localization: reload rebuilds only the changed domain") {
 
     CHECK(table["en"]["pages"]["html.about"] == "Abort");
 
-    // Whoever held the old domain still sees it.
     CHECK(old_view["html.about"] == "About");
     CHECK(*old_text == "About");
 }
 
-TEST_CASE("localization: reload sees a changed bundle and the common folder") {
+TEST_CASE("reload_bundle", TEST_TAGS) {
     TempTree tree;
     fill(tree);
     tree.write("_common/colors.l10n.txt", "black.hex = #000000");
@@ -522,7 +503,7 @@ TEST_CASE("localization: reload sees a changed bundle and the common folder") {
     CHECK(table["en"]["mail"]["html.layout"] == "common");
 }
 
-TEST_CASE("localization: reload sees a file moved without changing sizes or times") {
+TEST_CASE("reload_moved", TEST_TAGS) {
     TempTree tree;
     fill(tree);
 
@@ -543,7 +524,7 @@ TEST_CASE("localization: reload sees a file moved without changing sizes or time
     CHECK(table["ru"]["pages"]["html.team"] == "О нас");
 }
 
-TEST_CASE("localization: reload drops removed domains") {
+TEST_CASE("reload_removed", TEST_TAGS) {
     TempTree tree;
     fill(tree);
 
@@ -561,7 +542,7 @@ TEST_CASE("localization: reload drops removed domains") {
     CHECK_FALSE(table["ru"].find("pages"));
 }
 
-TEST_CASE("localization: a new locale rebuilds every domain") {
+TEST_CASE("reload_new_locale", TEST_TAGS) {
     TempTree tree;
     fill(tree);
 
@@ -580,14 +561,13 @@ TEST_CASE("localization: a new locale rebuilds every domain") {
     CHECK(table["de"]["pages"]["html.about"] == "О нас");
 }
 
-TEST_CASE("localization: a failed reload keeps the previous table") {
+TEST_CASE("failed_reload", TEST_TAGS) {
     TempTree tree;
     fill(tree);
 
     ers::LocaleTable table(options());
     REQUIRE(table.reload(tree.root()));
 
-    // Both become "txt.a.b".
     tree.write("ru/mail/a.b.txt", "first");
     tree.write("ru/mail/a/b.txt", "second");
 
@@ -595,7 +575,6 @@ TEST_CASE("localization: a failed reload keeps the previous table") {
     CHECK(table["ru"]["mail"]["txt.new_order"] == "Новый заказ");
     CHECK_FALSE(table["ru"]["mail"].find("txt.a.b"));
 
-    // The failed attempt must not leave stale fingerprints behind.
     tree.remove("ru/mail/a");
 
     const auto report = table.reload(tree.root());
@@ -606,9 +585,7 @@ TEST_CASE("localization: a failed reload keeps the previous table") {
 }
 
 
-// Validators ------------------------------------------------------------------
-
-TEST_CASE("localization: an invalid domain keeps its previous version") {
+TEST_CASE("invalid_domain", TEST_TAGS) {
     TempTree tree;
     fill(tree);
     tree.write("_common/colors.l10n.txt", "black.hex = #000000\nblack.name@ru = чёрный");
@@ -619,7 +596,6 @@ TEST_CASE("localization: an invalid domain keeps its previous version") {
 
     const auto colors = domain_of(table, "colors");
 
-    // a broken palette and a fixed page at once
     tree.write("_common/colors.l10n.txt", "black.name@ru = чёрный");
     tree.write("en/pages/about.html", "About us");
 
@@ -635,7 +611,6 @@ TEST_CASE("localization: an invalid domain keeps its previous version") {
     CHECK(table["en"]["pages"]["html.about"] == "About us");
 
 
-    // it's checked again on every reload until fixed
     report = table.reload(tree.root());
 
     REQUIRE(report);
@@ -650,7 +625,7 @@ TEST_CASE("localization: an invalid domain keeps its previous version") {
     CHECK(table.adapt<Palette>("en").hex("black") == "#111111"sv);
 }
 
-TEST_CASE("localization: an invalid domain fails the first reload and a strict one") {
+TEST_CASE("invalid_first_reload", TEST_TAGS) {
     TempTree tree;
     fill(tree);
     tree.write("_common/colors.l10n.txt", "black.name@ru = чёрный");
@@ -658,7 +633,6 @@ TEST_CASE("localization: an invalid domain fails the first reload and a strict o
     ers::LocaleTable table(options());
     REQUIRE(table.attach<Palette>());
 
-    // nothing to keep yet
     CHECK_FALSE(table.reload(tree.root()));
 
 
@@ -675,7 +649,7 @@ TEST_CASE("localization: an invalid domain fails the first reload and a strict o
     CHECK(strict["en"]["pages"]["html.about"] == "About");
 }
 
-TEST_CASE("localization: a validator added late checks the current domain") {
+TEST_CASE("late_validator", TEST_TAGS) {
     TempTree tree;
     fill(tree);
     tree.write("_common/colors.l10n.txt", "black.name@ru = чёрный");
@@ -685,7 +659,6 @@ TEST_CASE("localization: a validator added late checks the current domain") {
 
     CHECK_FALSE(table.attach<Palette>());
 
-    // the domain didn't change, but it's rebuilt and checked again
     const auto report = table.reload(tree.root());
 
     REQUIRE(report);
@@ -693,7 +666,7 @@ TEST_CASE("localization: a validator added late checks the current domain") {
     CHECK(report->rejected[0].domain == "colors");
 }
 
-TEST_CASE("localization: validators by name, exceptions are errors") {
+TEST_CASE("validators", TEST_TAGS) {
     TempTree tree;
     fill(tree);
 
@@ -716,7 +689,7 @@ TEST_CASE("localization: validators by name, exceptions are errors") {
     CHECK(other.reload(tree.root()));
 }
 
-TEST_CASE("localization: adapters read their domain") {
+TEST_CASE("adapters", TEST_TAGS) {
     TempTree tree;
     fill(tree);
     tree.write("_common/colors.l10n.txt",
@@ -738,9 +711,7 @@ TEST_CASE("localization: adapters read their domain") {
 }
 
 
-// References ------------------------------------------------------------------
-
-TEST_CASE("localization: references are plain text until a domain enables them") {
+TEST_CASE("references_off", TEST_TAGS) {
     TempTree tree;
     fill(tree);
     tree.write("_common/colors.l10n.txt", "blue.hex = #007BFF\nsea.hex = $blue");
@@ -751,7 +722,7 @@ TEST_CASE("localization: references are plain text until a domain enables them")
     CHECK(table["ru"]["colors"]["sea.hex"] == "$blue");
 }
 
-TEST_CASE("localization: a reference takes the same field of the named sibling, locale by locale") {
+TEST_CASE("reference", TEST_TAGS) {
     TempTree tree;
     fill(tree);
     tree.write("_common/colors.l10n.txt",
@@ -769,7 +740,7 @@ TEST_CASE("localization: a reference takes the same field of the named sibling, 
     CHECK(table["en"]["colors"]["sea.name"] == "sea");
 }
 
-TEST_CASE("localization: a reference with a dot is a key of the domain") {
+TEST_CASE("reference_key", TEST_TAGS) {
     TempTree tree;
     fill(tree);
     tree.write("_common/colors.l10n.txt",
@@ -784,7 +755,7 @@ TEST_CASE("localization: a reference with a dot is a key of the domain") {
     CHECK(table["ru"]["colors"]["sea.label"] == "синий");
 }
 
-TEST_CASE("localization: references chain and do not depend on the order of keys") {
+TEST_CASE("reference_chain", TEST_TAGS) {
     TempTree tree;
     fill(tree);
     tree.write("_common/colors.l10n.txt",
@@ -798,7 +769,7 @@ TEST_CASE("localization: references chain and do not depend on the order of keys
     CHECK(table["ru"]["colors"]["navy.hex"] == "#1F4FA3");
 }
 
-TEST_CASE("localization: a doubled marker is a plain one") {
+TEST_CASE("escaped_marker", TEST_TAGS) {
     TempTree tree;
     fill(tree);
     tree.write("_common/prices.l10n.txt", "five.text = $$5\nnone.text = $$\nmiddle.text = a $b\n");
@@ -812,7 +783,7 @@ TEST_CASE("localization: a doubled marker is a plain one") {
     CHECK(table["ru"]["prices"]["middle.text"] == "a $b");
 }
 
-TEST_CASE("localization: references that name nothing make the domain invalid") {
+TEST_CASE("unresolved_reference", TEST_TAGS) {
     const auto message = [](std::string_view bundle, ers::reference_options_t references = {}) {
         TempTree tree;
         fill(tree);
@@ -839,7 +810,7 @@ TEST_CASE("localization: references that name nothing make the domain invalid") 
     CHECK(message("blue.hex = #000001\ng.stripped.hex = $blue").contains("g.blue.hex"));
 }
 
-TEST_CASE("localization: a bad reference keeps the previous version of the domain") {
+TEST_CASE("bad_reference_reload", TEST_TAGS) {
     TempTree tree;
     fill(tree);
     tree.write("_common/colors.l10n.txt", "blue.hex = #007BFF\nsea.hex = $blue");
@@ -859,7 +830,7 @@ TEST_CASE("localization: a bad reference keeps the previous version of the domai
     CHECK(table["ru"]["colors"]["sea.hex"] == "#007BFF");
 }
 
-TEST_CASE("localization: validators and adapters see the resolved texts") {
+TEST_CASE("resolved_texts", TEST_TAGS) {
     TempTree tree;
     fill(tree);
     tree.write("_common/colors.l10n.txt",
@@ -873,7 +844,7 @@ TEST_CASE("localization: validators and adapters see the resolved texts") {
     CHECK(table.adapt<Palette>("ru").hex("sea") == "#007BFF"sv);
 }
 
-TEST_CASE("localization: enabling references late rebuilds the loaded domain") {
+TEST_CASE("late_references", TEST_TAGS) {
     TempTree tree;
     fill(tree);
     tree.write("_common/colors.l10n.txt", "blue.hex = #007BFF\nsea.hex = $blue");
@@ -888,7 +859,7 @@ TEST_CASE("localization: enabling references late rebuilds the loaded domain") {
     CHECK(table["ru"]["colors"]["sea.hex"] == "#007BFF");
 }
 
-TEST_CASE("localization: a relative reference stays on its level and keeps its field") {
+TEST_CASE("relative_reference", TEST_TAGS) {
     TempTree tree;
     fill(tree);
     tree.write("_common/colors.l10n.txt",
@@ -903,7 +874,7 @@ TEST_CASE("localization: a relative reference stays on its level and keeps its f
     CHECK(table["ru"]["colors"]["g.stripped.hex"] == "#1F4FA3");
 }
 
-TEST_CASE("localization: root-level keys are named with a leading dot") {
+TEST_CASE("root_keys", TEST_TAGS) {
     TempTree tree;
     fill(tree);
     tree.write("_common/colors.l10n.txt",

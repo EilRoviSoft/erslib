@@ -1,5 +1,5 @@
-// doctest
-#include <doctest/doctest.h>
+// catch2
+#include <catch2/catch_test_macros.hpp>
 
 // std
 #include <algorithm>
@@ -13,6 +13,7 @@
 #include <erslib/core/localization.hpp>
 
 // test
+#include "support/tags.hpp"
 #include "support/temp_tree.hpp"
 
 
@@ -37,7 +38,7 @@ namespace {
 }
 
 
-TEST_CASE("l10n json: objects nest, arrays become lines") {
+TEST_CASE("nesting", TEST_TAGS) {
     auto entries = flatten(R"({
         "black": { "hex": "#000000", "name@ru": "чёрный" },
         "delivery": ["Бесплатно.", "Сроки уточнит менеджер."],
@@ -55,7 +56,7 @@ TEST_CASE("l10n json: objects nest, arrays become lines") {
     CHECK(flatten("{}")->empty());
 }
 
-TEST_CASE("l10n json: only strings, arrays of strings and objects") {
+TEST_CASE("value_types", TEST_TAGS) {
     CHECK_FALSE(flatten(R"("text")"));
     CHECK_FALSE(flatten(R"(["a"])"));
 
@@ -71,7 +72,7 @@ TEST_CASE("l10n json: only strings, arrays of strings and objects") {
     CHECK_FALSE(flatten(R"({ "a": { "": "x" } })"));
 }
 
-TEST_CASE("l10n json: the loader reads *.l10n.json") {
+TEST_CASE("loader", TEST_TAGS) {
     const auto loader = utl::l10n_json_loader();
 
     CHECK(loader.suffix == ".l10n.json");
@@ -79,7 +80,7 @@ TEST_CASE("l10n json: the loader reads *.l10n.json") {
     CHECK_FALSE(loader.parse("{ not json"));
 }
 
-TEST_CASE("l10n json: bundles in a table") {
+TEST_CASE("table", TEST_TAGS) {
     TempTree tree;
     tree.write("ru/mail/new_order.txt", "Новый заказ");
     tree.write("_common/colors.l10n.json", R"({
@@ -88,7 +89,6 @@ TEST_CASE("l10n json: bundles in a table") {
     })");
     tree.write("en/ui/buttons.l10n.json", R"({ "cart": { "add": "Add to cart" } })");
 
-    // a plain json is still a text
     tree.write("ru/ui/config.json", R"({ "a": 1 })");
 
     ers::LocaleTable table({

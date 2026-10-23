@@ -1,5 +1,5 @@
-// doctest
-#include <doctest/doctest.h>
+// catch2
+#include <catch2/catch_test_macros.hpp>
 
 // std
 #include <atomic>
@@ -11,6 +11,9 @@
 
 // ers
 #include <erslib/core/thread_safe/rate_limiter.hpp>
+
+// test
+#include "support/tags.hpp"
 
 
 using namespace std::chrono_literals;
@@ -34,7 +37,7 @@ namespace {
 }
 
 
-TEST_CASE("rate limiter: allows a burst, then blocks") {
+TEST_CASE("burst", TEST_TAGS) {
     Limiter limiter(burst, interval, capacity);
 
     const auto first = limiter.try_acquire("key", t0());
@@ -55,7 +58,7 @@ TEST_CASE("rate limiter: allows a burst, then blocks") {
     CHECK(blocked.retry_after == interval);
 }
 
-TEST_CASE("rate limiter: one attempt comes back per interval") {
+TEST_CASE("interval", TEST_TAGS) {
     Limiter limiter(burst, interval, capacity);
 
     exhaust(limiter, "key", t0());
@@ -69,7 +72,7 @@ TEST_CASE("rate limiter: one attempt comes back per interval") {
     CHECK(limiter.try_acquire("key", t0() + interval).retry_after == interval);
 }
 
-TEST_CASE("rate limiter: blocked attempts are not counted") {
+TEST_CASE("blocked", TEST_TAGS) {
     Limiter limiter(burst, interval, capacity);
 
     exhaust(limiter, "key", t0());
@@ -80,7 +83,7 @@ TEST_CASE("rate limiter: blocked attempts are not counted") {
     CHECK(limiter.try_acquire("key", t0() + interval).allowed);
 }
 
-TEST_CASE("rate limiter: the bucket refills completely over time") {
+TEST_CASE("refill", TEST_TAGS) {
     Limiter limiter(burst, interval, capacity);
 
     exhaust(limiter, "key", t0());
@@ -88,7 +91,7 @@ TEST_CASE("rate limiter: the bucket refills completely over time") {
     CHECK(limiter.try_acquire("key", t0() + interval * static_cast<int>(burst)).remaining == burst - 1);
 }
 
-TEST_CASE("rate limiter: keys are independent") {
+TEST_CASE("keys", TEST_TAGS) {
     Limiter limiter(burst, interval, capacity);
 
     exhaust(limiter, "a", t0());
@@ -97,7 +100,7 @@ TEST_CASE("rate limiter: keys are independent") {
     CHECK(limiter.try_acquire("b", t0()).remaining == burst - 1);
 }
 
-TEST_CASE("rate limiter: reset gives the key its full budget back") {
+TEST_CASE("reset", TEST_TAGS) {
     Limiter limiter(burst, interval, capacity);
 
     exhaust(limiter, "key", t0());
@@ -107,7 +110,7 @@ TEST_CASE("rate limiter: reset gives the key its full budget back") {
     CHECK(limiter.try_acquire("key", t0()).remaining == burst - 1);
 }
 
-TEST_CASE("rate limiter: maintain drops only full buckets") {
+TEST_CASE("maintain", TEST_TAGS) {
     Limiter limiter(burst, interval, capacity);
 
     limiter.try_acquire("old", t0());
@@ -119,7 +122,7 @@ TEST_CASE("rate limiter: maintain drops only full buckets") {
     CHECK(limiter.try_acquire("recent", t0() + interval).remaining == 1);
 }
 
-TEST_CASE("rate limiter: a full map evicts partial entries, never a lockout") {
+TEST_CASE("eviction", TEST_TAGS) {
     Limiter limiter(burst, interval, 4);
 
     exhaust(limiter, "victim", t0());
@@ -135,7 +138,7 @@ TEST_CASE("rate limiter: a full map evicts partial entries, never a lockout") {
     CHECK_FALSE(limiter.try_acquire("victim", t0() + 5s).allowed);
 }
 
-TEST_CASE("rate limiter: a map full of lockouts refuses new keys until they expire") {
+TEST_CASE("lockouts", TEST_TAGS) {
     Limiter limiter(1, interval, 2);
 
     CHECK(limiter.try_acquire("a", t0()).allowed);
@@ -151,7 +154,7 @@ TEST_CASE("rate limiter: a map full of lockouts refuses new keys until they expi
     CHECK(limiter.try_acquire("c", t0() + interval + 1s).allowed);
 }
 
-TEST_CASE("rate limiter: concurrent attempts get exactly the burst") {
+TEST_CASE("concurrent", TEST_TAGS) {
     Limiter limiter(burst, interval, capacity);
 
     constexpr size_t workers = 8;
@@ -176,7 +179,7 @@ TEST_CASE("rate limiter: concurrent attempts get exactly the burst") {
     CHECK(limiter.size() == 1);
 }
 
-TEST_CASE("rate limiter: rejects a configuration that cannot work") {
+TEST_CASE("invalid_config", TEST_TAGS) {
     CHECK_THROWS_AS(Limiter(0, interval, capacity), std::invalid_argument);
     CHECK_THROWS_AS(Limiter(burst, 0s, capacity), std::invalid_argument);
     CHECK_THROWS_AS(Limiter(burst, -interval, capacity), std::invalid_argument);

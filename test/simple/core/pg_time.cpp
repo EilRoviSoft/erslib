@@ -1,5 +1,5 @@
-// doctest
-#include <doctest/doctest.h>
+// catch2
+#include <catch2/catch_test_macros.hpp>
 
 // std
 #include <chrono>
@@ -7,6 +7,9 @@
 
 // ers
 #include <erslib/core/convert/pg_time.hpp>
+
+// test
+#include "support/tags.hpp"
 
 
 using namespace std::chrono_literals;
@@ -21,23 +24,23 @@ namespace {
 }
 
 
-TEST_CASE("pg_time: round-trips at microsecond precision") {
+TEST_CASE("round_trip", TEST_TAGS) {
     const auto now = ers::floor_to_pg_precision(ers::clock_t::now());
     CHECK(parsed(ers::timestamp_to_iso8601(now)) == now);
 }
 
-TEST_CASE("pg_time: every offset form denotes the same instant") {
+TEST_CASE("offsets", TEST_TAGS) {
     const auto utc = parsed("2026-09-17 12:00:00+00");
 
-    CHECK(parsed("2026-09-17 15:00:00+03") == utc);    // whole-hour zone
-    CHECK(parsed("2026-09-17 17:30:00+05:30") == utc); // half-hour zone
-    CHECK(parsed("2026-09-17 06:30:00-05:30") == utc); // negative
-    CHECK(parsed("2026-09-17T12:00:00Z") == utc);      // 'T' and 'Z'
+    CHECK(parsed("2026-09-17 15:00:00+03") == utc);
+    CHECK(parsed("2026-09-17 17:30:00+05:30") == utc);
+    CHECK(parsed("2026-09-17 06:30:00-05:30") == utc);
+    CHECK(parsed("2026-09-17T12:00:00Z") == utc);
 
     CHECK(ers::timestamp_to_iso8601(utc) == "2026-09-17 12:00:00.000000+00");
 }
 
-TEST_CASE("pg_time: fractions are padded to microseconds") {
+TEST_CASE("fractions", TEST_TAGS) {
     CHECK(parsed("2026-09-17 12:00:00.5+00")
         == parsed("2026-09-17 12:00:00+00") + 500ms);
 
@@ -45,7 +48,7 @@ TEST_CASE("pg_time: fractions are padded to microseconds") {
         == "2026-09-17 12:00:00.123456+00");
 }
 
-TEST_CASE("pg_time: infinities map onto the sentinels") {
+TEST_CASE("infinities", TEST_TAGS) {
     CHECK(parsed("infinity") == ers::timestamp_t::max());
     CHECK(parsed("-infinity") == ers::timestamp_t::min());
 
@@ -53,7 +56,7 @@ TEST_CASE("pg_time: infinities map onto the sentinels") {
     CHECK(ers::timestamp_to_iso8601(ers::timestamp_t::min()) == "-infinity");
 }
 
-TEST_CASE("pg_time: malformed input is rejected, never guessed") {
+TEST_CASE("malformed", TEST_TAGS) {
     // a naive TIMESTAMP column prints no offset, and we refuse to assume one
     CHECK_FALSE(ers::timestamp_from_iso8601("2026-09-17 12:00:00").has_value());
     CHECK_FALSE(ers::timestamp_from_iso8601("2026-02-30 00:00:00+00").has_value());

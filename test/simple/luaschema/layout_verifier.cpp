@@ -1,5 +1,5 @@
-// doctest
-#include <doctest/doctest.h>
+// catch2
+#include <catch2/catch_test_macros.hpp>
 
 // std
 #include <array>
@@ -17,6 +17,9 @@
 
 // ers
 #include <erslib/luaschema/layout.hpp>
+
+// test
+#include "support/tags.hpp"
 
 
 using namespace ers::luaschema;
@@ -228,7 +231,7 @@ namespace {
 }
 
 
-TEST_CASE("layout_verifier") {
+TEST_CASE("layout_verifier", TEST_TAGS) {
     sol::state lua;
 
 
@@ -262,8 +265,7 @@ TEST_CASE("layout_verifier") {
 
 
         if (proto != expected) {
-            FAIL_CHECK(std::format("Extracted prototype '{}' doesn't equal to expected value '{}'",
-                proto.name, expected.name));
+            FAIL_CHECK(std::format("'{}' != '{}'", proto.name, expected.name));
             continue;
         }
     }

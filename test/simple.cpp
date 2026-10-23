@@ -1,8 +1,3 @@
-// doctest
-#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include <doctest/doctest.h>
-
-
 // Sanitizers ------------------------------------------------------------------
 
 extern "C" [[gnu::used, gnu::visibility("default")]]

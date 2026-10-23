@@ -1,5 +1,5 @@
-// doctest
-#include <doctest/doctest.h>
+// catch2
+#include <catch2/catch_test_macros.hpp>
 
 // std
 #include <algorithm>
@@ -16,12 +16,13 @@
 #include <erslib/flux/migration/migrator.hpp>
 #include <erslib/flux/migration/source.hpp>
 
+// test
+#include "support/tags.hpp"
+
 
 using namespace flux::impl;
 using namespace std::string_view_literals;
 
-
-// Details ---------------------------------------------------------------------
 
 namespace {
     migration_t parsed(std::string_view filename, std::string sql = "SELECT 1;") {
@@ -119,20 +120,18 @@ namespace {
 }
 
 
-// Source ----------------------------------------------------------------------
-
-TEST_CASE("core hashing: Fnv1AHash is FNV-1a 64 at compile time") {
+TEST_CASE("fnv1a", TEST_TAGS) {
     static_assert(ers::Fnv1AHash<std::string_view> {}("") == 0xcbf29ce484222325ull);
     static_assert(ers::Fnv1AHash<std::string_view> {}("a") == 0xaf63dc4c8601ec8cull);
     static_assert(ers::Fnv1AHash<std::string_view> {}("foobar") == 0x85944171f73967e8ull);
 }
 
-TEST_CASE("flux migrations: line endings do not change the checksum") {
+TEST_CASE("checksum", TEST_TAGS) {
     CHECK(parsed("0001_x.always.sql", "SELECT 1;\r\nSELECT 2;").checksum
         == parsed("0001_x.always.sql", "SELECT 1;\nSELECT 2;").checksum);
 }
 
-TEST_CASE("flux migrations: file name defines id, version and mode") {
+TEST_CASE("file_names", TEST_TAGS) {
     const auto existing = parsed("0001_products_add_sku.existing.sql");
 
     CHECK(existing.id == "0001_products_add_sku");
@@ -149,14 +148,14 @@ TEST_CASE("flux migrations: file name defines id, version and mode") {
     CHECK(repeatable.on == EApplyOn::Repeatable);
 }
 
-TEST_CASE("flux migrations: malformed file names are rejected") {
+TEST_CASE("bad_file_names", TEST_TAGS) {
     CHECK(rejected("0001_seed.sql"));
     CHECK(rejected("0001_seed.exsiting.sql"));
     CHECK(rejected("1_seed.fresh.sql"));
     CHECK(rejected("Best_Sale.repeatable.sql"));
 }
 
-TEST_CASE("flux migrations: transaction control is rejected, plpgsql blocks are not") {
+TEST_CASE("transaction_control", TEST_TAGS) {
     CHECK(rejected("0001_seed.fresh.sql", "BEGIN;\nINSERT INTO t VALUES (1);\nCOMMIT;"));
     CHECK(rejected("0001_seed.fresh.sql", "  rollback ;"));
 
@@ -168,7 +167,7 @@ TEST_CASE("flux migrations: transaction control is rejected, plpgsql blocks are 
         "$$;"));
 }
 
-TEST_CASE("flux migrations: directives are read from existing migrations") {
+TEST_CASE("directives", TEST_TAGS) {
     const auto migration = parsed("0004_sales_banner.existing.sql",
         "-- flux: table public.sales 3f9a1c0d2b7e4410\n"
         "-- flux: drop public.old_banners\n"
@@ -180,16 +179,14 @@ TEST_CASE("flux migrations: directives are read from existing migrations") {
     CHECK(migration.drops == std::vector<std::string> { "public.old_banners" });
 }
 
-TEST_CASE("flux migrations: misplaced and malformed directives are rejected") {
+TEST_CASE("bad_directives", TEST_TAGS) {
     CHECK(rejected("0001_seed.fresh.sql", "-- flux: table public.sales 3f9a1c0d2b7e4410\nSELECT 1;"));
     CHECK(rejected("0001_x.existing.sql", "-- flux: tabel public.sales 3f9a1c0d2b7e4410\nSELECT 1;"));
     CHECK(rejected("0001_x.existing.sql", "-- flux: table public.sales 3f9a\nSELECT 1;"));
 }
 
 
-// Outcome and diff ------------------------------------------------------------
-
-TEST_CASE("flux migrations: outcome depends on database state, mode and baseline") {
+TEST_CASE("outcome", TEST_TAGS) {
     struct row_t {
         EDatabaseState state;
         EApplyOn on;
@@ -220,7 +217,7 @@ TEST_CASE("flux migrations: outcome depends on database state, mode and baseline
     }
 }
 
-TEST_CASE("flux migrations: diff lists removed lines, then added ones") {
+TEST_CASE("diff", TEST_TAGS) {
     const auto diff = diff_declarations(
         "CONSTRAINT sales_pk PRIMARY KEY (id)\nid INTEGER NOT NULL\npercent INTEGER NOT NULL",
         "CONSTRAINT sales_pk PRIMARY KEY (id)\nbanner TEXT NOT NULL\nid INTEGER NOT NULL\npercent SMALLINT NOT NULL"
@@ -234,9 +231,7 @@ TEST_CASE("flux migrations: diff lists removed lines, then added ones") {
 }
 
 
-// Migrator --------------------------------------------------------------------
-
-TEST_CASE("flux migrations: a fresh database is built from code, existing migrations are stamped") {
+TEST_CASE("fresh_database", TEST_TAGS) {
     Scenario s;
     s.set.versioned = {
         parsed("0001_sales_banner.existing.sql", "ALTER TABLE public.sales ADD COLUMN banner TEXT;"),
@@ -259,7 +254,7 @@ TEST_CASE("flux migrations: a fresh database is built from code, existing migrat
     CHECK(s.store.recorded.at("public.sales").hash == sales.hash);
 }
 
-TEST_CASE("flux migrations: a changed declaration without a migration stops the run") {
+TEST_CASE("changed_declaration", TEST_TAGS) {
     Scenario s;
     s.track(sales_v1);
 
@@ -271,7 +266,7 @@ TEST_CASE("flux migrations: a changed declaration without a migration stops the 
     CHECK(message.contains(claim("public.sales", sales_v2).substr(0, 41)));
 }
 
-TEST_CASE("flux migrations: a migration claiming the declaration runs before bootstrap and closes it") {
+TEST_CASE("claiming_migration", TEST_TAGS) {
     Scenario s;
     s.track(sales_v1);
     s.set.versioned = {
@@ -285,7 +280,7 @@ TEST_CASE("flux migrations: a migration claiming the declaration runs before boo
     CHECK(s.store.recorded.at("public.sales").text == sales_v2);
 }
 
-TEST_CASE("flux migrations: a migration written for another declaration keeps the mismatch") {
+TEST_CASE("foreign_migration", TEST_TAGS) {
     Scenario s;
     s.track(sales_v1);
     s.set.versioned = {
@@ -298,7 +293,7 @@ TEST_CASE("flux migrations: a migration written for another declaration keeps th
     CHECK(report.error().message().contains("Recorded declaration is unknown"));
 }
 
-TEST_CASE("flux migrations: an untracked database with tables has to be adopted") {
+TEST_CASE("untracked_database", TEST_TAGS) {
     Scenario s;
     s.store.existing_tables.emplace_back(sales.name);
     s.set.versioned = { parsed("0001_seed.fresh.sql") };
@@ -314,7 +309,7 @@ TEST_CASE("flux migrations: an untracked database with tables has to be adopted"
     CHECK(s.store.recorded.contains("public.sales"));
 }
 
-TEST_CASE("flux migrations: a table removed from code needs a drop directive") {
+TEST_CASE("removed_table", TEST_TAGS) {
     Scenario s;
     s.track(sales_v2);
     s.store.recorded.insert_or_assign("public.banners", recorded_table_t {
@@ -336,7 +331,7 @@ TEST_CASE("flux migrations: a table removed from code needs a drop directive") {
     CHECK_FALSE(s.store.recorded.contains("public.banners"));
 }
 
-TEST_CASE("flux migrations: accept_declarations overwrites recorded hashes") {
+TEST_CASE("accept_declarations", TEST_TAGS) {
     Scenario s;
     s.track(sales_v1);
     s.options.accept_declarations = true;
@@ -348,7 +343,7 @@ TEST_CASE("flux migrations: accept_declarations overwrites recorded hashes") {
     CHECK(s.store.recorded.at("public.sales").hash == sales.hash);
 }
 
-TEST_CASE("flux migrations: repeatable migrations rerun only when their file changes") {
+TEST_CASE("repeatable", TEST_TAGS) {
     Scenario s;
     s.track(sales_v2);
     s.set.repeatable = { parsed("f.repeatable.sql", "SELECT 1;") };
@@ -365,7 +360,7 @@ TEST_CASE("flux migrations: repeatable migrations rerun only when their file cha
     CHECK(std::ranges::contains(s.store.executed, "SELECT 2;"sv));
 }
 
-TEST_CASE("flux migrations: an edited applied migration is reported, not rerun") {
+TEST_CASE("edited_migration", TEST_TAGS) {
     Scenario s;
     s.track(sales_v2);
     s.store.migrations.insert_or_assign("0001_seed", ers::Fnv1AHash<std::string_view> {}("SELECT 0;"));
@@ -378,7 +373,7 @@ TEST_CASE("flux migrations: an edited applied migration is reported, not rerun")
     CHECK_FALSE(std::ranges::contains(s.store.executed, "SELECT 1;"sv));
 }
 
-TEST_CASE("flux migrations: a failing migration is named and not recorded") {
+TEST_CASE("failing_migration", TEST_TAGS) {
     Scenario s;
     s.track(sales_v2);
     s.set.versioned = { parsed("0007_broken.always.sql", "SELECT 1/0;") };
@@ -391,8 +386,6 @@ TEST_CASE("flux migrations: a failing migration is named and not recorded") {
     CHECK_FALSE(s.store.migrations.contains("0007_broken"));
 }
 
-
-// Reflection ------------------------------------------------------------------
 
 #ifdef ERSLIB_HAS_REFLECTION
 
@@ -437,7 +430,7 @@ struct flux::reflect::Declaration<SaleDisabledByDefault> : Table<"sales"> {
 };
 
 
-TEST_CASE("flux reflect: canonical declaration ignores field order, not defaults") {
+TEST_CASE("canonical_declaration", TEST_TAGS) {
     using flux::ddl::canonical_declaration;
 
     static_assert(canonical_declaration<SaleOrdered>() == canonical_declaration<SaleShuffled>());

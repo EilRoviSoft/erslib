@@ -34,7 +34,8 @@ if(IS_TOP_LEVEL)
     find_package(erslib REQUIRED)
 endif()
 
-find_package(doctest CONFIG REQUIRED)
+find_package(Catch2 3 CONFIG REQUIRED)
+include(Catch)
 
 
 add_library(test_support
@@ -52,8 +53,7 @@ target_link_libraries(test_support PUBLIC erslib::core)
 
 
 add_library(test_simple_main OBJECT "simple.cpp")
-target_link_libraries(test_simple_main PUBLIC doctest::doctest test_support)
-target_compile_definitions(test_simple_main PUBLIC DOCTEST_CONFIG_USE_STD_HEADERS)
+target_link_libraries(test_simple_main PUBLIC Catch2::Catch2WithMain test_support)
 
 set(SIMPLE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/simple")
 
@@ -90,12 +90,13 @@ foreach(MODULE IN LISTS SIMPLE_MODULES)
         add_executable(${TEST_TARGET} "${TEST_SOURCE}")
         target_link_libraries(${TEST_TARGET} PRIVATE test_simple_main erslib::${MODULE})
         set_target_properties(${TEST_TARGET} PROPERTIES FOLDER "tests/simple/${MODULE}")
+        target_compile_definitions(${TEST_TARGET} PRIVATE TEST_TAGS="[simple][${MODULE}]")
 
         if(NOT IS_TOP_LEVEL)
             win_copy_deps_to_target_dir(${TEST_TARGET} erslib::${MODULE})
         endif()
 
-        add_test(NAME "${TEST_NAME}" COMMAND ${TEST_TARGET})
+        catch_discover_tests(${TEST_TARGET} TEST_PREFIX "${TEST_NAME}::" DISCOVERY_MODE PRE_TEST ADD_TAGS_AS_LABELS)
         add_dependencies(test_simple_${MODULE} ${TEST_TARGET})
 
         message(STATUS "Discovered simple test: ${TEST_NAME} -> Target: ${TEST_TARGET}")
@@ -131,13 +132,15 @@ function(add_stateful_test)
     target_link_libraries(${TEST_TARGET}
         PRIVATE
             erslib::core erslib::contrib erslib::flux erslib::modkit erslib::easy_ecs erslib::luaschema
-            doctest::doctest
+            Catch2::Catch2WithMain
     )
+
+    target_include_directories(${TEST_TARGET} PRIVATE "${CMAKE_CURRENT_FUNCTION_LIST_DIR}")
 
     target_compile_definitions(${TEST_TARGET}
         PRIVATE
-            DOCTEST_CONFIG_USE_STD_HEADERS
             TEST_CWD="${CMAKE_CURRENT_BINARY_DIR}"
+            TEST_TAGS="[stateful]"
     )
 
     if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/res")
@@ -149,7 +152,7 @@ function(add_stateful_test)
         )
     endif()
 
-    add_test(NAME ${TEST_TARGET} COMMAND ${TEST_TARGET})
+    catch_discover_tests(${TEST_TARGET} TEST_PREFIX "${TEST_NAME}::" DISCOVERY_MODE PRE_TEST ADD_TAGS_AS_LABELS)
 
     message(STATUS "Discovered stateful test: ${TEST_NAME} -> Target: ${TEST_TARGET}")
 endfunction()

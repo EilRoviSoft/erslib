@@ -1,7 +1,7 @@
 #ifdef _HAS_INJA
 
-// doctest
-#include <doctest/doctest.h>
+// catch2
+#include <catch2/catch_test_macros.hpp>
 
 // std
 #include <algorithm>
@@ -13,19 +13,20 @@
 // ers
 #include <erslib/contrib/inja.hpp>
 
+// test
+#include "support/tags.hpp"
 
-// Facade tests ----------------------------------------------------------------
 
 using utl::operator""_json;
 
 
-TEST_CASE("inja binds to InjaJson") {
+TEST_CASE("binding", TEST_TAGS) {
     static_assert(std::same_as<inja::json, utl::InjaJson>);
     static_assert(std::bidirectional_iterator<utl::InjaJson::iterator>);
     static_assert(std::bidirectional_iterator<utl::InjaJson::const_iterator>);
 }
 
-TEST_CASE("compat getters convert numbers only for reading") {
+TEST_CASE("getters", TEST_TAGS) {
     const utl::InjaJson integral = 5;
     const utl::InjaJson floating = 2.5;
 
@@ -43,7 +44,7 @@ TEST_CASE("compat getters convert numbers only for reading") {
     CHECK_THROWS(static_cast<void>(utl::InjaJson(1).get<std::string>()));
 }
 
-TEST_CASE("compat size and empty") {
+TEST_CASE("size", TEST_TAGS) {
     CHECK(utl::InjaJson().size() == 0);
     CHECK(utl::InjaJson().empty());
     CHECK(utl::InjaJson(1).size() == 1);
@@ -53,7 +54,7 @@ TEST_CASE("compat size and empty") {
     CHECK(utl::InjaJson::parse("[1,2,3]").size() == 3);
 }
 
-TEST_CASE("compat clear keeps the type") {
+TEST_CASE("clear", TEST_TAGS) {
     auto json = utl::InjaJson::parse(R"({"a":1,"b":"x","c":[1]})");
 
     json["a"].clear();
@@ -63,7 +64,7 @@ TEST_CASE("compat clear keeps the type") {
     CHECK(json.dump() == R"({"a":0,"b":"","c":[]})");
 }
 
-TEST_CASE("compat iteration") {
+TEST_CASE("iteration", TEST_TAGS) {
     auto object = utl::InjaJson::parse(R"({"b":1,"a":2})");
 
     std::vector<std::string> keys;
@@ -87,7 +88,7 @@ TEST_CASE("compat iteration") {
     CHECK_THROWS(static_cast<void>(scalar.begin().key()));
 }
 
-TEST_CASE("compat front and back") {
+TEST_CASE("front_and_back", TEST_TAGS) {
     const auto array = utl::InjaJson::parse("[1,2,3]");
     CHECK(array.front() == 1);
     CHECK(array.back() == 3);
@@ -96,7 +97,7 @@ TEST_CASE("compat front and back") {
     CHECK_THROWS(static_cast<void>(utl::InjaJson::parse("[]").back()));
 }
 
-TEST_CASE("compat comparison") {
+TEST_CASE("comparison", TEST_TAGS) {
     CHECK(utl::InjaJson(1) == utl::InjaJson(1.0));
     CHECK(utl::InjaJson(1) < utl::InjaJson(1.5));
     CHECK(utl::InjaJson(0) == 0);
@@ -111,16 +112,14 @@ TEST_CASE("compat comparison") {
     CHECK(utl::InjaJson::parse("[1,2]") < utl::InjaJson::parse("[1,3]"));
 }
 
-TEST_CASE("compat sort") {
+TEST_CASE("sort", TEST_TAGS) {
     auto array = utl::InjaJson::parse(R"([3,"b",1.5,null,true,"a"])");
     std::sort(array.begin(), array.end());
     CHECK(array.dump() == R"([null,true,1.5,3,"a","b"])");
 }
 
 
-// Rendering tests -------------------------------------------------------------
-
-TEST_CASE("render variables") {
+TEST_CASE("variables", TEST_TAGS) {
     inja::Environment env;
 
     utl::Json data;
@@ -134,7 +133,7 @@ TEST_CASE("render variables") {
         == "Ann: 3 x 2.0 true [1,2]");
 }
 
-TEST_CASE("render loops over objects in key order") {
+TEST_CASE("object_loops", TEST_TAGS) {
     inja::Environment env;
 
     const auto data = utl::from_string<utl::InjaJson>(R"({"map":{"b":2,"a":1,"c":3}})");
@@ -143,7 +142,7 @@ TEST_CASE("render loops over objects in key order") {
         == "a=1,b=2,c=3");
 }
 
-TEST_CASE("render nested loops keep loop data") {
+TEST_CASE("nested_loops", TEST_TAGS) {
     inja::Environment env;
 
     const auto data = R"({"rows":[[1,2],[3]],"map":{"x":{"y":1}}})"_json;
@@ -158,7 +157,7 @@ TEST_CASE("render nested loops keep loop data") {
         data) == "xy20");
 }
 
-TEST_CASE("render set, arithmetic and functions") {
+TEST_CASE("set_and_functions", TEST_TAGS) {
     inja::Environment env;
 
     const auto data = R"({"a":7,"b":2,"f":0.5,"list":[3,1,2],"text":"Hello"})"_json;
@@ -173,7 +172,7 @@ TEST_CASE("render set, arithmetic and functions") {
     CHECK(env.render("{% if 2 in list %}yes{% endif %} {{ at(list, 1) }} {{ range(3) }}", data) == "yes 1 [0,1,2]");
 }
 
-TEST_CASE("render truthiness") {
+TEST_CASE("truthiness", TEST_TAGS) {
     inja::Environment env;
 
     const auto data = R"({"empty":"","zero":0,"fzero":0.0,"none":null,"list":[],"text":"x"})"_json;
@@ -186,7 +185,7 @@ TEST_CASE("render truthiness") {
     CHECK(env.render("{% if text %}T{% else %}F{% endif %}", data) == "T");
 }
 
-TEST_CASE("render exists, default and missing variables") {
+TEST_CASE("exists_and_default", TEST_TAGS) {
     inja::Environment env;
 
     const auto data = R"({"user":{"name":"Ann"}})"_json;
@@ -197,7 +196,7 @@ TEST_CASE("render exists, default and missing variables") {
     CHECK_THROWS_AS(static_cast<void>(env.render("{{ user.age }}", data)), inja::RenderError);
 }
 
-TEST_CASE("render html autoescape") {
+TEST_CASE("autoescape", TEST_TAGS) {
     inja::Environment env;
     env.set_html_autoescape(true);
 
@@ -206,7 +205,7 @@ TEST_CASE("render html autoescape") {
     CHECK(env.render("{{ text }}", data) == "&lt;b&gt;&quot;Tom&quot; &amp; &apos;Jerry&apos;&lt;/b&gt;");
 }
 
-TEST_CASE("render callbacks") {
+TEST_CASE("callbacks", TEST_TAGS) {
     inja::Environment env;
 
     env.add_callback("money", 1, [](inja::Arguments& args) {

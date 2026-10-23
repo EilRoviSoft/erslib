@@ -1,5 +1,5 @@
-// doctest
-#include <doctest/doctest.h>
+// catch2
+#include <catch2/catch_test_macros.hpp>
 
 // std
 #include <array>
@@ -11,6 +11,9 @@
 #include <erslib/core/random.hpp>
 #include <erslib/core/thread_safe/shuffle_seed.hpp>
 #include <erslib/core/type/general.hpp>
+
+// test
+#include "support/tags.hpp"
 
 
 using namespace std::chrono_literals;
@@ -25,7 +28,7 @@ namespace {
 }
 
 
-TEST_CASE("shuffle seeds: stable for the whole lifetime") {
+TEST_CASE("stable", TEST_TAGS) {
     ers::thread_safe::ShuffleSeeds seeds(lifetime);
 
     const auto first = seeds.acquire("session-a", t0());
@@ -34,13 +37,13 @@ TEST_CASE("shuffle seeds: stable for the whole lifetime") {
     CHECK(seeds.acquire("session-a", t0() + 29min) == first);
 }
 
-TEST_CASE("shuffle seeds: sessions do not share an order") {
+TEST_CASE("sessions", TEST_TAGS) {
     ers::thread_safe::ShuffleSeeds seeds(lifetime);
 
     CHECK(seeds.acquire("session-a", t0()) != seeds.acquire("session-b", t0()));
 }
 
-TEST_CASE("shuffle seeds: the order changes once the lifetime is over") {
+TEST_CASE("expiry", TEST_TAGS) {
     ers::thread_safe::ShuffleSeeds seeds(lifetime);
 
     const auto before = seeds.acquire("session-a", t0());
@@ -48,7 +51,7 @@ TEST_CASE("shuffle seeds: the order changes once the lifetime is over") {
     CHECK(seeds.acquire("session-a", t0() + lifetime) != before);
 }
 
-TEST_CASE("shuffle seeds: reading does not extend the lifetime") {
+TEST_CASE("read", TEST_TAGS) {
     ers::thread_safe::ShuffleSeeds seeds(lifetime);
 
     const auto first = seeds.acquire("session-a", t0());
@@ -59,7 +62,7 @@ TEST_CASE("shuffle seeds: reading does not extend the lifetime") {
     CHECK(seeds.acquire("session-a", t0() + lifetime) != first);
 }
 
-TEST_CASE("shuffle seeds: rotate replaces the order and restarts the clock") {
+TEST_CASE("rotate", TEST_TAGS) {
     ers::thread_safe::ShuffleSeeds seeds(lifetime);
 
     const auto first = seeds.acquire("session-a", t0());
@@ -70,7 +73,7 @@ TEST_CASE("shuffle seeds: rotate replaces the order and restarts the clock") {
     CHECK(seeds.acquire("session-a", t0() + 45min) == rotated);
 }
 
-TEST_CASE("shuffle seeds: forget drops the entry") {
+TEST_CASE("forget", TEST_TAGS) {
     ers::thread_safe::ShuffleSeeds seeds(lifetime);
 
     const auto first = seeds.acquire("session-a", t0());
@@ -80,7 +83,7 @@ TEST_CASE("shuffle seeds: forget drops the entry") {
     CHECK(seeds.acquire("session-a", t0()) != first);
 }
 
-TEST_CASE("shuffle seeds: maintain evicts only what expired") {
+TEST_CASE("maintain", TEST_TAGS) {
     ers::thread_safe::ShuffleSeeds seeds(lifetime);
 
     seeds.acquire("old", t0());
@@ -92,7 +95,7 @@ TEST_CASE("shuffle seeds: maintain evicts only what expired") {
     CHECK(seeds.acquire("fresh", t0() + 21min) == fresh);
 }
 
-TEST_CASE("shuffle seeds: an explicit master seed reproduces the sequence") {
+TEST_CASE("master_seed", TEST_TAGS) {
     ers::thread_safe::ShuffleSeeds one(lifetime, 0xC0FFEE);
     ers::thread_safe::ShuffleSeeds two(lifetime, 0xC0FFEE);
 
@@ -103,7 +106,7 @@ TEST_CASE("shuffle seeds: an explicit master seed reproduces the sequence") {
     CHECK(other.acquire("a", t0()) != one.acquire("a", t0()));
 }
 
-TEST_CASE("shuffle seeds: concurrent acquire agrees on one value") {
+TEST_CASE("concurrent", TEST_TAGS) {
     ers::thread_safe::ShuffleSeeds seeds(lifetime);
 
     constexpr size_t workers = 8;
@@ -134,7 +137,7 @@ TEST_CASE("shuffle seeds: concurrent acquire agrees on one value") {
     CHECK(seeds.size() == 1);
 }
 
-TEST_CASE("entropy: varies and fills all 64 bits") {
+TEST_CASE("entropy", TEST_TAGS) {
     const auto first = ers::random::entropy();
 
     u64 combined = 0;

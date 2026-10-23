@@ -1,5 +1,5 @@
-// doctest
-#include <doctest/doctest.h>
+// catch2
+#include <catch2/catch_test_macros.hpp>
 
 // std
 #include <array>
@@ -10,6 +10,9 @@
 // ers
 #include <erslib/core/memory.hpp>
 #include <erslib/core/type/general.hpp>
+
+// test
+#include "support/tags.hpp"
 
 
 namespace {
@@ -24,17 +27,17 @@ namespace {
 }
 
 
-TEST_CASE("testing custom allocator") {
+TEST_CASE("allocator", TEST_TAGS) {
     std::array<std::byte, 1024> buffer;
     std::pmr::monotonic_buffer_resource pool(buffer.data(), sizeof(buffer));
 
-    SUBCASE("general access") {
+    SECTION("general access") {
         auto n = ers::make_holder<int>(&pool, 42);
         REQUIRE(n);
         REQUIRE(*n == 42);
     }
 
-    SUBCASE("ecs") {
+    SECTION("ecs") {
         auto position = ers::make_holder<Position>(&pool, 1.0, 2.0);
         REQUIRE(position);
     }

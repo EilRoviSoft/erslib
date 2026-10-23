@@ -1,5 +1,6 @@
-// doctest
-#include <doctest/doctest.h>
+// catch2
+#include <catch2/catch_approx.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 // std
 #include <cmath>
@@ -8,6 +9,9 @@
 
 // ers
 #include <erslib/core/type/result.hpp>
+
+// test
+#include "support/tags.hpp"
 
 
 namespace {
@@ -33,23 +37,22 @@ namespace {
 }
 
 
-TEST_CASE("division") {
-    SUBCASE("successful") {
+TEST_CASE("division", TEST_TAGS) {
+    SECTION("ok") {
         auto check = [](double n, double d, double e) {
             auto r = safe_divide(n, d);
             CHECK(r.has_value());
-            REQUIRE(*r == doctest::Approx(e));
+            REQUIRE(*r == Catch::Approx(e));
         };
 
         check(1.0, 2.0, 0.5);
         check(3.0, 1.0, 3.0);
     }
 
-    SUBCASE("by zero") {
+    SECTION("zero") {
         auto check = [](double n, double d) {
             auto r = safe_divide(n, d);
             CHECK(r.has_error());
-            //MESSAGE(r.error().to_string());
         };
 
         check(1.0, 0.0);
@@ -57,21 +60,21 @@ TEST_CASE("division") {
     }
 }
 
-TEST_CASE("context") {
-    SUBCASE("a value passes through untouched") {
+TEST_CASE("context", TEST_TAGS) {
+    SECTION("value") {
         auto r = read_ratio(1.0, 4.0);
         REQUIRE(r.has_value());
-        CHECK(*r == doctest::Approx(25.0));
+        CHECK(*r == Catch::Approx(25.0));
     }
 
-    SUBCASE("the outermost context goes first") {
+    SECTION("outermost first") {
         auto s = read_config();
         REQUIRE(s.has_error());
 
         CHECK(s.error().message() == "Division by zero: 1 / 0");
     }
 
-    SUBCASE("no context, no prefix") {
+    SECTION("no prefix") {
         auto r = safe_divide(1.0, 0.0);
         REQUIRE(r.has_error());
     }

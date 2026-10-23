@@ -1,5 +1,6 @@
-// doctest
-#include <doctest/doctest.h>
+// catch2
+#include <catch2/catch_get_random_seed.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 // std
 #include <array>
@@ -20,6 +21,9 @@
 #include <erslib/core/type/time.hpp>
 #include <erslib/core/type/timed_object.hpp>
 
+// test
+#include "support/tags.hpp"
+
 
 namespace {
     using namespace std::chrono_literals;
@@ -27,7 +31,7 @@ namespace {
 
 
     std::mt19937_64& gen() {
-        static std::mt19937_64 instance(doctest::getContextOptions()->rand_seed);
+        static std::mt19937_64 instance(Catch::getSeed());
         return instance;
     }
 
@@ -59,7 +63,7 @@ namespace {
 }
 
 
-TEST_CASE("testing thread_safe map") {
+TEST_CASE("map", TEST_TAGS) {
     Map c;
     std::array<std::string_view, 4> vals = { "player", "enemy:knight", "enemy:mage", "enemy:rogue" };
     std::array<std::chrono::milliseconds, 10> intervals;
@@ -70,12 +74,10 @@ TEST_CASE("testing thread_safe map") {
     for (auto it : vals)
         c.set(it);
 
-    SUBCASE("intervaled output") {
+    SECTION("intervals") {
         auto print = [&c, &vals]([[maybe_unused]] size_t i) mutable {
-            //MESSAGE("\niteration {}:\n", i);
             for (auto it : vals) {
                 [[maybe_unused]] size_t v = *c[it].get();
-                //MESSAGE("{:3}: {}\n", it, v);
             }
         };
 
@@ -87,7 +89,6 @@ TEST_CASE("testing thread_safe map") {
             i++;
 #endif
             print(i);
-            //MESSAGE("waiting for {}\n", d);
             std::this_thread::sleep_for(d);
         }
         print(intervals.size());

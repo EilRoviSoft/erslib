@@ -1,5 +1,5 @@
-// doctest
-#include <doctest/doctest.h>
+// catch2
+#include <catch2/catch_test_macros.hpp>
 
 // std
 #include <string>
@@ -12,13 +12,14 @@
 #include <erslib/flux.hpp>
 #include <erslib/flux/query_builder.hpp>
 
+// test
+#include "support/tags.hpp"
+
 
 using namespace flux::orm;
 
 using std::string_literals::operator ""s;
 
-
-// Details ---------------------------------------------------------------------
 
 namespace {
     bool contains(std::string_view haystack, std::string_view needle) {
@@ -32,9 +33,7 @@ namespace {
 }
 
 
-// Query builder ---------------------------------------------------------------
-
-TEST_CASE("flux: select renders slots in layout order") {
+TEST_CASE("select", TEST_TAGS) {
     const auto sql = sql_of(select_from("users")
         | columns("id", "name")
         | where(col("active") == true)
@@ -51,13 +50,13 @@ TEST_CASE("flux: select renders slots in layout order") {
         "\nOFFSET $3");
 }
 
-TEST_CASE("flux: select without columns falls back to *") {
+TEST_CASE("select_all", TEST_TAGS) {
     using namespace flux::orm;
 
     CHECK(sql_of(select_from("users")) == "SELECT *\nFROM users");
 }
 
-TEST_CASE("flux: insert with conflict and returning") {
+TEST_CASE("insert", TEST_TAGS) {
     const auto sql = sql_of(insert_into("images")
         | columns("url", "path")
         | values("a.png"s, "/a.png"s)
@@ -73,7 +72,7 @@ TEST_CASE("flux: insert with conflict and returning") {
         "\nRETURNING id");
 }
 
-TEST_CASE("flux: update and delete") {
+TEST_CASE("update_and_delete", TEST_TAGS) {
     CHECK(sql_of(update("users") | assign("name", "bob"s) | where(col("id") == 1))
         == "UPDATE users\nSET name = $1\nWHERE id = $2");
 
@@ -81,7 +80,7 @@ TEST_CASE("flux: update and delete") {
         == "DELETE FROM users\nWHERE id = $1");
 }
 
-TEST_CASE("flux: where variants") {
+TEST_CASE("where", TEST_TAGS) {
     CHECK(contains(sql_of(select_from("t") | where(col("a").is_null())), "WHERE a IS NULL"));
     CHECK(contains(sql_of(select_from("t") | where(col("a").is_not_null())), "WHERE a IS NOT NULL"));
     CHECK(contains(sql_of(select_from("t") | where(col("a").in({ 1, 2, 3 }))), "WHERE a IN ($1, $2, $3)"));
@@ -92,7 +91,7 @@ TEST_CASE("flux: where variants") {
     CHECK(contains(sql_of(select_from("t") | where(!col("a").in(std::vector<int> {}))), "WHERE NOT FALSE"));
 }
 
-TEST_CASE("flux: join takes an expression") {
+TEST_CASE("join", TEST_TAGS) {
     const auto sql = sql_of(select_from("orders", "o")
         | join("users", "u", col("u.id") == col("o.user_id"))
         | where(col("u.active") == true));
@@ -102,7 +101,7 @@ TEST_CASE("flux: join takes an expression") {
     CHECK_FALSE((select_from("t") | join("x; --", col("a") == col("b"))).to_sql().has_value());
 }
 
-TEST_CASE("flux: vectors bind as escaped array literals") {
+TEST_CASE("vectors", TEST_TAGS) {
     using flux::impl::sql_value;
 
     CHECK(sql_value<std::vector<int>>::to_text({ 1, -2, 3 }) == "{1,-2,3}");
@@ -113,15 +112,13 @@ TEST_CASE("flux: vectors bind as escaped array literals") {
     CHECK(sql_value<std::vector<ers::maybe<std::string>>>::to_text({ "a", ers::none }) == R"({"a",NULL})");
 }
 
-TEST_CASE("flux: identifiers are validated, values are bound") {
+TEST_CASE("identifiers", TEST_TAGS) {
     CHECK_FALSE((select_from("users") | where(col("id; DROP TABLE users") == 1)).to_sql().has_value());
     CHECK_FALSE((select_from("users") | columns("1")).to_sql().has_value());
     CHECK_FALSE(select_from("users; --").to_sql().has_value());
 
-    // qualified names stay legal
     CHECK((select_from("public.users") | where(col("users.id") == 1)).to_sql().has_value());
 
-    // a hostile value is a parameter, never text
     CHECK(contains(
         sql_of(select_from("t")
             | where(col("a") == "'; DROP TABLE t; --"s)),
@@ -129,11 +126,11 @@ TEST_CASE("flux: identifiers are validated, values are bound") {
     ));
 }
 
-TEST_CASE("flux: a clause outside the layout is rejected") {
+TEST_CASE("foreign_clause", TEST_TAGS) {
     CHECK_FALSE((delete_from("t") | order_by("a")).to_sql().has_value());
 }
 
-TEST_CASE("flux: subqueries share the parent placeholder counter") {
+TEST_CASE("subqueries", TEST_TAGS) {
     const auto sql = sql_of(select_from("users")
         | columns("id")
         | where(col("active") == true)
@@ -145,12 +142,12 @@ TEST_CASE("flux: subqueries share the parent placeholder counter") {
     CHECK(contains(sql, "LIMIT $3"));
 }
 
-TEST_CASE("flux: exists_in is a standalone statement") {
+TEST_CASE("exists_in", TEST_TAGS) {
     CHECK(sql_of(exists_in("orders") | where(col("user_id") == 7))
         == "SELECT EXISTS (\nSELECT 1 FROM orders\nWHERE user_id = $1\n) AS \"exists\"");
 }
 
-TEST_CASE("flux: exec() result dispatch") {
+TEST_CASE("exec", TEST_TAGS) {
     static_assert(flux::ReadableRow<bool>);
     static_assert(flux::impl::RowContainer<std::vector<bool>>);
     static_assert(flux::impl::RowContainer<ers::maybe<bool>>);
@@ -174,7 +171,7 @@ namespace {
     };
 }
 
-TEST_CASE("flux: with_query accepts anything shaped like exec(tx) -> QueryResult") {
+TEST_CASE("with_query", TEST_TAGS) {
     static_assert(flux::impl::Executable<flux::QueryBuilder>);
     static_assert(flux::impl::Executable<FakeExecutable>);
     static_assert(!flux::impl::Executable<int>);
@@ -184,8 +181,6 @@ TEST_CASE("flux: with_query accepts anything shaped like exec(tx) -> QueryResult
     static_assert(flux::impl::ExecutableWithOutput<FakeQueryCall>);
 }
 
-
-// Reflection ------------------------------------------------------------------
 
 #ifdef ERSLIB_HAS_REFLECTION
 
@@ -245,7 +240,7 @@ template<>
 struct flux::reflect::Declaration<HandRolled> : Table<"hand_rolled"> {};
 
 
-TEST_CASE("flux reflect: schema facts") {
+TEST_CASE("schema", TEST_TAGS) {
     using namespace flux::reflect;
 
     static_assert(table_name<Image> == "images");
@@ -265,7 +260,7 @@ TEST_CASE("flux reflect: schema facts") {
     static_assert(declaration_is_valid<ProductImage>);
 }
 
-TEST_CASE("flux reflect: row concepts") {
+TEST_CASE("rows", TEST_TAGS) {
     using namespace flux::reflect;
 
     static_assert(RowType<Image> && flux::ReadableRow<Image>);
@@ -281,7 +276,7 @@ TEST_CASE("flux reflect: row concepts") {
     static_assert(std::is_empty_v<flux::row_reader<HandRolled>::state>);
 }
 
-TEST_CASE("flux reflect: create_table") {
+TEST_CASE("create_table", TEST_TAGS) {
     constexpr std::string_view images = flux::ddl::create_table<Image>();
 
     CHECK(contains(images, "CREATE TABLE IF NOT EXISTS images"));
@@ -299,13 +294,13 @@ TEST_CASE("flux reflect: create_table") {
         "REFERENCES images (id) ON DELETE CASCADE"));
 }
 
-TEST_CASE("flux reflect: a constraint kind defined outside the library renders") {
+TEST_CASE("custom_constraint", TEST_TAGS) {
     constexpr std::string_view t = flux::ddl::create_table<ProductImage>();
 
     CHECK(contains(t, "CONSTRAINT product_images_image_check CHECK (image_id > 0)"));
 }
 
-TEST_CASE("flux: timestamps bind as parameters") {
+TEST_CASE("timestamps", TEST_TAGS) {
     CHECK(sql_of(select_from("images") | where(col("created_at") > ers::clock_t::now()))
         == "SELECT *\nFROM images\nWHERE created_at > $1");
 }

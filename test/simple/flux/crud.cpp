@@ -1,5 +1,5 @@
-// doctest
-#include <doctest/doctest.h>
+// catch2
+#include <catch2/catch_test_macros.hpp>
 
 // std
 #include <concepts>
@@ -14,13 +14,14 @@
 #include <erslib/flux.hpp>
 #include <erslib/flux/query_builder.hpp>
 
+// test
+#include "support/tags.hpp"
+
 
 #ifdef ERSLIB_HAS_REFLECTION
 
 using namespace flux::orm;
 
-
-// Details ---------------------------------------------------------------------
 
 namespace {
     struct Image {
@@ -106,9 +107,7 @@ struct flux::reflect::DeclarationMetadata<Note> {
 };
 
 
-// Columns ---------------------------------------------------------------------
-
-TEST_CASE("flux crud: columns know their names and types") {
+TEST_CASE("columns", TEST_TAGS) {
     constexpr auto cols = flux::columns_of<User>;
 
     static_assert(cols.id.name() == "id");
@@ -125,7 +124,7 @@ TEST_CASE("flux crud: columns know their names and types") {
         == "SELECT *\nFROM users\nORDER BY name DESC");
 }
 
-TEST_CASE("flux crud: columns are qualified by an alias") {
+TEST_CASE("alias", TEST_TAGS) {
     const auto u = flux::columns_as<User>("u");
     const auto i = flux::columns_as<Image>("i");
 
@@ -133,7 +132,7 @@ TEST_CASE("flux crud: columns are qualified by an alias") {
         == "SELECT *\nFROM users AS u\nJOIN images AS i ON u.id = i.id\nWHERE u.name = $1");
 }
 
-TEST_CASE("flux crud: a column only compares with what fits it") {
+TEST_CASE("compare", TEST_TAGS) {
     constexpr auto cols = flux::columns_of<User>;
 
     constexpr auto compares = []<typename C, typename V>(const C&, const V&) {
@@ -150,9 +149,7 @@ TEST_CASE("flux crud: a column only compares with what fits it") {
 }
 
 
-// Builders --------------------------------------------------------------------
-
-TEST_CASE("flux crud: select lists the columns") {
+TEST_CASE("select", TEST_TAGS) {
     CHECK(sql_of(flux::crud::select<Image>()) == "SELECT id, url, path\nFROM images");
     CHECK(sql_of(flux::crud::select<User>()) == "SELECT id, email, name, created_at, nickname\nFROM users");
     CHECK(sql_of(flux::crud::select<Image, Preview>()) == "SELECT id, url\nFROM images");
@@ -161,7 +158,7 @@ TEST_CASE("flux crud: select lists the columns") {
         == "SELECT id, url, path\nFROM images\nWHERE url = $1\nLIMIT $2");
 }
 
-TEST_CASE("flux crud: insert leaves out the identity and the read-only columns") {
+TEST_CASE("insert", TEST_TAGS) {
     Image image { .url = "/a", .path = "a" };
     User user { .email = "a@b.c", .name = "bob", .created = "never" };
 
@@ -174,7 +171,7 @@ TEST_CASE("flux crud: insert leaves out the identity and the read-only columns")
     CHECK(sql_of(flux::crud::insert(image) | returning("id")) == "INSERT INTO images (url, path)\nVALUES ($1, $2)\nRETURNING id");
 }
 
-TEST_CASE("flux crud: update writes everything but the key") {
+TEST_CASE("update", TEST_TAGS) {
     Image image { .id = 7, .url = "/a", .path = "a" };
     User user { .id = 3, .email = "a@b.c", .name = "bob" };
 
@@ -185,7 +182,7 @@ TEST_CASE("flux crud: update writes everything but the key") {
         == "UPDATE product_images\nSET replaceable = $1\nWHERE product_id = $2 AND image_id = $3");
 }
 
-TEST_CASE("flux crud: update of some columns") {
+TEST_CASE("update_some", TEST_TAGS) {
     constexpr auto cols = flux::columns_of<Image>;
     Image image { .id = 7, .url = "/a", .path = "a" };
 
@@ -198,12 +195,11 @@ TEST_CASE("flux crud: update of some columns") {
     CHECK(sql_of(flux::crud::update(image, flux::crud::only("path")))
         == "UPDATE images\nSET path = $1\nWHERE id = $2");
 
-    // the key, an unknown name
     CHECK(sql_of(flux::crud::update(image, flux::crud::only("id"))) == "<error>");
     CHECK(sql_of(flux::crud::update(image, flux::crud::only("path", "nope"))) == "<error>");
 }
 
-TEST_CASE("flux crud: erase and the key condition") {
+TEST_CASE("erase", TEST_TAGS) {
     CHECK(sql_of(flux::crud::erase<Image>(42)) == "DELETE FROM images\nWHERE id = $1");
     CHECK(sql_of(flux::crud::erase<ProductImage>(1, 2)) == "DELETE FROM product_images\nWHERE product_id = $1 AND image_id = $2");
 
@@ -218,7 +214,7 @@ TEST_CASE("flux crud: erase and the key condition") {
     static_assert(!keyed(1, 2, 3));
 }
 
-TEST_CASE("flux crud: upsert") {
+TEST_CASE("upsert", TEST_TAGS) {
     ProductImage link { .product_id = 1, .image_id = 2, .replaceable = true };
     User user { .email = "a@b.c", .name = "bob" };
     Image image { .url = "/a", .path = "a" };
@@ -243,9 +239,7 @@ TEST_CASE("flux crud: upsert") {
 }
 
 
-// Hidden conditions -----------------------------------------------------------
-
-TEST_CASE("flux crud: select skips the deleted rows and keeps the scope") {
+TEST_CASE("soft_select", TEST_TAGS) {
     CHECK(sql_of(flux::crud::select<Note>())
         == "SELECT id, tenant, text, deleted_at\nFROM notes\nWHERE tenant = $1 AND deleted_at IS NULL");
 
@@ -255,11 +249,10 @@ TEST_CASE("flux crud: select skips the deleted rows and keeps the scope") {
     CHECK(sql_of(flux::crud::select<Note>() | where(flux::columns_of<Note>.id == 5))
         == "SELECT id, tenant, text, deleted_at\nFROM notes\nWHERE tenant = $1 AND deleted_at IS NULL AND id = $2");
 
-    // an entity without metadata is untouched
     CHECK(sql_of(flux::crud::select<Image>()) == "SELECT id, url, path\nFROM images");
 }
 
-TEST_CASE("flux crud: erase marks the row, erase_forever deletes it") {
+TEST_CASE("soft_erase", TEST_TAGS) {
     CHECK(sql_of(flux::crud::erase<Note>(5))
         == "UPDATE notes\nSET deleted_at = now()\nWHERE id = $1 AND tenant = $2 AND deleted_at IS NULL");
 
@@ -269,11 +262,10 @@ TEST_CASE("flux crud: erase marks the row, erase_forever deletes it") {
     CHECK(sql_of(flux::crud::restore<Note>(5))
         == "UPDATE notes\nSET deleted_at = NULL\nWHERE id = $1 AND deleted_at IS NOT NULL AND tenant = $2");
 
-    // without SoftDelete erase is a DELETE
     CHECK(sql_of(flux::crud::erase<Image>(5)) == "DELETE FROM images\nWHERE id = $1");
 }
 
-TEST_CASE("flux crud: update never writes the mark and skips the deleted rows") {
+TEST_CASE("soft_update", TEST_TAGS) {
     Note note { .id = 5, .tenant = "acme", .text = "hi" };
 
     CHECK(sql_of(flux::crud::update(note))
@@ -286,9 +278,7 @@ TEST_CASE("flux crud: update never writes the mark and skips the deleted rows") 
 }
 
 
-// Declaration -----------------------------------------------------------------
-
-TEST_CASE("flux crud: what the declaration says about writing") {
+TEST_CASE("declaration", TEST_TAGS) {
     using namespace flux::reflect;
 
     static_assert(pk_members<ProductImage>.size() == 2);
@@ -312,8 +302,6 @@ TEST_CASE("flux crud: what the declaration says about writing") {
     static_assert(insert_members<Note>.size() == 2);
 }
 
-
-// Executors -------------------------------------------------------------------
 
 namespace {
     // Never called, it has to compile.

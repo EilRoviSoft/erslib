@@ -1,5 +1,5 @@
-// doctest
-#include <doctest/doctest.h>
+// catch2
+#include <catch2/catch_test_macros.hpp>
 
 // std
 #include <array>
@@ -25,15 +25,16 @@
 #include <erslib/contrib/json.hpp>
 #include <erslib/core/type/version.hpp>
 
+// test
+#include "support/tags.hpp"
+
 
 using utl::operator""_json;
 using std::string_literals::operator ""s;
 using std::string_view_literals::operator ""sv;
 
 
-// Basic tests -----------------------------------------------------------------
-
-TEST_CASE("construction picks the right type") {
+TEST_CASE("construction", TEST_TAGS) {
     CHECK(utl::Json().is_null());
     CHECK(utl::Json(nullptr).is_null());
     CHECK(utl::Json(true).is_bool());
@@ -48,17 +49,17 @@ TEST_CASE("construction picks the right type") {
     CHECK(utl::Json(utl::Array{}).is_array());
 }
 
-TEST_CASE("type matches the variant index") {
+TEST_CASE("type_index", TEST_TAGS) {
     CHECK(utl::Json().type() == utl::ENodeType::None);
     CHECK(utl::Json(utl::Object{}).type() == utl::ENodeType::Object);
     CHECK(utl::Json(true).type() == utl::ENodeType::Bool);
 }
 
-TEST_CASE("integral range is checked") {
+TEST_CASE("integral_range", TEST_TAGS) {
     CHECK_THROWS(utl::Json(std::numeric_limits<u64>::max()));
 }
 
-TEST_CASE("assignment from a value") {
+TEST_CASE("assign_value", TEST_TAGS) {
     utl::Json json;
 
     json = 5;
@@ -68,7 +69,7 @@ TEST_CASE("assignment from a value") {
     CHECK(json.as_string() == "x");
 }
 
-TEST_CASE("assignment from a child") {
+TEST_CASE("assign_child", TEST_TAGS) {
     utl::Array array;
     array.emplace_back(utl::Array { utl::Json(1), utl::Json(2) });
 
@@ -81,9 +82,6 @@ TEST_CASE("assignment from a child") {
     json = json.as_array()[1];
     CHECK(json.as_integral() == 2);
 }
-
-
-// Object access tests with custom traits --------------------------------------
 
 
 struct test_key {
@@ -117,7 +115,7 @@ struct custom_key_traits : utl::default_traits {
 };
 
 
-TEST_CASE("operator[] creates an object from null and inserts keys") {
+TEST_CASE("operator_insert", TEST_TAGS) {
     utl::Json json;
 
     json["a"] = 1;
@@ -129,12 +127,12 @@ TEST_CASE("operator[] creates an object from null and inserts keys") {
     CHECK(json["b"]["c"].as_string() == "x");
 }
 
-TEST_CASE("operator[] on a non-object throws") {
+TEST_CASE("operator_throws", TEST_TAGS) {
     utl::Json json = 5;
     CHECK_THROWS_AS(json["a"], ers::conversion_error);
 }
 
-TEST_CASE("const access throws on a missing key or a non-object") {
+TEST_CASE("const_access", TEST_TAGS) {
     utl::Json json;
     json["a"] = 1;
 
@@ -148,7 +146,7 @@ TEST_CASE("const access throws on a missing key or a non-object") {
     CHECK_THROWS_AS(std::ignore = number.at("a"), ers::conversion_error);
 }
 
-TEST_CASE("try_at and contains don't throw") {
+TEST_CASE("try_at", TEST_TAGS) {
     utl::Json json;
     json["a"] = 1;
 
@@ -166,7 +164,7 @@ TEST_CASE("try_at and contains don't throw") {
     CHECK_FALSE(number.try_at("a"));
 }
 
-TEST_CASE("assignment from a child through operator[]") {
+TEST_CASE("assign_child_by_key", TEST_TAGS) {
     utl::Json json;
     json["value"]["inner"] = 1;
     json["other"] = 2;
@@ -180,7 +178,7 @@ TEST_CASE("assignment from a child through operator[]") {
     CHECK(json.as_integral() == 1);
 }
 
-TEST_CASE("lookup without heterogeneous find") {
+TEST_CASE("plain_find", TEST_TAGS) {
     utl::TNode<plain_map_traits> json;
     json["a"] = 1;
 
@@ -188,7 +186,7 @@ TEST_CASE("lookup without heterogeneous find") {
     CHECK(json.at("a").as_integral() == 1);
 }
 
-TEST_CASE("custom key type goes through string_adaptor") {
+TEST_CASE("key_adaptor", TEST_TAGS) {
     utl::TNode<custom_key_traits> json;
     json["a"] = 1;
 
@@ -197,7 +195,7 @@ TEST_CASE("custom key type goes through string_adaptor") {
     CHECK(json.at("a").as_integral() == 1);
 }
 
-TEST_CASE("value_or reads the nearest type") {
+TEST_CASE("value_or", TEST_TAGS) {
     const auto json = R"({"name":"Ann","port":465,"big":70000,"ratio":30,"flag":true,"none":null,"list":[1]})"_json;
 
     static_assert(std::same_as<decltype(json.value_or("name", "x")), std::string>);
@@ -222,16 +220,13 @@ TEST_CASE("value_or reads the nearest type") {
 }
 
 
-// Array access test with custom traits ----------------------------------------
-
-
 struct deque_traits : utl::default_traits {
     template<class Node>
     using array_type = std::deque<Node>;
 };
 
 
-TEST_CASE("index access on an array") {
+TEST_CASE("array_index", TEST_TAGS) {
     utl::Json json = utl::Array { utl::Json(1), utl::Json(2) };
 
     CHECK(json[0].as_integral() == 1);
@@ -245,7 +240,7 @@ TEST_CASE("index access on an array") {
     CHECK(view.at(1).as_integral() == 2);
 }
 
-TEST_CASE("index access checks the type and the range") {
+TEST_CASE("index_checks", TEST_TAGS) {
     utl::Json json = utl::Array { utl::Json(1) };
 
     CHECK_THROWS_AS(std::ignore = json.at(1), ers::out_of_range_error);
@@ -258,7 +253,7 @@ TEST_CASE("index access checks the type and the range") {
     CHECK_THROWS_AS(json["0"], ers::conversion_error);
 }
 
-TEST_CASE("try_at by index doesn't throw") {
+TEST_CASE("try_at_index", TEST_TAGS) {
     utl::Json json = utl::Array { utl::Json(1) };
 
     CHECK(json.try_at(0));
@@ -272,7 +267,7 @@ TEST_CASE("try_at by index doesn't throw") {
     CHECK_FALSE(number.try_at(0));
 }
 
-TEST_CASE("push_back creates an array from null") {
+TEST_CASE("push_back", TEST_TAGS) {
     utl::Json json;
 
     json["items"].push_back(1);
@@ -283,12 +278,12 @@ TEST_CASE("push_back creates an array from null") {
     CHECK(json["items"][1].as_string() == "x");
 }
 
-TEST_CASE("push_back on a non-array throws") {
+TEST_CASE("push_back_throws", TEST_TAGS) {
     utl::Json json = 5;
     CHECK_THROWS_AS(json.push_back(1), ers::conversion_error);
 }
 
-TEST_CASE("emplace_back returns the new element") {
+TEST_CASE("emplace_back", TEST_TAGS) {
     utl::Json json;
 
     auto& element = json.emplace_back();
@@ -297,7 +292,7 @@ TEST_CASE("emplace_back returns the new element") {
     CHECK(json[0]["a"].as_integral() == 1);
 }
 
-TEST_CASE("push_back of an own element survives reallocation") {
+TEST_CASE("push_back_self", TEST_TAGS) {
     utl::Json json = utl::Array { utl::Json("first"), utl::Json(2) };
 
     for (int i = 0; i < 16; ++i)
@@ -307,7 +302,7 @@ TEST_CASE("push_back of an own element survives reallocation") {
     CHECK(json[17].as_string() == "first");
 }
 
-TEST_CASE("deque as the array type") {
+TEST_CASE("deque", TEST_TAGS) {
     utl::TNode<deque_traits> json;
 
     json.push_back(1);
@@ -319,10 +314,7 @@ TEST_CASE("deque as the array type") {
 }
 
 
-// Exotic assignment tests
-
-
-TEST_CASE("standard containers become arrays") {
+TEST_CASE("containers", TEST_TAGS) {
     utl::Json numbers = std::vector { 1, 2, 3 };
     REQUIRE(numbers.is_array());
     CHECK(numbers[2].as_integral() == 3);
@@ -341,7 +333,7 @@ TEST_CASE("standard containers become arrays") {
     CHECK(bits[0].as_bool());
 }
 
-TEST_CASE("maps with string keys become objects") {
+TEST_CASE("maps", TEST_TAGS) {
     utl::Json json = std::map<std::string, int> { { "a", 1 }, { "b", 2 } };
     REQUIRE(json.is_object());
     CHECK(json["b"].as_integral() == 2);
@@ -350,7 +342,7 @@ TEST_CASE("maps with string keys become objects") {
     CHECK(nested["x"][1].as_floating() == 2.5);
 }
 
-TEST_CASE("optional becomes a value or null") {
+TEST_CASE("optional", TEST_TAGS) {
     utl::Json engaged = std::optional { 5 };
     CHECK(engaged.as_integral() == 5);
 
@@ -362,13 +354,13 @@ TEST_CASE("optional becomes a value or null") {
     CHECK(json["price"].is_null());
 }
 
-TEST_CASE("unsupported types are rejected at compile time") {
+TEST_CASE("unsupported_types", TEST_TAGS) {
     static_assert(!std::constructible_from<utl::Json, std::pair<int, int>>);
     static_assert(!std::constructible_from<utl::Json, std::map<int, int>>);
     static_assert(std::constructible_from<utl::Json, std::span<const utl::Json>>);
 }
 
-TEST_CASE("non-const lvalues of alternative types") {
+TEST_CASE("lvalues", TEST_TAGS) {
     std::string string = "x";
     utl::Json from_string = string;
     CHECK(from_string.as_string() == "x");
@@ -381,11 +373,11 @@ TEST_CASE("non-const lvalues of alternative types") {
     CHECK(object.size() == 1);
 }
 
-TEST_CASE("char is a number") {
+TEST_CASE("char", TEST_TAGS) {
     CHECK(utl::Json('a').as_integral() == 'a');
 }
 
-TEST_CASE("conversion between instantiations") {
+TEST_CASE("conversion", TEST_TAGS) {
     utl::Json flat;
     flat["a"]["b"] = utl::Array { utl::Json(1), utl::Json("x") };
     flat["c"] = 1.5;
@@ -404,27 +396,25 @@ TEST_CASE("conversion between instantiations") {
     CHECK(flat["a"]["b"][1].as_string() == "x");
 }
 
-TEST_CASE("moving a container moves its strings") {
+TEST_CASE("move_container", TEST_TAGS) {
     std::vector source { std::string(64, 'x') };
 
     utl::Json json = std::move(source);
     CHECK(json[0].as_string().size() == 64);
 }
 
-TEST_CASE("expected is not treated as optional") {
+TEST_CASE("expected", TEST_TAGS) {
     static_assert(utl::impl::json_detail::classify<std::expected<int, std::string>, utl::Json>()
         == utl::impl::json_detail::ESourceKind::None);
 }
 
-
-// I/O tests
 
 struct custom_string_traits : utl::default_traits {
     using string_type = test_key;
 };
 
 
-TEST_CASE("parse scalars and nesting") {
+TEST_CASE("parse", TEST_TAGS) {
     CHECK(utl::from_string("null").is_null());
     CHECK(utl::from_string(" true ").as_bool());
     CHECK(utl::from_string("-42").as_integral() == -42);
@@ -436,13 +426,13 @@ TEST_CASE("parse scalars and nesting") {
     CHECK(json["c"].as_string() == "d");
 }
 
-TEST_CASE("parse escapes and unicode") {
+TEST_CASE("parse_escapes", TEST_TAGS) {
     CHECK(utl::from_string(R"("a\"b\\c\n\t\/")").as_string() == "a\"b\\c\n\t/");
     CHECK(utl::from_string(R"("\u00e9")").as_string() == "\xC3\xA9");
     CHECK(utl::from_string(R"("\ud83d\ude00")").as_string() == "\xF0\x9F\x98\x80");
 }
 
-TEST_CASE("parse rejects invalid input") {
+TEST_CASE("parse_errors", TEST_TAGS) {
     for (std::string_view input : {
              "", "   ", "01", "1.", "-", "-inf", "+1", ".5", "[1,]", "{\"a\":1,}", "[1 2]", "{\"a\" 1}",
              "tru", "nul", "\"abc", "\"a\x01\"", R"("\x")", R"("\ud83d")", R"("\ude00")", R"("\ud83d\u0041")",
@@ -453,7 +443,7 @@ TEST_CASE("parse rejects invalid input") {
     }
 }
 
-TEST_CASE("integers and floats are kept apart") {
+TEST_CASE("integers_and_floats", TEST_TAGS) {
     CHECK(utl::from_string("9223372036854775807").is_integral());
     CHECK(utl::from_string("-9223372036854775808").is_integral());
     CHECK_THROWS_AS(static_cast<void>(utl::from_string("9223372036854775808")), ers::parse_error);
@@ -464,7 +454,7 @@ TEST_CASE("integers and floats are kept apart") {
     CHECK(utl::from_string("1e0").is_floating());
 }
 
-TEST_CASE("recursion limit") {
+TEST_CASE("recursion_limit", TEST_TAGS) {
     const auto nested = [](std::size_t depth) {
         return std::string(depth, '[') + std::string(depth, ']');
     };
@@ -474,7 +464,7 @@ TEST_CASE("recursion limit") {
     CHECK_THROWS_AS(static_cast<void>(utl::from_string(nested(11), 10)), ers::parse_error);
 }
 
-TEST_CASE("serialize numbers") {
+TEST_CASE("serialize_numbers", TEST_TAGS) {
     CHECK(utl::Json(2.0).to_string(utl::EFormat::Minimized) == "2.0");
     CHECK(utl::Json(1.5).to_string(utl::EFormat::Minimized) == "1.5");
     CHECK(utl::Json(1e300).to_string(utl::EFormat::Minimized) == "1e+300");
@@ -482,14 +472,14 @@ TEST_CASE("serialize numbers") {
     CHECK(utl::Json(std::numeric_limits<i64>::min()).to_string(utl::EFormat::Minimized) == "-9223372036854775808");
 }
 
-TEST_CASE("serialize escapes strings and keys") {
+TEST_CASE("serialize_escapes", TEST_TAGS) {
     utl::TNode<plain_map_traits> json;
     json["k\"ey"] = "a\x01\"\\\n"s;
 
     CHECK(json.to_string(utl::EFormat::Minimized) == R"({"k\"ey":"a\u0001\"\\\n"})");
 }
 
-TEST_CASE("pretty format") {
+TEST_CASE("pretty", TEST_TAGS) {
     const auto json = utl::from_string<utl::TNode<plain_map_traits>>(R"({"b":[true,null],"a":1,"e":{},"f":[]})");
 
     CHECK(json.to_string() ==
@@ -504,7 +494,7 @@ TEST_CASE("pretty format") {
         "}");
 }
 
-TEST_CASE("round trip") {
+TEST_CASE("round_trip", TEST_TAGS) {
     constexpr std::string_view source = R"({"a":[1,2.5,"x\u0001",true,null,{"b":-3}],"c":"\u00e9"})";
 
     const auto first = utl::from_string<utl::TNode<plain_map_traits>>(source);
@@ -516,14 +506,14 @@ TEST_CASE("round trip") {
     CHECK(second["c"].as_string() == "\xC3\xA9");
 }
 
-TEST_CASE("custom string type goes through string_adaptor") {
+TEST_CASE("string_adaptor", TEST_TAGS) {
     const auto json = utl::from_string<utl::TNode<custom_string_traits>>(R"({"a":"x"})");
 
     CHECK(json["a"].as_string().value == "x");
     CHECK(json.to_string(utl::EFormat::Minimized) == R"({"a":"x"})");
 }
 
-TEST_CASE("try_from_string and files") {
+TEST_CASE("files", TEST_TAGS) {
     CHECK_FALSE(utl::try_from_string("{"));
     CHECK(utl::try_from_string("{}"));
 
@@ -539,8 +529,6 @@ TEST_CASE("try_from_string and files") {
     std::filesystem::remove_all(path.parent_path());
 }
 
-
-// Custom types conversion tests
 
 struct point_t : utl::IJsonConvertible {
     i64 x = 0;
@@ -567,12 +555,12 @@ struct point_t : utl::IJsonConvertible {
 };
 
 
-TEST_CASE("literal") {
+TEST_CASE("literal", TEST_TAGS) {
     const auto json = R"({"a":[1,2]})"_json;
     CHECK(json["a"][1].as_integral() == 2);
 }
 
-TEST_CASE("read_as") {
+TEST_CASE("read_as", TEST_TAGS) {
     const auto json = R"({"small":300,"text":"x","list":[],"pi":3.5})"_json;
 
     CHECK(utl::read_as<i64>(json, "small") == 300);
@@ -584,7 +572,7 @@ TEST_CASE("read_as") {
     CHECK_FALSE(utl::read_as<i64>(json["text"], "anything"));
 }
 
-TEST_CASE("storage types") {
+TEST_CASE("storage_types", TEST_TAGS) {
     static_assert(std::same_as<utl::json_storage_t<std::string_view>, utl::String>);
     static_assert(std::same_as<utl::json_storage_t<const utl::Array&>, utl::Array>);
     static_assert(std::same_as<utl::json_storage_t<int>, utl::Integral>);
@@ -597,11 +585,11 @@ TEST_CASE("storage types") {
     static_assert(!utl::JsonCompatible<std::pair<int, int>>);
 }
 
-TEST_CASE("type_label") {
+TEST_CASE("type_label", TEST_TAGS) {
     CHECK(utl::type_label(utl::ENodeType::Object) == "Object");
 }
 
-TEST_CASE("IJsonConvertible round trip") {
+TEST_CASE("convertible", TEST_TAGS) {
     const auto loaded = utl::load_from_json<point_t>(R"({"x":1,"y":-2})"_json);
     REQUIRE(loaded);
     CHECK(loaded->y == -2);
@@ -613,7 +601,7 @@ TEST_CASE("IJsonConvertible round trip") {
     CHECK_FALSE(utl::load_from_json<point_t>(R"({"x":1})"_json));
 }
 
-TEST_CASE("JsonSchema") {
+TEST_CASE("JsonSchema", TEST_TAGS) {
     const auto json = R"({"name":"mod","version":"1.2.3","count":5})"_json;
 
     std::string name;
@@ -645,13 +633,11 @@ TEST_CASE("JsonSchema") {
 }
 
 
-// Assignment by value flag test
-
 struct by_value_traits : utl::ordered_traits {
     static constexpr bool assign_by_value = true;
 };
 
-TEST_CASE("move a node into its own child") {
+TEST_CASE("move_into_child", TEST_TAGS) {
     utl::TNode<by_value_traits> loop;
     loop["index"] = 1;
 
@@ -662,7 +648,7 @@ TEST_CASE("move a node into its own child") {
     CHECK(loop["parent"]["index"].as_integral() == 1);
 }
 
-TEST_CASE("assignment style follows the traits") {
+TEST_CASE("assignment_traits", TEST_TAGS) {
     static_assert(std::is_nothrow_move_assignable_v<utl::Json>);
     static_assert(std::is_nothrow_move_assignable_v<utl::TNode<by_value_traits>>);
 }

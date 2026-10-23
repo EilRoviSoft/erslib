@@ -1,5 +1,5 @@
-// doctest
-#include <doctest/doctest.h>
+// catch2
+#include <catch2/catch_test_macros.hpp>
 
 // std
 #include <ranges>
@@ -9,6 +9,9 @@
 
 // ers
 #include <erslib/core/algorithm.hpp>
+
+// test
+#include "support/tags.hpp"
 
 
 namespace {
@@ -35,13 +38,13 @@ namespace {
 }
 
 
-TEST_CASE("regular") {
+TEST_CASE("regular", TEST_TAGS) {
     REQUIRE(process<ers::algo::RegularSplitter>("hello world") == make_vector("hello", "world"));
     REQUIRE(process<ers::algo::RegularSplitter>("I love Isaac Iwasaki") == make_vector("I", "love", "Isaac", "Iwasaki"));
     REQUIRE(process<ers::algo::RegularSplitter>("I hate \"Sir Isaac Westcott\"") == make_vector("I", "hate", "\"Sir", "Isaac", "Westcott\""));
 }
 
-TEST_CASE("smart") {
+TEST_CASE("smart", TEST_TAGS) {
     REQUIRE(process<ers::algo::SmartSplitter>("hello world") == make_vector("hello", "world"));
     REQUIRE(process<ers::algo::SmartSplitter>("I love Isaac Iwasaki") == make_vector("I", "love", "Isaac", "Iwasaki"));
     REQUIRE(process<ers::algo::SmartSplitter>("I hate \"Sir Isaac Westcott\"") == make_vector("I", "hate", "Sir Isaac Westcott"));

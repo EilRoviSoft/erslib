@@ -1,5 +1,5 @@
-// doctest
-#include <doctest/doctest.h>
+// catch2
+#include <catch2/catch_test_macros.hpp>
 
 // std
 #include <cstdint>
@@ -11,13 +11,14 @@
 #include <erslib/flux.hpp>
 #include <erslib/flux/query_builder.hpp>
 
+// test
+#include "support/tags.hpp"
+
 
 using namespace flux::orm;
 
 using std::string_literals::operator ""s;
 
-
-// Details ---------------------------------------------------------------------
 
 namespace {
     std::string where_of(const flux::Expr& condition) {
@@ -36,9 +37,7 @@ namespace {
 }
 
 
-// Rendering -------------------------------------------------------------------
-
-TEST_CASE("flux expr: comparisons bind values") {
+TEST_CASE("comparisons", TEST_TAGS) {
     CHECK(where_of(col("a") == 1) == "SELECT *\nFROM t\nWHERE a = $1");
     CHECK(where_of(col("a") != "x") == "SELECT *\nFROM t\nWHERE a <> $1");
     CHECK(where_of(5 <= col("a")) == "SELECT *\nFROM t\nWHERE $1 <= a");
@@ -46,7 +45,7 @@ TEST_CASE("flux expr: comparisons bind values") {
     CHECK(where_of(col("t", "a") > 1) == "SELECT *\nFROM t\nWHERE t.a > $1");
 }
 
-TEST_CASE("flux expr: and/or get parentheses only where precedence needs them") {
+TEST_CASE("and_or", TEST_TAGS) {
     CHECK(where_of(col("a") == 1 && col("b") == 2 && col("c") == 3)
         == "SELECT *\nFROM t\nWHERE a = $1 AND b = $2 AND c = $3");
 
@@ -58,7 +57,7 @@ TEST_CASE("flux expr: and/or get parentheses only where precedence needs them") 
         == "SELECT *\nFROM t\nWHERE (a = $1 OR b = $2) AND c = $3");
 }
 
-TEST_CASE("flux expr: an or is wrapped next to other where clauses") {
+TEST_CASE("or_in_where", TEST_TAGS) {
     const auto sql = (select_from("t")
         | where(col("a") == 1 || col("b") == 2)
         | where(col("c") == 3)).to_sql();
@@ -67,7 +66,7 @@ TEST_CASE("flux expr: an or is wrapped next to other where clauses") {
     CHECK(*sql == "SELECT *\nFROM t\nWHERE (a = $1 OR b = $2) AND c = $3");
 }
 
-TEST_CASE("flux expr: arithmetic keeps its grouping") {
+TEST_CASE("arithmetic", TEST_TAGS) {
     CHECK(where_of(col("a") - (col("b") - col("c")) > 0)
         == "SELECT *\nFROM t\nWHERE a - (b - c) > $1");
 
@@ -81,7 +80,7 @@ TEST_CASE("flux expr: arithmetic keeps its grouping") {
         == "SELECT *\nFROM t\nWHERE a + b * c > $1");
 }
 
-TEST_CASE("flux expr: not, null checks and distinct") {
+TEST_CASE("not_and_null", TEST_TAGS) {
     CHECK(where_of(!(col("a") == 1)) == "SELECT *\nFROM t\nWHERE NOT a = $1");
     CHECK(where_of(!(col("a") == 1 && col("b") == 2)) == "SELECT *\nFROM t\nWHERE NOT (a = $1 AND b = $2)");
     CHECK(where_of(col("a").is_null()) == "SELECT *\nFROM t\nWHERE a IS NULL");
@@ -90,7 +89,7 @@ TEST_CASE("flux expr: not, null checks and distinct") {
     CHECK(where_of((col("a") == 1).is_null()) == "SELECT *\nFROM t\nWHERE a = $1 IS NULL");
 }
 
-TEST_CASE("flux expr: in, between, like, any") {
+TEST_CASE("in_and_between", TEST_TAGS) {
     CHECK(where_of(col("a").in({ 1, 2, 3 })) == "SELECT *\nFROM t\nWHERE a IN ($1, $2, $3)");
     CHECK(where_of(col("a").in(std::vector<std::string> { "x", "y" })) == "SELECT *\nFROM t\nWHERE a IN ($1, $2)");
     CHECK(where_of(col("a").in(std::vector<int> {})) == "SELECT *\nFROM t\nWHERE FALSE");
@@ -102,7 +101,7 @@ TEST_CASE("flux expr: in, between, like, any") {
     CHECK(where_of(col("a").contains(col("b"))) == "SELECT *\nFROM t\nWHERE a @> b");
 }
 
-TEST_CASE("flux expr: cast, row and null") {
+TEST_CASE("cast_and_row", TEST_TAGS) {
     CHECK(where_of(col("a").cast("uuid") == col("b")) == "SELECT *\nFROM t\nWHERE a::uuid = b");
     CHECK(where_of((col("a") + col("b")).cast("int") > 1) == "SELECT *\nFROM t\nWHERE (a + b)::int > $1");
     CHECK(where_of(row(col("a"), col("b")) < row(1, 2)) == "SELECT *\nFROM t\nWHERE (a, b) < ($1, $2)");
@@ -110,7 +109,7 @@ TEST_CASE("flux expr: cast, row and null") {
     CHECK_FALSE((select_from("t") | where(col("a").cast("int; --") == 1)).to_sql().has_value());
 }
 
-TEST_CASE("flux expr: subqueries share the placeholder counter") {
+TEST_CASE("subqueries", TEST_TAGS) {
     const auto sql = (select_from("users")
         | where(col("active") == true)
         | where(col("id").in(select_from("orders") | columns("user_id") | where(col("total") > 100)))
@@ -124,22 +123,20 @@ TEST_CASE("flux expr: subqueries share the placeholder counter") {
     CHECK(sql->contains("= $3"));
 }
 
-TEST_CASE("flux expr: identifiers are validated, values are bound") {
+TEST_CASE("identifiers", TEST_TAGS) {
     CHECK(where_of(col("a; DROP TABLE t") == 1) == "<error>");
     CHECK(where_of(col("a") == "'; DROP TABLE t; --"s) == "SELECT *\nFROM t\nWHERE a = $1");
 }
 
 
-// Extension -------------------------------------------------------------------
-
-TEST_CASE("flux expr: operators and functions are added by the user") {
+TEST_CASE("user_operators", TEST_TAGS) {
     CHECK(where_of(trgm_similar(col("name"), "bob")) == "SELECT *\nFROM t\nWHERE name % $1");
     CHECK(where_of(lower(col("email")) == "a@b.c") == "SELECT *\nFROM t\nWHERE lower(email) = $1");
     CHECK(where_of(date_trunc("day", col("at")) == col("d")) == "SELECT *\nFROM t\nWHERE date_trunc($1, at) = d");
     CHECK(where_of(trgm_similar(col("a"), col("b")) && col("c") == 1) == "SELECT *\nFROM t\nWHERE a % b AND c = $1");
 }
 
-TEST_CASE("flux expr: raw sql is always parenthesized and takes arguments") {
+TEST_CASE("raw_sql", TEST_TAGS) {
     CHECK(where_of(sql("{} @@ plainto_tsquery('russian', {})", col("search"), "q"))
         == "SELECT *\nFROM t\nWHERE (search @@ plainto_tsquery('russian', $1))");
 
@@ -148,7 +145,7 @@ TEST_CASE("flux expr: raw sql is always parenthesized and takes arguments") {
     CHECK(where_of(sql("x", 1)) == "<error>");
 }
 
-TEST_CASE("flux expr: a custom node plugs in") {
+TEST_CASE("custom_node", TEST_TAGS) {
     struct ZeroLess final : flux::ext::IExprNode {
         flux::Expr value;
 
@@ -167,11 +164,11 @@ TEST_CASE("flux expr: a custom node plugs in") {
     CHECK(where_of(custom && col("z") == 1) == "SELECT *\nFROM t\nWHERE 0 < x + y AND z = $1");
 }
 
-TEST_CASE("flux expr: a custom clause plugs in") {
+TEST_CASE("custom_clause", TEST_TAGS) {
     class DistinctOnClause final : public flux::ext::IClause {
     public:
         explicit DistinctOnClause(std::vector<flux::Expr> on) :
-            IClause(&flux::slots::distinct),        // the slot decides where in the statement it goes
+            IClause(&flux::slots::distinct),
             _on(std::move(on)) {
         }
 
@@ -201,16 +198,14 @@ TEST_CASE("flux expr: a custom clause plugs in") {
 }
 
 
-// Parameters ------------------------------------------------------------------
-
-TEST_CASE("flux expr: a param is bound once per statement") {
+TEST_CASE("param", TEST_TAGS) {
     const auto at = param(5);
 
     CHECK(where_of(col("a") > at && col("b") < at && col("c") == 5)
         == "SELECT *\nFROM t\nWHERE a > $1 AND b < $1 AND c = $2");
 }
 
-TEST_CASE("flux expr: array helpers bind the array once") {
+TEST_CASE("arrays", TEST_TAGS) {
     CHECK(where_of(any_or_empty(col("id"), std::vector<std::int64_t> { 1, 2 }))
         == "SELECT *\nFROM t\nWHERE (cardinality($1::BIGINT[]) = 0 OR id = ANY($1))");
 
@@ -219,9 +214,7 @@ TEST_CASE("flux expr: array helpers bind the array once") {
 }
 
 
-// Statements ------------------------------------------------------------------
-
-TEST_CASE("flux expr: the select list takes expressions and aliases") {
+TEST_CASE("select_list", TEST_TAGS) {
     CHECK(sql_of(select_from("orders")
         | columns("user_id", count_all().as("n"), sum_of("total").as("sum"))
         | column(coalesce(max_of("total"), 0).as("top"))
@@ -235,7 +228,7 @@ TEST_CASE("flux expr: the select list takes expressions and aliases") {
            "\nORDER BY sum(total) DESC");
 }
 
-TEST_CASE("flux expr: aggregates") {
+TEST_CASE("aggregates", TEST_TAGS) {
     CHECK(sql_of(select_from("t") | columns(count_distinct("a"), corr_of("y", "x"), agg<"regr_slope">("y", col("x") * 2)))
         == "SELECT count(DISTINCT a), corr(y, x), regr_slope(y, x * $1)\nFROM t");
 
@@ -254,14 +247,14 @@ TEST_CASE("flux expr: aggregates") {
     CHECK(sql_of(select_from("t") | column(mode_of({}))) == "<error>");
 }
 
-TEST_CASE("flux expr: a subquery in the select list") {
+TEST_CASE("select_subquery", TEST_TAGS) {
     const auto orders = select_from("orders") | column(count_all()) | where(col("user_id") == col("u.id"));
 
     CHECK(sql_of(select_from("users", "u") | columns("u.id", subquery(orders).as("orders")))
         == "SELECT u.id, (SELECT count(*)\nFROM orders\nWHERE user_id = u.id) AS orders\nFROM users AS u");
 }
 
-TEST_CASE("flux expr: order by an expression") {
+TEST_CASE("order_by", TEST_TAGS) {
     CHECK(sql_of(select_from("t") | order_by(col("a") + col("b")) | order_by("c", EOrder::Desc))
         == "SELECT *\nFROM t\nORDER BY a + b ASC, c DESC");
 
@@ -271,7 +264,7 @@ TEST_CASE("flux expr: order by an expression") {
     CHECK(sql_of(select_from("t") | order_by_random()) == "SELECT *\nFROM t\nORDER BY random() ASC");
 }
 
-TEST_CASE("flux expr: assign and values take expressions") {
+TEST_CASE("assign", TEST_TAGS) {
     CHECK(sql_of(update("products") | assign("stock", col("stock") - 3) | assign("seen_at", now()) | where(col("id") == 1))
         == "UPDATE products\nSET stock = stock - $1, seen_at = now()\nWHERE id = $2");
 
@@ -281,6 +274,6 @@ TEST_CASE("flux expr: assign and values take expressions") {
         == "INSERT INTO t (a, at)\nVALUES ($1, now())\nRETURNING id, at AS created");
 }
 
-TEST_CASE("flux expr: a bad alias is rejected") {
+TEST_CASE("bad_alias", TEST_TAGS) {
     CHECK(sql_of(select_from("t") | column(col("a").as("x; --"))) == "<error>");
 }

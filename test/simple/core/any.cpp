@@ -1,5 +1,5 @@
-// doctest
-#include <doctest/doctest.h>
+// catch2
+#include <catch2/catch_test_macros.hpp>
 
 // std
 #include <string>
@@ -8,7 +8,10 @@
 // ers
 #include <erslib/core/memory.hpp>
 
+// test
+#include "support/tags.hpp"
 
-TEST_CASE("testing TAny") {
+
+TEST_CASE("any", TEST_TAGS) {
     ers::Any example(std::in_place_type<std::string>, "hello world!");
 }

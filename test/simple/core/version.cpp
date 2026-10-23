@@ -1,5 +1,5 @@
-// doctest
-#include <doctest/doctest.h>
+// catch2
+#include <catch2/catch_test_macros.hpp>
 
 // std
 #include <string_view>
@@ -7,18 +7,21 @@
 // ers
 #include <erslib/core/type/version.hpp>
 
+// test
+#include "support/tags.hpp"
 
-TEST_CASE("version: parse") {
+
+TEST_CASE("parse", TEST_TAGS) {
     std::string_view s;
     ers::version_t v;
 
 
-    SUBCASE("1.0.1") {
+    SECTION("1.0.1") {
         s = "1.0.1";
         v = { .major = 1, .minor = 0, .patch = 1 };
     }
 
-    SUBCASE("26.3.19") {
+    SECTION("26.3.19") {
         s = "26.3.19";
         v = { .major = 26, .minor = 3, .patch = 19 };
     }
@@ -29,7 +32,7 @@ TEST_CASE("version: parse") {
     CHECK(*r == v);
 }
 
-TEST_CASE("version: malformed input is an error") {
+TEST_CASE("malformed", TEST_TAGS) {
     CHECK_FALSE(ers::version_t::parse("1.0"));
     CHECK_FALSE(ers::version_t::parse("1"));
     CHECK_FALSE(ers::version_t::parse(""));

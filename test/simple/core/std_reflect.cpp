@@ -1,5 +1,5 @@
-// doctest
-#include <doctest/doctest.h>
+// catch2
+#include <catch2/catch_test_macros.hpp>
 
 #ifdef ERSLIB_HAS_REFLECTION
 
@@ -9,6 +9,9 @@
 #include <meta>
 #include <string>
 #include <vector>
+
+// test
+#include "support/tags.hpp"
 
 
 constexpr std::array names {
@@ -47,7 +50,7 @@ struct Tuple {
     Tuple(const Ts&... values) : data { values... } {}
 };
 
-TEST_CASE("Testing C++ reflection") {
+TEST_CASE("reflection", TEST_TAGS) {
     A a;
     a.x = "Hello";
 

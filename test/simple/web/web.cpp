@@ -1,5 +1,5 @@
-// doctest
-#include <doctest/doctest.h>
+// catch2
+#include <catch2/catch_test_macros.hpp>
 
 // std
 #include <chrono>
@@ -12,12 +12,13 @@
 #include <erslib/web/middleware/json_body.hpp>
 #include <erslib/web/middleware/rate_limit.hpp>
 
+// test
+#include "support/tags.hpp"
+
 
 using std::string_literals::operator ""s;
 using namespace std::chrono_literals;
 
-
-// Details ---------------------------------------------------------------------
 
 namespace {
     struct no_context {};
@@ -42,9 +43,7 @@ namespace {
 }
 
 
-// Implementation --------------------------------------------------------------
-
-TEST_CASE("web: responses") {
+TEST_CASE("responses", TEST_TAGS) {
     auto res = ers::web::make_failure(crow::BAD_REQUEST, "bad");
 
     REQUIRE(res.code == 400);
@@ -54,7 +53,7 @@ TEST_CASE("web: responses") {
     REQUIRE(utl::from_string(ers::web::make_ok().body)["ok"].as_bool());
 }
 
-TEST_CASE("web: request helpers") {
+TEST_CASE("request_helpers", TEST_TAGS) {
     auto req = make_request();
     req.add_header("Authorization", "Bearer abc");
     req.add_header("User-Agent", "a\x01" "b");
@@ -72,7 +71,7 @@ TEST_CASE("web: request helpers") {
     REQUIRE(!ers::web::query_flag(qs, "limit"));
 }
 
-TEST_CASE("web: cors") {
+TEST_CASE("cors", TEST_TAGS) {
     ers::web::Cors cors;
     ers::web::Cors::context ctx;
 
@@ -92,7 +91,7 @@ TEST_CASE("web: cors") {
     REQUIRE(foreign_res.get_header_value("Access-Control-Allow-Origin").empty());
 }
 
-TEST_CASE("web: json body") {
+TEST_CASE("json_body", TEST_TAGS) {
     ers::web::JsonBody json_body;
 
     ers::web::JsonBody::context good_ctx;
@@ -110,7 +109,7 @@ TEST_CASE("web: json body") {
     REQUIRE(!bad_ctx.body);
 }
 
-TEST_CASE("web: keyed rate limit") {
+TEST_CASE("keyed_rate_limit", TEST_TAGS) {
     ers::web::KeyedRateLimit<by_address> limiter;
     ers::web::KeyedRateLimit<by_address>::context ctx;
     no_context all;

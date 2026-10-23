@@ -1,7 +1,7 @@
 #ifdef _HAS_VALIJSON
 
-// doctest
-#include <doctest/doctest.h>
+// catch2
+#include <catch2/catch_test_macros.hpp>
 
 // std
 #include <ranges>
@@ -10,11 +10,12 @@
 // ers
 #include <erslib/contrib/valijson.hpp>
 
+// test
+#include "support/tags.hpp"
+
 
 using utl::operator""_json;
 
-
-// Details ---------------------------------------------------------------------
 
 namespace {
     bool contains(std::string_view haystack, std::string_view needle) {
@@ -41,16 +42,14 @@ namespace {
 }
 
 
-// Validation ------------------------------------------------------------------
-
-TEST_CASE("valijson: a valid document passes") {
+TEST_CASE("valid", TEST_TAGS) {
     const auto validator = compile(user_schema);
 
     CHECK(validator.validate(R"({"name": "Bob", "age": 30})"_json));
     CHECK(validator.validate(R"({"name": "Bob", "age": 30, "role": "staff", "tags": ["a", "b"]})"_json));
 }
 
-TEST_CASE("valijson: every violation is reported with its path") {
+TEST_CASE("violations", TEST_TAGS) {
     const auto validator = compile(user_schema);
     const auto status = validator.validate(R"({"age": -1, "role": "root", "tags": ["a", 2]})"_json);
 
@@ -58,13 +57,13 @@ TEST_CASE("valijson: every violation is reported with its path") {
 
     const auto message = std::string(status.error().message());
 
-    CHECK(contains(message, "name"));    // missing, reported at the root
-    CHECK(contains(message, "/age"));    // below minimum
-    CHECK(contains(message, "/role"));   // not in enum: goes through FrozenValue
-    CHECK(contains(message, "/tags/1")); // wrong item type: goes through the array iterator
+    CHECK(contains(message, "name"));
+    CHECK(contains(message, "/age"));
+    CHECK(contains(message, "/role"));
+    CHECK(contains(message, "/tags/1"));
 }
 
-TEST_CASE("valijson: integers and numbers are told apart") {
+TEST_CASE("integers", TEST_TAGS) {
     const auto integer = compile(R"({"type": "integer"})"_json);
     const auto number = compile(R"({"type": "number"})"_json);
 
@@ -75,7 +74,7 @@ TEST_CASE("valijson: integers and numbers are told apart") {
     CHECK_FALSE(number.validate(R"("5")"_json));
 }
 
-TEST_CASE("valijson: local references resolve") {
+TEST_CASE("references", TEST_TAGS) {
     const auto validator = compile(R"({
         "definitions": { "id": { "type": "integer", "minimum": 1 } },
         "type": "array",
@@ -87,15 +86,13 @@ TEST_CASE("valijson: local references resolve") {
 }
 
 
-// Schemas ---------------------------------------------------------------------
-
-TEST_CASE("valijson: a broken schema fails at compile") {
+TEST_CASE("broken_schema", TEST_TAGS) {
     CHECK_FALSE(utl::JsonValidator::compile(R"({"allOf": 5})"_json));
     CHECK_FALSE(utl::JsonValidator::compile(R"({"maxLength": -1})"_json));
     CHECK_FALSE(utl::JsonValidator::compile(R"({"$ref": "#/definitions/missing"})"_json));
 }
 
-TEST_CASE("valijson: a validator is cheap to copy and shares its schema") {
+TEST_CASE("copy", TEST_TAGS) {
     const auto original = compile(user_schema);
     const auto copy = original;
 
@@ -104,9 +101,7 @@ TEST_CASE("valijson: a validator is cheap to copy and shares its schema") {
 }
 
 
-// Traits ----------------------------------------------------------------------
-
-TEST_CASE("valijson: ordered nodes go through the same adapter") {
+TEST_CASE("ordered_nodes", TEST_TAGS) {
     const auto schema = utl::from_string<utl::OrderedJson>(R"({"type": "object", "required": ["b", "a"]})");
     const auto validator = utl::JsonValidator::compile(schema);
 

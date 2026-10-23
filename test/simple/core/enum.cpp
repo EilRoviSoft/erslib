@@ -1,10 +1,13 @@
-// doctest
-#include <doctest/doctest.h>
+// catch2
+#include <catch2/catch_test_macros.hpp>
 
 #ifdef ERSLIB_HAS_REFLECTION
 
 // ers
 #include <erslib/core/enum.hpp>
+
+// test
+#include "support/tags.hpp"
 
 
 using namespace ers::enum_utils;
@@ -64,7 +67,7 @@ struct ers::enum_traits<Priority> {
 };
 
 
-TEST_CASE("enum reflection: default case (pascal -> pascal)") {
+TEST_CASE("pascal", TEST_TAGS) {
     CHECK(to_string(Color::Red) == "Red");
     CHECK(to_string(Color::DarkGreen) == "forest");
     CHECK(to_string(Color::LightBlue) == "LightBlue");
@@ -75,7 +78,7 @@ TEST_CASE("enum reflection: default case (pascal -> pascal)") {
     CHECK_FALSE(from_string<Color>("nope").has_value());
 }
 
-TEST_CASE("enum reflection: enum_traits specialization (pascal -> upper_snake)") {
+TEST_CASE("upper_snake", TEST_TAGS) {
     CHECK(to_string(Status::NotStarted) == "NOT_STARTED");
     CHECK(to_string(Status::InProgress) == "IN_PROGRESS");
     CHECK(to_string(Status::Done) == "DONE");
@@ -84,7 +87,7 @@ TEST_CASE("enum reflection: enum_traits specialization (pascal -> upper_snake)")
     CHECK_FALSE(from_string<Status>("InProgress").has_value());
 }
 
-TEST_CASE("enum reflection: kebab and camel case styles") {
+TEST_CASE("kebab_and_camel", TEST_TAGS) {
     CHECK(to_string(Direction::NorthWest) == "north-west");
     CHECK(to_string(Direction::SouthEast) == "south-east");
     CHECK(from_string<Direction>("north-west") == Direction::NorthWest);
@@ -94,7 +97,7 @@ TEST_CASE("enum reflection: kebab and camel case styles") {
     CHECK(from_string<Weekday>("fridayEnd") == Weekday::FridayEnd);
 }
 
-TEST_CASE("enum reflection: enum_traits with snake_case target") {
+TEST_CASE("snake", TEST_TAGS) {
     CHECK(to_string(Priority::VeryHigh) == "very_high");
     CHECK(to_string(Priority::Low) == "low");
     CHECK(from_string<Priority>("very_high") == Priority::VeryHigh);

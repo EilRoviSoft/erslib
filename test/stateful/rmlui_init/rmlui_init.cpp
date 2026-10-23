@@ -1,13 +1,14 @@
-#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-
 // std
 #include <filesystem>
 
-// doctest
-#include <doctest/doctest.h>
+// catch2
+#include <catch2/catch_test_macros.hpp>
 
 // Rml
 #include <RmlUi/Core.h>
+
+// test
+#include "support/tags.hpp"
 
 
 namespace {
@@ -51,7 +52,7 @@ namespace {
 }
 
 
-TEST_CASE("RmlUi initializes and creates context") {
+TEST_CASE("context", TEST_TAGS) {
     TestSystemInterface system_interface;
     NullRenderInterface render_interface;
 
@@ -76,7 +77,7 @@ TEST_CASE("RmlUi initializes and creates context") {
 }
 
 
-TEST_CASE("RmlUi loads basic document") {
+TEST_CASE("document", TEST_TAGS) {
     TestSystemInterface system_interface;
     NullRenderInterface render_interface;
 
