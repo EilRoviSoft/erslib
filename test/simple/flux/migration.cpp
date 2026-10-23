@@ -124,7 +124,7 @@ namespace {
 
 // Source ----------------------------------------------------------------------
 
-ERS_TEST_CASE("fnv1a", "[flux]") {
+ERS_TEST_CASE("fnv1a", "[flux][compile_time]") {
     static_assert(ers::Fnv1AHash<std::string_view> {}("") == 0xcbf29ce484222325ull);
     static_assert(ers::Fnv1AHash<std::string_view> {}("a") == 0xaf63dc4c8601ec8cull);
     static_assert(ers::Fnv1AHash<std::string_view> {}("foobar") == 0x85944171f73967e8ull);

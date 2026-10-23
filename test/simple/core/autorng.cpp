@@ -63,7 +63,7 @@ namespace {
 }
 
 
-ERS_TEST_CASE("map", "[core]") {
+ERS_TEST_CASE("map", "[core][timing]") {
     Map c;
     std::array<std::string_view, 4> vals = { "player", "enemy:knight", "enemy:mage", "enemy:rogue" };
     std::array<std::chrono::milliseconds, 10> intervals;
@@ -81,13 +81,7 @@ ERS_TEST_CASE("map", "[core]") {
             }
         };
 
-#if __cpp_lib_ranges_enumerate >= 202302L
         for (auto [i, d] : intervals | std::views::enumerate) {
-#else
-        size_t i = -1;
-        for (auto d : intervals) {
-            i++;
-#endif
             print(i);
             std::this_thread::sleep_for(d);
         }

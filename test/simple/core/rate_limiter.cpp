@@ -37,7 +37,7 @@ namespace {
 }
 
 
-ERS_TEST_CASE("burst", "[core]") {
+ERS_TEST_CASE("burst", "[core][thread_safe]") {
     Limiter limiter(burst, interval, capacity);
 
     const auto first = limiter.try_acquire("key", t0());
@@ -58,7 +58,7 @@ ERS_TEST_CASE("burst", "[core]") {
     CHECK(blocked.retry_after == interval);
 }
 
-ERS_TEST_CASE("interval", "[core]") {
+ERS_TEST_CASE("interval", "[core][thread_safe]") {
     Limiter limiter(burst, interval, capacity);
 
     exhaust(limiter, "key", t0());
@@ -72,7 +72,7 @@ ERS_TEST_CASE("interval", "[core]") {
     CHECK(limiter.try_acquire("key", t0() + interval).retry_after == interval);
 }
 
-ERS_TEST_CASE("blocked", "[core]") {
+ERS_TEST_CASE("blocked", "[core][thread_safe]") {
     Limiter limiter(burst, interval, capacity);
 
     exhaust(limiter, "key", t0());
@@ -83,7 +83,7 @@ ERS_TEST_CASE("blocked", "[core]") {
     CHECK(limiter.try_acquire("key", t0() + interval).allowed);
 }
 
-ERS_TEST_CASE("refill", "[core]") {
+ERS_TEST_CASE("refill", "[core][thread_safe]") {
     Limiter limiter(burst, interval, capacity);
 
     exhaust(limiter, "key", t0());
@@ -91,7 +91,7 @@ ERS_TEST_CASE("refill", "[core]") {
     CHECK(limiter.try_acquire("key", t0() + interval * static_cast<int>(burst)).remaining == burst - 1);
 }
 
-ERS_TEST_CASE("keys", "[core]") {
+ERS_TEST_CASE("keys", "[core][thread_safe]") {
     Limiter limiter(burst, interval, capacity);
 
     exhaust(limiter, "a", t0());
@@ -100,7 +100,7 @@ ERS_TEST_CASE("keys", "[core]") {
     CHECK(limiter.try_acquire("b", t0()).remaining == burst - 1);
 }
 
-ERS_TEST_CASE("reset", "[core]") {
+ERS_TEST_CASE("reset", "[core][thread_safe]") {
     Limiter limiter(burst, interval, capacity);
 
     exhaust(limiter, "key", t0());
@@ -110,7 +110,7 @@ ERS_TEST_CASE("reset", "[core]") {
     CHECK(limiter.try_acquire("key", t0()).remaining == burst - 1);
 }
 
-ERS_TEST_CASE("maintain", "[core]") {
+ERS_TEST_CASE("maintain", "[core][thread_safe]") {
     Limiter limiter(burst, interval, capacity);
 
     limiter.try_acquire("old", t0());
@@ -122,7 +122,7 @@ ERS_TEST_CASE("maintain", "[core]") {
     CHECK(limiter.try_acquire("recent", t0() + interval).remaining == 1);
 }
 
-ERS_TEST_CASE("eviction", "[core]") {
+ERS_TEST_CASE("eviction", "[core][thread_safe]") {
     Limiter limiter(burst, interval, 4);
 
     exhaust(limiter, "victim", t0());
@@ -138,7 +138,7 @@ ERS_TEST_CASE("eviction", "[core]") {
     CHECK_FALSE(limiter.try_acquire("victim", t0() + 5s).allowed);
 }
 
-ERS_TEST_CASE("lockouts", "[core]") {
+ERS_TEST_CASE("lockouts", "[core][thread_safe]") {
     Limiter limiter(1, interval, 2);
 
     CHECK(limiter.try_acquire("a", t0()).allowed);
@@ -154,7 +154,7 @@ ERS_TEST_CASE("lockouts", "[core]") {
     CHECK(limiter.try_acquire("c", t0() + interval + 1s).allowed);
 }
 
-ERS_TEST_CASE("concurrent", "[core]") {
+ERS_TEST_CASE("concurrent", "[core][thread_safe][concurrency]") {
     Limiter limiter(burst, interval, capacity);
 
     constexpr size_t workers = 8;
@@ -179,7 +179,7 @@ ERS_TEST_CASE("concurrent", "[core]") {
     CHECK(limiter.size() == 1);
 }
 
-ERS_TEST_CASE("invalid config", "[core]") {
+ERS_TEST_CASE("invalid config", "[core][thread_safe]") {
     CHECK_THROWS_AS(Limiter(0, interval, capacity), std::invalid_argument);
     CHECK_THROWS_AS(Limiter(burst, 0s, capacity), std::invalid_argument);
     CHECK_THROWS_AS(Limiter(burst, -interval, capacity), std::invalid_argument);

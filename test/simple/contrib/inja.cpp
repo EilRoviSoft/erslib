@@ -22,7 +22,7 @@
 using utl::operator""_json;
 
 
-ERS_TEST_CASE("binding", "[contrib]") {
+ERS_TEST_CASE("binding", "[contrib][compile_time]") {
     static_assert(std::same_as<inja::json, utl::InjaJson>);
     static_assert(std::bidirectional_iterator<utl::InjaJson::iterator>);
     static_assert(std::bidirectional_iterator<utl::InjaJson::const_iterator>);

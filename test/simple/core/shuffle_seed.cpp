@@ -28,7 +28,7 @@ namespace {
 }
 
 
-ERS_TEST_CASE("stable", "[core]") {
+ERS_TEST_CASE("stable", "[core][thread_safe]") {
     ers::thread_safe::ShuffleSeeds seeds(lifetime);
 
     const auto first = seeds.acquire("session-a", t0());
@@ -37,13 +37,13 @@ ERS_TEST_CASE("stable", "[core]") {
     CHECK(seeds.acquire("session-a", t0() + 29min) == first);
 }
 
-ERS_TEST_CASE("sessions", "[core]") {
+ERS_TEST_CASE("sessions", "[core][thread_safe]") {
     ers::thread_safe::ShuffleSeeds seeds(lifetime);
 
     CHECK(seeds.acquire("session-a", t0()) != seeds.acquire("session-b", t0()));
 }
 
-ERS_TEST_CASE("expiry", "[core]") {
+ERS_TEST_CASE("expiry", "[core][thread_safe]") {
     ers::thread_safe::ShuffleSeeds seeds(lifetime);
 
     const auto before = seeds.acquire("session-a", t0());
@@ -51,7 +51,7 @@ ERS_TEST_CASE("expiry", "[core]") {
     CHECK(seeds.acquire("session-a", t0() + lifetime) != before);
 }
 
-ERS_TEST_CASE("read", "[core]") {
+ERS_TEST_CASE("read", "[core][thread_safe]") {
     ers::thread_safe::ShuffleSeeds seeds(lifetime);
 
     const auto first = seeds.acquire("session-a", t0());
@@ -62,7 +62,7 @@ ERS_TEST_CASE("read", "[core]") {
     CHECK(seeds.acquire("session-a", t0() + lifetime) != first);
 }
 
-ERS_TEST_CASE("rotate", "[core]") {
+ERS_TEST_CASE("rotate", "[core][thread_safe]") {
     ers::thread_safe::ShuffleSeeds seeds(lifetime);
 
     const auto first = seeds.acquire("session-a", t0());
@@ -73,7 +73,7 @@ ERS_TEST_CASE("rotate", "[core]") {
     CHECK(seeds.acquire("session-a", t0() + 45min) == rotated);
 }
 
-ERS_TEST_CASE("forget", "[core]") {
+ERS_TEST_CASE("forget", "[core][thread_safe]") {
     ers::thread_safe::ShuffleSeeds seeds(lifetime);
 
     const auto first = seeds.acquire("session-a", t0());
@@ -83,7 +83,7 @@ ERS_TEST_CASE("forget", "[core]") {
     CHECK(seeds.acquire("session-a", t0()) != first);
 }
 
-ERS_TEST_CASE("maintain", "[core]") {
+ERS_TEST_CASE("maintain", "[core][thread_safe]") {
     ers::thread_safe::ShuffleSeeds seeds(lifetime);
 
     seeds.acquire("old", t0());
@@ -95,7 +95,7 @@ ERS_TEST_CASE("maintain", "[core]") {
     CHECK(seeds.acquire("fresh", t0() + 21min) == fresh);
 }
 
-ERS_TEST_CASE("master seed", "[core]") {
+ERS_TEST_CASE("master seed", "[core][thread_safe]") {
     ers::thread_safe::ShuffleSeeds one(lifetime, 0xC0FFEE);
     ers::thread_safe::ShuffleSeeds two(lifetime, 0xC0FFEE);
 
@@ -106,7 +106,7 @@ ERS_TEST_CASE("master seed", "[core]") {
     CHECK(other.acquire("a", t0()) != one.acquire("a", t0()));
 }
 
-ERS_TEST_CASE("concurrent", "[core]") {
+ERS_TEST_CASE("concurrent", "[core][thread_safe][concurrency][slow]") {
     ers::thread_safe::ShuffleSeeds seeds(lifetime);
 
     constexpr size_t workers = 8;
@@ -137,7 +137,7 @@ ERS_TEST_CASE("concurrent", "[core]") {
     CHECK(seeds.size() == 1);
 }
 
-ERS_TEST_CASE("entropy", "[core]") {
+ERS_TEST_CASE("entropy", "[core][thread_safe]") {
     const auto first = ers::random::entropy();
 
     u64 combined = 0;

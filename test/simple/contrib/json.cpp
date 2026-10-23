@@ -362,7 +362,7 @@ ERS_TEST_CASE("optional", "[contrib]") {
     CHECK(json["price"].is_null());
 }
 
-ERS_TEST_CASE("unsupported types", "[contrib]") {
+ERS_TEST_CASE("unsupported types", "[contrib][compile_time]") {
     static_assert(!std::constructible_from<utl::Json, std::pair<int, int>>);
     static_assert(!std::constructible_from<utl::Json, std::map<int, int>>);
     static_assert(std::constructible_from<utl::Json, std::span<const utl::Json>>);
@@ -411,7 +411,7 @@ ERS_TEST_CASE("move container", "[contrib]") {
     CHECK(json[0].as_string().size() == 64);
 }
 
-ERS_TEST_CASE("expected", "[contrib]") {
+ERS_TEST_CASE("expected", "[contrib][compile_time]") {
     static_assert(utl::impl::json_detail::classify<std::expected<int, std::string>, utl::Json>()
         == utl::impl::json_detail::ESourceKind::None);
 }
@@ -523,7 +523,7 @@ ERS_TEST_CASE("string adaptor", "[contrib]") {
     CHECK(json.to_string(utl::EFormat::Minimized) == R"({"a":"x"})");
 }
 
-ERS_TEST_CASE("files", "[contrib]") {
+ERS_TEST_CASE("files", "[contrib][fs]") {
     CHECK_FALSE(utl::try_from_string("{"));
     CHECK(utl::try_from_string("{}"));
 
@@ -584,7 +584,7 @@ ERS_TEST_CASE("read_as", "[contrib]") {
     CHECK_FALSE(utl::read_as<i64>(json["text"], "anything"));
 }
 
-ERS_TEST_CASE("storage_types", "[contrib]") {
+ERS_TEST_CASE("storage_types", "[contrib][compile_time]") {
     static_assert(std::same_as<utl::json_storage_t<std::string_view>, utl::String>);
     static_assert(std::same_as<utl::json_storage_t<const utl::Array&>, utl::Array>);
     static_assert(std::same_as<utl::json_storage_t<int>, utl::Integral>);
@@ -662,7 +662,7 @@ ERS_TEST_CASE("move into child", "[contrib]") {
     CHECK(loop["parent"]["index"].as_integral() == 1);
 }
 
-ERS_TEST_CASE("assignment traits", "[contrib]") {
+ERS_TEST_CASE("assignment traits", "[contrib][compile_time]") {
     static_assert(std::is_nothrow_move_assignable_v<utl::Json>);
     static_assert(std::is_nothrow_move_assignable_v<utl::TNode<by_value_traits>>);
 }

@@ -131,7 +131,7 @@ ERS_TEST_CASE("keys", "[core]") {
 
 // Loading ---------------------------------------------------------------------
 
-ERS_TEST_CASE("load", "[core]") {
+ERS_TEST_CASE("load", "[core][fs]") {
     TempTree tree;
     fill(tree);
 
@@ -155,7 +155,7 @@ ERS_TEST_CASE("load", "[core]") {
     CHECK(table["en"]["pages"]["html.about"] == "About");
 }
 
-ERS_TEST_CASE("fallback", "[core]") {
+ERS_TEST_CASE("fallback", "[core][fs]") {
     TempTree tree;
     fill(tree);
 
@@ -166,7 +166,7 @@ ERS_TEST_CASE("fallback", "[core]") {
     CHECK(table.missing() == std::vector<std::string> { "en: mail/html.sub.footer" });
 }
 
-ERS_TEST_CASE("unknown names", "[core]") {
+ERS_TEST_CASE("unknown names", "[core][fs]") {
     TempTree tree;
     fill(tree);
 
@@ -187,7 +187,7 @@ ERS_TEST_CASE("unknown names", "[core]") {
     CHECK(table["ru"]["mail"].share("txt.nope") == nullptr);
 }
 
-ERS_TEST_CASE("missing fallback", "[core]") {
+ERS_TEST_CASE("missing fallback", "[core][fs]") {
     TempTree tree;
     fill(tree);
 
@@ -202,7 +202,7 @@ ERS_TEST_CASE("missing fallback", "[core]") {
 
 // Common texts ----------------------------------------------------------------
 
-ERS_TEST_CASE("common folder", "[core]") {
+ERS_TEST_CASE("common folder", "[core][fs]") {
     TempTree tree;
     fill(tree);
     tree.write("_common/mail/layout.html", "<common/>");
@@ -219,7 +219,7 @@ ERS_TEST_CASE("common folder", "[core]") {
     CHECK(table.common()["mail"]["html.layout"] == "<common/>");
 }
 
-ERS_TEST_CASE("lookup order", "[core]") {
+ERS_TEST_CASE("lookup order", "[core][fs]") {
     TempTree tree;
     tree.write("_common/mail/layout.html", "common");
     tree.write("ru/mail/layout.html", "ru");
@@ -243,7 +243,7 @@ ERS_TEST_CASE("lookup order", "[core]") {
         });
 }
 
-ERS_TEST_CASE("common name", "[core]") {
+ERS_TEST_CASE("common name", "[core][fs]") {
     TempTree tree;
     fill(tree);
     tree.write("shared/mail/layout.html", "shared");
@@ -258,7 +258,7 @@ ERS_TEST_CASE("common name", "[core]") {
 
 // Bundles ---------------------------------------------------------------------
 
-ERS_TEST_CASE("bundle in domain", "[core]") {
+ERS_TEST_CASE("bundle in domain", "[core][fs]") {
     TempTree tree;
     fill(tree);
     tree.write("ru/pages/buttons.l10n.txt", "buy = Купить\ncart.add = В корзину");
@@ -276,7 +276,7 @@ ERS_TEST_CASE("bundle in domain", "[core]") {
     CHECK_FALSE(pages.find("txt.buttons.l10n"));
 }
 
-ERS_TEST_CASE("bundle as domain", "[core]") {
+ERS_TEST_CASE("bundle as domain", "[core][fs]") {
     TempTree tree;
     fill(tree);
     tree.write("ru/ui.l10n.txt", "buy = Купить");
@@ -292,7 +292,7 @@ ERS_TEST_CASE("bundle as domain", "[core]") {
     CHECK(table["en"]["ui"]["buttons.buy"] == "Buy");
 }
 
-ERS_TEST_CASE("common bundles", "[core]") {
+ERS_TEST_CASE("common bundles", "[core][fs]") {
     TempTree tree;
     fill(tree);
     tree.write("_common/colors.l10n.txt",
@@ -325,7 +325,7 @@ ERS_TEST_CASE("common bundles", "[core]") {
         });
 }
 
-ERS_TEST_CASE("mixed domain", "[core]") {
+ERS_TEST_CASE("mixed domain", "[core][fs]") {
     TempTree tree;
     fill(tree);
     tree.write("_common/colors.l10n.txt", "black.hex = #000000");
@@ -340,7 +340,7 @@ ERS_TEST_CASE("mixed domain", "[core]") {
     CHECK(table["ru"]["colors"]["black.name"] == "чёрный");
 }
 
-ERS_TEST_CASE("malformed bundles", "[core]") {
+ERS_TEST_CASE("malformed bundles", "[core][fs]") {
     auto fails = [](std::string_view relative, std::string_view text) {
         TempTree tree;
         fill(tree);
@@ -361,7 +361,7 @@ ERS_TEST_CASE("malformed bundles", "[core]") {
     CHECK_FALSE(fails("_common/ui.l10n.txt", "a = x\na@ru = y"));
 }
 
-ERS_TEST_CASE("duplicate domain", "[core]") {
+ERS_TEST_CASE("duplicate domain", "[core][fs]") {
     TempTree tree;
     fill(tree);
     tree.write("ru/ui/buy.txt", "Купить");
@@ -379,7 +379,7 @@ ERS_TEST_CASE("duplicate domain", "[core]") {
 
 // Children --------------------------------------------------------------------
 
-ERS_TEST_CASE("children", "[core]") {
+ERS_TEST_CASE("children", "[core][fs]") {
     TempTree tree;
     fill(tree);
     tree.write("_common/colors.l10n.txt",
@@ -416,7 +416,7 @@ ERS_TEST_CASE("children", "[core]") {
 
 // Reloading -------------------------------------------------------------------
 
-ERS_TEST_CASE("reload untouched", "[core]") {
+ERS_TEST_CASE("reload untouched", "[core][fs]") {
     TempTree tree;
     fill(tree);
 
@@ -436,7 +436,7 @@ ERS_TEST_CASE("reload untouched", "[core]") {
     CHECK(domain_of(table, "pages") == pages);
 }
 
-ERS_TEST_CASE("reload touched", "[core]") {
+ERS_TEST_CASE("reload touched", "[core][fs]") {
     TempTree tree;
     fill(tree);
 
@@ -456,7 +456,7 @@ ERS_TEST_CASE("reload touched", "[core]") {
     CHECK(domain_of(table, "pages") == pages);
 }
 
-ERS_TEST_CASE("reload changed", "[core]") {
+ERS_TEST_CASE("reload changed", "[core][fs]") {
     TempTree tree;
     fill(tree);
 
@@ -488,7 +488,7 @@ ERS_TEST_CASE("reload changed", "[core]") {
     CHECK(*old_text == "About");
 }
 
-ERS_TEST_CASE("reload bundle", "[core]") {
+ERS_TEST_CASE("reload bundle", "[core][fs]") {
     TempTree tree;
     fill(tree);
     tree.write("_common/colors.l10n.txt", "black.hex = #000000");
@@ -515,7 +515,7 @@ ERS_TEST_CASE("reload bundle", "[core]") {
     CHECK(table["en"]["mail"]["html.layout"] == "common");
 }
 
-ERS_TEST_CASE("reload moved", "[core]") {
+ERS_TEST_CASE("reload moved", "[core][fs]") {
     TempTree tree;
     fill(tree);
 
@@ -536,7 +536,7 @@ ERS_TEST_CASE("reload moved", "[core]") {
     CHECK(table["ru"]["pages"]["html.team"] == "О нас");
 }
 
-ERS_TEST_CASE("reload removed", "[core]") {
+ERS_TEST_CASE("reload removed", "[core][fs]") {
     TempTree tree;
     fill(tree);
 
@@ -554,7 +554,7 @@ ERS_TEST_CASE("reload removed", "[core]") {
     CHECK_FALSE(table["ru"].find("pages"));
 }
 
-ERS_TEST_CASE("reload new locale", "[core]") {
+ERS_TEST_CASE("reload new locale", "[core][fs]") {
     TempTree tree;
     fill(tree);
 
@@ -573,7 +573,7 @@ ERS_TEST_CASE("reload new locale", "[core]") {
     CHECK(table["de"]["pages"]["html.about"] == "О нас");
 }
 
-ERS_TEST_CASE("failed reload", "[core]") {
+ERS_TEST_CASE("failed reload", "[core][fs]") {
     TempTree tree;
     fill(tree);
 
@@ -599,7 +599,7 @@ ERS_TEST_CASE("failed reload", "[core]") {
 
 // Validators ------------------------------------------------------------------
 
-ERS_TEST_CASE("invalid domain", "[core]") {
+ERS_TEST_CASE("invalid domain", "[core][fs]") {
     TempTree tree;
     fill(tree);
     tree.write("_common/colors.l10n.txt", "black.hex = #000000\nblack.name@ru = чёрный");
@@ -639,7 +639,7 @@ ERS_TEST_CASE("invalid domain", "[core]") {
     CHECK(table.adapt<Palette>("en").hex("black") == "#111111"sv);
 }
 
-ERS_TEST_CASE("invalid first reload", "[core]") {
+ERS_TEST_CASE("invalid first reload", "[core][fs]") {
     TempTree tree;
     fill(tree);
     tree.write("_common/colors.l10n.txt", "black.name@ru = чёрный");
@@ -663,7 +663,7 @@ ERS_TEST_CASE("invalid first reload", "[core]") {
     CHECK(strict["en"]["pages"]["html.about"] == "About");
 }
 
-ERS_TEST_CASE("late validator", "[core]") {
+ERS_TEST_CASE("late validator", "[core][fs]") {
     TempTree tree;
     fill(tree);
     tree.write("_common/colors.l10n.txt", "black.name@ru = чёрный");
@@ -680,7 +680,7 @@ ERS_TEST_CASE("late validator", "[core]") {
     CHECK(report->rejected[0].domain == "colors");
 }
 
-ERS_TEST_CASE("validators", "[core]") {
+ERS_TEST_CASE("validators", "[core][fs]") {
     TempTree tree;
     fill(tree);
 
@@ -703,7 +703,7 @@ ERS_TEST_CASE("validators", "[core]") {
     CHECK(other.reload(tree.root()));
 }
 
-ERS_TEST_CASE("adapters", "[core]") {
+ERS_TEST_CASE("adapters", "[core][fs]") {
     TempTree tree;
     fill(tree);
     tree.write("_common/colors.l10n.txt",
@@ -727,7 +727,7 @@ ERS_TEST_CASE("adapters", "[core]") {
 
 // References ------------------------------------------------------------------
 
-ERS_TEST_CASE("references off", "[core]") {
+ERS_TEST_CASE("references off", "[core][fs]") {
     TempTree tree;
     fill(tree);
     tree.write("_common/colors.l10n.txt", "blue.hex = #007BFF\nsea.hex = $blue");
@@ -738,7 +738,7 @@ ERS_TEST_CASE("references off", "[core]") {
     CHECK(table["ru"]["colors"]["sea.hex"] == "$blue");
 }
 
-ERS_TEST_CASE("reference", "[core]") {
+ERS_TEST_CASE("reference", "[core][fs]") {
     TempTree tree;
     fill(tree);
     tree.write("_common/colors.l10n.txt",
@@ -756,7 +756,7 @@ ERS_TEST_CASE("reference", "[core]") {
     CHECK(table["en"]["colors"]["sea.name"] == "sea");
 }
 
-ERS_TEST_CASE("reference key", "[core]") {
+ERS_TEST_CASE("reference key", "[core][fs]") {
     TempTree tree;
     fill(tree);
     tree.write("_common/colors.l10n.txt",
@@ -771,7 +771,7 @@ ERS_TEST_CASE("reference key", "[core]") {
     CHECK(table["ru"]["colors"]["sea.label"] == "синий");
 }
 
-ERS_TEST_CASE("reference chain", "[core]") {
+ERS_TEST_CASE("reference chain", "[core][fs]") {
     TempTree tree;
     fill(tree);
     tree.write("_common/colors.l10n.txt",
@@ -785,7 +785,7 @@ ERS_TEST_CASE("reference chain", "[core]") {
     CHECK(table["ru"]["colors"]["navy.hex"] == "#1F4FA3");
 }
 
-ERS_TEST_CASE("escaped marker", "[core]") {
+ERS_TEST_CASE("escaped marker", "[core][fs]") {
     TempTree tree;
     fill(tree);
     tree.write("_common/prices.l10n.txt", "five.text = $$5\nnone.text = $$\nmiddle.text = a $b\n");
@@ -799,7 +799,7 @@ ERS_TEST_CASE("escaped marker", "[core]") {
     CHECK(table["ru"]["prices"]["middle.text"] == "a $b");
 }
 
-ERS_TEST_CASE("unresolved reference", "[core]") {
+ERS_TEST_CASE("unresolved reference", "[core][fs]") {
     const auto message = [](std::string_view bundle, ers::reference_options_t references = {}) {
         TempTree tree;
         fill(tree);
@@ -826,7 +826,7 @@ ERS_TEST_CASE("unresolved reference", "[core]") {
     CHECK(message("blue.hex = #000001\ng.stripped.hex = $blue").contains("g.blue.hex"));
 }
 
-ERS_TEST_CASE("bad reference reload", "[core]") {
+ERS_TEST_CASE("bad reference reload", "[core][fs]") {
     TempTree tree;
     fill(tree);
     tree.write("_common/colors.l10n.txt", "blue.hex = #007BFF\nsea.hex = $blue");
@@ -846,7 +846,7 @@ ERS_TEST_CASE("bad reference reload", "[core]") {
     CHECK(table["ru"]["colors"]["sea.hex"] == "#007BFF");
 }
 
-ERS_TEST_CASE("resolved texts", "[core]") {
+ERS_TEST_CASE("resolved texts", "[core][fs]") {
     TempTree tree;
     fill(tree);
     tree.write("_common/colors.l10n.txt",
@@ -860,7 +860,7 @@ ERS_TEST_CASE("resolved texts", "[core]") {
     CHECK(table.adapt<Palette>("ru").hex("sea") == "#007BFF"sv);
 }
 
-ERS_TEST_CASE("late references", "[core]") {
+ERS_TEST_CASE("late references", "[core][fs]") {
     TempTree tree;
     fill(tree);
     tree.write("_common/colors.l10n.txt", "blue.hex = #007BFF\nsea.hex = $blue");
@@ -875,7 +875,7 @@ ERS_TEST_CASE("late references", "[core]") {
     CHECK(table["ru"]["colors"]["sea.hex"] == "#007BFF");
 }
 
-ERS_TEST_CASE("relative reference", "[core]") {
+ERS_TEST_CASE("relative reference", "[core][fs]") {
     TempTree tree;
     fill(tree);
     tree.write("_common/colors.l10n.txt",
@@ -890,7 +890,7 @@ ERS_TEST_CASE("relative reference", "[core]") {
     CHECK(table["ru"]["colors"]["g.stripped.hex"] == "#1F4FA3");
 }
 
-ERS_TEST_CASE("root keys", "[core]") {
+ERS_TEST_CASE("root keys", "[core][fs]") {
     TempTree tree;
     fill(tree);
     tree.write("_common/colors.l10n.txt",

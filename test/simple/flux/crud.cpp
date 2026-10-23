@@ -136,7 +136,7 @@ ERS_TEST_CASE("alias", "[flux]") {
         == "SELECT *\nFROM users AS u\nJOIN images AS i ON u.id = i.id\nWHERE u.name = $1");
 }
 
-ERS_TEST_CASE("compare", "[flux]") {
+ERS_TEST_CASE("compare", "[flux][compile_time]") {
     constexpr auto cols = flux::columns_of<User>;
 
     constexpr auto compares = []<typename C, typename V>(const C&, const V&) {
@@ -288,7 +288,7 @@ ERS_TEST_CASE("soft update", "[flux]") {
 
 // Declaration -----------------------------------------------------------------
 
-ERS_TEST_CASE("declaration", "[flux]") {
+ERS_TEST_CASE("declaration", "[flux][compile_time]") {
     using namespace flux::reflect;
 
     static_assert(pk_members<ProductImage>.size() == 2);

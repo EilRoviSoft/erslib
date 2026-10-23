@@ -151,7 +151,7 @@ ERS_TEST_CASE("exists_in", "[flux]") {
         == "SELECT EXISTS (\nSELECT 1 FROM orders\nWHERE user_id = $1\n) AS \"exists\"");
 }
 
-ERS_TEST_CASE("exec", "[flux]") {
+ERS_TEST_CASE("exec", "[flux][compile_time]") {
     static_assert(flux::ReadableRow<bool>);
     static_assert(flux::impl::RowContainer<std::vector<bool>>);
     static_assert(flux::impl::RowContainer<ers::maybe<bool>>);
@@ -175,7 +175,7 @@ namespace {
     };
 }
 
-ERS_TEST_CASE("with_query", "[flux]") {
+ERS_TEST_CASE("with_query", "[flux][compile_time]") {
     static_assert(flux::impl::Executable<flux::QueryBuilder>);
     static_assert(flux::impl::Executable<FakeExecutable>);
     static_assert(!flux::impl::Executable<int>);
@@ -246,7 +246,7 @@ template<>
 struct flux::reflect::Declaration<HandRolled> : Table<"hand_rolled"> {};
 
 
-ERS_TEST_CASE("schema", "[flux]") {
+ERS_TEST_CASE("schema", "[flux][compile_time]") {
     using namespace flux::reflect;
 
     static_assert(table_name<Image> == "images");
@@ -266,7 +266,7 @@ ERS_TEST_CASE("schema", "[flux]") {
     static_assert(declaration_is_valid<ProductImage>);
 }
 
-ERS_TEST_CASE("rows", "[flux]") {
+ERS_TEST_CASE("rows", "[flux][compile_time]") {
     using namespace flux::reflect;
 
     static_assert(RowType<Image> && flux::ReadableRow<Image>);

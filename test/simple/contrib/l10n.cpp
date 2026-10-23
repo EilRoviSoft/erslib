@@ -80,7 +80,7 @@ ERS_TEST_CASE("loader", "[contrib]") {
     CHECK_FALSE(loader.parse("{ not json"));
 }
 
-ERS_TEST_CASE("table", "[contrib]") {
+ERS_TEST_CASE("table", "[contrib][fs]") {
     TempTree tree;
     tree.write("ru/mail/new_order.txt", "Новый заказ");
     tree.write("_common/colors.l10n.json", R"({
