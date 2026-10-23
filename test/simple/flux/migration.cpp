@@ -17,12 +17,14 @@
 #include <erslib/flux/migration/source.hpp>
 
 // test
-#include "support/tags.hpp"
+#include "support/test_case.hpp"
 
 
 using namespace flux::impl;
 using namespace std::string_view_literals;
 
+
+// Details ---------------------------------------------------------------------
 
 namespace {
     migration_t parsed(std::string_view filename, std::string sql = "SELECT 1;") {
@@ -120,18 +122,20 @@ namespace {
 }
 
 
-TEST_CASE("fnv1a", TEST_TAGS) {
+// Source ----------------------------------------------------------------------
+
+ERS_TEST_CASE("fnv1a", "[flux]") {
     static_assert(ers::Fnv1AHash<std::string_view> {}("") == 0xcbf29ce484222325ull);
     static_assert(ers::Fnv1AHash<std::string_view> {}("a") == 0xaf63dc4c8601ec8cull);
     static_assert(ers::Fnv1AHash<std::string_view> {}("foobar") == 0x85944171f73967e8ull);
 }
 
-TEST_CASE("checksum", TEST_TAGS) {
+ERS_TEST_CASE("checksum", "[flux]") {
     CHECK(parsed("0001_x.always.sql", "SELECT 1;\r\nSELECT 2;").checksum
         == parsed("0001_x.always.sql", "SELECT 1;\nSELECT 2;").checksum);
 }
 
-TEST_CASE("file_names", TEST_TAGS) {
+ERS_TEST_CASE("file names", "[flux]") {
     const auto existing = parsed("0001_products_add_sku.existing.sql");
 
     CHECK(existing.id == "0001_products_add_sku");
@@ -148,14 +152,14 @@ TEST_CASE("file_names", TEST_TAGS) {
     CHECK(repeatable.on == EApplyOn::Repeatable);
 }
 
-TEST_CASE("bad_file_names", TEST_TAGS) {
+ERS_TEST_CASE("bad file names", "[flux]") {
     CHECK(rejected("0001_seed.sql"));
     CHECK(rejected("0001_seed.exsiting.sql"));
     CHECK(rejected("1_seed.fresh.sql"));
     CHECK(rejected("Best_Sale.repeatable.sql"));
 }
 
-TEST_CASE("transaction_control", TEST_TAGS) {
+ERS_TEST_CASE("transaction control", "[flux]") {
     CHECK(rejected("0001_seed.fresh.sql", "BEGIN;\nINSERT INTO t VALUES (1);\nCOMMIT;"));
     CHECK(rejected("0001_seed.fresh.sql", "  rollback ;"));
 
@@ -167,7 +171,7 @@ TEST_CASE("transaction_control", TEST_TAGS) {
         "$$;"));
 }
 
-TEST_CASE("directives", TEST_TAGS) {
+ERS_TEST_CASE("directives", "[flux]") {
     const auto migration = parsed("0004_sales_banner.existing.sql",
         "-- flux: table public.sales 3f9a1c0d2b7e4410\n"
         "-- flux: drop public.old_banners\n"
@@ -179,14 +183,16 @@ TEST_CASE("directives", TEST_TAGS) {
     CHECK(migration.drops == std::vector<std::string> { "public.old_banners" });
 }
 
-TEST_CASE("bad_directives", TEST_TAGS) {
+ERS_TEST_CASE("bad directives", "[flux]") {
     CHECK(rejected("0001_seed.fresh.sql", "-- flux: table public.sales 3f9a1c0d2b7e4410\nSELECT 1;"));
     CHECK(rejected("0001_x.existing.sql", "-- flux: tabel public.sales 3f9a1c0d2b7e4410\nSELECT 1;"));
     CHECK(rejected("0001_x.existing.sql", "-- flux: table public.sales 3f9a\nSELECT 1;"));
 }
 
 
-TEST_CASE("outcome", TEST_TAGS) {
+// Outcome and diff ------------------------------------------------------------
+
+ERS_TEST_CASE("outcome", "[flux]") {
     struct row_t {
         EDatabaseState state;
         EApplyOn on;
@@ -217,7 +223,7 @@ TEST_CASE("outcome", TEST_TAGS) {
     }
 }
 
-TEST_CASE("diff", TEST_TAGS) {
+ERS_TEST_CASE("diff", "[flux]") {
     const auto diff = diff_declarations(
         "CONSTRAINT sales_pk PRIMARY KEY (id)\nid INTEGER NOT NULL\npercent INTEGER NOT NULL",
         "CONSTRAINT sales_pk PRIMARY KEY (id)\nbanner TEXT NOT NULL\nid INTEGER NOT NULL\npercent SMALLINT NOT NULL"
@@ -231,7 +237,9 @@ TEST_CASE("diff", TEST_TAGS) {
 }
 
 
-TEST_CASE("fresh_database", TEST_TAGS) {
+// Migrator --------------------------------------------------------------------
+
+ERS_TEST_CASE("fresh database", "[flux]") {
     Scenario s;
     s.set.versioned = {
         parsed("0001_sales_banner.existing.sql", "ALTER TABLE public.sales ADD COLUMN banner TEXT;"),
@@ -254,7 +262,7 @@ TEST_CASE("fresh_database", TEST_TAGS) {
     CHECK(s.store.recorded.at("public.sales").hash == sales.hash);
 }
 
-TEST_CASE("changed_declaration", TEST_TAGS) {
+ERS_TEST_CASE("changed declaration", "[flux]") {
     Scenario s;
     s.track(sales_v1);
 
@@ -266,7 +274,7 @@ TEST_CASE("changed_declaration", TEST_TAGS) {
     CHECK(message.contains(claim("public.sales", sales_v2).substr(0, 41)));
 }
 
-TEST_CASE("claiming_migration", TEST_TAGS) {
+ERS_TEST_CASE("claiming migration", "[flux]") {
     Scenario s;
     s.track(sales_v1);
     s.set.versioned = {
@@ -280,7 +288,7 @@ TEST_CASE("claiming_migration", TEST_TAGS) {
     CHECK(s.store.recorded.at("public.sales").text == sales_v2);
 }
 
-TEST_CASE("foreign_migration", TEST_TAGS) {
+ERS_TEST_CASE("foreign migration", "[flux]") {
     Scenario s;
     s.track(sales_v1);
     s.set.versioned = {
@@ -293,7 +301,7 @@ TEST_CASE("foreign_migration", TEST_TAGS) {
     CHECK(report.error().message().contains("Recorded declaration is unknown"));
 }
 
-TEST_CASE("untracked_database", TEST_TAGS) {
+ERS_TEST_CASE("untracked database", "[flux]") {
     Scenario s;
     s.store.existing_tables.emplace_back(sales.name);
     s.set.versioned = { parsed("0001_seed.fresh.sql") };
@@ -309,7 +317,7 @@ TEST_CASE("untracked_database", TEST_TAGS) {
     CHECK(s.store.recorded.contains("public.sales"));
 }
 
-TEST_CASE("removed_table", TEST_TAGS) {
+ERS_TEST_CASE("removed table", "[flux]") {
     Scenario s;
     s.track(sales_v2);
     s.store.recorded.insert_or_assign("public.banners", recorded_table_t {
@@ -331,7 +339,7 @@ TEST_CASE("removed_table", TEST_TAGS) {
     CHECK_FALSE(s.store.recorded.contains("public.banners"));
 }
 
-TEST_CASE("accept_declarations", TEST_TAGS) {
+ERS_TEST_CASE("accept_declarations", "[flux]") {
     Scenario s;
     s.track(sales_v1);
     s.options.accept_declarations = true;
@@ -343,7 +351,7 @@ TEST_CASE("accept_declarations", TEST_TAGS) {
     CHECK(s.store.recorded.at("public.sales").hash == sales.hash);
 }
 
-TEST_CASE("repeatable", TEST_TAGS) {
+ERS_TEST_CASE("repeatable", "[flux]") {
     Scenario s;
     s.track(sales_v2);
     s.set.repeatable = { parsed("f.repeatable.sql", "SELECT 1;") };
@@ -360,7 +368,7 @@ TEST_CASE("repeatable", TEST_TAGS) {
     CHECK(std::ranges::contains(s.store.executed, "SELECT 2;"sv));
 }
 
-TEST_CASE("edited_migration", TEST_TAGS) {
+ERS_TEST_CASE("edited migration", "[flux]") {
     Scenario s;
     s.track(sales_v2);
     s.store.migrations.insert_or_assign("0001_seed", ers::Fnv1AHash<std::string_view> {}("SELECT 0;"));
@@ -373,7 +381,7 @@ TEST_CASE("edited_migration", TEST_TAGS) {
     CHECK_FALSE(std::ranges::contains(s.store.executed, "SELECT 1;"sv));
 }
 
-TEST_CASE("failing_migration", TEST_TAGS) {
+ERS_TEST_CASE("failing migration", "[flux]") {
     Scenario s;
     s.track(sales_v2);
     s.set.versioned = { parsed("0007_broken.always.sql", "SELECT 1/0;") };
@@ -386,6 +394,8 @@ TEST_CASE("failing_migration", TEST_TAGS) {
     CHECK_FALSE(s.store.migrations.contains("0007_broken"));
 }
 
+
+// Reflection ------------------------------------------------------------------
 
 #ifdef ERSLIB_HAS_REFLECTION
 
@@ -430,7 +440,7 @@ struct flux::reflect::Declaration<SaleDisabledByDefault> : Table<"sales"> {
 };
 
 
-TEST_CASE("canonical_declaration", TEST_TAGS) {
+ERS_TEST_CASE("canonical declaration", "[flux]") {
     using flux::ddl::canonical_declaration;
 
     static_assert(canonical_declaration<SaleOrdered>() == canonical_declaration<SaleShuffled>());

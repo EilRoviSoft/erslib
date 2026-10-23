@@ -5,14 +5,14 @@
 #include <erslib/core/meta.hpp>
 
 // test
-#include "support/tags.hpp"
+#include "support/test_case.hpp"
 
 
 template<typename T>
 struct sample_t {};
 
 
-TEST_CASE("meta", TEST_TAGS) {
+ERS_TEST_CASE("meta", "[core]") {
     REQUIRE(ers::meta::type_name_v<int> == "int");
     REQUIRE(ers::meta::type_name_v<float> == "float");
     REQUIRE(ers::meta::type_name_v<long double> == "long double");

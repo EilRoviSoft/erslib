@@ -11,11 +11,13 @@
 #include <erslib/contrib/valijson.hpp>
 
 // test
-#include "support/tags.hpp"
+#include "support/test_case.hpp"
 
 
 using utl::operator""_json;
 
+
+// Details ---------------------------------------------------------------------
 
 namespace {
     bool contains(std::string_view haystack, std::string_view needle) {
@@ -42,14 +44,16 @@ namespace {
 }
 
 
-TEST_CASE("valid", TEST_TAGS) {
+// Validation ------------------------------------------------------------------
+
+ERS_TEST_CASE("valid", "[contrib]") {
     const auto validator = compile(user_schema);
 
     CHECK(validator.validate(R"({"name": "Bob", "age": 30})"_json));
     CHECK(validator.validate(R"({"name": "Bob", "age": 30, "role": "staff", "tags": ["a", "b"]})"_json));
 }
 
-TEST_CASE("violations", TEST_TAGS) {
+ERS_TEST_CASE("violations", "[contrib]") {
     const auto validator = compile(user_schema);
     const auto status = validator.validate(R"({"age": -1, "role": "root", "tags": ["a", 2]})"_json);
 
@@ -63,7 +67,7 @@ TEST_CASE("violations", TEST_TAGS) {
     CHECK(contains(message, "/tags/1"));
 }
 
-TEST_CASE("integers", TEST_TAGS) {
+ERS_TEST_CASE("integers", "[contrib]") {
     const auto integer = compile(R"({"type": "integer"})"_json);
     const auto number = compile(R"({"type": "number"})"_json);
 
@@ -74,7 +78,7 @@ TEST_CASE("integers", TEST_TAGS) {
     CHECK_FALSE(number.validate(R"("5")"_json));
 }
 
-TEST_CASE("references", TEST_TAGS) {
+ERS_TEST_CASE("references", "[contrib]") {
     const auto validator = compile(R"({
         "definitions": { "id": { "type": "integer", "minimum": 1 } },
         "type": "array",
@@ -86,13 +90,15 @@ TEST_CASE("references", TEST_TAGS) {
 }
 
 
-TEST_CASE("broken_schema", TEST_TAGS) {
+// Schemas ---------------------------------------------------------------------
+
+ERS_TEST_CASE("broken schema", "[contrib]") {
     CHECK_FALSE(utl::JsonValidator::compile(R"({"allOf": 5})"_json));
     CHECK_FALSE(utl::JsonValidator::compile(R"({"maxLength": -1})"_json));
     CHECK_FALSE(utl::JsonValidator::compile(R"({"$ref": "#/definitions/missing"})"_json));
 }
 
-TEST_CASE("copy", TEST_TAGS) {
+ERS_TEST_CASE("copy", "[contrib]") {
     const auto original = compile(user_schema);
     const auto copy = original;
 
@@ -101,7 +107,9 @@ TEST_CASE("copy", TEST_TAGS) {
 }
 
 
-TEST_CASE("ordered_nodes", TEST_TAGS) {
+// Traits ----------------------------------------------------------------------
+
+ERS_TEST_CASE("ordered nodes", "[contrib]") {
     const auto schema = utl::from_string<utl::OrderedJson>(R"({"type": "object", "required": ["b", "a"]})");
     const auto validator = utl::JsonValidator::compile(schema);
 

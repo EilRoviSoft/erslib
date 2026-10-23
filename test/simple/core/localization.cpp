@@ -13,7 +13,7 @@
 #include <erslib/core/localization.hpp>
 
 // test
-#include "support/tags.hpp"
+#include "support/test_case.hpp"
 #include "support/temp_tree.hpp"
 
 
@@ -118,7 +118,9 @@ namespace {
 }
 
 
-TEST_CASE("keys", TEST_TAGS) {
+// Keys ------------------------------------------------------------------------
+
+ERS_TEST_CASE("keys", "[core]") {
     CHECK(*ers::make_localization_key("new_order.txt") == "txt.new_order");
     CHECK(*ers::make_localization_key("sub/deep/footer.html") == "html.sub.deep.footer");
     CHECK(*ers::make_localization_key("a.b.txt") == "txt.a.b");
@@ -127,7 +129,9 @@ TEST_CASE("keys", TEST_TAGS) {
 }
 
 
-TEST_CASE("load", TEST_TAGS) {
+// Loading ---------------------------------------------------------------------
+
+ERS_TEST_CASE("load", "[core]") {
     TempTree tree;
     fill(tree);
 
@@ -151,7 +155,7 @@ TEST_CASE("load", TEST_TAGS) {
     CHECK(table["en"]["pages"]["html.about"] == "About");
 }
 
-TEST_CASE("fallback", TEST_TAGS) {
+ERS_TEST_CASE("fallback", "[core]") {
     TempTree tree;
     fill(tree);
 
@@ -162,7 +166,7 @@ TEST_CASE("fallback", TEST_TAGS) {
     CHECK(table.missing() == std::vector<std::string> { "en: mail/html.sub.footer" });
 }
 
-TEST_CASE("unknown_names", TEST_TAGS) {
+ERS_TEST_CASE("unknown names", "[core]") {
     TempTree tree;
     fill(tree);
 
@@ -183,7 +187,7 @@ TEST_CASE("unknown_names", TEST_TAGS) {
     CHECK(table["ru"]["mail"].share("txt.nope") == nullptr);
 }
 
-TEST_CASE("missing_fallback", TEST_TAGS) {
+ERS_TEST_CASE("missing fallback", "[core]") {
     TempTree tree;
     fill(tree);
 
@@ -196,7 +200,9 @@ TEST_CASE("missing_fallback", TEST_TAGS) {
 }
 
 
-TEST_CASE("common_folder", TEST_TAGS) {
+// Common texts ----------------------------------------------------------------
+
+ERS_TEST_CASE("common folder", "[core]") {
     TempTree tree;
     fill(tree);
     tree.write("_common/mail/layout.html", "<common/>");
@@ -213,7 +219,7 @@ TEST_CASE("common_folder", TEST_TAGS) {
     CHECK(table.common()["mail"]["html.layout"] == "<common/>");
 }
 
-TEST_CASE("lookup_order", TEST_TAGS) {
+ERS_TEST_CASE("lookup order", "[core]") {
     TempTree tree;
     tree.write("_common/mail/layout.html", "common");
     tree.write("ru/mail/layout.html", "ru");
@@ -237,7 +243,7 @@ TEST_CASE("lookup_order", TEST_TAGS) {
         });
 }
 
-TEST_CASE("common_name", TEST_TAGS) {
+ERS_TEST_CASE("common name", "[core]") {
     TempTree tree;
     fill(tree);
     tree.write("shared/mail/layout.html", "shared");
@@ -250,7 +256,9 @@ TEST_CASE("common_name", TEST_TAGS) {
 }
 
 
-TEST_CASE("bundle_in_domain", TEST_TAGS) {
+// Bundles ---------------------------------------------------------------------
+
+ERS_TEST_CASE("bundle in domain", "[core]") {
     TempTree tree;
     fill(tree);
     tree.write("ru/pages/buttons.l10n.txt", "buy = Купить\ncart.add = В корзину");
@@ -268,7 +276,7 @@ TEST_CASE("bundle_in_domain", TEST_TAGS) {
     CHECK_FALSE(pages.find("txt.buttons.l10n"));
 }
 
-TEST_CASE("bundle_as_domain", TEST_TAGS) {
+ERS_TEST_CASE("bundle as domain", "[core]") {
     TempTree tree;
     fill(tree);
     tree.write("ru/ui.l10n.txt", "buy = Купить");
@@ -284,7 +292,7 @@ TEST_CASE("bundle_as_domain", TEST_TAGS) {
     CHECK(table["en"]["ui"]["buttons.buy"] == "Buy");
 }
 
-TEST_CASE("common_bundles", TEST_TAGS) {
+ERS_TEST_CASE("common bundles", "[core]") {
     TempTree tree;
     fill(tree);
     tree.write("_common/colors.l10n.txt",
@@ -317,7 +325,7 @@ TEST_CASE("common_bundles", TEST_TAGS) {
         });
 }
 
-TEST_CASE("mixed_domain", TEST_TAGS) {
+ERS_TEST_CASE("mixed domain", "[core]") {
     TempTree tree;
     fill(tree);
     tree.write("_common/colors.l10n.txt", "black.hex = #000000");
@@ -332,7 +340,7 @@ TEST_CASE("mixed_domain", TEST_TAGS) {
     CHECK(table["ru"]["colors"]["black.name"] == "чёрный");
 }
 
-TEST_CASE("malformed_bundles", TEST_TAGS) {
+ERS_TEST_CASE("malformed bundles", "[core]") {
     auto fails = [](std::string_view relative, std::string_view text) {
         TempTree tree;
         fill(tree);
@@ -353,7 +361,7 @@ TEST_CASE("malformed_bundles", TEST_TAGS) {
     CHECK_FALSE(fails("_common/ui.l10n.txt", "a = x\na@ru = y"));
 }
 
-TEST_CASE("duplicate_domain", TEST_TAGS) {
+ERS_TEST_CASE("duplicate domain", "[core]") {
     TempTree tree;
     fill(tree);
     tree.write("ru/ui/buy.txt", "Купить");
@@ -369,7 +377,9 @@ TEST_CASE("duplicate_domain", TEST_TAGS) {
 }
 
 
-TEST_CASE("children", TEST_TAGS) {
+// Children --------------------------------------------------------------------
+
+ERS_TEST_CASE("children", "[core]") {
     TempTree tree;
     fill(tree);
     tree.write("_common/colors.l10n.txt",
@@ -404,7 +414,9 @@ TEST_CASE("children", TEST_TAGS) {
 }
 
 
-TEST_CASE("reload_untouched", TEST_TAGS) {
+// Reloading -------------------------------------------------------------------
+
+ERS_TEST_CASE("reload untouched", "[core]") {
     TempTree tree;
     fill(tree);
 
@@ -424,7 +436,7 @@ TEST_CASE("reload_untouched", TEST_TAGS) {
     CHECK(domain_of(table, "pages") == pages);
 }
 
-TEST_CASE("reload_touched", TEST_TAGS) {
+ERS_TEST_CASE("reload touched", "[core]") {
     TempTree tree;
     fill(tree);
 
@@ -444,7 +456,7 @@ TEST_CASE("reload_touched", TEST_TAGS) {
     CHECK(domain_of(table, "pages") == pages);
 }
 
-TEST_CASE("reload_changed", TEST_TAGS) {
+ERS_TEST_CASE("reload changed", "[core]") {
     TempTree tree;
     fill(tree);
 
@@ -476,7 +488,7 @@ TEST_CASE("reload_changed", TEST_TAGS) {
     CHECK(*old_text == "About");
 }
 
-TEST_CASE("reload_bundle", TEST_TAGS) {
+ERS_TEST_CASE("reload bundle", "[core]") {
     TempTree tree;
     fill(tree);
     tree.write("_common/colors.l10n.txt", "black.hex = #000000");
@@ -503,7 +515,7 @@ TEST_CASE("reload_bundle", TEST_TAGS) {
     CHECK(table["en"]["mail"]["html.layout"] == "common");
 }
 
-TEST_CASE("reload_moved", TEST_TAGS) {
+ERS_TEST_CASE("reload moved", "[core]") {
     TempTree tree;
     fill(tree);
 
@@ -524,7 +536,7 @@ TEST_CASE("reload_moved", TEST_TAGS) {
     CHECK(table["ru"]["pages"]["html.team"] == "О нас");
 }
 
-TEST_CASE("reload_removed", TEST_TAGS) {
+ERS_TEST_CASE("reload removed", "[core]") {
     TempTree tree;
     fill(tree);
 
@@ -542,7 +554,7 @@ TEST_CASE("reload_removed", TEST_TAGS) {
     CHECK_FALSE(table["ru"].find("pages"));
 }
 
-TEST_CASE("reload_new_locale", TEST_TAGS) {
+ERS_TEST_CASE("reload new locale", "[core]") {
     TempTree tree;
     fill(tree);
 
@@ -561,7 +573,7 @@ TEST_CASE("reload_new_locale", TEST_TAGS) {
     CHECK(table["de"]["pages"]["html.about"] == "О нас");
 }
 
-TEST_CASE("failed_reload", TEST_TAGS) {
+ERS_TEST_CASE("failed reload", "[core]") {
     TempTree tree;
     fill(tree);
 
@@ -585,7 +597,9 @@ TEST_CASE("failed_reload", TEST_TAGS) {
 }
 
 
-TEST_CASE("invalid_domain", TEST_TAGS) {
+// Validators ------------------------------------------------------------------
+
+ERS_TEST_CASE("invalid domain", "[core]") {
     TempTree tree;
     fill(tree);
     tree.write("_common/colors.l10n.txt", "black.hex = #000000\nblack.name@ru = чёрный");
@@ -625,7 +639,7 @@ TEST_CASE("invalid_domain", TEST_TAGS) {
     CHECK(table.adapt<Palette>("en").hex("black") == "#111111"sv);
 }
 
-TEST_CASE("invalid_first_reload", TEST_TAGS) {
+ERS_TEST_CASE("invalid first reload", "[core]") {
     TempTree tree;
     fill(tree);
     tree.write("_common/colors.l10n.txt", "black.name@ru = чёрный");
@@ -649,7 +663,7 @@ TEST_CASE("invalid_first_reload", TEST_TAGS) {
     CHECK(strict["en"]["pages"]["html.about"] == "About");
 }
 
-TEST_CASE("late_validator", TEST_TAGS) {
+ERS_TEST_CASE("late validator", "[core]") {
     TempTree tree;
     fill(tree);
     tree.write("_common/colors.l10n.txt", "black.name@ru = чёрный");
@@ -666,7 +680,7 @@ TEST_CASE("late_validator", TEST_TAGS) {
     CHECK(report->rejected[0].domain == "colors");
 }
 
-TEST_CASE("validators", TEST_TAGS) {
+ERS_TEST_CASE("validators", "[core]") {
     TempTree tree;
     fill(tree);
 
@@ -689,7 +703,7 @@ TEST_CASE("validators", TEST_TAGS) {
     CHECK(other.reload(tree.root()));
 }
 
-TEST_CASE("adapters", TEST_TAGS) {
+ERS_TEST_CASE("adapters", "[core]") {
     TempTree tree;
     fill(tree);
     tree.write("_common/colors.l10n.txt",
@@ -711,7 +725,9 @@ TEST_CASE("adapters", TEST_TAGS) {
 }
 
 
-TEST_CASE("references_off", TEST_TAGS) {
+// References ------------------------------------------------------------------
+
+ERS_TEST_CASE("references off", "[core]") {
     TempTree tree;
     fill(tree);
     tree.write("_common/colors.l10n.txt", "blue.hex = #007BFF\nsea.hex = $blue");
@@ -722,7 +738,7 @@ TEST_CASE("references_off", TEST_TAGS) {
     CHECK(table["ru"]["colors"]["sea.hex"] == "$blue");
 }
 
-TEST_CASE("reference", TEST_TAGS) {
+ERS_TEST_CASE("reference", "[core]") {
     TempTree tree;
     fill(tree);
     tree.write("_common/colors.l10n.txt",
@@ -740,7 +756,7 @@ TEST_CASE("reference", TEST_TAGS) {
     CHECK(table["en"]["colors"]["sea.name"] == "sea");
 }
 
-TEST_CASE("reference_key", TEST_TAGS) {
+ERS_TEST_CASE("reference key", "[core]") {
     TempTree tree;
     fill(tree);
     tree.write("_common/colors.l10n.txt",
@@ -755,7 +771,7 @@ TEST_CASE("reference_key", TEST_TAGS) {
     CHECK(table["ru"]["colors"]["sea.label"] == "синий");
 }
 
-TEST_CASE("reference_chain", TEST_TAGS) {
+ERS_TEST_CASE("reference chain", "[core]") {
     TempTree tree;
     fill(tree);
     tree.write("_common/colors.l10n.txt",
@@ -769,7 +785,7 @@ TEST_CASE("reference_chain", TEST_TAGS) {
     CHECK(table["ru"]["colors"]["navy.hex"] == "#1F4FA3");
 }
 
-TEST_CASE("escaped_marker", TEST_TAGS) {
+ERS_TEST_CASE("escaped marker", "[core]") {
     TempTree tree;
     fill(tree);
     tree.write("_common/prices.l10n.txt", "five.text = $$5\nnone.text = $$\nmiddle.text = a $b\n");
@@ -783,7 +799,7 @@ TEST_CASE("escaped_marker", TEST_TAGS) {
     CHECK(table["ru"]["prices"]["middle.text"] == "a $b");
 }
 
-TEST_CASE("unresolved_reference", TEST_TAGS) {
+ERS_TEST_CASE("unresolved reference", "[core]") {
     const auto message = [](std::string_view bundle, ers::reference_options_t references = {}) {
         TempTree tree;
         fill(tree);
@@ -810,7 +826,7 @@ TEST_CASE("unresolved_reference", TEST_TAGS) {
     CHECK(message("blue.hex = #000001\ng.stripped.hex = $blue").contains("g.blue.hex"));
 }
 
-TEST_CASE("bad_reference_reload", TEST_TAGS) {
+ERS_TEST_CASE("bad reference reload", "[core]") {
     TempTree tree;
     fill(tree);
     tree.write("_common/colors.l10n.txt", "blue.hex = #007BFF\nsea.hex = $blue");
@@ -830,7 +846,7 @@ TEST_CASE("bad_reference_reload", TEST_TAGS) {
     CHECK(table["ru"]["colors"]["sea.hex"] == "#007BFF");
 }
 
-TEST_CASE("resolved_texts", TEST_TAGS) {
+ERS_TEST_CASE("resolved texts", "[core]") {
     TempTree tree;
     fill(tree);
     tree.write("_common/colors.l10n.txt",
@@ -844,7 +860,7 @@ TEST_CASE("resolved_texts", TEST_TAGS) {
     CHECK(table.adapt<Palette>("ru").hex("sea") == "#007BFF"sv);
 }
 
-TEST_CASE("late_references", TEST_TAGS) {
+ERS_TEST_CASE("late references", "[core]") {
     TempTree tree;
     fill(tree);
     tree.write("_common/colors.l10n.txt", "blue.hex = #007BFF\nsea.hex = $blue");
@@ -859,7 +875,7 @@ TEST_CASE("late_references", TEST_TAGS) {
     CHECK(table["ru"]["colors"]["sea.hex"] == "#007BFF");
 }
 
-TEST_CASE("relative_reference", TEST_TAGS) {
+ERS_TEST_CASE("relative reference", "[core]") {
     TempTree tree;
     fill(tree);
     tree.write("_common/colors.l10n.txt",
@@ -874,7 +890,7 @@ TEST_CASE("relative_reference", TEST_TAGS) {
     CHECK(table["ru"]["colors"]["g.stripped.hex"] == "#1F4FA3");
 }
 
-TEST_CASE("root_keys", TEST_TAGS) {
+ERS_TEST_CASE("root keys", "[core]") {
     TempTree tree;
     fill(tree);
     tree.write("_common/colors.l10n.txt",

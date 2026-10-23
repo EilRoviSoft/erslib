@@ -15,13 +15,15 @@
 #include <erslib/flux/query_builder.hpp>
 
 // test
-#include "support/tags.hpp"
+#include "support/test_case.hpp"
 
 
 #ifdef ERSLIB_HAS_REFLECTION
 
 using namespace flux::orm;
 
+
+// Details ---------------------------------------------------------------------
 
 namespace {
     struct Image {
@@ -107,7 +109,9 @@ struct flux::reflect::DeclarationMetadata<Note> {
 };
 
 
-TEST_CASE("columns", TEST_TAGS) {
+// Columns ---------------------------------------------------------------------
+
+ERS_TEST_CASE("columns", "[flux]") {
     constexpr auto cols = flux::columns_of<User>;
 
     static_assert(cols.id.name() == "id");
@@ -124,7 +128,7 @@ TEST_CASE("columns", TEST_TAGS) {
         == "SELECT *\nFROM users\nORDER BY name DESC");
 }
 
-TEST_CASE("alias", TEST_TAGS) {
+ERS_TEST_CASE("alias", "[flux]") {
     const auto u = flux::columns_as<User>("u");
     const auto i = flux::columns_as<Image>("i");
 
@@ -132,7 +136,7 @@ TEST_CASE("alias", TEST_TAGS) {
         == "SELECT *\nFROM users AS u\nJOIN images AS i ON u.id = i.id\nWHERE u.name = $1");
 }
 
-TEST_CASE("compare", TEST_TAGS) {
+ERS_TEST_CASE("compare", "[flux]") {
     constexpr auto cols = flux::columns_of<User>;
 
     constexpr auto compares = []<typename C, typename V>(const C&, const V&) {
@@ -149,7 +153,9 @@ TEST_CASE("compare", TEST_TAGS) {
 }
 
 
-TEST_CASE("select", TEST_TAGS) {
+// Builders --------------------------------------------------------------------
+
+ERS_TEST_CASE("select", "[flux]") {
     CHECK(sql_of(flux::crud::select<Image>()) == "SELECT id, url, path\nFROM images");
     CHECK(sql_of(flux::crud::select<User>()) == "SELECT id, email, name, created_at, nickname\nFROM users");
     CHECK(sql_of(flux::crud::select<Image, Preview>()) == "SELECT id, url\nFROM images");
@@ -158,7 +164,7 @@ TEST_CASE("select", TEST_TAGS) {
         == "SELECT id, url, path\nFROM images\nWHERE url = $1\nLIMIT $2");
 }
 
-TEST_CASE("insert", TEST_TAGS) {
+ERS_TEST_CASE("insert", "[flux]") {
     Image image { .url = "/a", .path = "a" };
     User user { .email = "a@b.c", .name = "bob", .created = "never" };
 
@@ -171,7 +177,7 @@ TEST_CASE("insert", TEST_TAGS) {
     CHECK(sql_of(flux::crud::insert(image) | returning("id")) == "INSERT INTO images (url, path)\nVALUES ($1, $2)\nRETURNING id");
 }
 
-TEST_CASE("update", TEST_TAGS) {
+ERS_TEST_CASE("update", "[flux]") {
     Image image { .id = 7, .url = "/a", .path = "a" };
     User user { .id = 3, .email = "a@b.c", .name = "bob" };
 
@@ -182,7 +188,7 @@ TEST_CASE("update", TEST_TAGS) {
         == "UPDATE product_images\nSET replaceable = $1\nWHERE product_id = $2 AND image_id = $3");
 }
 
-TEST_CASE("update_some", TEST_TAGS) {
+ERS_TEST_CASE("update some", "[flux]") {
     constexpr auto cols = flux::columns_of<Image>;
     Image image { .id = 7, .url = "/a", .path = "a" };
 
@@ -199,7 +205,7 @@ TEST_CASE("update_some", TEST_TAGS) {
     CHECK(sql_of(flux::crud::update(image, flux::crud::only("path", "nope"))) == "<error>");
 }
 
-TEST_CASE("erase", TEST_TAGS) {
+ERS_TEST_CASE("erase", "[flux]") {
     CHECK(sql_of(flux::crud::erase<Image>(42)) == "DELETE FROM images\nWHERE id = $1");
     CHECK(sql_of(flux::crud::erase<ProductImage>(1, 2)) == "DELETE FROM product_images\nWHERE product_id = $1 AND image_id = $2");
 
@@ -214,7 +220,7 @@ TEST_CASE("erase", TEST_TAGS) {
     static_assert(!keyed(1, 2, 3));
 }
 
-TEST_CASE("upsert", TEST_TAGS) {
+ERS_TEST_CASE("upsert", "[flux]") {
     ProductImage link { .product_id = 1, .image_id = 2, .replaceable = true };
     User user { .email = "a@b.c", .name = "bob" };
     Image image { .url = "/a", .path = "a" };
@@ -239,7 +245,9 @@ TEST_CASE("upsert", TEST_TAGS) {
 }
 
 
-TEST_CASE("soft_select", TEST_TAGS) {
+// Hidden conditions -----------------------------------------------------------
+
+ERS_TEST_CASE("soft select", "[flux]") {
     CHECK(sql_of(flux::crud::select<Note>())
         == "SELECT id, tenant, text, deleted_at\nFROM notes\nWHERE tenant = $1 AND deleted_at IS NULL");
 
@@ -252,7 +260,7 @@ TEST_CASE("soft_select", TEST_TAGS) {
     CHECK(sql_of(flux::crud::select<Image>()) == "SELECT id, url, path\nFROM images");
 }
 
-TEST_CASE("soft_erase", TEST_TAGS) {
+ERS_TEST_CASE("soft erase", "[flux]") {
     CHECK(sql_of(flux::crud::erase<Note>(5))
         == "UPDATE notes\nSET deleted_at = now()\nWHERE id = $1 AND tenant = $2 AND deleted_at IS NULL");
 
@@ -265,7 +273,7 @@ TEST_CASE("soft_erase", TEST_TAGS) {
     CHECK(sql_of(flux::crud::erase<Image>(5)) == "DELETE FROM images\nWHERE id = $1");
 }
 
-TEST_CASE("soft_update", TEST_TAGS) {
+ERS_TEST_CASE("soft update", "[flux]") {
     Note note { .id = 5, .tenant = "acme", .text = "hi" };
 
     CHECK(sql_of(flux::crud::update(note))
@@ -278,7 +286,9 @@ TEST_CASE("soft_update", TEST_TAGS) {
 }
 
 
-TEST_CASE("declaration", TEST_TAGS) {
+// Declaration -----------------------------------------------------------------
+
+ERS_TEST_CASE("declaration", "[flux]") {
     using namespace flux::reflect;
 
     static_assert(pk_members<ProductImage>.size() == 2);
@@ -302,6 +312,8 @@ TEST_CASE("declaration", TEST_TAGS) {
     static_assert(insert_members<Note>.size() == 2);
 }
 
+
+// Executors -------------------------------------------------------------------
 
 namespace {
     // Never called, it has to compile.

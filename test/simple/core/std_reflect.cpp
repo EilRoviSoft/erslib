@@ -11,7 +11,7 @@
 #include <vector>
 
 // test
-#include "support/tags.hpp"
+#include "support/test_case.hpp"
 
 
 constexpr std::array names {
@@ -50,7 +50,7 @@ struct Tuple {
     Tuple(const Ts&... values) : data { values... } {}
 };
 
-TEST_CASE("reflection", TEST_TAGS) {
+ERS_TEST_CASE("reflection", "[core]") {
     A a;
     a.x = "Hello";
 

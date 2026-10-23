@@ -8,7 +8,7 @@
 #include <RmlUi/Core.h>
 
 // test
-#include "support/tags.hpp"
+#include "support/test_case.hpp"
 
 
 namespace {
@@ -52,7 +52,7 @@ namespace {
 }
 
 
-TEST_CASE("context", TEST_TAGS) {
+ERS_TEST_CASE("context", "") {
     TestSystemInterface system_interface;
     NullRenderInterface render_interface;
 
@@ -77,7 +77,7 @@ TEST_CASE("context", TEST_TAGS) {
 }
 
 
-TEST_CASE("document", TEST_TAGS) {
+ERS_TEST_CASE("document", "") {
     TestSystemInterface system_interface;
     NullRenderInterface render_interface;
 

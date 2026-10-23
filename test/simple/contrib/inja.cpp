@@ -14,19 +14,21 @@
 #include <erslib/contrib/inja.hpp>
 
 // test
-#include "support/tags.hpp"
+#include "support/test_case.hpp"
 
+
+// Facade tests ----------------------------------------------------------------
 
 using utl::operator""_json;
 
 
-TEST_CASE("binding", TEST_TAGS) {
+ERS_TEST_CASE("binding", "[contrib]") {
     static_assert(std::same_as<inja::json, utl::InjaJson>);
     static_assert(std::bidirectional_iterator<utl::InjaJson::iterator>);
     static_assert(std::bidirectional_iterator<utl::InjaJson::const_iterator>);
 }
 
-TEST_CASE("getters", TEST_TAGS) {
+ERS_TEST_CASE("getters", "[contrib]") {
     const utl::InjaJson integral = 5;
     const utl::InjaJson floating = 2.5;
 
@@ -44,7 +46,7 @@ TEST_CASE("getters", TEST_TAGS) {
     CHECK_THROWS(static_cast<void>(utl::InjaJson(1).get<std::string>()));
 }
 
-TEST_CASE("size", TEST_TAGS) {
+ERS_TEST_CASE("size", "[contrib]") {
     CHECK(utl::InjaJson().size() == 0);
     CHECK(utl::InjaJson().empty());
     CHECK(utl::InjaJson(1).size() == 1);
@@ -54,7 +56,7 @@ TEST_CASE("size", TEST_TAGS) {
     CHECK(utl::InjaJson::parse("[1,2,3]").size() == 3);
 }
 
-TEST_CASE("clear", TEST_TAGS) {
+ERS_TEST_CASE("clear", "[contrib]") {
     auto json = utl::InjaJson::parse(R"({"a":1,"b":"x","c":[1]})");
 
     json["a"].clear();
@@ -64,7 +66,7 @@ TEST_CASE("clear", TEST_TAGS) {
     CHECK(json.dump() == R"({"a":0,"b":"","c":[]})");
 }
 
-TEST_CASE("iteration", TEST_TAGS) {
+ERS_TEST_CASE("iteration", "[contrib]") {
     auto object = utl::InjaJson::parse(R"({"b":1,"a":2})");
 
     std::vector<std::string> keys;
@@ -88,7 +90,7 @@ TEST_CASE("iteration", TEST_TAGS) {
     CHECK_THROWS(static_cast<void>(scalar.begin().key()));
 }
 
-TEST_CASE("front_and_back", TEST_TAGS) {
+ERS_TEST_CASE("front and back", "[contrib]") {
     const auto array = utl::InjaJson::parse("[1,2,3]");
     CHECK(array.front() == 1);
     CHECK(array.back() == 3);
@@ -97,7 +99,7 @@ TEST_CASE("front_and_back", TEST_TAGS) {
     CHECK_THROWS(static_cast<void>(utl::InjaJson::parse("[]").back()));
 }
 
-TEST_CASE("comparison", TEST_TAGS) {
+ERS_TEST_CASE("comparison", "[contrib]") {
     CHECK(utl::InjaJson(1) == utl::InjaJson(1.0));
     CHECK(utl::InjaJson(1) < utl::InjaJson(1.5));
     CHECK(utl::InjaJson(0) == 0);
@@ -112,14 +114,16 @@ TEST_CASE("comparison", TEST_TAGS) {
     CHECK(utl::InjaJson::parse("[1,2]") < utl::InjaJson::parse("[1,3]"));
 }
 
-TEST_CASE("sort", TEST_TAGS) {
+ERS_TEST_CASE("sort", "[contrib]") {
     auto array = utl::InjaJson::parse(R"([3,"b",1.5,null,true,"a"])");
     std::sort(array.begin(), array.end());
     CHECK(array.dump() == R"([null,true,1.5,3,"a","b"])");
 }
 
 
-TEST_CASE("variables", TEST_TAGS) {
+// Rendering tests -------------------------------------------------------------
+
+ERS_TEST_CASE("variables", "[contrib]") {
     inja::Environment env;
 
     utl::Json data;
@@ -133,7 +137,7 @@ TEST_CASE("variables", TEST_TAGS) {
         == "Ann: 3 x 2.0 true [1,2]");
 }
 
-TEST_CASE("object_loops", TEST_TAGS) {
+ERS_TEST_CASE("object loops", "[contrib]") {
     inja::Environment env;
 
     const auto data = utl::from_string<utl::InjaJson>(R"({"map":{"b":2,"a":1,"c":3}})");
@@ -142,7 +146,7 @@ TEST_CASE("object_loops", TEST_TAGS) {
         == "a=1,b=2,c=3");
 }
 
-TEST_CASE("nested_loops", TEST_TAGS) {
+ERS_TEST_CASE("nested loops", "[contrib]") {
     inja::Environment env;
 
     const auto data = R"({"rows":[[1,2],[3]],"map":{"x":{"y":1}}})"_json;
@@ -157,7 +161,7 @@ TEST_CASE("nested_loops", TEST_TAGS) {
         data) == "xy20");
 }
 
-TEST_CASE("set_and_functions", TEST_TAGS) {
+ERS_TEST_CASE("set and functions", "[contrib]") {
     inja::Environment env;
 
     const auto data = R"({"a":7,"b":2,"f":0.5,"list":[3,1,2],"text":"Hello"})"_json;
@@ -172,7 +176,7 @@ TEST_CASE("set_and_functions", TEST_TAGS) {
     CHECK(env.render("{% if 2 in list %}yes{% endif %} {{ at(list, 1) }} {{ range(3) }}", data) == "yes 1 [0,1,2]");
 }
 
-TEST_CASE("truthiness", TEST_TAGS) {
+ERS_TEST_CASE("truthiness", "[contrib]") {
     inja::Environment env;
 
     const auto data = R"({"empty":"","zero":0,"fzero":0.0,"none":null,"list":[],"text":"x"})"_json;
@@ -185,7 +189,7 @@ TEST_CASE("truthiness", TEST_TAGS) {
     CHECK(env.render("{% if text %}T{% else %}F{% endif %}", data) == "T");
 }
 
-TEST_CASE("exists_and_default", TEST_TAGS) {
+ERS_TEST_CASE("exists and default", "[contrib]") {
     inja::Environment env;
 
     const auto data = R"({"user":{"name":"Ann"}})"_json;
@@ -196,7 +200,7 @@ TEST_CASE("exists_and_default", TEST_TAGS) {
     CHECK_THROWS_AS(static_cast<void>(env.render("{{ user.age }}", data)), inja::RenderError);
 }
 
-TEST_CASE("autoescape", TEST_TAGS) {
+ERS_TEST_CASE("autoescape", "[contrib]") {
     inja::Environment env;
     env.set_html_autoescape(true);
 
@@ -205,7 +209,7 @@ TEST_CASE("autoescape", TEST_TAGS) {
     CHECK(env.render("{{ text }}", data) == "&lt;b&gt;&quot;Tom&quot; &amp; &apos;Jerry&apos;&lt;/b&gt;");
 }
 
-TEST_CASE("callbacks", TEST_TAGS) {
+ERS_TEST_CASE("callbacks", "[contrib]") {
     inja::Environment env;
 
     env.add_callback("money", 1, [](inja::Arguments& args) {

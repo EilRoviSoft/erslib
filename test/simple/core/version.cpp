@@ -8,10 +8,10 @@
 #include <erslib/core/type/version.hpp>
 
 // test
-#include "support/tags.hpp"
+#include "support/test_case.hpp"
 
 
-TEST_CASE("parse", TEST_TAGS) {
+ERS_TEST_CASE("parse", "[core]") {
     std::string_view s;
     ers::version_t v;
 
@@ -32,7 +32,7 @@ TEST_CASE("parse", TEST_TAGS) {
     CHECK(*r == v);
 }
 
-TEST_CASE("malformed", TEST_TAGS) {
+ERS_TEST_CASE("malformed", "[core]") {
     CHECK_FALSE(ers::version_t::parse("1.0"));
     CHECK_FALSE(ers::version_t::parse("1"));
     CHECK_FALSE(ers::version_t::parse(""));

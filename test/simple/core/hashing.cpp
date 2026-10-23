@@ -10,10 +10,10 @@
 #include <erslib/core/type/uuid.hpp>
 
 // test
-#include "support/tags.hpp"
+#include "support/test_case.hpp"
 
 
-TEST_CASE("uuid_and_pairs", TEST_TAGS) {
+ERS_TEST_CASE("uuid and pairs", "[core]") {
     auto a = ers::uuid_from_string("42fbbcaf-bc00-11ef-a8f8-042b581c0d88");
     auto b = ers::uuid_from_string("42fbbcac-bc00-11ef-a8f8-042b581c0d88");
 

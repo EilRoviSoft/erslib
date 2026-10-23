@@ -9,7 +9,7 @@
 #include <erslib/core/convert/pg_time.hpp>
 
 // test
-#include "support/tags.hpp"
+#include "support/test_case.hpp"
 
 
 using namespace std::chrono_literals;
@@ -24,12 +24,12 @@ namespace {
 }
 
 
-TEST_CASE("round_trip", TEST_TAGS) {
+ERS_TEST_CASE("round trip", "[core]") {
     const auto now = ers::floor_to_pg_precision(ers::clock_t::now());
     CHECK(parsed(ers::timestamp_to_iso8601(now)) == now);
 }
 
-TEST_CASE("offsets", TEST_TAGS) {
+ERS_TEST_CASE("offsets", "[core]") {
     const auto utc = parsed("2026-09-17 12:00:00+00");
 
     CHECK(parsed("2026-09-17 15:00:00+03") == utc);
@@ -40,7 +40,7 @@ TEST_CASE("offsets", TEST_TAGS) {
     CHECK(ers::timestamp_to_iso8601(utc) == "2026-09-17 12:00:00.000000+00");
 }
 
-TEST_CASE("fractions", TEST_TAGS) {
+ERS_TEST_CASE("fractions", "[core]") {
     CHECK(parsed("2026-09-17 12:00:00.5+00")
         == parsed("2026-09-17 12:00:00+00") + 500ms);
 
@@ -48,7 +48,7 @@ TEST_CASE("fractions", TEST_TAGS) {
         == "2026-09-17 12:00:00.123456+00");
 }
 
-TEST_CASE("infinities", TEST_TAGS) {
+ERS_TEST_CASE("infinities", "[core]") {
     CHECK(parsed("infinity") == ers::timestamp_t::max());
     CHECK(parsed("-infinity") == ers::timestamp_t::min());
 
@@ -56,7 +56,7 @@ TEST_CASE("infinities", TEST_TAGS) {
     CHECK(ers::timestamp_to_iso8601(ers::timestamp_t::min()) == "-infinity");
 }
 
-TEST_CASE("malformed", TEST_TAGS) {
+ERS_TEST_CASE("malformed", "[core]") {
     // a naive TIMESTAMP column prints no offset, and we refuse to assume one
     CHECK_FALSE(ers::timestamp_from_iso8601("2026-09-17 12:00:00").has_value());
     CHECK_FALSE(ers::timestamp_from_iso8601("2026-02-30 00:00:00+00").has_value());

@@ -13,7 +13,7 @@
 #include <erslib/core/thread_safe/rate_limiter.hpp>
 
 // test
-#include "support/tags.hpp"
+#include "support/test_case.hpp"
 
 
 using namespace std::chrono_literals;
@@ -37,7 +37,7 @@ namespace {
 }
 
 
-TEST_CASE("burst", TEST_TAGS) {
+ERS_TEST_CASE("burst", "[core]") {
     Limiter limiter(burst, interval, capacity);
 
     const auto first = limiter.try_acquire("key", t0());
@@ -58,7 +58,7 @@ TEST_CASE("burst", TEST_TAGS) {
     CHECK(blocked.retry_after == interval);
 }
 
-TEST_CASE("interval", TEST_TAGS) {
+ERS_TEST_CASE("interval", "[core]") {
     Limiter limiter(burst, interval, capacity);
 
     exhaust(limiter, "key", t0());
@@ -72,7 +72,7 @@ TEST_CASE("interval", TEST_TAGS) {
     CHECK(limiter.try_acquire("key", t0() + interval).retry_after == interval);
 }
 
-TEST_CASE("blocked", TEST_TAGS) {
+ERS_TEST_CASE("blocked", "[core]") {
     Limiter limiter(burst, interval, capacity);
 
     exhaust(limiter, "key", t0());
@@ -83,7 +83,7 @@ TEST_CASE("blocked", TEST_TAGS) {
     CHECK(limiter.try_acquire("key", t0() + interval).allowed);
 }
 
-TEST_CASE("refill", TEST_TAGS) {
+ERS_TEST_CASE("refill", "[core]") {
     Limiter limiter(burst, interval, capacity);
 
     exhaust(limiter, "key", t0());
@@ -91,7 +91,7 @@ TEST_CASE("refill", TEST_TAGS) {
     CHECK(limiter.try_acquire("key", t0() + interval * static_cast<int>(burst)).remaining == burst - 1);
 }
 
-TEST_CASE("keys", TEST_TAGS) {
+ERS_TEST_CASE("keys", "[core]") {
     Limiter limiter(burst, interval, capacity);
 
     exhaust(limiter, "a", t0());
@@ -100,7 +100,7 @@ TEST_CASE("keys", TEST_TAGS) {
     CHECK(limiter.try_acquire("b", t0()).remaining == burst - 1);
 }
 
-TEST_CASE("reset", TEST_TAGS) {
+ERS_TEST_CASE("reset", "[core]") {
     Limiter limiter(burst, interval, capacity);
 
     exhaust(limiter, "key", t0());
@@ -110,7 +110,7 @@ TEST_CASE("reset", TEST_TAGS) {
     CHECK(limiter.try_acquire("key", t0()).remaining == burst - 1);
 }
 
-TEST_CASE("maintain", TEST_TAGS) {
+ERS_TEST_CASE("maintain", "[core]") {
     Limiter limiter(burst, interval, capacity);
 
     limiter.try_acquire("old", t0());
@@ -122,7 +122,7 @@ TEST_CASE("maintain", TEST_TAGS) {
     CHECK(limiter.try_acquire("recent", t0() + interval).remaining == 1);
 }
 
-TEST_CASE("eviction", TEST_TAGS) {
+ERS_TEST_CASE("eviction", "[core]") {
     Limiter limiter(burst, interval, 4);
 
     exhaust(limiter, "victim", t0());
@@ -138,7 +138,7 @@ TEST_CASE("eviction", TEST_TAGS) {
     CHECK_FALSE(limiter.try_acquire("victim", t0() + 5s).allowed);
 }
 
-TEST_CASE("lockouts", TEST_TAGS) {
+ERS_TEST_CASE("lockouts", "[core]") {
     Limiter limiter(1, interval, 2);
 
     CHECK(limiter.try_acquire("a", t0()).allowed);
@@ -154,7 +154,7 @@ TEST_CASE("lockouts", TEST_TAGS) {
     CHECK(limiter.try_acquire("c", t0() + interval + 1s).allowed);
 }
 
-TEST_CASE("concurrent", TEST_TAGS) {
+ERS_TEST_CASE("concurrent", "[core]") {
     Limiter limiter(burst, interval, capacity);
 
     constexpr size_t workers = 8;
@@ -179,7 +179,7 @@ TEST_CASE("concurrent", TEST_TAGS) {
     CHECK(limiter.size() == 1);
 }
 
-TEST_CASE("invalid_config", TEST_TAGS) {
+ERS_TEST_CASE("invalid config", "[core]") {
     CHECK_THROWS_AS(Limiter(0, interval, capacity), std::invalid_argument);
     CHECK_THROWS_AS(Limiter(burst, 0s, capacity), std::invalid_argument);
     CHECK_THROWS_AS(Limiter(burst, -interval, capacity), std::invalid_argument);

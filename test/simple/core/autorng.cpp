@@ -22,7 +22,7 @@
 #include <erslib/core/type/timed_object.hpp>
 
 // test
-#include "support/tags.hpp"
+#include "support/test_case.hpp"
 
 
 namespace {
@@ -63,7 +63,7 @@ namespace {
 }
 
 
-TEST_CASE("map", TEST_TAGS) {
+ERS_TEST_CASE("map", "[core]") {
     Map c;
     std::array<std::string_view, 4> vals = { "player", "enemy:knight", "enemy:mage", "enemy:rogue" };
     std::array<std::chrono::milliseconds, 10> intervals;

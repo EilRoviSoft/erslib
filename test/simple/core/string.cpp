@@ -8,14 +8,14 @@
 #include <erslib/core/util/string.hpp>
 
 // test
-#include "support/tags.hpp"
+#include "support/test_case.hpp"
 
 
-TEST_CASE("path", TEST_TAGS) {
+ERS_TEST_CASE("path", "[core]") {
     REQUIRE(ers::util::replace("/home/user", "/", ".") == ".home.user");
 }
 
-TEST_CASE("trim", TEST_TAGS) {
+ERS_TEST_CASE("trim", "[core]") {
     REQUIRE(ers::util::trim("  a b \t\n") == "a b");
     REQUIRE(ers::util::trim(" \t ").empty());
     REQUIRE(ers::util::trim_left("  x ") == "x ");

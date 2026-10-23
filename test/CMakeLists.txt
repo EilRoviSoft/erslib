@@ -90,7 +90,7 @@ foreach(MODULE IN LISTS SIMPLE_MODULES)
         add_executable(${TEST_TARGET} "${TEST_SOURCE}")
         target_link_libraries(${TEST_TARGET} PRIVATE test_simple_main erslib::${MODULE})
         set_target_properties(${TEST_TARGET} PROPERTIES FOLDER "tests/simple/${MODULE}")
-        target_compile_definitions(${TEST_TARGET} PRIVATE TEST_TAGS="[simple][${MODULE}]")
+        target_compile_definitions(${TEST_TARGET} PRIVATE TEST_TAGS="[simple]")
 
         if(NOT IS_TOP_LEVEL)
             win_copy_deps_to_target_dir(${TEST_TARGET} erslib::${MODULE})

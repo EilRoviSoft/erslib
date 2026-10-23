@@ -13,12 +13,14 @@
 #include <erslib/web/middleware/rate_limit.hpp>
 
 // test
-#include "support/tags.hpp"
+#include "support/test_case.hpp"
 
 
 using std::string_literals::operator ""s;
 using namespace std::chrono_literals;
 
+
+// Details ---------------------------------------------------------------------
 
 namespace {
     struct no_context {};
@@ -43,7 +45,9 @@ namespace {
 }
 
 
-TEST_CASE("responses", TEST_TAGS) {
+// Implementation --------------------------------------------------------------
+
+ERS_TEST_CASE("responses", "[web]") {
     auto res = ers::web::make_failure(crow::BAD_REQUEST, "bad");
 
     REQUIRE(res.code == 400);
@@ -53,7 +57,7 @@ TEST_CASE("responses", TEST_TAGS) {
     REQUIRE(utl::from_string(ers::web::make_ok().body)["ok"].as_bool());
 }
 
-TEST_CASE("request_helpers", TEST_TAGS) {
+ERS_TEST_CASE("request helpers", "[web]") {
     auto req = make_request();
     req.add_header("Authorization", "Bearer abc");
     req.add_header("User-Agent", "a\x01" "b");
@@ -71,7 +75,7 @@ TEST_CASE("request_helpers", TEST_TAGS) {
     REQUIRE(!ers::web::query_flag(qs, "limit"));
 }
 
-TEST_CASE("cors", TEST_TAGS) {
+ERS_TEST_CASE("cors", "[web]") {
     ers::web::Cors cors;
     ers::web::Cors::context ctx;
 
@@ -91,7 +95,7 @@ TEST_CASE("cors", TEST_TAGS) {
     REQUIRE(foreign_res.get_header_value("Access-Control-Allow-Origin").empty());
 }
 
-TEST_CASE("json_body", TEST_TAGS) {
+ERS_TEST_CASE("json body", "[web]") {
     ers::web::JsonBody json_body;
 
     ers::web::JsonBody::context good_ctx;
@@ -109,7 +113,7 @@ TEST_CASE("json_body", TEST_TAGS) {
     REQUIRE(!bad_ctx.body);
 }
 
-TEST_CASE("keyed_rate_limit", TEST_TAGS) {
+ERS_TEST_CASE("keyed rate limit", "[web]") {
     ers::web::KeyedRateLimit<by_address> limiter;
     ers::web::KeyedRateLimit<by_address>::context ctx;
     no_context all;

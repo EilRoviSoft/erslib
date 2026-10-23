@@ -12,7 +12,7 @@
 #include <erslib/core/type/general.hpp>
 
 // test
-#include "support/tags.hpp"
+#include "support/test_case.hpp"
 
 
 namespace {
@@ -27,7 +27,7 @@ namespace {
 }
 
 
-TEST_CASE("allocator", TEST_TAGS) {
+ERS_TEST_CASE("allocator", "[core]") {
     std::array<std::byte, 1024> buffer;
     std::pmr::monotonic_buffer_resource pool(buffer.data(), sizeof(buffer));
 

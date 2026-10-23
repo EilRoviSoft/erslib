@@ -19,7 +19,7 @@
 #include <erslib/luaschema/layout.hpp>
 
 // test
-#include "support/tags.hpp"
+#include "support/test_case.hpp"
 
 
 using namespace ers::luaschema;
@@ -231,7 +231,7 @@ namespace {
 }
 
 
-TEST_CASE("layout_verifier", TEST_TAGS) {
+ERS_TEST_CASE("layout_verifier", "[luaschema]") {
     sol::state lua;
 
 

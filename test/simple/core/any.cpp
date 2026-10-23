@@ -9,9 +9,9 @@
 #include <erslib/core/memory.hpp>
 
 // test
-#include "support/tags.hpp"
+#include "support/test_case.hpp"
 
 
-TEST_CASE("any", TEST_TAGS) {
+ERS_TEST_CASE("any", "[core]") {
     ers::Any example(std::in_place_type<std::string>, "hello world!");
 }

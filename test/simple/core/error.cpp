@@ -11,7 +11,7 @@
 #include <erslib/core/type/result.hpp>
 
 // test
-#include "support/tags.hpp"
+#include "support/test_case.hpp"
 
 
 namespace {
@@ -37,7 +37,7 @@ namespace {
 }
 
 
-TEST_CASE("division", TEST_TAGS) {
+ERS_TEST_CASE("division", "[core]") {
     SECTION("ok") {
         auto check = [](double n, double d, double e) {
             auto r = safe_divide(n, d);
@@ -60,7 +60,7 @@ TEST_CASE("division", TEST_TAGS) {
     }
 }
 
-TEST_CASE("context", TEST_TAGS) {
+ERS_TEST_CASE("context", "[core]") {
     SECTION("value") {
         auto r = read_ratio(1.0, 4.0);
         REQUIRE(r.has_value());

@@ -13,7 +13,7 @@
 #include <erslib/core/localization.hpp>
 
 // test
-#include "support/tags.hpp"
+#include "support/test_case.hpp"
 #include "support/temp_tree.hpp"
 
 
@@ -38,7 +38,7 @@ namespace {
 }
 
 
-TEST_CASE("nesting", TEST_TAGS) {
+ERS_TEST_CASE("nesting", "[contrib]") {
     auto entries = flatten(R"({
         "black": { "hex": "#000000", "name@ru": "чёрный" },
         "delivery": ["Бесплатно.", "Сроки уточнит менеджер."],
@@ -56,7 +56,7 @@ TEST_CASE("nesting", TEST_TAGS) {
     CHECK(flatten("{}")->empty());
 }
 
-TEST_CASE("value_types", TEST_TAGS) {
+ERS_TEST_CASE("value types", "[contrib]") {
     CHECK_FALSE(flatten(R"("text")"));
     CHECK_FALSE(flatten(R"(["a"])"));
 
@@ -72,7 +72,7 @@ TEST_CASE("value_types", TEST_TAGS) {
     CHECK_FALSE(flatten(R"({ "a": { "": "x" } })"));
 }
 
-TEST_CASE("loader", TEST_TAGS) {
+ERS_TEST_CASE("loader", "[contrib]") {
     const auto loader = utl::l10n_json_loader();
 
     CHECK(loader.suffix == ".l10n.json");
@@ -80,7 +80,7 @@ TEST_CASE("loader", TEST_TAGS) {
     CHECK_FALSE(loader.parse("{ not json"));
 }
 
-TEST_CASE("table", TEST_TAGS) {
+ERS_TEST_CASE("table", "[contrib]") {
     TempTree tree;
     tree.write("ru/mail/new_order.txt", "Новый заказ");
     tree.write("_common/colors.l10n.json", R"({

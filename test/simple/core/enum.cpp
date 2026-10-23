@@ -7,7 +7,7 @@
 #include <erslib/core/enum.hpp>
 
 // test
-#include "support/tags.hpp"
+#include "support/test_case.hpp"
 
 
 using namespace ers::enum_utils;
@@ -67,7 +67,7 @@ struct ers::enum_traits<Priority> {
 };
 
 
-TEST_CASE("pascal", TEST_TAGS) {
+ERS_TEST_CASE("pascal", "[core]") {
     CHECK(to_string(Color::Red) == "Red");
     CHECK(to_string(Color::DarkGreen) == "forest");
     CHECK(to_string(Color::LightBlue) == "LightBlue");
@@ -78,7 +78,7 @@ TEST_CASE("pascal", TEST_TAGS) {
     CHECK_FALSE(from_string<Color>("nope").has_value());
 }
 
-TEST_CASE("upper_snake", TEST_TAGS) {
+ERS_TEST_CASE("upper snake", "[core]") {
     CHECK(to_string(Status::NotStarted) == "NOT_STARTED");
     CHECK(to_string(Status::InProgress) == "IN_PROGRESS");
     CHECK(to_string(Status::Done) == "DONE");
@@ -87,7 +87,7 @@ TEST_CASE("upper_snake", TEST_TAGS) {
     CHECK_FALSE(from_string<Status>("InProgress").has_value());
 }
 
-TEST_CASE("kebab_and_camel", TEST_TAGS) {
+ERS_TEST_CASE("kebab and camel", "[core]") {
     CHECK(to_string(Direction::NorthWest) == "north-west");
     CHECK(to_string(Direction::SouthEast) == "south-east");
     CHECK(from_string<Direction>("north-west") == Direction::NorthWest);
@@ -97,7 +97,7 @@ TEST_CASE("kebab_and_camel", TEST_TAGS) {
     CHECK(from_string<Weekday>("fridayEnd") == Weekday::FridayEnd);
 }
 
-TEST_CASE("snake", TEST_TAGS) {
+ERS_TEST_CASE("snake", "[core]") {
     CHECK(to_string(Priority::VeryHigh) == "very_high");
     CHECK(to_string(Priority::Low) == "low");
     CHECK(from_string<Priority>("very_high") == Priority::VeryHigh);
