@@ -64,11 +64,15 @@ namespace ers::impl {
         // Member functions
 
         Diagnostic(
+#ifdef _HAS_CPPTRACE
+            ESeverity severity,
+            std::string message,
+            timestamp_t timestamp = std::chrono::system_clock::now(),
+            cpptrace::raw_trace trace = get_trace({ .skip = 1 })
+#else
             ESeverity severity,
             std::string message,
             timestamp_t timestamp = std::chrono::system_clock::now()
-#ifdef _HAS_CPPTRACE
-            , cpptrace::raw_trace trace = get_trace({ .skip = 1 })
 #endif
         );
 

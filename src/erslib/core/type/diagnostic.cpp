@@ -13,18 +13,27 @@ std::string ers::impl::Diagnostic::_build_message() const {
         | std::ranges::to<std::string>();
 }
 
+
 ers::impl::Diagnostic::Diagnostic(
+#ifdef _HAS_CPPTRACE
     ESeverity severity,
     std::string message,
-    timestamp_t timestamp
-#ifdef _HAS_CPPTRACE
-    , cpptrace::raw_trace trace
-#endif
+    timestamp_t timestamp,
+    cpptrace::raw_trace trace
 ) :
     m_severity(severity),
     m_message(std::move(message)),
     m_timestamp(timestamp),
     m_trace(std::move(trace)) {
+#else
+    ESeverity severity,
+    std::string message,
+    timestamp_t timestamp
+) :
+    m_severity(severity),
+    m_message(std::move(message)),
+    m_timestamp(timestamp) {
+#endif
 }
 
 
