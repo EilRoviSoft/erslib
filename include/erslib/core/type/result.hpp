@@ -366,6 +366,11 @@ namespace ers::impl {
         using error_type = Diagnostic;
 
 
+        Result() noexcept :
+            m_error(none) {
+        }
+
+
         Result(const ok_t) noexcept :
             m_error(none) {
         }
