@@ -39,13 +39,13 @@ namespace {
 
 
 ERS_TEST_CASE("regular", "[core]") {
-    REQUIRE(process<ers::algo::RegularSplitter>("hello world") == make_vector("hello", "world"));
-    REQUIRE(process<ers::algo::RegularSplitter>("I love Isaac Iwasaki") == make_vector("I", "love", "Isaac", "Iwasaki"));
-    REQUIRE(process<ers::algo::RegularSplitter>("I hate \"Sir Isaac Westcott\"") == make_vector("I", "hate", "\"Sir", "Isaac", "Westcott\""));
+    REQUIRE(process<ers::RegularSplitter>("hello world") == make_vector("hello", "world"));
+    REQUIRE(process<ers::RegularSplitter>("I love Isaac Iwasaki") == make_vector("I", "love", "Isaac", "Iwasaki"));
+    REQUIRE(process<ers::RegularSplitter>("I hate \"Sir Isaac Westcott\"") == make_vector("I", "hate", "\"Sir", "Isaac", "Westcott\""));
 }
 
 ERS_TEST_CASE("smart", "[core]") {
-    REQUIRE(process<ers::algo::SmartSplitter>("hello world") == make_vector("hello", "world"));
-    REQUIRE(process<ers::algo::SmartSplitter>("I love Isaac Iwasaki") == make_vector("I", "love", "Isaac", "Iwasaki"));
-    REQUIRE(process<ers::algo::SmartSplitter>("I hate \"Sir Isaac Westcott\"") == make_vector("I", "hate", "Sir Isaac Westcott"));
+    REQUIRE(process<ers::SmartSplitter>("hello world") == make_vector("hello", "world"));
+    REQUIRE(process<ers::SmartSplitter>("I love Isaac Iwasaki") == make_vector("I", "love", "Isaac", "Iwasaki"));
+    REQUIRE(process<ers::SmartSplitter>("I hate \"Sir Isaac Westcott\"") == make_vector("I", "hate", "Sir Isaac Westcott"));
 }

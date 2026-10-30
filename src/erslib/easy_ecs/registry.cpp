@@ -21,7 +21,7 @@ size_t ecs::impl::Registry::track_entity(IEntity& entity) {
 }
 
 void ecs::impl::Registry::track_component(size_t eid, size_t cid, void* component) {
-    size_t key = ers::algo::combine<ers::RapidHash>(eid, cid);
+    size_t key = ers::hash_combine<ers::RapidHash>(eid, cid);
 
     auto [it, inserted] = m_components.try_emplace(key, component);
     if (!inserted) {
@@ -42,9 +42,9 @@ void ecs::impl::Registry::finalize_entity_groups(size_t eid) {
 // Queries
 
 bool ecs::impl::Registry::has_component(size_t eid, size_t cid) const {
-    return m_components.contains(ers::algo::combine<ers::RapidHash>(eid, cid));
+    return m_components.contains(ers::hash_combine<ers::RapidHash>(eid, cid));
 }
 
 void* ecs::impl::Registry::get_component(size_t eid, size_t cid) const {
-    return m_components.at(ers::algo::combine<ers::RapidHash>(eid, cid));
+    return m_components.at(ers::hash_combine<ers::RapidHash>(eid, cid));
 }

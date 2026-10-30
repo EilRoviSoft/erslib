@@ -11,7 +11,7 @@
 #include <erslib/core/concept/pair.hpp>
 
 
-namespace ers::impl::algo {
+namespace ers::impl {
     template<std::ranges::range R, typename OutIt, typename Compare = std::less<>>
         requires PairLike<std::ranges::range_reference_t<R>>
     void keys_sorted_by_value(const R& range, OutIt out) {
@@ -30,7 +30,7 @@ namespace ers::impl::algo {
     }
 }
 
-namespace ers::impl::algo {
+namespace ers::impl {
     template<auto Member, typename T, typename Alloc, typename Compare = std::less<>>
     typename std::vector<T, Alloc>::iterator insert_sorted(std::vector<T, Alloc>& v, T value, Compare comp = {}) {
         const auto pos = std::ranges::upper_bound(

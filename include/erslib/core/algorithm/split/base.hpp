@@ -7,7 +7,7 @@
 #include <unordered_set>
 
 
-namespace ers::impl::algo {
+namespace ers::impl {
     template<typename T>
     class TSplitIterator;
 

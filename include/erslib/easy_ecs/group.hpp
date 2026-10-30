@@ -110,7 +110,7 @@ namespace ecs::impl {
 
         [[nodiscard]]
         static size_t get_id() {
-            return ers::algo::combine<ers::RapidHash>(component_id<Tags>()...);
+            return ers::combine<ers::RapidHash>(component_id<Tags>()...);
         }
 
         [[nodiscard]]

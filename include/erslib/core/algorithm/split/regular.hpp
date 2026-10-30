@@ -7,7 +7,7 @@
 #include <erslib/export.hpp>
 
 
-namespace ers::impl::algo {
+namespace ers::impl {
     extern template class ERSLIB_EXPORT TSplitIterator<class RegularSplitIterator>;
 
     class ERSLIB_EXPORT RegularSplitIterator : public TSplitIterator<RegularSplitIterator> {

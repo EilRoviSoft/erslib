@@ -115,7 +115,7 @@ target_sources(erslib_core
 
         "src/erslib/core/assert.cpp"
 
-        "src/erslib/core/algorithm/split/args.cpp"
+        "src/erslib/core/algorithm/args.cpp"
         "src/erslib/core/algorithm/split/regular.cpp"
         "src/erslib/core/algorithm/split/smart.cpp"
 

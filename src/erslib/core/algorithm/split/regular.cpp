@@ -2,18 +2,18 @@
 
 // Details ---------------------------------------------------------------------
 
-namespace ers::impl::algo {
+namespace ers::impl {
     template class TSplitIterator<RegularSplitIterator>;
 }
 
 
 // Implementation --------------------------------------------------------------
 
-ers::impl::algo::RegularSplitIterator::RegularSplitIterator(const SplitProcessor<RegularSplitIterator>& parent, size_t offset) :
+ers::impl::RegularSplitIterator::RegularSplitIterator(const SplitProcessor<RegularSplitIterator>& parent, size_t offset) :
     TSplitIterator(parent, offset) {
 }
 
-void ers::impl::algo::RegularSplitIterator::_advance() {
+void ers::impl::RegularSplitIterator::_advance() {
     if (!m_parent || m_offset >= m_parent->m_storage.size()) {
         m_length = 0;
         return;

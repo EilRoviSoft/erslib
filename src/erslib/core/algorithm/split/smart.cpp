@@ -10,18 +10,18 @@
 
 // Details ---------------------------------------------------------------------
 
-namespace ers::impl::algo {
+namespace ers::impl {
     template class TSplitIterator<SmartSplitIterator>;
 }
 
 
 // Implementation --------------------------------------------------------------
 
-ers::impl::algo::SmartSplitIterator::SmartSplitIterator(const SplitProcessor<SmartSplitIterator>& parent, std::size_t offset) :
+ers::impl::SmartSplitIterator::SmartSplitIterator(const SplitProcessor<SmartSplitIterator>& parent, std::size_t offset) :
     TSplitIterator(parent, offset) {
 }
 
-void ers::impl::algo::SmartSplitIterator::_advance() {
+void ers::impl::SmartSplitIterator::_advance() {
     m_length = 0;
 
     if (!m_parent)

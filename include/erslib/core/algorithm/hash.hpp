@@ -1,9 +1,9 @@
 #pragma once
 
 
-namespace ers::impl::algo {
+namespace ers::impl {
     template<template<typename> typename HashEngine, typename... Args>
-    constexpr size_t combine(const Args&... args) noexcept {
+    constexpr size_t hash_combine(const Args&... args) noexcept {
         size_t r = 0;
 
 

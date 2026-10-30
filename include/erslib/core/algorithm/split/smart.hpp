@@ -7,7 +7,7 @@
 #include <erslib/export.hpp>
 
 
-namespace ers::impl::algo {
+namespace ers::impl {
     class ERSLIB_EXPORT SmartSplitIterator : public TSplitIterator<SmartSplitIterator> {
         friend class TSplitIterator;
 

@@ -28,7 +28,7 @@ ers::Result<ers::modkit::impl::dependency_t> ers::modkit::impl::dependency_t::pa
         source = source.substr(1);
 
 
-    algo::RegularSplitter splitter(source, " ");
+    RegularSplitter splitter(source, " ");
     auto it = splitter.begin();
 
     if (has_short_type) {
