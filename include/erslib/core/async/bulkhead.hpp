@@ -20,7 +20,7 @@
 // Details ---------------------------------------------------------------------
 
 namespace ers::impl {
-    class BulkheadState {
+    class ERSLIB_EXPORT BulkheadState {
     public:
         // Member types
 
@@ -97,7 +97,7 @@ namespace ers::impl {
 // Implementation --------------------------------------------------------------
 
 namespace ers::impl {
-    class Bulkhead {
+    class ERSLIB_EXPORT Bulkhead {
     public:
         // Member types
 
@@ -158,7 +158,7 @@ namespace ers::impl {
                     break;
 
                 case BulkheadState::EAdmission::Rejected:
-                    return AsyncJob<T>::rejected_with(make_error("The group is full"));
+                    return AsyncJob<T>::rejected_with(make_error("The bulkhead is full."));
             }
 
             return AsyncJob<T>(std::move(future));

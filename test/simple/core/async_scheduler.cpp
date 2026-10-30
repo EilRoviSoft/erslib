@@ -250,7 +250,7 @@ namespace {
         co_return value;
     }
 
-    ers::AsyncTask<void> ticker(std::atomic<int>& count) {
+    ers::AsyncTask<void> ticker(std::atomic_int& count) {
         for (int i = 0; i < 3; ++i) {
             ++count;
             co_await ers::yield();

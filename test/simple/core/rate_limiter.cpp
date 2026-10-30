@@ -160,14 +160,14 @@ ERS_TEST_CASE("concurrent", "[core][thread_safe][concurrency]") {
     constexpr size_t workers = 8;
     constexpr size_t rounds = 100;
 
-    std::atomic<size_t> allowed = 0;
+    std::atomic_size_t allowed = 0;
     std::vector<std::thread> threads;
 
     for (size_t w = 0; w < workers; w++) {
         threads.emplace_back([&] {
             for (size_t i = 0; i < rounds; i++) {
                 if (limiter.try_acquire("hot", t0()).allowed)
-                    allowed++;
+                    ++allowed;
             }
         });
     }

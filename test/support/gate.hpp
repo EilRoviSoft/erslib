@@ -40,6 +40,6 @@ namespace test {
     private:
         std::promise<void> _promise;
         std::shared_future<void> _future;
-        std::atomic<bool> _opened = false;
+        std::atomic_bool _opened = false;
     };
 }

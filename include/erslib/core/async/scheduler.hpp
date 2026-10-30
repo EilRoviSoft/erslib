@@ -128,7 +128,7 @@ namespace ers::impl {
 
     private:
         const options_t _options;
-        std::atomic<bool> _stopped = false;
+        std::atomic_bool _stopped = false;
         boost::asio::thread_pool _pool;
         boost::asio::thread_pool _blocking_pool;
     };

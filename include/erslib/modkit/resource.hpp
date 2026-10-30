@@ -39,7 +39,7 @@ namespace ers::modkit::impl {
 
 
         maybe<T> value = none;
-        std::atomic<size_t> refs = 0;
+        std::atomic_size_t refs = 0;
         std::mutex mutex;
         ctor_fn ctor;
         dtor_fn dtor;
