@@ -5,6 +5,7 @@
         "boost-multi-index",
         "boost-optional",
         "boost-preprocessor",
+        "boost-process",
         "boost-regex",
         "boost-thread",
         "boost-unordered",

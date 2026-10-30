@@ -16,4 +16,13 @@
 #define __cpp_lib_ranges_concat 202403L
 #endif
 
+
+#if !defined(__linux__)
+#define __linux__ 1
+#endif
+
+#if !defined(_GNU_SOURCE)
+#define _GNU_SOURCE 1
+#endif
+
 #endif
