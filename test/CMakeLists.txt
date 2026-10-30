@@ -39,8 +39,8 @@ include(Catch)
 
 
 add_library(test_support
-	STATIC
-		"support/temp_tree.cpp"
+    STATIC
+        "support/temp_tree.cpp"
 )
 
 target_include_directories(test_support PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")

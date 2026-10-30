@@ -119,10 +119,10 @@ target_sources(erslib_core
         "src/erslib/core/algorithm/split/regular.cpp"
         "src/erslib/core/algorithm/split/smart.cpp"
 
-		"src/erslib/core/async/bulkhead.cpp"
-		"src/erslib/core/async/control.cpp"
-		"src/erslib/core/async/scheduler.cpp"
-		"src/erslib/core/async/task.cpp"
+        "src/erslib/core/async/bulkhead.cpp"
+        "src/erslib/core/async/control.cpp"
+        "src/erslib/core/async/scheduler.cpp"
+        "src/erslib/core/async/task.cpp"
 
         "src/erslib/core/convert/pg_time.cpp"
         "src/erslib/core/convert/time.cpp"
@@ -238,12 +238,12 @@ if(ERSLIB_BUILD_CONTRIB)
 
     erslib_optional_package(erslib_contrib boost_unordered Boost::unordered _HAS_BOOST_UNORDERED)
     erslib_optional_package(erslib_contrib inja pantor::inja _HAS_INJA)
-	erslib_optional_package(erslib_contrib valijson valijson _HAS_VALIJSON)
+    erslib_optional_package(erslib_contrib valijson valijson _HAS_VALIJSON)
 
 
-	if(TARGET valijson)
-		target_sources(erslib_contrib PRIVATE "src/erslib/contrib/valijson.cpp")
-	endif()
+    if(TARGET valijson)
+        target_sources(erslib_contrib PRIVATE "src/erslib/contrib/valijson.cpp")
+    endif()
 
 
     list(APPEND ERSLIB_TARGETS erslib_contrib)
@@ -587,7 +587,7 @@ if(ERSLIB_INSTALL AND NOT CMAKE_SKIP_INSTALL_RULES)
         COMPONENT erslib_dev
         PATTERN "export_static.hpp" EXCLUDE
         PATTERN "export_shared.hpp" EXCLUDE
-		PATTERN "ide_compat.hpp" EXCLUDE
+        PATTERN "ide_compat.hpp" EXCLUDE
     )
 
     install(FILES "${CMAKE_CURRENT_BINARY_DIR}/include/erslib/${EXPORT_FILE_NAME}"
