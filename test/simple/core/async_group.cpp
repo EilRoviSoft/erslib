@@ -19,6 +19,7 @@
 #include <erslib/core/async/group.hpp>
 
 // test
+#include "support/gate.hpp"
 #include "support/test_case.hpp"
 
 
@@ -97,14 +98,13 @@ namespace {
 ERS_TEST_CASE("limit", "[async]") {
     reset();
 
-    std::promise<void> release;
-    auto gate = release.get_future().share();
     ers::Scheduler scheduler({ .threads = 2 });
     ers::Group group(scheduler, { .max_running = 2, .max_waiting = 10 });
+    test::Gate gate;
     std::vector<ers::Job<int>> jobs;
 
     for (int i = 0; i < 6; ++i) {
-        auto job = group.spawn(holding(gate, i));
+        auto job = group.spawn(holding(gate.future(), i));
 
         REQUIRE(!job.rejected());
         jobs.emplace_back(std::move(job));
@@ -113,7 +113,7 @@ ERS_TEST_CASE("limit", "[async]") {
     REQUIRE(group.running() == 2);
     REQUIRE(group.waiting() == 4);
 
-    release.set_value();
+    gate.open();
 
     for (auto& job : jobs)
         REQUIRE(job.get().has_value());
@@ -126,21 +126,20 @@ ERS_TEST_CASE("limit", "[async]") {
 ERS_TEST_CASE("full", "[async]") {
     reset();
 
-    std::promise<void> release;
-    auto gate = release.get_future().share();
     ers::Scheduler scheduler({ .threads = 1 });
     ers::Group group(scheduler, { .max_running = 1, .max_waiting = 1 });
+    test::Gate gate;
 
-    auto first = group.spawn(holding(gate, 0));
-    auto second = group.spawn(holding(gate, 1));
-    auto third = group.spawn(holding(gate, 2));
+    auto first = group.spawn(holding(gate.future(), 0));
+    auto second = group.spawn(holding(gate.future(), 1));
+    auto third = group.spawn(holding(gate.future(), 2));
 
     REQUIRE(!first.rejected());
     REQUIRE(!second.rejected());
     REQUIRE(third.rejected());
-    REQUIRE(third.get().error().message() == "The group is full.");
+    REQUIRE(third.get().error().message() == "The group is full");
 
-    release.set_value();
+    gate.open();
 
     REQUIRE(first.get().has_value());
     REQUIRE(second.get().has_value());
@@ -153,16 +152,15 @@ ERS_TEST_CASE("full", "[async]") {
 ERS_TEST_CASE("fifo", "[async]") {
     reset();
 
-    std::promise<void> release;
-    auto gate = release.get_future().share();
     ers::Scheduler scheduler({ .threads = 1 });
     ers::Group group(scheduler, { .max_running = 1, .max_waiting = 10 });
+    test::Gate gate;
     std::vector<ers::Job<int>> jobs;
 
     for (int i = 0; i < 5; ++i)
-        jobs.emplace_back(std::move(group.spawn(holding(gate, i))));
+        jobs.emplace_back(group.spawn(holding(gate.future(), i)));
 
-    release.set_value();
+    gate.open();
 
     for (auto& job : jobs)
         REQUIRE(job.get().has_value());
@@ -243,20 +241,19 @@ ERS_TEST_CASE("teardown", "[async]") {
 ERS_TEST_CASE("owner", "[async]") {
     reset();
 
-    std::promise<void> release;
-    auto gate = release.get_future().share();
+    ers::Scheduler scheduler({ .threads = 1 });
+    test::Gate gate;
     ers::Job<int> active;
     ers::Job<int> queued;
-    ers::Scheduler scheduler({ .threads = 1 });
 
     {
         ers::Group group(scheduler, { .max_running = 1, .max_waiting = 2 });
 
-        active = std::move(group.spawn(holding(gate, 0)));
-        queued = std::move(group.spawn(holding(gate, 1)));
+        active = group.spawn(holding(gate.future(), 0));
+        queued = group.spawn(holding(gate.future(), 1));
     }
 
-    release.set_value();
+    gate.open();
 
     REQUIRE(active.get().has_value());
     REQUIRE(queued.wait_for(0s) == std::future_status::ready);
@@ -266,14 +263,13 @@ ERS_TEST_CASE("owner", "[async]") {
 ERS_TEST_CASE("clear", "[async]") {
     reset();
 
-    std::promise<void> release;
-    auto gate = release.get_future().share();
     ers::Scheduler scheduler({ .threads = 1 });
     ers::Group group(scheduler, { .max_running = 1, .max_waiting = 3 });
+    test::Gate gate;
 
-    auto active = group.spawn(holding(gate, 0));
-    auto first = group.spawn(holding(gate, 1));
-    auto second = group.spawn(holding(gate, 2));
+    auto active = group.spawn(holding(gate.future(), 0));
+    auto first = group.spawn(holding(gate.future(), 1));
+    auto second = group.spawn(holding(gate.future(), 2));
 
     group.clear();
 
@@ -283,7 +279,7 @@ ERS_TEST_CASE("clear", "[async]") {
     REQUIRE(!first.get());
     REQUIRE(!second.get());
 
-    release.set_value();
+    gate.open();
 
     REQUIRE(active.get().has_value());
     REQUIRE(group.running() == 0);

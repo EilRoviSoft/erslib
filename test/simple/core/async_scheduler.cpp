@@ -18,6 +18,7 @@
 #include <erslib/core/async/scheduler.hpp>
 
 // test
+#include "support/gate.hpp"
 #include "support/test_case.hpp"
 
 
@@ -113,16 +114,16 @@ ERS_TEST_CASE("error", "[async]") {
 ERS_TEST_CASE("yield", "[async]") {
     trace.clear();
 
-    std::promise<void> release;
     ers::Scheduler scheduler({ .threads = 1 });
+    test::Gate gate;
 
-    auto gate = scheduler.spawn(blocker(release.get_future().share()));
+    auto blocked = scheduler.spawn(blocker(gate.future()));
     auto first = scheduler.spawn(steps('A'));
     auto second = scheduler.spawn(steps('B'));
 
-    release.set_value();
+    gate.open();
 
-    REQUIRE(gate.get().has_value());
+    REQUIRE(blocked.get().has_value());
     REQUIRE(first.get().has_value());
     REQUIRE(second.get().has_value());
     REQUIRE(trace == "ABABAB");
@@ -284,16 +285,16 @@ ERS_TEST_CASE("blocking", "[async]") {
 }
 
 ERS_TEST_CASE("free", "[async]") {
-    std::promise<void> release;
     ers::Scheduler scheduler({ .threads = 1, .blocking_threads = 1 });
+    test::Gate gate;
 
-    auto slow = scheduler.spawn(waiting(scheduler, release.get_future().share()));
+    auto slow = scheduler.spawn(waiting(scheduler, gate.future()));
     auto fast = scheduler.spawn(answer()).get();
 
     REQUIRE(fast.has_value());
     REQUIRE(slow.wait_for(0s) == std::future_status::timeout);
 
-    release.set_value();
+    gate.open();
     REQUIRE(slow.get().has_value());
 }
 
@@ -301,17 +302,16 @@ ERS_TEST_CASE("cap", "[async]") {
     peak = 0;
     running = 0;
 
-    std::promise<void> release;
-    auto gate = release.get_future().share();
     ers::Scheduler scheduler({ .threads = 1, .blocking_threads = 2 });
+    test::Gate gate;
     std::vector<ers::Job<int>> jobs;
 
     REQUIRE(scheduler.options().capacity() == 3);
 
     for (int i = 0; i < 3; ++i)
-        jobs.emplace_back(scheduler.spawn(waiting(scheduler, gate)));
+        jobs.emplace_back(scheduler.spawn(waiting(scheduler, gate.future())));
 
-    release.set_value();
+    gate.open();
 
     for (auto& job : jobs)
         REQUIRE(job.get().has_value());

@@ -138,7 +138,7 @@ namespace ers::impl {
         template<typename T>
         Job<T> spawn(Task<T> task) {
             if (_scheduler->stopped())
-                return Job<T>::rejected_with(make_error("The scheduler is stopped"));
+                return Job<T>::rejected_with(make_error("The scheduler is stopped."));
 
             std::promise<Result<T>> promise;
             auto future = promise.get_future();
