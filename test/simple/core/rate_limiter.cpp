@@ -164,7 +164,7 @@ ERS_TEST_CASE("concurrent", "[core][thread_safe][concurrency]") {
     std::vector<std::thread> threads;
 
     for (size_t w = 0; w < workers; w++) {
-        threads.push_back([&] {
+        threads.emplace_back([&] {
             for (size_t i = 0; i < rounds; i++) {
                 if (limiter.try_acquire("hot", t0()).allowed)
                     ++allowed;

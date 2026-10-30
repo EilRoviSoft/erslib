@@ -13,11 +13,25 @@ ers::Result<std::vector<std::string>> ers::impl::split_args(std::string_view lin
     std::string token;
 
     bool started = false;
+    bool escaped = false;
     char quote = '\0';
 
-    for (size_t i = 0; i < line.size(); ++i) {
-        char c = line[i];
 
+    for (char c : line) {
+        if (escaped) {
+            if (quote == '"' && c != '"' && c != '\\')
+                token.push_back('\\');
+
+            token.push_back(c);
+            escaped = false;
+            started = true;
+            continue;
+        }
+
+        if (c == '\\' && quote != '\'') {
+            escaped = true;
+            continue;
+        }
 
         if (quote != '\0') {
             if (c == quote)
@@ -28,49 +42,17 @@ ers::Result<std::vector<std::string>> ers::impl::split_args(std::string_view lin
             continue;
         }
 
-
-        if (c == '\\') {
-            if (i + 1 == line.size())
-                return make_error("Trailing backlash.");
-
-            char next = line[i + 1];
-
-            if (quote == '"' && next != '"' && next != '\\') {
-                token.push_back(c);
-                continue;
-            }
-
-            token.push_back(next);
-            started = true;
-            ++i;
-
-            continue;
-        }
-
-
-        if (quote == '"') {
-            if (c == '"')
-                quote = '\0';
-            else
-                token.push_back(c);
-
-            continue;
-        }
-
-
         if (c == '\'' || c == '"') {
             quote = c;
             started = true;
             continue;
         }
 
-
         if (!is_space(c)) {
             token.push_back(c);
             started = true;
             continue;
         }
-
 
         if (started) {
             out.push_back(std::move(token));
@@ -79,11 +61,16 @@ ers::Result<std::vector<std::string>> ers::impl::split_args(std::string_view lin
         }
     }
 
+
+    if (escaped)
+        return make_error("Trailing backslash.");
+
     if (quote != '\0')
         return make_error("Unterminated {} quote.", quote == '"' ? "double" : "single");
 
     if (started)
         out.push_back(std::move(token));
+
 
     return out;
 }
