@@ -1,8 +1,11 @@
 #pragma once
 
 // std
+#include <cstddef>
 #include <string>
+#include <tuple>
 #include <utility>
+#include <vector>
 
 // ers
 #include <erslib/flux/expr/expr.hpp>
@@ -41,9 +44,23 @@ namespace flux::impl {
         ERSLIB_EXPORT Clause assign_null(std::string column);
 
 
-        template<typename T>
-        Clause set(std::string column, T&& value) {
-            return assign(std::move(column), std::forward<T>(value));
+        // Pairs of a column and a value: set("name", "bob", "stock", col("stock") - 1).
+        template<typename... Args>
+            requires (sizeof...(Args) >= 2 && sizeof...(Args) % 2 == 0)
+        std::vector<Clause> set(Args&&... args) {
+            std::vector<Clause> out;
+            out.reserve(sizeof...(Args) / 2);
+
+            auto pairs = std::forward_as_tuple(std::forward<Args>(args)...);
+
+            [&]<size_t... I>(std::index_sequence<I...>) {
+                (out.push_back(assign(
+                    std::string(std::get<2 * I>(pairs)),
+                    std::get<2 * I + 1>(std::move(pairs))
+                )), ...);
+            }(std::make_index_sequence<sizeof...(Args) / 2> {});
+
+            return out;
         }
     }
 }

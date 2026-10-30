@@ -80,6 +80,9 @@ ERS_TEST_CASE("update and delete", "[flux]") {
     CHECK(sql_of(update("users") | assign("name", "bob"s) | where(col("id") == 1))
         == "UPDATE users\nSET name = $1\nWHERE id = $2");
 
+    CHECK(sql_of(update("users") | set("name", "bob"s, "visits", col("visits") + 1, "seen_at", now()) | where(col("id") == 1))
+        == "UPDATE users\nSET name = $1, visits = visits + $2, seen_at = now()\nWHERE id = $3");
+
     CHECK(sql_of(delete_from("users") | where(col("id") == 1))
         == "DELETE FROM users\nWHERE id = $1");
 }
