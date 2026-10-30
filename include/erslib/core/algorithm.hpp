@@ -18,6 +18,8 @@ namespace ers {
     using impl::hash_combine;
 
     using impl::split_args;
+    using impl::quote_arg;
+    using impl::join_args;
 
     using RegularSplitter = impl::SplitProcessor<impl::RegularSplitIterator>;
     using SmartSplitter = impl::SplitProcessor<impl::SmartSplitIterator>;
