@@ -23,7 +23,7 @@ ers::Status flux::impl::RawClause::render(Context& ctx) const {
 
         ctx.query += ctx.bind(_binders[next]);
 
-        next++;
+        ++next;
     }
 
     if (next != _binders.size()) {

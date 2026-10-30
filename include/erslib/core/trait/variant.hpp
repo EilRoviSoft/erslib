@@ -35,7 +35,7 @@ namespace ers::impl {
                     result = i;
                     return true;
                 } else {
-                    i++;
+                    ++i;
                     return false;
                 }
             }() || ...);

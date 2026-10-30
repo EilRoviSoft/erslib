@@ -120,8 +120,8 @@ namespace flux::impl::reflect {
                 + "' or its nested namespaces. Is every entity header included before this point?");
         }
 
-        for (size_t i = 0; i < n; i++) {
-            for (size_t j = i + 1; j < n; j++) {
+        for (size_t i = 0; i < n; ++i) {
+            for (size_t j = i + 1; j < n; ++j) {
                 if (names[i] == names[j])
                     return fail("table '" + names[i] + "' is declared by more than one entity.");
             }
@@ -133,19 +133,19 @@ namespace flux::impl::reflect {
         std::vector<size_t> pending(n, 0);
         std::vector<std::vector<size_t>> dependants(n);
 
-        for (size_t i = 0; i < n; i++) {
+        for (size_t i = 0; i < n; ++i) {
             for (const auto& ref : refs[i]) {
                 if (!ref.starts_with(prefix) || ref == names[i])
                     continue;
 
                 size_t j = 0;
                 while (j < n && names[j] != ref)
-                    j++;
+                    ++j;
 
                 if (j == n)
                     return fail("foreign key in '" + names[i] + "' references unknown table '" + ref + "'.");
 
-                pending[i]++;
+                ++pending[i];
                 dependants[j].push_back(i);
             }
         }
@@ -157,12 +157,12 @@ namespace flux::impl::reflect {
         while (order.size() < n) {
             size_t next = 0;
             while (next < n && (done[next] || pending[next] != 0))
-                next++;
+                ++next;
 
             if (next == n) {
                 std::string stuck;
 
-                for (size_t i = 0; i < n; i++) {
+                for (size_t i = 0; i < n; ++i) {
                     if (done[i])
                         continue;
 
@@ -179,7 +179,7 @@ namespace flux::impl::reflect {
             order.push_back(nodes[next]);
 
             for (const size_t it : dependants[next])
-                pending[it]--;
+                --pending[it];
         }
 
         return {

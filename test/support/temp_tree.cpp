@@ -84,7 +84,7 @@ void test::TempTree::remove(const fs::path& relative) const {
 fs::path test::TempTree::make_root(std::string_view prefix) {
     const auto base = fs::temp_directory_path();
 
-    for (int attempt = 0; attempt < max_attempts; attempt++) {
+    for (int attempt = 0; attempt < max_attempts; ++attempt) {
         auto candidate = base / std::format("{}_{:016x}", prefix, ers::random::entropy());
 
         if (fs::create_directory(candidate))

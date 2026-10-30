@@ -33,21 +33,21 @@ void ers::impl::SmartSplitIterator::_advance() {
     _pending_skip = 0;
 
     while (m_offset < storage.size() && m_parent->m_delims.contains(storage[m_offset]))
-        m_offset++;
+        ++m_offset;
 
     if (m_offset >= storage.size())
         return;
 
     if (char quote = storage[m_offset]; quote == '"' || quote == '\'') {
-        m_offset++;
+        ++m_offset;
 
         while (m_offset + m_length < storage.size() && storage[m_offset + m_length] != quote)
-            m_length++;
+            ++m_length;
 
         _pending_skip = m_offset + m_length < storage.size() ? 1 : 0;
         return;
     }
 
     while (m_offset + m_length < storage.size() && !m_parent->m_delims.contains(storage[m_offset + m_length]))
-        m_length++;
+        ++m_length;
 }

@@ -43,7 +43,7 @@ ers::Result<ers::modkit::impl::dependency_t> ers::modkit::impl::dependency_t::pa
         }
 
         if (has_long_type)
-            it++;
+            ++it;
     } else
         result.type = EDependencyType::Required;
 
@@ -65,7 +65,7 @@ ers::Result<ers::modkit::impl::dependency_t> ers::modkit::impl::dependency_t::pa
     }
 
     if (has_version_bounds) {
-        it++;
+        ++it;
         result.version = ERS_TRY(version_t::parse(*it));
     }
 

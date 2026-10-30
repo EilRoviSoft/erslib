@@ -16,12 +16,12 @@ namespace ers::impl {
 
 
         constexpr fixed_string() {
-            for (size_t i = 0; i < N; i++)
+            for (size_t i = 0; i < N; ++i)
                 value[i] = 0;
         }
 
         constexpr fixed_string(const char (&str)[N]) {
-            for (size_t i = 0; i < N; i++)
+            for (size_t i = 0; i < N; ++i)
                 value[i] = str[i];
         }
 
@@ -32,7 +32,7 @@ namespace ers::impl {
         constexpr size_t strlen() const noexcept {
             size_t result = 0;
             while (result < N && value[result] != '\0')
-                result++;
+                ++result;
             return result;
         }
 

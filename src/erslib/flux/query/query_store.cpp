@@ -50,7 +50,7 @@ size_t flux::impl::QueryStore::load_directory(const fs::path& root) {
 
         const fs::path relative = fs::relative(entry.path(), root);
         add(make_label(relative), ers::util::read_file(entry.path()));
-        count++;
+        ++count;
     }
 
     return count;

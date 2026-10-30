@@ -31,7 +31,7 @@ namespace {
     }
 
     void exhaust(Limiter& limiter, std::string_view key, Limiter::time_point at) {
-        for (size_t i = 0; i < burst; i++)
+        for (size_t i = 0; i < burst; ++i)
             REQUIRE(limiter.try_acquire(key, at).allowed);
     }
 }
@@ -77,7 +77,7 @@ ERS_TEST_CASE("blocked", "[core][thread_safe]") {
 
     exhaust(limiter, "key", t0());
 
-    for (size_t i = 0; i < 100; i++)
+    for (size_t i = 0; i < 100; ++i)
         CHECK_FALSE(limiter.try_acquire("key", t0()).allowed);
 
     CHECK(limiter.try_acquire("key", t0() + interval).allowed);
@@ -163,9 +163,9 @@ ERS_TEST_CASE("concurrent", "[core][thread_safe][concurrency]") {
     std::atomic_size_t allowed = 0;
     std::vector<std::thread> threads;
 
-    for (size_t w = 0; w < workers; w++) {
+    for (size_t w = 0; w < workers; ++w) {
         threads.emplace_back([&] {
-            for (size_t i = 0; i < rounds; i++) {
+            for (size_t i = 0; i < rounds; ++i) {
                 if (limiter.try_acquire("hot", t0()).allowed)
                     ++allowed;
             }

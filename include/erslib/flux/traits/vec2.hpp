@@ -41,7 +41,7 @@ struct flux::impl::sql_value<vec2<T>> {
         if (offset >= text.size() || text[offset] != ',')
             return fallback;
 
-        offset++;
+        ++offset;
         if (!std::from_chars(text.begin() + offset, text.end(), result.y))
             return fallback;
 

@@ -39,14 +39,14 @@ namespace flux::impl::reflect {
         template for (constexpr auto m : column_list<T>) {
             constexpr std::string_view name = column_name<m>;
 
-            for (pqxx::row_size_type i = 0; i < from.columns(); i++) {
+            for (pqxx::row_size_type i = 0; i < from.columns(); ++i) {
                 if (std::string_view(from.column_name(i)) == name) {
                     out[slot] = static_cast<int>(i);
                     break;
                 }
             }
 
-            slot++;
+            ++slot;
         }
 
         return out;
@@ -61,7 +61,7 @@ namespace flux::impl::reflect {
             if (const int at = index[slot]; at >= 0)
                 into.[:m:] = sql_value<member_type<m>>::read(row[static_cast<pqxx::row_size_type>(at)]);
 
-            slot++;
+            ++slot;
         }
     }
 

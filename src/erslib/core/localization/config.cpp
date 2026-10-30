@@ -34,7 +34,7 @@ ers::Result<ers::impl::locale_config_ptr> ers::impl::make_locale_config(std::vec
     auto out = std::make_shared<locale_config_t>();
     out->locales = std::move(locales);
 
-    for (size_t id = 0; id < out->locales.size(); id++)
+    for (size_t id = 0; id < out->locales.size(); ++id)
         if (!out->ids.try_emplace(out->locales[id], id).second) {
             return make_error("Locale '{}' is listed twice.",
                 out->locales[id]);

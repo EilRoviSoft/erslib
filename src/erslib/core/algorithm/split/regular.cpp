@@ -21,10 +21,10 @@ void ers::impl::RegularSplitIterator::_advance() {
 
 
     if (m_parent->m_delims.contains(m_parent->m_storage[m_offset]))
-        m_offset++;
+        ++m_offset;
 
 
     m_length = 0;
     while (m_offset + m_length < m_parent->m_storage.size() && !m_parent->m_delims.contains(m_parent->m_storage[m_offset + m_length]))
-        m_length++;
+        ++m_length;
 }

@@ -33,7 +33,7 @@ struct flux::impl::sql_value<std::vector<T>> {
     static std::string to_text(const std::vector<T>& what) {
         std::string literal = "{";
 
-        for (size_t i = 0; i < what.size(); i++) {
+        for (size_t i = 0; i < what.size(); ++i) {
             if (i)
                 literal += ',';
 

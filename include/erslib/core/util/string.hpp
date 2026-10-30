@@ -73,7 +73,7 @@ namespace ers::impl {
 
         size_t i = offset;
         auto match = [&i, &s]<typename T>(const T& arg) {
-            for (size_t j = 0; j < string_traits<T>::size(arg); i++, j++) {
+            for (size_t j = 0; j < string_traits<T>::size(arg); ++i, ++j) {
                 if (s[i] != string_traits<T>::index(arg, j))
                     return false;
             }

@@ -20,11 +20,11 @@ namespace ers::impl::hashing {
         u64 hash = fnv_offset_basis;
 
         if (seed) {
-            for (int i = 0; i < 8; i++)
+            for (int i = 0; i < 8; ++i)
                 hash = fnv_step(hash, (seed >> (8 * i)) & 0xff);
         }
         
-        for (size_t i = 0; i < len; i++)
+        for (size_t i = 0; i < len; ++i)
             hash = fnv_step(hash, std::to_integer<u64>(p[i]));
 
         return hash;

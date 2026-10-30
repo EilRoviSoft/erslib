@@ -81,7 +81,7 @@ namespace flux::impl::crud {
     inline Expr all_of(std::vector<Expr> parts) {
         Expr out = std::move(parts.front());
 
-        for (std::size_t i = 1; i < parts.size(); i++)
+        for (std::size_t i = 1; i < parts.size(); ++i)
             out = out && std::move(parts[i]);
 
         return out;

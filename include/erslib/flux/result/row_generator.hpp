@@ -41,12 +41,12 @@ namespace flux::impl {
 
 
             Iterator& operator++() {
-                _inner_it++;
+                ++_inner_it;
                 return *this;
             }
             Iterator operator++(int) {
                 auto copy = *this;
-                _inner_it++;
+                ++_inner_it;
                 return copy;
             }
 

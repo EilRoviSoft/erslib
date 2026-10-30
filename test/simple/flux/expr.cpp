@@ -181,7 +181,7 @@ ERS_TEST_CASE("custom clause", "[flux]") {
         ers::Status render(flux::ext::Context& ctx) const override {
             ctx.query += " DISTINCT ON (";
 
-            for (size_t i = 0; i < _on.size(); i++) {
+            for (size_t i = 0; i < _on.size(); ++i) {
                 if (i > 0)
                     ctx.query += ", ";
 

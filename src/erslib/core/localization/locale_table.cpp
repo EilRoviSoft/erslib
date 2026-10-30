@@ -172,7 +172,7 @@ namespace {
 
         auto add = [&](const fs::directory_entry& entry, size_t locale_id, std::string key, const ers::impl::bundle_loader_t* loader) {
             out.fingerprint.size += entry.file_size();
-            out.fingerprint.files++;
+            ++out.fingerprint.files;
             touch(entry.last_write_time());
 
             out.files.push_back({
@@ -309,7 +309,7 @@ auto ers::impl::LocaleTable::reload(const fs::path& root) -> Result<reload_repor
 
     std::vector<std::pair<size_t, fs::path>> sources;
 
-    for (size_t id = 0; id < config->locales.size(); id++)
+    for (size_t id = 0; id < config->locales.size(); ++id)
         sources.emplace_back(id, root / config->locales[id]);
 
     if (!_options.common_dir.empty() && fs::is_directory(root / _options.common_dir))
@@ -346,7 +346,7 @@ auto ers::impl::LocaleTable::reload(const fs::path& root) -> Result<reload_repor
         if (existing && known != _fingerprints.end() && scan.fingerprint.same_metadata_as(known->second)) {
             next.domains.try_emplace(name, std::move(existing));
             next_fingerprints.try_emplace(name, known->second);
-            report.kept++;
+            ++report.kept;
             continue;
         }
 
@@ -374,7 +374,7 @@ auto ers::impl::LocaleTable::reload(const fs::path& root) -> Result<reload_repor
         if (existing && known != _fingerprints.end() && scan.fingerprint.same_content_as(known->second)) {
             next.domains.try_emplace(name, std::move(existing));
             next_fingerprints.try_emplace(name, std::move(scan.fingerprint));
-            report.kept++;
+            ++report.kept;
             continue;
         }
 
@@ -389,7 +389,7 @@ auto ers::impl::LocaleTable::reload(const fs::path& root) -> Result<reload_repor
         };
 
 
-        for (size_t i = 0; i < scan.files.size(); i++) {
+        for (size_t i = 0; i < scan.files.size(); ++i) {
             const auto& file = scan.files[i];
 
             auto inserted = file.loader
@@ -609,7 +609,7 @@ std::vector<std::string> ers::impl::LocaleTable::missing() const {
             if (entry.common)
                 continue;
 
-            for (size_t id = 0; id < index->config->locales.size(); id++) {
+            for (size_t id = 0; id < index->config->locales.size(); ++id) {
                 if (id >= entry.localized.size() || !entry.localized[id]) {
                     out.push_back(std::format("{}: {}/{}",
                         index->config->locales[id], name, key));

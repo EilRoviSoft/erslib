@@ -115,11 +115,11 @@ ERS_TEST_CASE("concurrent", "[core][thread_safe][concurrency][slow]") {
     std::array<std::vector<int64_t>, workers> seen;
     std::vector<std::thread> threads;
 
-    for (size_t w = 0; w < workers; w++) {
+    for (size_t w = 0; w < workers; ++w) {
         threads.emplace_back([&, w] {
             seen[w].reserve(rounds);
 
-            for (size_t i = 0; i < rounds; i++)
+            for (size_t i = 0; i < rounds; ++i)
                 seen[w].push_back(seeds.acquire("hot"));
         });
     }
@@ -143,7 +143,7 @@ ERS_TEST_CASE("entropy", "[core][thread_safe]") {
     u64 combined = 0;
     bool varied = false;
 
-    for (int i = 0; i < 64; i++) {
+    for (int i = 0; i < 64; ++i) {
         const auto it = ers::random::entropy();
 
         combined |= it;

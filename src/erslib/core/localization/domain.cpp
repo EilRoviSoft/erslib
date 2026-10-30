@@ -195,7 +195,7 @@ ers::Status ers::impl::Domain::_resolve_references(const reference_options_t& op
         if (entry.common)
         ERS_TRY(_resolve_slot(key, common_locale_id, options, path));
 
-        for (size_t id = 0; id < entry.localized.size(); id++) {
+        for (size_t id = 0; id < entry.localized.size(); ++id) {
             if (entry.localized[id])
             ERS_TRY(_resolve_slot(key, id, options, path));
         }

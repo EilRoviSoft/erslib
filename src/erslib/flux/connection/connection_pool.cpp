@@ -75,7 +75,7 @@ bool flux::impl::ConnectionPool::_is_stale(const entry_t& entry, ers::timestamp_
 
 void flux::impl::ConnectionPool::_init() {
     std::scoped_lock lock(_mutex);
-    for (size_t i = 0; i < _pool_opts.min_size; i++) {
+    for (size_t i = 0; i < _pool_opts.min_size; ++i) {
         auto conn = _spawn();
         if (!conn)
             break;

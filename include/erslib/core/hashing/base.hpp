@@ -50,7 +50,7 @@ struct ers::THashBase<std::array<Char, N>, Policy> {
         std::array<std::byte, what.size()> bytes = {};
 
 
-        for (size_t i = 0; i < what.size(); i++)
+        for (size_t i = 0; i < what.size(); ++i)
             bytes[i] = static_cast<std::byte>(what[i]);
 
 

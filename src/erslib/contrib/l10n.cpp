@@ -19,7 +19,7 @@ namespace {
             std::string text;
 
 
-            for (size_t i = 0; i < node.as_array().size(); i++) {
+            for (size_t i = 0; i < node.as_array().size(); ++i) {
                 const auto& line = node.as_array()[i];
 
                 if (!line.is_string()) {

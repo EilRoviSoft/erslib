@@ -58,7 +58,7 @@ std::vector<std::string> ers::modkit::impl::resolve_mods_order(const ModContaine
 
             if (add_to_graph) {
                 outgoing[dep.name].emplace_back(mod.name());
-                indegree[mod.name()]++;
+                ++indegree[mod.name()];
             }
         }
     }
@@ -103,7 +103,7 @@ std::vector<std::string> ers::modkit::impl::resolve_mods_order(const ModContaine
         ready.pop_front();
 
         mods_order.push_back(current);
-        visited_count++;
+        ++visited_count;
 
         for (const auto& dependent : outgoing.at(current)) {
             auto it = indegree.find(dependent);
@@ -111,7 +111,7 @@ std::vector<std::string> ers::modkit::impl::resolve_mods_order(const ModContaine
             if (it == indegree.end())
                 continue;
 
-            it->second--;
+            --it->second;
 
             if (it->second != 0 || queued.contains(dependent))
                 continue;
@@ -146,7 +146,7 @@ std::vector<ers::modkit::impl::stage_order_info_t> ers::modkit::impl::resolve_st
         for (const auto& stage : mod.content().stages | std::views::keys) {
             auto [phase, index] = util::extract_stage_info(stage);
             indexes_per_mod[mod.name()][phase].emplace(index);
-            stages_count++;
+            ++stages_count;
         }
     }
 
