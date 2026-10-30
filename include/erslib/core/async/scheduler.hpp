@@ -55,7 +55,7 @@ namespace ers::impl {
 
         void operator()(std::exception_ptr error, Result<T> value) {
             _pending = false;
-            _promise.set_value(as_result<T>(error, std::move(value)));
+            _promise.set_value(to_result<T>(error, std::move(value)));
         }
 
 
@@ -158,7 +158,7 @@ namespace ers::impl {
                 boost::asio::as_tuple(boost::asio::use_awaitable)
             );
 
-            co_return as_result<value_type>(error, std::move(result));
+            co_return to_result<value_type>(error, std::move(result));
         }
 
 

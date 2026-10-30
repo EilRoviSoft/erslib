@@ -24,7 +24,7 @@ namespace ers::impl {
 
 
     template<typename T>
-    Result<T> as_result(std::exception_ptr error, Result<T> value) {
+    Result<T> to_result(std::exception_ptr error, Result<T> value) {
         if (!error)
             return value;
 
@@ -44,7 +44,7 @@ namespace ers::impl {
         Result<T> out = make_error("sync_wait did not finish");
 
         boost::asio::co_spawn(io, std::move(task), [&](std::exception_ptr error, Result<T> value) {
-            out = as_result<T>(error, std::move(value));
+            out = to_result<T>(error, std::move(value));
         });
 
         io.run();
@@ -80,8 +80,8 @@ namespace ers::impl {
 
 namespace ers {
     using impl::AsyncTask;
-    
-    using impl::as_result;
+
+    using impl::to_result;
     using impl::sync_wait;
 
     using impl::yield;
