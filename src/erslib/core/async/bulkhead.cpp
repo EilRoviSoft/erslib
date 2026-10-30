@@ -1,13 +1,13 @@
-#include "erslib/core/async/group.hpp"
+#include "erslib/core/async/bulkhead.hpp"
 
 #ifdef _HAS_BOOST_ASIO
 
 
-// GroupState ------------------------------------------------------------------
+// BulkheadState ---------------------------------------------------------------
 
 // Member functions
 
-ers::impl::GroupState::GroupState(size_t max_running, size_t max_waiting) :
+ers::impl::BulkheadState::BulkheadState(size_t max_running, size_t max_waiting) :
     _max_running(max_running),
     _max_waiting(max_waiting) {
 }
@@ -15,11 +15,11 @@ ers::impl::GroupState::GroupState(size_t max_running, size_t max_waiting) :
 
 // Accessors
 
-size_t ers::impl::GroupState::running() const {
+size_t ers::impl::BulkheadState::running() const {
     std::scoped_lock lock(_mutex);
     return _running;
 }
-size_t ers::impl::GroupState::waiting() const {
+size_t ers::impl::BulkheadState::waiting() const {
     std::scoped_lock lock(_mutex);
     return _waiting.size();
 }
@@ -27,7 +27,7 @@ size_t ers::impl::GroupState::waiting() const {
 
 // Modifiers
 
-ers::impl::GroupState::EAdmission ers::impl::GroupState::admit(launcher_t& launcher) {
+ers::impl::BulkheadState::EAdmission ers::impl::BulkheadState::admit(launcher_t& launcher) {
     std::scoped_lock lock(_mutex);
 
     if (_running < _max_running) {
@@ -43,7 +43,7 @@ ers::impl::GroupState::EAdmission ers::impl::GroupState::admit(launcher_t& launc
     return EAdmission::Rejected;
 }
 
-void ers::impl::GroupState::finish() {
+void ers::impl::BulkheadState::finish() {
     launcher_t next;
 
     {
@@ -61,7 +61,7 @@ void ers::impl::GroupState::finish() {
     next();
 }
 
-void ers::impl::GroupState::drop_waiting() {
+void ers::impl::BulkheadState::drop_waiting() {
     std::deque<launcher_t> dropped;
 
     std::scoped_lock lock(_mutex);
@@ -69,38 +69,38 @@ void ers::impl::GroupState::drop_waiting() {
 }
 
 
-// Group -----------------------------------------------------------------------
+// Bulkhead --------------------------------------------------------------------
 
 // Member functions
 
-ers::Group::Group(Scheduler& scheduler, options_t options) :
+ers::impl::Bulkhead::Bulkhead(Scheduler& scheduler, options_t options) :
     _scheduler(&scheduler),
     _options(options),
-    _state(std::make_shared<GroupState>(options.max_running, options.max_waiting)) {
+    _state(std::make_shared<BulkheadState>(options.max_running, options.max_waiting)) {
 }
 
-ers::Group::~Group() {
+ers::impl::Bulkhead::~Bulkhead() {
     clear();
 }
 
 
 // Accessors
 
-ers::Group::options_t ers::Group::options() const noexcept {
+ers::impl::Bulkhead::options_t ers::impl::Bulkhead::options() const noexcept {
     return _options;
 }
 
-size_t ers::Group::running() const {
+size_t ers::impl::Bulkhead::running() const {
     return _state->running();
 }
-size_t ers::Group::waiting() const {
+size_t ers::impl::Bulkhead::waiting() const {
     return _state->waiting();
 }
 
 
 // Modifiers
 
-void ers::Group::clear() {
+void ers::impl::Bulkhead::clear() {
     _state->drop_waiting();
 }
 

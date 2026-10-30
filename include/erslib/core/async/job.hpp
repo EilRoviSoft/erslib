@@ -16,13 +16,13 @@
 
 namespace ers::impl {
     template<typename T>
-    class Job {
+    class AsyncJob {
     public:
         // Member functions
 
-        Job() = default;
+        AsyncJob() = default;
 
-        explicit Job(std::future<Result<T>> future) noexcept :
+        explicit AsyncJob(std::future<Result<T>> future) noexcept :
             _future(std::move(future)) {
         }
 
@@ -53,11 +53,11 @@ namespace ers::impl {
 
         // Generators
 
-        static Job rejected_with(Diagnostic reason) {
+        static AsyncJob rejected_with(Diagnostic reason) {
             std::promise<Result<T>> promise;
             promise.set_value(Result<T>(std::move(reason)));
 
-            Job job(promise.get_future());
+            AsyncJob job(promise.get_future());
             job._rejected = true;
 
             return job;
@@ -74,7 +74,7 @@ namespace ers::impl {
 // Exports ---------------------------------------------------------------------
 
 namespace ers {
-    using impl::Job;
+    using impl::AsyncJob;
 }
 
 

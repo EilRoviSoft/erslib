@@ -23,36 +23,36 @@ namespace {
     };
 
 
-    ers::Task<int> add(int a, int b) {
+    ers::AsyncTask<int> add(int a, int b) {
         co_return a + b;
     }
 
-    ers::Task<int> chain() {
+    ers::AsyncTask<int> chain() {
         ERS_CO_TRY_AS(int x, co_await add(1, 2));
         ERS_CO_TRY_AS(int y, co_await add(x, 3));
         co_return y * 2;
     }
 
-    ers::Task<void> fail() {
+    ers::AsyncTask<void> fail() {
         co_return ers::make_error("boom {}", 7);
     }
 
-    ers::Task<int> propagates() {
+    ers::AsyncTask<int> propagates() {
         Guard guard;
         ERS_CO_TRY(co_await fail());
         co_return 1;
     }
 
-    ers::Task<int> throws() {
+    ers::AsyncTask<int> throws() {
         throw std::runtime_error("exception");
         co_return 0;
     }
 
-    ers::Task<void> nothing() {
+    ers::AsyncTask<void> nothing() {
         co_return ers::ok;
     }
 
-    ers::Task<int> posted() {
+    ers::AsyncTask<int> posted() {
         co_await boost::asio::post(co_await boost::asio::this_coro::executor, boost::asio::use_awaitable);
         co_return 5;
     }

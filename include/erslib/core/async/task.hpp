@@ -20,7 +20,7 @@
 
 namespace ers::impl {
     template<typename T>
-    using Task = boost::asio::awaitable<Result<T>>;
+    using AsyncTask = boost::asio::awaitable<Result<T>>;
 
 
     template<typename T>
@@ -31,15 +31,15 @@ namespace ers::impl {
         try {
             std::rethrow_exception(error);
         } catch (const std::exception& e) {
-            return make_error("Task threw an exception: {}", e.what());
+            return make_error("AsyncTask threw an exception: {}", e.what());
         } catch (...) {
-            return make_error("Task threw an unknown exception.");
+            return make_error("AsyncTask threw an unknown exception.");
         }
     }
 
 
     template<typename T>
-    Result<T> sync_wait(Task<T> task) {
+    Result<T> sync_wait(AsyncTask<T> task) {
         boost::asio::io_context io;
         Result<T> out = make_error("sync_wait did not finish");
 
@@ -78,7 +78,7 @@ namespace ers::impl {
 // Exports ---------------------------------------------------------------------
 
 namespace ers {
-    using impl::Task;
+    using impl::AsyncTask;
     
     using impl::as_result;
     using impl::sync_wait;

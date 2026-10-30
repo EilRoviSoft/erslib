@@ -46,20 +46,20 @@ namespace {
     }
 
 
-    ers::Task<int> answer() {
+    ers::AsyncTask<int> answer() {
         co_return 42;
     }
 
-    ers::Task<int> broken() {
+    ers::AsyncTask<int> broken() {
         co_return ers::make_error("boom");
     }
 
-    ers::Task<void> blocker(std::shared_future<void> gate) {
+    ers::AsyncTask<void> blocker(std::shared_future<void> gate) {
         gate.wait();
         co_return ers::ok;
     }
 
-    ers::Task<void> steps(char name) {
+    ers::AsyncTask<void> steps(char name) {
         auto executor = co_await asio::this_coro::executor;
 
         for (int i = 0; i < 3; ++i) {
@@ -70,18 +70,18 @@ namespace {
         co_return ers::ok;
     }
 
-    ers::Task<int> inner() {
+    ers::AsyncTask<int> inner() {
         auto executor = co_await asio::this_coro::executor;
         co_await asio::post(executor, asio::use_awaitable);
         co_return 7;
     }
 
-    ers::Task<int> outer() {
+    ers::AsyncTask<int> outer() {
         ERS_CO_TRY_AS(int value, co_await inner());
         co_return value + 1;
     }
 
-    ers::Task<int> forever() {
+    ers::AsyncTask<int> forever() {
         Guard guard;
         asio::steady_timer timer(co_await asio::this_coro::executor, 1h);
 
@@ -140,7 +140,7 @@ ERS_TEST_CASE("nested", "[async]") {
 
 ERS_TEST_CASE("jobs", "[async]") {
     ers::Scheduler scheduler({ .threads = 2 });
-    std::vector<ers::Job<int>> jobs;
+    std::vector<ers::AsyncJob<int>> jobs;
 
     for (int i = 0; i < 100; ++i)
         jobs.emplace_back(scheduler.spawn(outer()));
@@ -157,7 +157,7 @@ ERS_TEST_CASE("stop", "[async]") {
     destroyed = 0;
     started = 0;
 
-    ers::Job<int> job;
+    ers::AsyncJob<int> job;
 
     {
         ers::Scheduler scheduler({ .threads = 1 });
@@ -184,7 +184,7 @@ ERS_TEST_CASE("late", "[async]") {
 }
 
 ERS_TEST_CASE("drop", "[async]") {
-    ers::Job<int> job;
+    ers::AsyncJob<int> job;
 
     {
         ers::Scheduler scheduler({ .threads = 1 });
@@ -211,7 +211,7 @@ namespace {
     std::atomic peak = 0;
 
 
-    ers::Task<int> hop(ers::Scheduler& scheduler) {
+    ers::AsyncTask<int> hop(ers::Scheduler& scheduler) {
         threads.before = std::this_thread::get_id();
 
         ERS_CO_TRY_AS(int value, co_await scheduler.blocking([]() -> ers::Result<int> {
@@ -223,21 +223,21 @@ namespace {
         co_return value + 1;
     }
 
-    ers::Task<int> failing(ers::Scheduler& scheduler) {
+    ers::AsyncTask<int> failing(ers::Scheduler& scheduler) {
         ERS_CO_TRY_AS(int value, co_await scheduler.blocking([]() -> ers::Result<int> {
             return ers::make_error("db down");
         }));
         co_return value;
     }
 
-    ers::Task<int> throwing(ers::Scheduler& scheduler) {
+    ers::AsyncTask<int> throwing(ers::Scheduler& scheduler) {
         ERS_CO_TRY_AS(int value, co_await scheduler.blocking([]() -> ers::Result<int> {
             throw std::runtime_error("libpq");
         }));
         co_return value;
     }
 
-    ers::Task<int> waiting(ers::Scheduler& scheduler, std::shared_future<void> gate) {
+    ers::AsyncTask<int> waiting(ers::Scheduler& scheduler, std::shared_future<void> gate) {
         ERS_CO_TRY_AS(int value, co_await scheduler.blocking([gate]() -> ers::Result<int> {
             int now = ++running;
             int seen = peak.load();
@@ -250,7 +250,7 @@ namespace {
         co_return value;
     }
 
-    ers::Task<void> ticker(std::atomic<int>& count) {
+    ers::AsyncTask<void> ticker(std::atomic<int>& count) {
         for (int i = 0; i < 3; ++i) {
             ++count;
             co_await ers::yield();
@@ -304,7 +304,7 @@ ERS_TEST_CASE("cap", "[async]") {
 
     ers::Scheduler scheduler({ .threads = 1, .blocking_threads = 2 });
     test::Gate gate;
-    std::vector<ers::Job<int>> jobs;
+    std::vector<ers::AsyncJob<int>> jobs;
 
     REQUIRE(scheduler.options().capacity() == 3);
 

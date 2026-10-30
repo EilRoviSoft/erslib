@@ -100,25 +100,25 @@ namespace ers::impl {
         // Generators
 
         template<typename T>
-        Job<T> spawn(Task<T> task) {
+        AsyncJob<T> spawn(AsyncTask<T> task) {
             std::promise<Result<T>> promise;
             auto future = promise.get_future();
 
             if (_stopped)
-                return Job<T>::rejected_with(make_error("The scheduler is stopped."));
+                return AsyncJob<T>::rejected_with(make_error("The scheduler is stopped."));
 
             boost::asio::co_spawn(_pool, std::move(task), Completion<T>(std::move(promise)));
-            return Job<T>(std::move(future));
+            return AsyncJob<T>(std::move(future));
         }
 
 
         template<typename F>
-        auto blocking(F fn) -> Task<typename std::invoke_result_t<F&>::value_type> {
+        auto blocking(F fn) -> AsyncTask<typename std::invoke_result_t<F&>::value_type> {
             using value_type = typename std::invoke_result_t<F&>::value_type;
 
             auto [error, result] = co_await boost::asio::co_spawn(
                 _blocking_pool,
-                [](F fn) -> Task<value_type> { co_return fn(); }(std::move(fn)),
+                [](F fn) -> AsyncTask<value_type> { co_return fn(); }(std::move(fn)),
                 boost::asio::as_tuple(boost::asio::use_awaitable)
             );
 

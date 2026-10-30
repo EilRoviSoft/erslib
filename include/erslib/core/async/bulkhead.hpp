@@ -20,7 +20,7 @@
 // Details ---------------------------------------------------------------------
 
 namespace ers::impl {
-    class GroupState {
+    class BulkheadState {
     public:
         // Member types
 
@@ -35,7 +35,7 @@ namespace ers::impl {
 
         // Member functions
 
-        GroupState(size_t max_running, size_t max_waiting);
+        BulkheadState(size_t max_running, size_t max_waiting);
 
 
         // Observers
@@ -63,7 +63,7 @@ namespace ers::impl {
 
 
     template<typename T>
-    Task<T> guarded(std::shared_ptr<GroupState> state, Task<T> task) {
+    AsyncTask<T> guarded(std::shared_ptr<BulkheadState> state, AsyncTask<T> task) {
         Result<T> result;
         std::exception_ptr error;
 
@@ -82,9 +82,9 @@ namespace ers::impl {
     }
 
     template<typename T>
-    GroupState::launcher_t make_launcher(
+    BulkheadState::launcher_t make_launcher(
         boost::asio::thread_pool::executor_type executor,
-        Task<T> task,
+        AsyncTask<T> task,
         Completion<T> completion
     ) {
         return [executor, task = std::move(task), completion = std::move(completion)]() mutable {
@@ -97,7 +97,7 @@ namespace ers::impl {
 // Implementation --------------------------------------------------------------
 
 namespace ers::impl {
-    class Group {
+    class Bulkhead {
     public:
         // Member types
 
@@ -109,12 +109,12 @@ namespace ers::impl {
 
         // Member functions
 
-        Group(Scheduler& scheduler, options_t options);
+        Bulkhead(Scheduler& scheduler, options_t options);
 
-        Group(const Group&) = delete;
-        Group& operator=(const Group&) = delete;
+        Bulkhead(const Bulkhead&) = delete;
+        Bulkhead& operator=(const Bulkhead&) = delete;
 
-        ~Group();
+        ~Bulkhead();
 
 
         // Accessors
@@ -136,9 +136,9 @@ namespace ers::impl {
         // Generators
 
         template<typename T>
-        Job<T> spawn(Task<T> task) {
+        AsyncJob<T> spawn(AsyncTask<T> task) {
             if (_scheduler->stopped())
-                return Job<T>::rejected_with(make_error("The scheduler is stopped."));
+                return AsyncJob<T>::rejected_with(make_error("The scheduler is stopped."));
 
             std::promise<Result<T>> promise;
             auto future = promise.get_future();
@@ -150,25 +150,25 @@ namespace ers::impl {
             );
 
             switch (_state->admit(launcher)) {
-                case GroupState::EAdmission::Started:
+                case BulkheadState::EAdmission::Started:
                     launcher();
                     break;
 
-                case GroupState::EAdmission::Queued:
+                case BulkheadState::EAdmission::Queued:
                     break;
 
-                case GroupState::EAdmission::Rejected:
-                    return Job<T>::rejected_with(make_error("The group is full"));
+                case BulkheadState::EAdmission::Rejected:
+                    return AsyncJob<T>::rejected_with(make_error("The group is full"));
             }
 
-            return Job<T>(std::move(future));
+            return AsyncJob<T>(std::move(future));
         }
 
 
     private:
         Scheduler* _scheduler;
         const options_t _options;
-        std::shared_ptr<GroupState> _state;
+        std::shared_ptr<BulkheadState> _state;
     };
 }
 
@@ -176,7 +176,7 @@ namespace ers::impl {
 // Exports ---------------------------------------------------------------------
 
 namespace ers {
-    using impl::Group;
+    using impl::Bulkhead;
 }
 
 

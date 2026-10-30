@@ -119,7 +119,7 @@ target_sources(erslib_core
         "src/erslib/core/algorithm/split/regular.cpp"
         "src/erslib/core/algorithm/split/smart.cpp"
 
-		"src/erslib/core/async/group.cpp"
+		"src/erslib/core/async/bulkhead.cpp"
 		"src/erslib/core/async/scheduler.cpp"
 		"src/erslib/core/async/task.cpp"
 

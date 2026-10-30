@@ -16,7 +16,7 @@
 #include <boost/asio.hpp>
 
 // ers
-#include <erslib/core/async/group.hpp>
+#include <erslib/core/async/bulkhead.hpp>
 
 // test
 #include "support/gate.hpp"
@@ -51,7 +51,7 @@ namespace {
     }
 
 
-    ers::Task<int> holding(std::shared_future<void> gate, int id) {
+    ers::AsyncTask<int> holding(std::shared_future<void> gate, int id) {
         {
             std::scoped_lock lock(order_mutex);
             order += static_cast<char>('0' + id);
@@ -68,20 +68,20 @@ namespace {
         co_return id;
     }
 
-    ers::Task<int> failing() {
+    ers::AsyncTask<int> failing() {
         co_return ers::make_error("boom");
     }
 
-    ers::Task<int> throwing() {
+    ers::AsyncTask<int> throwing() {
         throw std::runtime_error("kaput");
         co_return 0;
     }
 
-    ers::Task<int> answer() {
+    ers::AsyncTask<int> answer() {
         co_return 42;
     }
 
-    ers::Task<int> forever() {
+    ers::AsyncTask<int> forever() {
         Guard guard;
         asio::steady_timer timer(co_await asio::this_coro::executor, 1h);
 
@@ -99,9 +99,9 @@ ERS_TEST_CASE("limit", "[async]") {
     reset();
 
     ers::Scheduler scheduler({ .threads = 2 });
-    ers::Group group(scheduler, { .max_running = 2, .max_waiting = 10 });
+    ers::Bulkhead group(scheduler, { .max_running = 2, .max_waiting = 10 });
     test::Gate gate;
-    std::vector<ers::Job<int>> jobs;
+    std::vector<ers::AsyncJob<int>> jobs;
 
     for (int i = 0; i < 6; ++i) {
         auto job = group.spawn(holding(gate.future(), i));
@@ -127,7 +127,7 @@ ERS_TEST_CASE("full", "[async]") {
     reset();
 
     ers::Scheduler scheduler({ .threads = 1 });
-    ers::Group group(scheduler, { .max_running = 1, .max_waiting = 1 });
+    ers::Bulkhead group(scheduler, { .max_running = 1, .max_waiting = 1 });
     test::Gate gate;
 
     auto first = group.spawn(holding(gate.future(), 0));
@@ -153,9 +153,9 @@ ERS_TEST_CASE("fifo", "[async]") {
     reset();
 
     ers::Scheduler scheduler({ .threads = 1 });
-    ers::Group group(scheduler, { .max_running = 1, .max_waiting = 10 });
+    ers::Bulkhead group(scheduler, { .max_running = 1, .max_waiting = 10 });
     test::Gate gate;
-    std::vector<ers::Job<int>> jobs;
+    std::vector<ers::AsyncJob<int>> jobs;
 
     for (int i = 0; i < 5; ++i)
         jobs.emplace_back(group.spawn(holding(gate.future(), i)));
@@ -172,7 +172,7 @@ ERS_TEST_CASE("stopped", "[async]") {
     ers::Scheduler scheduler({ .threads = 1 });
     scheduler.stop();
 
-    ers::Group group(scheduler, { .max_running = 1, .max_waiting = 1 });
+    ers::Bulkhead group(scheduler, { .max_running = 1, .max_waiting = 1 });
 
     REQUIRE(group.spawn(answer()).rejected());
 }
@@ -182,7 +182,7 @@ ERS_TEST_CASE("stopped", "[async]") {
 
 ERS_TEST_CASE("release", "[async]") {
     ers::Scheduler scheduler({ .threads = 2 });
-    ers::Group group(scheduler, { .max_running = 1, .max_waiting = 4 });
+    ers::Bulkhead group(scheduler, { .max_running = 1, .max_waiting = 4 });
 
     auto failed = group.spawn(failing());
     auto thrown = group.spawn(throwing());
@@ -207,21 +207,21 @@ ERS_TEST_CASE("release", "[async]") {
 ERS_TEST_CASE("teardown", "[async]") {
     reset();
 
-    ers::Job<int> active;
-    ers::Job<int> first;
-    ers::Job<int> second;
+    ers::AsyncJob<int> active;
+    ers::AsyncJob<int> first;
+    ers::AsyncJob<int> second;
 
     {
         ers::Scheduler scheduler({ .threads = 2 });
-        ers::Group group(scheduler, { .max_running = 1, .max_waiting = 4 });
+        ers::Bulkhead group(scheduler, { .max_running = 1, .max_waiting = 4 });
 
-        active = std::move(group.spawn(forever()));
+        active = group.spawn(forever());
 
         while (started < 1)
             std::this_thread::yield();
 
-        first = std::move(group.spawn(forever()));
-        second = std::move(group.spawn(forever()));
+        first = group.spawn(forever());
+        second = group.spawn(forever());
 
         REQUIRE(group.waiting() == 2);
     }
@@ -243,11 +243,11 @@ ERS_TEST_CASE("owner", "[async]") {
 
     ers::Scheduler scheduler({ .threads = 1 });
     test::Gate gate;
-    ers::Job<int> active;
-    ers::Job<int> queued;
+    ers::AsyncJob<int> active;
+    ers::AsyncJob<int> queued;
 
     {
-        ers::Group group(scheduler, { .max_running = 1, .max_waiting = 2 });
+        ers::Bulkhead group(scheduler, { .max_running = 1, .max_waiting = 2 });
 
         active = group.spawn(holding(gate.future(), 0));
         queued = group.spawn(holding(gate.future(), 1));
@@ -264,7 +264,7 @@ ERS_TEST_CASE("clear", "[async]") {
     reset();
 
     ers::Scheduler scheduler({ .threads = 1 });
-    ers::Group group(scheduler, { .max_running = 1, .max_waiting = 3 });
+    ers::Bulkhead group(scheduler, { .max_running = 1, .max_waiting = 3 });
     test::Gate gate;
 
     auto active = group.spawn(holding(gate.future(), 0));
