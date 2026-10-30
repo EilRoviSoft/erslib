@@ -32,7 +32,7 @@ namespace flux::impl {
         Expr operator()(Args&&... args) const {
             std::vector<Expr> items;
             items.reserve(sizeof...(Args));
-            (items.emplace_back(Expr(std::forward<Args>(args))), ...);
+            (items.push_back(Expr(std::forward<Args>(args))), ...);
 
             return make_fn(Name.to_sv(), std::move(items));
         }
@@ -47,7 +47,7 @@ namespace flux::impl::clauses {
     Expr sql(sql_text pattern, Args&&... args) {
         std::vector<Expr> items;
         items.reserve(sizeof...(Args));
-        (items.emplace_back(Expr(std::forward<Args>(args))), ...);
+        (items.push_back(Expr(std::forward<Args>(args))), ...);
 
         return make_raw(pattern, std::move(items));
     }

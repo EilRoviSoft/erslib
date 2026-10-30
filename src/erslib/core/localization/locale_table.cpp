@@ -57,7 +57,7 @@ namespace {
             auto name = entry.path().filename().string();
 
             if (entry.is_directory() && !is_hidden(entry.path()) && name != common_dir)
-                out.emplace_back(std::move(name));
+                out.push_back(std::move(name));
         }
 
         std::ranges::sort(out);
@@ -344,8 +344,8 @@ auto ers::impl::LocaleTable::reload(const fs::path& root) -> Result<reload_repor
         // step 3.1: nothing touched the domain
 
         if (existing && known != _fingerprints.end() && scan.fingerprint.same_metadata_as(known->second)) {
-            next.domains.emplace(name, std::move(existing));
-            next_fingerprints.emplace(name, known->second);
+            next.domains.try_emplace(name, std::move(existing));
+            next_fingerprints.try_emplace(name, known->second);
             report.kept++;
             continue;
         }
@@ -365,15 +365,15 @@ auto ers::impl::LocaleTable::reload(const fs::path& root) -> Result<reload_repor
             checksum = RapidHash<std::string_view> {}(file.relative, checksum);
             checksum = RapidHash<std::string_view> {}(text, checksum);
 
-            texts.emplace_back(std::move(text));
+            texts.push_back(std::move(text));
         }
 
 
         scan.fingerprint.checksum = checksum;
 
         if (existing && known != _fingerprints.end() && scan.fingerprint.same_content_as(known->second)) {
-            next.domains.emplace(name, std::move(existing));
-            next_fingerprints.emplace(name, std::move(scan.fingerprint));
+            next.domains.try_emplace(name, std::move(existing));
+            next_fingerprints.try_emplace(name, std::move(scan.fingerprint));
             report.kept++;
             continue;
         }
@@ -421,10 +421,10 @@ auto ers::impl::LocaleTable::reload(const fs::path& root) -> Result<reload_repor
             }
 
             // The old fingerprint stays, so the next reload checks the domain again.
-            next.domains.emplace(name, std::move(existing));
+            next.domains.try_emplace(name, std::move(existing));
 
             if (known != _fingerprints.end())
-                next_fingerprints.emplace(name, known->second);
+                next_fingerprints.try_emplace(name, known->second);
 
             report.rejected.push_back({
                 .domain = name,
@@ -435,16 +435,16 @@ auto ers::impl::LocaleTable::reload(const fs::path& root) -> Result<reload_repor
         }
 
 
-        next.domains.emplace(name, std::move(domain));
-        next_fingerprints.emplace(name, std::move(scan.fingerprint));
-        report.loaded.emplace_back(name);
+        next.domains.try_emplace(name, std::move(domain));
+        next_fingerprints.try_emplace(name, std::move(scan.fingerprint));
+        report.loaded.push_back(name);
     }
 
 
     if (previous) {
         for (const auto& name : previous->domains | std::views::keys) {
             if (!next.domains.contains(name))
-                report.removed.emplace_back(name);
+                report.removed.push_back(name);
         }
     }
 
@@ -611,7 +611,7 @@ std::vector<std::string> ers::impl::LocaleTable::missing() const {
 
             for (size_t id = 0; id < index->config->locales.size(); id++) {
                 if (id >= entry.localized.size() || !entry.localized[id]) {
-                    out.emplace_back(std::format("{}: {}/{}",
+                    out.push_back(std::format("{}: {}/{}",
                         index->config->locales[id], name, key));
                 }
             }

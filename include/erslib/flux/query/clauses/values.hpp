@@ -37,7 +37,7 @@ namespace flux::impl {
         Clause values(Args&&... args) {
             std::vector<Expr> items;
             items.reserve(sizeof...(Args));
-            (items.emplace_back(Expr(std::forward<Args>(args))), ...);
+            (items.push_back(Expr(std::forward<Args>(args))), ...);
             return make_clause<ValuesClause>(std::move(items));
         }
     }

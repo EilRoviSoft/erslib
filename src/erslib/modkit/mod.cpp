@@ -125,9 +125,9 @@ void ers::modkit::impl::Mod::init_content(const std::function<bool(std::string_v
         // and be available later as include.
 
         if (stage_filter(stem))
-            content.stages.emplace(stem, ers::util::read_file(it));
+            content.stages.try_emplace(stem, ers::util::read_file(it));
         else
-            content.packages.emplace(path_to_package_name(fs::relative(it, m_dir)), ers::util::read_file(it));
+            content.packages.try_emplace(path_to_package_name(fs::relative(it, m_dir)), ers::util::read_file(it));
     }
 
     m_content = std::make_unique<content_type>(std::move(content));
@@ -212,7 +212,7 @@ std::function<sol::object(sol::this_state, std::string_view)> ers::modkit::impl:
             return sol::nil;
         }
 
-        runtime.modules_cache.emplace(package_name, sol::make_object(lua, true));
+        runtime.modules_cache.try_emplace(package_name, sol::make_object(lua, true));
 
 
         auto lr = lua.load(package_it->second, std::format("{}:{}", m_identity.name, package_name));

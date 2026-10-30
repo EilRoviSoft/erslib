@@ -26,7 +26,7 @@ namespace flux::impl::crud {
         parts.reserve(sizeof...(Keys));
 
         [&]<std::size_t... I>(std::index_sequence<I...>) {
-            (parts.emplace_back(TypedColumn<reflect::pk_members<T>[I]> {} == std::forward<Keys>(keys)), ...);
+            (parts.push_back(TypedColumn<reflect::pk_members<T>[I]> {} == std::forward<Keys>(keys)), ...);
         }(std::index_sequence_for<Keys...> {});
 
         return all_of(std::move(parts));
@@ -41,7 +41,7 @@ namespace flux::impl::crud {
         parts.reserve(reflect::pk_members<T>.size());
 
         template for (constexpr auto m : reflect::pk_members<T>)
-            parts.emplace_back(TypedColumn<m> {} == what.[:m:]);
+            parts.push_back(TypedColumn<m> {} == what.[:m:]);
 
         return all_of(std::move(parts));
     }

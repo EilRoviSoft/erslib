@@ -36,7 +36,7 @@ ers::impl::BulkheadState::EAdmission ers::impl::BulkheadState::admit(launcher_t&
     }
 
     if (_waiting.size() < _max_waiting) {
-        _waiting.emplace_back(std::move(launcher));
+        _waiting.push_back(std::move(launcher));
         return EAdmission::Queued;
     }
 

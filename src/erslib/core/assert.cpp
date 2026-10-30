@@ -32,11 +32,11 @@ namespace ers::impl {
 
             auto iteration = [&]<typename T>(T&& what) {
                 if constexpr (std::is_reference_v<T>) {
-                    enabled.emplace_back(&what);
+                    enabled.push_back(&what);
                 } else {
                     auto ptr = std::make_unique<std::ostream>(std::forward<T>(what));
                     auto ref = m_allocated.emplace_back(std::move(ptr));
-                    enabled.emplace_back(&ref);
+                    enabled.push_back(&ref);
                 }
             };
 

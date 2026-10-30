@@ -20,7 +20,7 @@ ers::Status ers::luaschema::impl::InclusiveWithProperty::exec([[maybe_unused]] v
 
     for (const auto& it : _mandatory_fields) {
         if (!table.get<std::optional<sol::object>>(it))
-            absent.emplace_back(it);
+            absent.push_back(it);
     }
 
 

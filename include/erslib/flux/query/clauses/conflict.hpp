@@ -50,7 +50,7 @@ namespace flux::impl::clauses {
     auto on_conflict(Args&&... args) {
         std::vector<Clause> out;
         out.reserve(sizeof...(Args));
-        (out.emplace_back(identifier(&slots::conflict, std::forward<Args>(args))), ...);
+        (out.push_back(identifier(&slots::conflict, std::forward<Args>(args))), ...);
         return out;
     }
 
@@ -63,7 +63,7 @@ namespace flux::impl::clauses {
             out.reserve(std::ranges::size(names));
 
         for (auto&& it : names)
-            out.emplace_back(identifier(&slots::conflict, std::string(std::forward<decltype(it)>(it))));
+            out.push_back(identifier(&slots::conflict, std::string(std::forward<decltype(it)>(it))));
 
         return out;
     }
@@ -83,7 +83,7 @@ namespace flux::impl::clauses {
             out.reserve(std::ranges::size(names));
 
         for (auto&& it : names)
-            out.emplace_back(std::string(std::forward<decltype(it)>(it)));
+            out.push_back(std::string(std::forward<decltype(it)>(it)));
 
         return make_clause<ConflictUpdateClause>(std::move(out));
     }
@@ -93,7 +93,7 @@ namespace flux::impl::clauses {
     Clause do_update(Args&&... args) {
         std::vector<std::string> out;
         out.reserve(sizeof...(Args));
-        (out.emplace_back(std::forward<Args>(args)), ...);
+        (out.push_back(std::forward<Args>(args)), ...);
         return make_clause<ConflictUpdateClause>(std::move(out));
     }
 }

@@ -116,11 +116,11 @@ ERS_TEST_CASE("concurrent", "[core][thread_safe][concurrency][slow]") {
     std::vector<std::thread> threads;
 
     for (size_t w = 0; w < workers; w++) {
-        threads.emplace_back([&, w] {
+        threads.push_back([&, w] {
             seen[w].reserve(rounds);
 
             for (size_t i = 0; i < rounds; i++)
-                seen[w].emplace_back(seeds.acquire("hot"));
+                seen[w].push_back(seeds.acquire("hot"));
         });
     }
 

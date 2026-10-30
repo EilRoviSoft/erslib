@@ -22,7 +22,7 @@ std::string flux::impl::Context::bind_once(const void* key, const binder_t& bind
         return it->second;
 
     auto result = bind(binder);
-    bound.emplace(key, result);
+    bound.try_emplace(key, result);
 
     return result;
 }

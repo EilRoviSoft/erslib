@@ -46,7 +46,7 @@ ers::impl::RateLimiter::decision_t ers::impl::RateLimiter::try_acquire(std::stri
         if (!_make_room(now))
             return { .allowed = false, .remaining = 0, .retry_after = _next_sweep - now };
 
-        it = _data.emplace(key, now).first;
+        it = _data.try_emplace(key, now).first;
     }
 
 
@@ -107,7 +107,7 @@ bool ers::impl::RateLimiter::_make_room(time_point now) {
 
         for (const auto& arrival : _data | std::views::values) {
             if (!_is_blocked(arrival, now))
-                evictable.emplace_back(arrival);
+                evictable.push_back(arrival);
         }
 
         if (!evictable.empty()) {

@@ -258,7 +258,7 @@ namespace utl::impl::json_detail {
 
             while (true) {
                 _skip_whitespace();
-                array.emplace_back(_parse_value());
+                array.push_back(_parse_value());
 
                 _skip_whitespace();
                 if (_at(']')) {

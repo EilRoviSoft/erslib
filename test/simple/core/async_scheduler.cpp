@@ -143,7 +143,7 @@ ERS_TEST_CASE("jobs", "[async]") {
     std::vector<ers::AsyncJob<int>> jobs;
 
     for (int i = 0; i < 100; ++i)
-        jobs.emplace_back(scheduler.spawn(outer()));
+        jobs.push_back(scheduler.spawn(outer()));
 
     for (auto& job : jobs) {
         auto result = job.get();
@@ -309,7 +309,7 @@ ERS_TEST_CASE("cap", "[async]") {
     REQUIRE(scheduler.options().capacity() == 3);
 
     for (int i = 0; i < 3; ++i)
-        jobs.emplace_back(scheduler.spawn(waiting(scheduler, gate.future())));
+        jobs.push_back(scheduler.spawn(waiting(scheduler, gate.future())));
 
     gate.open();
 

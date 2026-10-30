@@ -21,9 +21,10 @@ namespace flux::impl::reflect {
         template for (constexpr auto it : declaration_list<T>) {
             using entry = entry_type<it>;
 
-            if constexpr (EntryOf<entry, kinds::EPk>)
+            if constexpr (EntryOf<entry, kinds::EPk>) {
                 for (const std::string_view name : entry_traits<entry>::columns)
-                    out.emplace_back(std::define_static_string(name));
+                    out.push_back(std::define_static_string(name));
+            }
         }
 
         return std::define_static_array(out);
@@ -40,7 +41,7 @@ namespace flux::impl::reflect {
         for (const std::string_view name : primary_key<T>) {
             template for (constexpr auto m : column_list<T>) {
                 if (column_name<m> == name)
-                    out.emplace_back(m);
+                    out.push_back(m);
             }
         }
 

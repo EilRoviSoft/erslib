@@ -15,7 +15,7 @@ std::vector<flux::impl::Expr> flux::impl::to_exprs(std::vector<ColumnExpr> items
     out.reserve(items.size());
 
     for (auto& it : items)
-        out.emplace_back(std::move(it.expr));
+        out.push_back(std::move(it.expr));
 
     return out;
 }

@@ -27,8 +27,8 @@ namespace flux::impl::crud {
         std::vector<Expr> values;
 
         template for (constexpr auto m : reflect::insert_members<T>) {
-            columns.emplace_back(clauses::column(std::string(reflect::column_name<m>)));
-            values.emplace_back(Expr(what.[:m:]));
+            columns.push_back(clauses::column(std::string(reflect::column_name<m>)));
+            values.push_back(Expr(what.[:m:]));
         }
 
         return layouts::insert_into(table_of<T>())

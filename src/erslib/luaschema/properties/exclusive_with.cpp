@@ -20,7 +20,7 @@ ers::Status ers::luaschema::impl::ExclusiveWithProperty::exec([[maybe_unused]] v
 
     for (const auto& it : _incompatible_fields) {
         if (table.get<std::optional<sol::object>>(it))
-            intersection.emplace_back(it);
+            intersection.push_back(it);
     }
 
 

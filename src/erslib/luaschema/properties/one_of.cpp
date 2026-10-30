@@ -18,7 +18,7 @@ ers::Status ers::luaschema::impl::OneOfProperty::verify(sol::table table) const 
     present.reserve(_names.size());
     for (const auto& n : _names) {
         if (table.get<std::optional<sol::object>>(n))
-            present.emplace_back(n);
+            present.push_back(n);
     }
 
     if (present.size() > 1) {

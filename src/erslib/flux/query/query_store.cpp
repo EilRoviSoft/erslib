@@ -58,5 +58,5 @@ size_t flux::impl::QueryStore::load_directory(const fs::path& root) {
 
 void flux::impl::QueryStore::add(std::string_view label, std::string_view query) {
     std::unique_lock lock(m_mutex);
-    m_data.emplace(label, query);
+    m_data.try_emplace(label, query);
 }

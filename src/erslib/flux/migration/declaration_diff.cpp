@@ -27,7 +27,7 @@ namespace {
 
     void append_marked(std::vector<std::string>& out, char mark, std::span<const std::string_view> lines) {
         for (const auto it : lines) {
-            out.emplace_back(std::format("{} {}",
+            out.push_back(std::format("{} {}",
                 mark, it));
         }
     }

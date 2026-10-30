@@ -50,7 +50,7 @@ namespace flux::impl::reflect {
             using entry = entry_type<it>;
 
             if constexpr (TableConstraint<entry>) {
-                out.emplace_back(entry_traits<entry>::ddl({
+                out.push_back(entry_traits<entry>::ddl({
                     .name = std::define_static_string(std::meta::identifier_of(it)),
                     .schema = schema_name<T>
                 }));

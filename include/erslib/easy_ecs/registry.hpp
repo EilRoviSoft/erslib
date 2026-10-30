@@ -30,7 +30,7 @@ namespace ecs::impl {
         template<ComponentTag... Tags>
         size_t add_group() {
             size_t key = TGroup<Tags...>::get_id();
-            m_groups.emplace(key, std::make_unique<TGroup<Tags...>>());
+            m_groups.try_emplace(key, std::make_unique<TGroup<Tags...>>());
             return key;
         }
 

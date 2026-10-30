@@ -97,7 +97,7 @@ flux::impl::Expr flux::impl::make_logical(bool conjunction, Expr lhs, Expr rhs) 
         if (logical && logical->conjunction() == conjunction)
             items.append_range(logical->items());
         else
-            items.emplace_back(std::move(*side));
+            items.push_back(std::move(*side));
     }
 
     return make_expr<nodes::LogicalNode>(conjunction, std::move(items));

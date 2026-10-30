@@ -20,7 +20,7 @@ namespace {
         std::vector<std::string_view> result;
 
         for (auto it : TSplit(input))
-            result.emplace_back(it);
+            result.push_back(it);
 
         return result;
     }
@@ -31,7 +31,7 @@ namespace {
         std::vector<std::string_view> result;
 
         result.reserve(sizeof...(args));
-        (result.emplace_back(std::forward<TArgs>(args)), ...);
+        (result.push_back(std::forward<TArgs>(args)), ...);
 
         return result;
     }

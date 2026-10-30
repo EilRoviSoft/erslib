@@ -83,7 +83,7 @@ namespace ers::impl::thread_safe {
         template<typename T>
         bool set(const T& k, mapped_type v = mapped_type()) {
             std::unique_lock lock(this->m_mutex);
-            auto [_, flag] = this->m_data.emplace(k, std::move(v));
+            auto [_, flag] = this->m_data.try_emplace(k, std::move(v));
             return flag;
         }
         template<typename T>

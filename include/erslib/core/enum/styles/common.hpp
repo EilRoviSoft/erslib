@@ -19,12 +19,12 @@ namespace ers::impl {
 
             if (pos == std::string_view::npos) {
                 if (start < sv.size())
-                    result.emplace_back(sv.substr(start));
+                    result.push_back(sv.substr(start));
                 break;
             }
 
             if (pos > start)
-                result.emplace_back(sv.substr(start, pos - start));
+                result.push_back(sv.substr(start, pos - start));
             start = pos + 1;
         }
 
@@ -59,12 +59,12 @@ namespace ers::impl {
             bool prev_digit = is_digit(sv[i - 1]);
 
             if (cur_upper && (prev_lower || prev_digit)) {
-                words.emplace_back(sv.substr(word_start, i - word_start));
+                words.push_back(sv.substr(word_start, i - word_start));
                 word_start = i;
             }
         }
 
-        words.emplace_back(sv.substr(word_start));
+        words.push_back(sv.substr(word_start));
         return words;
     }
 }

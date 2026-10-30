@@ -36,7 +36,7 @@ namespace flux::impl::reflect {
                 continue;
 
             if (std::meta::is_complete_type(std::meta::substitute(^^Declaration, { it })))
-                out.emplace_back(it);
+                out.push_back(it);
         }
     }
 
@@ -100,7 +100,7 @@ namespace flux::impl::reflect {
 
             if constexpr (Entity<T>) {
                 if constexpr (std::is_same_v<schema_of<T>, S>) {
-                    nodes.emplace_back(it);
+                    nodes.push_back(it);
                     names.emplace_back(qualified_name<T>);
 
                     auto& deps = refs.emplace_back();
@@ -146,7 +146,7 @@ namespace flux::impl::reflect {
                     return fail("foreign key in '" + names[i] + "' references unknown table '" + ref + "'.");
 
                 pending[i]++;
-                dependants[j].emplace_back(i);
+                dependants[j].push_back(i);
             }
         }
 
@@ -176,7 +176,7 @@ namespace flux::impl::reflect {
             }
 
             done[next] = true;
-            order.emplace_back(nodes[next]);
+            order.push_back(nodes[next]);
 
             for (const size_t it : dependants[next])
                 pending[it]--;

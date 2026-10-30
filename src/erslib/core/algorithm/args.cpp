@@ -73,7 +73,7 @@ ers::Result<std::vector<std::string>> ers::impl::split_args(std::string_view lin
 
 
         if (started) {
-            out.emplace_back(std::move(token));
+            out.push_back(std::move(token));
             token.clear();
             started = false;
         }
@@ -83,7 +83,7 @@ ers::Result<std::vector<std::string>> ers::impl::split_args(std::string_view lin
         return make_error("Unterminated {} quote.", quote == '"' ? "double" : "single");
 
     if (started)
-        out.emplace_back(std::move(token));
+        out.push_back(std::move(token));
 
     return out;
 }

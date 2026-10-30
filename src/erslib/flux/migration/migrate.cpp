@@ -73,7 +73,7 @@ namespace {
             if (!loaded)
                 return loaded.error();
 
-            out.emplace_back(std::move(*loaded));
+            out.push_back(std::move(*loaded));
         }
 
         return out;
@@ -114,7 +114,7 @@ namespace {
             const auto rows = _tx.exec(service_query<"applied">(), pqxx::params { schema });
 
             for (const auto row : rows)
-                out.emplace(row[0].as<std::string>(), std::bit_cast<u64>(row[1].as<i64>()));
+                out.try_emplace(row[0].as<std::string>(), std::bit_cast<u64>(row[1].as<i64>()));
 
             return out;
         }
@@ -127,7 +127,7 @@ namespace {
             );
 
             for (const auto row : rows) {
-                out.emplace(row[0].as<std::string>(), flux::impl::recorded_table_t {
+                out.try_emplace(row[0].as<std::string>(), flux::impl::recorded_table_t {
                     .format = row[1].as<u32>(),
                     .hash   = std::bit_cast<u64>(row[2].as<i64>()),
                     .text   = row[3].as<std::string>(),

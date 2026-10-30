@@ -39,7 +39,7 @@ namespace flux::impl {
         Clause raw(SlotRef slot, std::string sql, Args&&... args) {
             std::vector<binder_t> binders;
             binders.reserve(sizeof...(Args));
-            (binders.emplace_back(make_binder(std::forward<Args>(args))), ...);
+            (binders.push_back(make_binder(std::forward<Args>(args))), ...);
             return make_clause<RawClause>(slot, std::move(sql), std::move(binders));
         }
     }

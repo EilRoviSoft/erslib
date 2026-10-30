@@ -71,7 +71,7 @@ ers::Status flux::impl::Layout::append(SlotBinding binding) {
     if (auto s = _check_insertable(binding.slot); !s)
         return s;
 
-    _materialize().emplace_back(binding);
+    _materialize().push_back(binding);
     return ers::ok;
 }
 

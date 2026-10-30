@@ -29,7 +29,7 @@ i64 ers::impl::ShuffleSeeds::acquire(std::string_view session, timestamp_t now) 
     boost::upgrade_to_unique_lock write_lock(read_lock);
 
     if (it == _data.end()) {
-        return _data.emplace(session, expiring_t(_mint(), now, _lifetime))
+        return _data.try_emplace(session, expiring_t(_mint(), now, _lifetime))
             .first->second.value;
     }
 
@@ -50,7 +50,7 @@ i64 ers::impl::ShuffleSeeds::rotate(std::string_view session, timestamp_t now) {
 
     auto it = _data.find(session);
     if (it == _data.end()) {
-        return _data.emplace(session, expiring_t(_mint(), now, _lifetime))
+        return _data.try_emplace(session, expiring_t(_mint(), now, _lifetime))
             .first->second.value;
     }
 

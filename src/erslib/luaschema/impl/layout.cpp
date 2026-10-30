@@ -25,7 +25,7 @@ void ers::luaschema::impl::Layout::add_field(Field field) {
 }
 
 void ers::luaschema::impl::Layout::add_property(Descriptor property) {
-    _descriptors.emplace_back(std::move(property));
+    _descriptors.push_back(std::move(property));
 }
 
 

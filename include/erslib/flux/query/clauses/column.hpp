@@ -54,7 +54,7 @@ namespace flux::impl {
     std::vector<Clause> make_columns(SlotRef slot, Args&&... args) {
         std::vector<Clause> out;
         out.reserve(sizeof...(Args));
-        (out.emplace_back(make_column(slot, std::forward<Args>(args))), ...);
+        (out.push_back(make_column(slot, std::forward<Args>(args))), ...);
         return out;
     }
 
@@ -66,7 +66,7 @@ namespace flux::impl {
             out.reserve(std::ranges::size(names));
 
         for (auto&& it : names)
-            out.emplace_back(make_column(slot, std::string(std::forward<decltype(it)>(it))));
+            out.push_back(make_column(slot, std::string(std::forward<decltype(it)>(it))));
 
         return out;
     }

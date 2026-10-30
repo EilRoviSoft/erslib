@@ -171,7 +171,7 @@ void ers::impl::Domain::_seal() {
     _sorted_keys.reserve(_entries.size());
 
     for (const auto& key : _entries | std::views::keys)
-        _sorted_keys.emplace_back(key);
+        _sorted_keys.push_back(key);
 
     std::ranges::sort(_sorted_keys, segment_less);
 }
@@ -182,7 +182,7 @@ ers::Status ers::impl::Domain::_resolve_references(const reference_options_t& op
     keys.reserve(_entries.size());
 
     for (const auto& key : _entries | std::views::keys)
-        keys.emplace_back(key);
+        keys.push_back(key);
 
     std::ranges::sort(keys);
 

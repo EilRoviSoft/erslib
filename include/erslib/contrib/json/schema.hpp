@@ -62,7 +62,7 @@ namespace utl::impl {
 
             if (const auto* node = _typed<json_type>(name, true)) {
                 if (auto r = writer(node->template as<json_type>()); r) {
-                    m_moves.emplace_back([&out, value = std::move(*r)] mutable {
+                    m_moves.push_back([&out, value = std::move(*r)] mutable {
                         out = std::move(value);
                     });
                 } else
@@ -169,7 +169,7 @@ namespace utl::impl {
                 return;
             }
 
-            m_moves.emplace_back([&out, value = std::move(value)] mutable {
+            m_moves.push_back([&out, value = std::move(value)] mutable {
                 out = std::move(value);
             });
         }

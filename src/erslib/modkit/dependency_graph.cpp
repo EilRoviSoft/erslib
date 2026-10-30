@@ -21,7 +21,7 @@ std::vector<std::string> ers::modkit::impl::resolve_mods_order(const ModContaine
 
     for (const auto& mod : mods) {
         outgoing.try_emplace(mod.name());
-        indegree.emplace(mod.name(), 0);
+        indegree.try_emplace(mod.name(), 0);
     }
 
 
@@ -86,7 +86,7 @@ std::vector<std::string> ers::modkit::impl::resolve_mods_order(const ModContaine
         if (degree != 0 || queued.contains(name))
             continue;
 
-        ready.emplace_back(name);
+        ready.push_back(name);
         queued.emplace(name);
     }
 
@@ -102,7 +102,7 @@ std::vector<std::string> ers::modkit::impl::resolve_mods_order(const ModContaine
         auto current = std::move(ready.front());
         ready.pop_front();
 
-        mods_order.emplace_back(current);
+        mods_order.push_back(current);
         visited_count++;
 
         for (const auto& dependent : outgoing.at(current)) {
@@ -116,7 +116,7 @@ std::vector<std::string> ers::modkit::impl::resolve_mods_order(const ModContaine
             if (it->second != 0 || queued.contains(dependent))
                 continue;
 
-            ready.emplace_back(dependent);
+            ready.push_back(dependent);
             queued.emplace(dependent);
         }
     }

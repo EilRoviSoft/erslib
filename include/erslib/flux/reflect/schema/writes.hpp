@@ -85,7 +85,7 @@ namespace flux::impl::reflect {
 
         template for (constexpr auto m : column_list<T>) {
             if constexpr (!is_identity_column<T, m> && !is_read_only_column<T, m>)
-                out.emplace_back(m);
+                out.push_back(m);
         }
 
         return out;
@@ -97,7 +97,7 @@ namespace flux::impl::reflect {
 
         template for (constexpr auto m : column_list<T>) {
             if constexpr (!is_identity_column<T, m> && !is_read_only_column<T, m> && !is_pk_column<T, m>)
-                out.emplace_back(m);
+                out.push_back(m);
         }
 
         return out;

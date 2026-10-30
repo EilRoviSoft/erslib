@@ -61,7 +61,7 @@ namespace {
                     .hash  = hash,
                 });
             } else if (std::regex_match(body, parsed, drop_directive)) {
-                out.drops.emplace_back(parsed[1].str());
+                out.drops.push_back(parsed[1].str());
             } else {
                 return ers::make_error("'{}': unknown directive '{}'.",
                     out.id, ers::util::trim(body));
@@ -139,7 +139,7 @@ ers::Result<flux::impl::migration_set_t> flux::impl::load_migrations(const fs::p
 
 
         auto& bucket = migration.version ? out.versioned : out.repeatable;
-        bucket.emplace_back(std::move(migration));
+        bucket.push_back(std::move(migration));
     }
 
 

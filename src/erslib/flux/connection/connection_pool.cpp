@@ -61,7 +61,7 @@ void flux::impl::ConnectionPool::maintain() {
         if (_is_stale(entry, now) && _all.size() > _pool_opts.min_size)
             _discard(entry.conn);
         else
-            kept.emplace_back(entry);
+            kept.push_back(entry);
     }
 
     _idle = std::move(kept);
@@ -113,7 +113,7 @@ ers::Result<pqxx::connection*> flux::impl::ConnectionPool::_spawn() {
         conn->trace(_trace_file.get());
 
     auto raw = conn.get();
-    _all.emplace_back(std::move(conn));
+    _all.push_back(std::move(conn));
     return raw;
 }
 

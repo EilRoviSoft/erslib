@@ -16,7 +16,7 @@
 
 size_t ecs::impl::Registry::track_entity(IEntity& entity) {
     size_t id = ers::RapidHash<std::string_view> {}(entity.name());
-    m_entities.emplace(id, &entity);
+    m_entities.try_emplace(id, &entity);
     return id;
 }
 

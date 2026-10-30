@@ -16,7 +16,7 @@ namespace flux::impl::clauses {
         std::vector<Clause> out;
 
         if (condition)
-            out.emplace_back(std::move(clause));
+            out.push_back(std::move(clause));
 
         return out;
     }
@@ -42,7 +42,7 @@ namespace flux::impl::clauses {
             return std::forward<Fn>(make)();
         } else {
             std::vector<Clause> out;
-            out.emplace_back(std::forward<Fn>(make)());
+            out.push_back(std::forward<Fn>(make)());
             return out;
         }
     }

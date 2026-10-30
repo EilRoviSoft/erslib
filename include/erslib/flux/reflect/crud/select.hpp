@@ -23,7 +23,7 @@ namespace flux::impl::crud {
 
         template for (constexpr auto m : reflect::column_list<As>) {
             static_assert(reflect::has_column<T>(reflect::column_name<m>), "A column of the projection isn't a column of the entity.");
-            columns.emplace_back(clauses::column(std::string(reflect::column_name<m>)));
+            columns.push_back(clauses::column(std::string(reflect::column_name<m>)));
         }
 
         QueryBuilder out = layouts::select_from(table_of<T>()) | std::move(columns);

@@ -25,7 +25,7 @@ size_t ers::impl::JobTracker::active() const {
 
 void ers::impl::JobTracker::enter(const JobControlPtr& control) {
     std::scoped_lock lock(_mutex);
-    _jobs.emplace(control.get(), control);
+    _jobs.try_emplace(control.get(), control);
 }
 
 void ers::impl::JobTracker::leave(const JobControl* control) {
@@ -45,7 +45,7 @@ size_t ers::impl::JobTracker::cancel_all() {
 
         for (auto& weak : _jobs | std::views::values) {
             if (auto job = weak.lock())
-                jobs.emplace_back(std::move(job));
+                jobs.push_back(std::move(job));
         }
     }
 

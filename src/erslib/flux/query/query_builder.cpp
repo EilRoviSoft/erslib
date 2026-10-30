@@ -19,7 +19,7 @@ void flux::impl::QueryBuilder::add(Clause clause) {
         });
     }
 
-    _clauses.emplace_back(std::move(clause));
+    _clauses.push_back(std::move(clause));
 }
 
 void flux::impl::QueryBuilder::add(std::vector<Clause> clauses) {
@@ -28,11 +28,11 @@ void flux::impl::QueryBuilder::add(std::vector<Clause> clauses) {
 }
 
 void flux::impl::QueryBuilder::add(WithCte with_cte) {
-    _ctes.emplace_back(std::move(with_cte));
+    _ctes.push_back(std::move(with_cte));
 }
 
 void flux::impl::QueryBuilder::add(WithUnion with_union) {
-    _unions.emplace_back(std::move(with_union));
+    _unions.push_back(std::move(with_union));
 }
 
 
@@ -113,7 +113,7 @@ ers::Status flux::impl::QueryBuilder::_render_custom(Context& ctx, const SlotBin
 
     for (const auto& it : _clauses) {
         if (same_slot(it->slot(), binding.slot))
-            group.emplace_back(&it);
+            group.push_back(&it);
     }
 
     if (group.empty()) {

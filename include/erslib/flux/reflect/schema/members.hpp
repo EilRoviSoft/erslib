@@ -19,10 +19,10 @@ namespace flux::impl::reflect {
             stack.pop_back();
 
             for (const auto member : std::meta::nonstatic_data_members_of(current, std::meta::access_context::current()))
-                out.emplace_back(member);
+                out.push_back(member);
 
             for (const auto base : std::meta::bases_of(current, std::meta::access_context::current()))
-                stack.emplace_back(std::meta::type_of(base));
+                stack.push_back(std::meta::type_of(base));
         }
 
         return out;
@@ -58,7 +58,7 @@ namespace flux::impl::reflect {
 
         for (const auto it : all_members<T>()) {
             if (!is_skipped(it))
-                out.emplace_back(it);
+                out.push_back(it);
         }
 
         return out;

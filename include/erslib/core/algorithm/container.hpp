@@ -21,7 +21,7 @@ namespace ers::impl {
         sorted_items.reserve(std::ranges::distance(range));
 
         for (auto it = std::ranges::begin(range); it != std::ranges::end(range); it++)
-            sorted_items.emplace_back(it);
+            sorted_items.push_back(it);
 
         std::ranges::sort(sorted_items, Compare{}, [](auto it) { return it->second; });
 

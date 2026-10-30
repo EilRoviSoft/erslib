@@ -35,7 +35,7 @@ struct Tuple {
     consteval {
     std::vector<std::meta::info> member_specs;
     template for (int i {}; auto type : { ^^Ts... }) {
-        member_specs.emplace_back(data_member_spec(type, {
+        member_specs.push_back(data_member_spec(type, {
             .name = names[i]
         }));
         ++i;

@@ -66,7 +66,7 @@ namespace flux::impl::crud {
             std::vector<std::meta::info> specs;
 
             for (const auto m : reflect::column_list<T>) {
-                specs.emplace_back(std::meta::data_member_spec(
+                specs.push_back(std::meta::data_member_spec(
                     std::meta::substitute(^^TypedColumn, { std::meta::reflect_constant(m) }),
                     { .name = std::meta::identifier_of(m) }
                 ));

@@ -34,7 +34,7 @@ namespace flux::impl::crud {
         std::vector<Clause> sets;
 
         template for (constexpr auto m : reflect::update_members<T>)
-            sets.emplace_back(clauses::assign(std::string(reflect::column_name<m>), Expr(what.[:m:])));
+            sets.push_back(clauses::assign(std::string(reflect::column_name<m>), Expr(what.[:m:])));
 
         return scoped<T>(layouts::update(table_of<T>()) | std::move(sets) | clauses::where(where_pk(what)));
     }
@@ -76,7 +76,7 @@ namespace flux::impl::crud {
 
         std::vector<Clause> sets;
         template for (constexpr auto m : { Ms... })
-            sets.emplace_back(clauses::assign(std::string(reflect::column_name<m>), Expr(what.[:m:])));
+            sets.push_back(clauses::assign(std::string(reflect::column_name<m>), Expr(what.[:m:])));
 
         return scoped<T>(layouts::update(table_of<T>()) | std::move(sets) | clauses::where(where_pk(what)));
     }
@@ -87,7 +87,7 @@ namespace flux::impl::crud {
 
         template for (constexpr auto m : reflect::update_members<T>) {
             if (const auto it = std::ranges::find(only_names.names, reflect::column_name<m>); it != only_names.names.end()) {
-                sets.emplace_back(clauses::assign(std::string(reflect::column_name<m>), Expr(what.[:m:])));
+                sets.push_back(clauses::assign(std::string(reflect::column_name<m>), Expr(what.[:m:])));
                 only_names.names.erase(it);
             }
         }

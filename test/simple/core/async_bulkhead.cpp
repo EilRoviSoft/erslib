@@ -107,7 +107,7 @@ ERS_TEST_CASE("limit", "[async]") {
         auto job = group.spawn(holding(gate.future(), i));
 
         REQUIRE(!job.rejected());
-        jobs.emplace_back(std::move(job));
+        jobs.push_back(std::move(job));
     }
 
     REQUIRE(group.running() == 2);
@@ -158,7 +158,7 @@ ERS_TEST_CASE("fifo", "[async]") {
     std::vector<ers::AsyncJob<int>> jobs;
 
     for (int i = 0; i < 5; ++i)
-        jobs.emplace_back(group.spawn(holding(gate.future(), i)));
+        jobs.push_back(group.spawn(holding(gate.future(), i)));
 
     gate.open();
 

@@ -105,7 +105,7 @@ namespace ecs::impl {
             auto components = std::make_tuple(static_cast<component_value_t<Tags>* ERS_RESTRICT>(
                 impl::get_component(registry, entity.id(), component_id<Tags>()))...);
 
-            m_storage.emplace(entity.id(), std::move(components));
+            m_storage.try_emplace(entity.id(), std::move(components));
         }
 
         [[nodiscard]]

@@ -81,7 +81,7 @@ flux::impl::Expr flux::impl::ExprMethods::in(this const auto& self, R&& values) 
     std::vector<Expr> items;
 
     for (auto&& it : values)
-        items.emplace_back(Expr(it));
+        items.push_back(Expr(it));
 
     return make_in(to_expr_of(self), std::move(items));
 }
@@ -214,7 +214,7 @@ template<typename... Args>
 flux::impl::Expr flux::impl::clauses::row(Args&&... items) {
     std::vector<Expr> out;
     out.reserve(sizeof...(Args));
-    (out.emplace_back(Expr(std::forward<Args>(items))), ...);
+    (out.push_back(Expr(std::forward<Args>(items))), ...);
 
     return make_row(std::move(out));
 }
