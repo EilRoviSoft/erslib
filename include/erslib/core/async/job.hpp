@@ -11,6 +11,8 @@
 // ers
 #include <erslib/core/type/result.hpp>
 
+#include "control.hpp"
+
 
 // Implementation --------------------------------------------------------------
 
@@ -22,8 +24,9 @@ namespace ers::impl {
 
         AsyncJob() = default;
 
-        explicit AsyncJob(std::future<Result<T>> future) noexcept :
-            _future(std::move(future)) {
+        explicit AsyncJob(std::future<Result<T>> future, JobControlPtr control = {}) noexcept :
+            _future(std::move(future)),
+            _control(std::move(control)) {
         }
 
 
@@ -31,6 +34,7 @@ namespace ers::impl {
 
         bool valid() const noexcept { return _future.valid(); }
         bool rejected() const noexcept { return _rejected; }
+        bool cancelled() const noexcept { return _control && _control->cancelled(); }
 
         bool ready() const {
             return _future.wait_for(std::chrono::seconds(0)) == std::future_status::ready;
@@ -50,6 +54,8 @@ namespace ers::impl {
 
         Result<T> get() { return _future.get(); }
 
+        bool cancel() { return _control && _control->cancel(); }
+
 
         // Generators
 
@@ -66,6 +72,7 @@ namespace ers::impl {
 
     private:
         std::future<Result<T>> _future;
+        JobControlPtr _control;
         bool _rejected = false;
     };
 }

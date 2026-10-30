@@ -137,7 +137,7 @@ ERS_TEST_CASE("full", "[async]") {
     REQUIRE(!first.rejected());
     REQUIRE(!second.rejected());
     REQUIRE(third.rejected());
-    REQUIRE(third.get().error().message() == "The group is full");
+    REQUIRE(third.get().error().message() == "The bulkhead is full.");
 
     gate.open();
 

@@ -24,7 +24,7 @@ namespace ers::impl {
     public:
         // Member types
 
-        using launcher_t = std::move_only_function<void()>;
+        using launcher_t = std::move_only_function<void() &&>;
 
         enum class EAdmission {
             Started,
@@ -80,17 +80,6 @@ namespace ers::impl {
 
         co_return result;
     }
-
-    template<typename T>
-    BulkheadState::launcher_t make_launcher(
-        boost::asio::thread_pool::executor_type executor,
-        AsyncTask<T> task,
-        Completion<T> completion
-    ) {
-        return [executor, task = std::move(task), completion = std::move(completion)]() mutable {
-            boost::asio::co_spawn(executor, std::move(task), std::move(completion));
-        };
-    }
 }
 
 
@@ -136,22 +125,27 @@ namespace ers::impl {
         // Generators
 
         template<typename T>
-        AsyncJob<T> spawn(AsyncTask<T> task) {
+        AsyncJob<T> spawn(AsyncTask<T> task, spawn_options_t spawn_options = {}) {
             if (_scheduler->stopped())
                 return AsyncJob<T>::rejected_with(make_error("The scheduler is stopped."));
 
+
             std::promise<Result<T>> promise;
             auto future = promise.get_future();
+            auto control = _scheduler->make_control(spawn_options);
 
-            auto launcher = make_launcher<T>(
+            BulkheadState::launcher_t launcher = std::bind_front(
+                &launch<T>,
+                control,
                 _scheduler->executor(),
-                guarded<T>(_state, std::move(task)),
-                Completion<T>(std::move(promise))
+                guarded<T>(_state, cancellable<T>(control, std::move(task))),
+                Completion<T>(std::move(promise), control)
             );
+
 
             switch (_state->admit(launcher)) {
                 case BulkheadState::EAdmission::Started:
-                    launcher();
+                    std::move(launcher)();
                     break;
 
                 case BulkheadState::EAdmission::Queued:
@@ -161,7 +155,8 @@ namespace ers::impl {
                     return AsyncJob<T>::rejected_with(make_error("The bulkhead is full."));
             }
 
-            return AsyncJob<T>(std::move(future));
+
+            return AsyncJob<T>(std::move(future), std::move(control));
         }
 
 

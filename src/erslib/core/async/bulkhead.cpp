@@ -58,7 +58,7 @@ void ers::impl::BulkheadState::finish() {
         _waiting.pop_front();
     }
 
-    next();
+    std::move(next)();
 }
 
 void ers::impl::BulkheadState::drop_waiting() {

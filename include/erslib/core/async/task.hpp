@@ -53,6 +53,7 @@ namespace ers::impl {
 
 
     boost::asio::awaitable<void> yield();
+    AsyncTask<void> checkpoint();
 }
 
 
@@ -82,7 +83,9 @@ namespace ers {
     
     using impl::as_result;
     using impl::sync_wait;
+
     using impl::yield;
+    using impl::checkpoint;
 }
 
 
