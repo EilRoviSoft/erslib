@@ -6,7 +6,6 @@
 #include <erslib/contrib/json/impl.hpp>
 
 #include <erslib/contrib/json/concept.hpp>
-#include <erslib/contrib/json/convert.hpp>
 #include <erslib/contrib/json/read.hpp>
 #include <erslib/contrib/json/schema.hpp>
 #include <erslib/contrib/json/traits.hpp>
@@ -53,10 +52,6 @@ namespace utl {
 
 
 namespace utl {
-    using impl::IJsonConvertible;
-    using impl::load_from_json;
-    using impl::save_into_json;
-
     using impl::JsonCompatible;
     using impl::TSchema;
     using impl::JsonSchema;
