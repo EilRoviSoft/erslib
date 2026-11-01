@@ -21,6 +21,7 @@
 #ifdef ERSLIB_HAS_REFLECTION
 
 using namespace flux::orm;
+using std::string_literals::operator ""s;
 
 
 // Details ---------------------------------------------------------------------

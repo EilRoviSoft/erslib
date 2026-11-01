@@ -38,10 +38,10 @@ namespace {
     };
 
     struct [[=utl::json_object, =flux::jsonb]] meta_t {
-        focus_t focus;
+        ers::maybe<focus_t> focus;
         ers::maybe<u32> poster_id;
         ers::maybe<std::string> origin;
-        std::vector<std::string> tags;
+        ers::maybe<std::vector<std::string>> tags;
     };
 
     struct [[=utl::json_object]] json_only_t {
@@ -150,10 +150,11 @@ ERS_TEST_CASE("jsonb to_text omits empty optionals", "[flux]") {
 
     const auto json = utl::from_string(sql_value<meta_t>::to_text(meta_t{}));
 
+    CHECK(json.is_object());
+    CHECK_FALSE(json.contains("focus"));
     CHECK_FALSE(json.contains("poster_id"));
     CHECK_FALSE(json.contains("origin"));
-    CHECK(json["focus"]["x"].as_integral() == 50);
-    CHECK(json["tags"].as_array().empty());
+    CHECK_FALSE(json.contains("tags"));
 }
 
 ERS_TEST_CASE("jsonb bind", "[flux]") {
@@ -186,8 +187,8 @@ ERS_TEST_CASE("jsonb read", "[flux]") {
         R"({"focus":{"x":1,"y":2},"poster_id":7,"origin":"a.png","tags":["a","b"]})"
         });
 
-    CHECK(full.focus.x == 1);
-    CHECK(full.focus.y == 2);
+    CHECK(full.focus->x == 1);
+    CHECK(full.focus->y == 2);
     CHECK(full.poster_id == 7u);
     CHECK(full.origin == "a.png");
     CHECK(full.tags == std::vector<std::string> { "a", "b" });
@@ -198,16 +199,16 @@ ERS_TEST_CASE("jsonb read defaults", "[flux]") {
 
     const auto bare = sql_value<meta_t>::read(fake_field{ "{}" });
 
-    CHECK(bare.focus.x == 50);
-    CHECK(bare.focus.y == 50);
+    CHECK_FALSE(bare.focus);
     CHECK_FALSE(bare.poster_id);
     CHECK_FALSE(bare.origin);
-    CHECK(bare.tags.empty());
+    CHECK_FALSE(bare.tags);
 
-    const auto partial = sql_value<meta_t>::read(fake_field{ R"({"focus":{"x":9}})" });
+    const auto partial = sql_value<meta_t>::read(fake_field { R"({"focus":{"x":9,"y":3}})" });
 
-    CHECK(partial.focus.x == 9);
-    CHECK(partial.focus.y == 50);
+    REQUIRE(partial.focus);
+    CHECK(partial.focus->x == 9);
+    CHECK(partial.focus->y == 3);
 }
 
 ERS_TEST_CASE("jsonb read tolerates", "[flux]") {
@@ -227,8 +228,8 @@ ERS_TEST_CASE("jsonb round trip", "[flux]") {
     const auto text = sql_value<meta_t>::to_text(meta);
     const auto back = sql_value<meta_t>::read(fake_field{ text });
 
-    CHECK(back.focus.x == meta.focus.x);
-    CHECK(back.focus.y == meta.focus.y);
+    CHECK(back.focus->x == meta.focus->x);
+    CHECK(back.focus->y == meta.focus->y);
     CHECK(back.poster_id == meta.poster_id);
     CHECK(back.origin == meta.origin);
     CHECK(back.tags == meta.tags);
@@ -258,6 +259,9 @@ ERS_TEST_CASE("jsonb read errors", "[flux]") {
     CHECK_THROWS_AS(read_text(R"({"poster_id":"x"})"), ers::conversion_error);
     CHECK_THROWS_AS(read_text(R"({"poster_id":-1})"), ers::conversion_error);
     CHECK_THROWS_AS(read_text(R"({"tags":[1]})"), ers::conversion_error);
+
+    CHECK_THROWS_AS(read_text(R"({"focus":{"x":9}})"), ers::conversion_error);
+    CHECK_THROWS_WITH(read_text(R"({"focus":{"x":9}})"), Catch::Matchers::ContainsSubstring("'y'"));
 
     CHECK_THROWS_WITH(read_text(R"({"focus":{"x":"a"}})"), Catch::Matchers::ContainsSubstring("focus"));
 }

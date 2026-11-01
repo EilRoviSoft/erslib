@@ -542,10 +542,25 @@ ERS_TEST_CASE("files", "[contrib][fs]") {
 
 // Custom types conversion tests
 
-struct [[=utl::json_object]] point_t {
-    i64 x = 0;
-    i64 y = 0;
-};
+namespace {
+    struct [[=utl::json_object]] point_t {
+        i64 x = 0;
+        i64 y = 0;
+    };
+
+    struct [[=utl::json_object]] cached_point_t {
+        i64 x = 0;
+        i64 y = 0;
+
+        [[=utl::json_skip]]
+        std::string cache = "keep";
+    };
+
+    struct [[=utl::json_object]] optional_point_t {
+        i64 x = 0;
+        ers::maybe<i64> y;
+    };
+}
 
 
 ERS_TEST_CASE("literal", "[contrib]") {
@@ -623,6 +638,35 @@ ERS_TEST_CASE("JsonSchema", "[contrib]") {
     utl::JsonSchema missing(json);
     missing.require_and_write("absent", wrong);
     CHECK_FALSE(missing.finalize());
+}
+
+ERS_TEST_CASE("json_skip", "[contrib]") {
+    const auto loaded = utl::try_read<cached_point_t>(R"({"x":1,"y":2,"cache":"ignored"})"_json);
+    REQUIRE(loaded);
+    CHECK(loaded->x == 1);
+    CHECK(loaded->cache == "keep");
+
+    const auto saved = utl::try_write(cached_point_t { .x = 3, .y = 4, .cache = "secret" });
+    REQUIRE(saved);
+    CHECK_FALSE(saved->contains("cache"));
+    CHECK((*saved)["x"].as_integral() == 3);
+}
+
+ERS_TEST_CASE("optional members", "[contrib]") {
+    const auto without = utl::try_read<optional_point_t>(R"({"x":1})"_json);
+    REQUIRE(without);
+    CHECK_FALSE(without->y);
+
+    const auto with_null = utl::try_read<optional_point_t>(R"({"x":1,"y":null})"_json);
+    REQUIRE(with_null);
+    CHECK_FALSE(with_null->y);
+
+    CHECK(utl::maybe_read<optional_point_t>(R"({"x":1,"y":2})"_json));
+    CHECK_FALSE(utl::maybe_read<optional_point_t>(R"({"y":2})"_json));
+
+    const auto error = utl::try_read<point_t>(R"({"x":1})"_json);
+    REQUIRE_FALSE(error);
+    CHECK(error.error().to_string().find("'y'") != std::string::npos);
 }
 
 

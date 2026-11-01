@@ -4,6 +4,7 @@
 #include <meta>
 #include <string>
 #include <string_view>
+#include <type_traits>
 
 // pqxx
 #include <pqxx/params>
@@ -31,18 +32,15 @@ struct flux::impl::sql_type<T> {
 
 template<flux::JsonbColumn T>
 struct flux::impl::sql_value<T> {
+    static std::string to_text(const T& what) {
+        return utl::write(what).to_string(utl::EFormat::Minimized);
+    }
+
     static void bind(pqxx::params& out, const T& what) {
-        out.append(utl::write(what).to_string(utl::EFormat::Minimized));
+        out.append(to_text(what));
     }
 
     static T read(const auto& field) {
-        auto json = utl::try_from_string(field.template as<std::string_view>());
-
-        if (!json)
-            throw ers::runtime_error(json.error().to_string());
-
-        return utl::read<T>(*json)
-            .context("jsonb column")
-            .template or_throw<ers::runtime_error>();
+        return utl::read<T>(utl::from_string(field.template as<std::string_view>()));
     }
 };

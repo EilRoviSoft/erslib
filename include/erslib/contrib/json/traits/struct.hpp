@@ -15,16 +15,26 @@ struct utl::impl::json_value<T> {
         T out {};
 
         template for (constexpr auto m : members_of_v<T>) {
-            constexpr auto key = json_key_of<m>();
-            using F = [:std::meta::type_of(m):];
+            if constexpr (!is_json_skipped<m>()) {
+                constexpr auto key = json_key_of<m>();
+                using F = [:std::meta::type_of(m):];
 
-            if (auto node = json.try_at(key)) {
-                auto value = json_value<F>::template read<Policy>(*node);
+                auto node = json.try_at(key);
 
-                if (!value)
-                    return Policy::template propagate<T>(std::move(value), "'{}'", key);
+                if (node) {
+                    auto value = json_value<F>::template read<Policy>(*node);
 
-                out.[:m:] = std::move(*value);
+                    if (!value)
+                        return Policy::template propagate<T>(std::move(value), "'{}'", key);
+
+                    out.[:m:] = std::move(*value);
+                } else {
+                    if constexpr (!OptionalLike<F>) {
+                        return Policy::template fail<T>([&] {
+                            return std::format("no field '{}'", key);
+                        });
+                    }
+                }
             }
         }
 
@@ -36,14 +46,16 @@ struct utl::impl::json_value<T> {
         out = typename Node::object_type {};
 
         template for (constexpr auto m : members_of_v<T>) {
-            using F = [:std::meta::type_of(m):];
-            constexpr auto key = json_key_of<m>();
+            if constexpr (!is_json_skipped<m>()) {
+                using F = [:std::meta::type_of(m):];
+                constexpr auto key = json_key_of<m>();
 
-            if (!is_omitted(what.[:m:])) {
-                auto status = json_value<F>::template write<Policy>(out[key], what.[:m:]);
+                if (!is_omitted(what.[:m:])) {
+                    auto status = json_value<F>::template write<Policy>(out[key], what.[:m:]);
 
-                if (!status)
-                    return Policy::template propagate<void>(std::move(status), "'{}'", key);
+                    if (!status)
+                        return Policy::template propagate<void>(std::move(status), "'{}'", key);
+                }
             }
         }
 

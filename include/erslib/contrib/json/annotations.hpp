@@ -11,6 +11,12 @@ namespace utl::impl {
 
     inline constexpr json_object_t json_object {};
 
+
+    struct json_skip_t {};
+
+    inline constexpr json_skip_t json_skip {};
+
+
     struct json_key_t {
         const char* name;
 
@@ -27,6 +33,7 @@ namespace utl::impl {
     concept JsonObjectType = std::is_class_v<T>
         && (is_json_object_v<T> || !std::meta::annotations_of_with_type(^^T, ^^json_object_t).empty());
 
+
     template<std::meta::info M>
     consteval std::string_view json_key_of() {
         auto keys = std::meta::annotations_of_with_type(M, ^^json_key_t);
@@ -36,6 +43,12 @@ namespace utl::impl {
 
         return std::meta::identifier_of(M);
     }
+
+    template<std::meta::info M>
+    consteval bool is_json_skipped() {
+        return !std::meta::annotations_of_with_type(M, ^^json_skip_t).empty();
+    }
+
 
     template<typename T>
     inline constexpr auto members_of_v = std::define_static_array(
