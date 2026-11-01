@@ -9,6 +9,7 @@
 #include <erslib/contrib/json/convert.hpp>
 #include <erslib/contrib/json/read.hpp>
 #include <erslib/contrib/json/schema.hpp>
+#include <erslib/contrib/json/traits.hpp>
 
 
 // Exports ---------------------------------------------------------------------
@@ -59,4 +60,17 @@ namespace utl {
     using impl::JsonCompatible;
     using impl::JsonSchema;
     using impl::json_storage_t;
+}
+
+
+namespace utl {
+    using impl::json_value;
+    using impl::JsonNode;
+    using impl::JsonConvertible;
+
+    using impl::read;
+    using impl::write;
+
+    using impl::json_object;
+    using json_key = impl::json_key_t;
 }
