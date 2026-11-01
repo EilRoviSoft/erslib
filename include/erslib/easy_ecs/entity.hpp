@@ -17,7 +17,8 @@
 namespace ecs::impl {
     template<typename T>
     std::string make_canonical_name() {
-        return std::format("{}:{}", ers::meta::type_name_v<T>, ers::pattern::tagged_counter<T>());
+        return std::format("{}:{}",
+            ers::meta::type_name_v<T>, ers::pattern::tagged_counter<T>());
     }
 
 
