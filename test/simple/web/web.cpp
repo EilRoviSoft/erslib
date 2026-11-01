@@ -103,7 +103,7 @@ ERS_TEST_CASE("json body", "[web]") {
     crow::response good_res;
     json_body.before_handle(good, good_res, good_ctx);
     REQUIRE(!good_res.is_completed());
-    REQUIRE(utl::read_as<i64>(*good_ctx.body, "a") == 1);
+    REQUIRE(utl::maybe_read<i64>(*good_ctx.body, "a") == 1);
 
     ers::web::JsonBody::context bad_ctx;
     auto bad = make_request("{");

@@ -6,7 +6,6 @@
 #include <erslib/contrib/json/impl.hpp>
 
 #include <erslib/contrib/json/concept.hpp>
-#include <erslib/contrib/json/read.hpp>
 #include <erslib/contrib/json/schema.hpp>
 #include <erslib/contrib/json/traits.hpp>
 
@@ -44,8 +43,6 @@ namespace utl {
     using impl::from_file;
     using impl::try_from_string;
     using impl::try_from_file;
-
-    using impl::read_as;
 
     using impl::literals::operator""_json;
 }

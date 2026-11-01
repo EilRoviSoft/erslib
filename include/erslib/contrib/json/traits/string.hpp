@@ -25,3 +25,20 @@ struct utl::impl::json_value<T> {
         return Policy::done();
     }
 };
+
+template<std::same_as<std::string_view> T>
+struct utl::impl::json_value<T> {
+    template<typename Policy, JsonNode Node>
+    static read_t<Policy, T> read(const Node& json) {
+        if (json.is_string())
+            return std::string_view(json.as_string());
+
+        return wrong_type<T, Policy>("string", json);
+    }
+
+    template<typename Policy, JsonNode Node>
+    static write_t<Policy> write(Node& out, T what) {
+        out = what;
+        return Policy::done();
+    }
+};

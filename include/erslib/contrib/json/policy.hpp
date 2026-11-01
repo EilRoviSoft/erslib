@@ -48,6 +48,11 @@ namespace utl::impl {
         static type<T> propagate(Inner&& inner, std::format_string<Args...> fmt, Args&&... args) {
             return std::move(inner).context(fmt, std::forward<Args>(args)...).error();
         }
+
+        template<typename Codec>
+        static auto parse(std::string_view text) {
+            return Codec::try_parse(text);
+        }
     };
 
     struct maybe_policy {
@@ -82,9 +87,16 @@ namespace utl::impl {
             else
                 return ers::none;
         }
+
+        template<typename Codec>
+        static auto parse(std::string_view text) {
+            return Codec::maybe_parse(text);
+        }
     };
+}
 
 
+namespace utl::impl {
     template<typename Policy, typename T>
     using read_t = typename Policy::template type<T>;
 

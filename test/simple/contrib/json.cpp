@@ -556,13 +556,13 @@ ERS_TEST_CASE("literal", "[contrib]") {
 ERS_TEST_CASE("read_as", "[contrib]") {
     const auto json = R"({"small":300,"text":"x","list":[],"pi":3.5})"_json;
 
-    CHECK(utl::read_as<i64>(json, "small") == 300);
-    CHECK_FALSE(utl::read_as<u8>(json, "small"));
-    CHECK(utl::read_as<std::string_view>(json, "text") == "x");
-    CHECK(utl::read_as<utl::Array>(json, "list"));
-    CHECK(utl::read_as<double>(json, "pi") == 3.5);
-    CHECK_FALSE(utl::read_as<i64>(json, "missing"));
-    CHECK_FALSE(utl::read_as<i64>(json["text"], "anything"));
+    CHECK(utl::maybe_read<i64>(json, "small") == 300);
+    CHECK_FALSE(utl::maybe_read<u8>(json, "small"));
+    CHECK(utl::maybe_read<std::string_view>(json, "text") == "x");
+    CHECK(utl::maybe_read<utl::Array>(json, "list"));
+    CHECK(utl::maybe_read<double>(json, "pi") == 3.5);
+    CHECK_FALSE(utl::maybe_read<i64>(json, "missing"));
+    CHECK_FALSE(utl::maybe_read<i64>(json["text"], "anything"));
 }
 
 ERS_TEST_CASE("storage_types", "[contrib][compile_time]") {
