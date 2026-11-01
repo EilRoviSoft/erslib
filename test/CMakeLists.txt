@@ -66,6 +66,47 @@ file(GLOB SIMPLE_MODULES CONFIGURE_DEPENDS
 # Builds every per-file test, so "test_simple" and "test_simple_<module>" still exist in VS
 add_custom_target(test_simple)
 
+set(SIMPLE_MANUAL_TESTS
+    "flux/jsonb"
+)
+
+function(add_simple_test TEST_NAME)
+    cmake_parse_arguments(ARG "" "" "REQUIRES;LINKS" ${ARGN})
+
+    string(REGEX MATCH "^[^/]+" MODULE "${TEST_NAME}")
+
+    if(NOT EXISTS "${SIMPLE_DIR}/${TEST_NAME}.cpp")
+        message(FATAL_ERROR "Simple test '${TEST_NAME}': no such file under ${SIMPLE_DIR}")
+    endif()
+
+    if(NOT TARGET erslib::${MODULE})
+        return()
+    endif()
+
+    foreach(REQUIRED IN LISTS ARG_REQUIRES)
+        if(NOT TARGET ${REQUIRED})
+            message(STATUS "Skipping simple test '${TEST_NAME}': ${REQUIRED} is not built")
+            return()
+        endif()
+    endforeach()
+
+    string(MAKE_C_IDENTIFIER "test_simple_${TEST_NAME}" TEST_TARGET)
+
+    add_executable(${TEST_TARGET} "${SIMPLE_DIR}/${TEST_NAME}.cpp")
+    target_link_libraries(${TEST_TARGET} PRIVATE test_simple_main erslib::${MODULE} ${ARG_LINKS})
+    set_target_properties(${TEST_TARGET} PROPERTIES FOLDER "tests/simple/${MODULE}")
+    target_compile_definitions(${TEST_TARGET} PRIVATE TEST_TAGS="[simple]")
+
+    if(NOT IS_TOP_LEVEL)
+        win_copy_deps_to_target_dir(${TEST_TARGET} erslib::${MODULE})
+    endif()
+
+    catch_discover_tests(${TEST_TARGET} TEST_PREFIX "${TEST_NAME}::" DISCOVERY_MODE PRE_TEST ADD_TAGS_AS_LABELS)
+    add_dependencies(test_simple_${MODULE} ${TEST_TARGET})
+
+    message(STATUS "Discovered simple test: ${TEST_NAME} -> Target: ${TEST_TARGET}")
+endfunction()
+
 foreach(MODULE IN LISTS SIMPLE_MODULES)
     if(NOT IS_DIRECTORY "${SIMPLE_DIR}/${MODULE}")
         continue()
@@ -85,23 +126,16 @@ foreach(MODULE IN LISTS SIMPLE_MODULES)
         # simple/core/sub/string.cpp -> "core/sub/string" -> test_simple_core_sub_string
         file(RELATIVE_PATH TEST_NAME "${SIMPLE_DIR}" "${TEST_SOURCE}")
         string(REGEX REPLACE "\\.cpp$" "" TEST_NAME "${TEST_NAME}")
-        string(MAKE_C_IDENTIFIER "test_simple_${TEST_NAME}" TEST_TARGET)
 
-        add_executable(${TEST_TARGET} "${TEST_SOURCE}")
-        target_link_libraries(${TEST_TARGET} PRIVATE test_simple_main erslib::${MODULE})
-        set_target_properties(${TEST_TARGET} PROPERTIES FOLDER "tests/simple/${MODULE}")
-        target_compile_definitions(${TEST_TARGET} PRIVATE TEST_TAGS="[simple]")
-
-        if(NOT IS_TOP_LEVEL)
-            win_copy_deps_to_target_dir(${TEST_TARGET} erslib::${MODULE})
+        if(TEST_NAME IN_LIST SIMPLE_MANUAL_TESTS)
+            continue()
         endif()
 
-        catch_discover_tests(${TEST_TARGET} TEST_PREFIX "${TEST_NAME}::" DISCOVERY_MODE PRE_TEST ADD_TAGS_AS_LABELS)
-        add_dependencies(test_simple_${MODULE} ${TEST_TARGET})
-
-        message(STATUS "Discovered simple test: ${TEST_NAME} -> Target: ${TEST_TARGET}")
+        add_simple_test(${TEST_NAME})
     endforeach()
 endforeach()
+
+add_simple_test(flux/jsonb REQUIRES erslib::contrib LINKS erslib::contrib)
 
 if(TARGET erslib_core)
     target_compile_definitions(erslib_core
