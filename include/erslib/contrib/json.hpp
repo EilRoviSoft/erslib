@@ -58,6 +58,7 @@ namespace utl {
     using impl::save_into_json;
 
     using impl::JsonCompatible;
+    using impl::TSchema;
     using impl::JsonSchema;
     using impl::json_storage_t;
 }
