@@ -21,8 +21,11 @@ namespace utl::impl {
 
 
     template<typename T>
+    inline constexpr bool is_json_object_v = false;
+
+    template<typename T>
     concept JsonObjectType = std::is_class_v<T>
-        && !std::meta::annotations_of_with_type(^^T, ^^json_object_t).empty();
+        && (is_json_object_v<T> || !std::meta::annotations_of_with_type(^^T, ^^json_object_t).empty());
 
     template<std::meta::info M>
     consteval std::string_view json_key_of() {

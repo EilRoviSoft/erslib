@@ -17,8 +17,9 @@ struct utl::impl::json_value<T> {
         return wrong_type<T, Policy>("bool", json);
     }
 
-    template<JsonNode Node>
-    static void write(Node& out, bool what) {
+    template<typename Policy, JsonNode Node>
+    static write_t<Policy> write(Node& out, T what) {
         out = what;
+        return Policy::done();
     }
 };

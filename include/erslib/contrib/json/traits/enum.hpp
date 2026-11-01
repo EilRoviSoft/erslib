@@ -26,8 +26,17 @@ struct utl::impl::json_value<E> {
         });
     }
 
-    template<JsonNode Node>
-    static void write(Node& out, E what) {
-        out = ers::enum_utils::to_string(what);
+    template<typename Policy, JsonNode Node>
+    static write_t<Policy> write(Node& out, E what) {
+        auto name = ers::enum_utils::to_string(what);
+
+        if (name.empty()) {
+            return Policy::template fail<void>([&] {
+                return std::format("{} is not an enumerator", std::to_underlying(what));
+            });
+        }
+
+        out = name;
+        return Policy::done();
     }
 };

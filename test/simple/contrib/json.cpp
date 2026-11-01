@@ -542,28 +542,9 @@ ERS_TEST_CASE("files", "[contrib][fs]") {
 
 // Custom types conversion tests
 
-struct point_t : utl::IJsonConvertible {
+struct [[=utl::json_object]] point_t {
     i64 x = 0;
     i64 y = 0;
-
-
-    ers::Status load_from(const utl::Json& json) override {
-        const auto x_value = utl::read_as<i64>(json, "x");
-        const auto y_value = utl::read_as<i64>(json, "y");
-
-        if (!x_value || !y_value)
-            return ers::make_error("point needs 'x' and 'y'");
-
-        x = *x_value;
-        y = *y_value;
-        return ers::ok;
-    }
-
-    ers::Status save_into(utl::Json& json) const override {
-        json["x"] = x;
-        json["y"] = y;
-        return ers::ok;
-    }
 };
 
 
@@ -602,15 +583,15 @@ ERS_TEST_CASE("type_label", "[contrib]") {
 }
 
 ERS_TEST_CASE("convertible", "[contrib]") {
-    const auto loaded = utl::load_from_json<point_t>(R"({"x":1,"y":-2})"_json);
+    const auto loaded = utl::try_read<point_t>(R"({"x":1,"y":-2})"_json);
     REQUIRE(loaded);
     CHECK(loaded->y == -2);
 
-    const auto saved = utl::save_into_json(*loaded);
+    const auto saved = utl::try_write(*loaded);
     REQUIRE(saved);
     CHECK((*saved)["x"].as_integral() == 1);
 
-    CHECK_FALSE(utl::load_from_json<point_t>(R"({"x":1})"_json));
+    CHECK_FALSE(utl::maybe_read<point_t>(R"({"x":1})"_json));
 }
 
 ERS_TEST_CASE("JsonSchema", "[contrib]") {

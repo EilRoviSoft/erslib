@@ -31,18 +31,22 @@ struct utl::impl::json_value<T> {
         return out;
     }
 
-    template<JsonNode Node>
-    static void write(Node& out, const T& what) {
+    template<typename Policy, JsonNode Node>
+    static write_t<Policy> write(Node& out, const T& what) {
         out = typename Node::object_type {};
 
         template for (constexpr auto m : members_of_v<T>) {
             using F = [:std::meta::type_of(m):];
+            constexpr auto key = json_key_of<m>();
 
-            if constexpr (OptionalLike<F>) {
-                if (what.[:m:].has_value())
-                    json_value<F>::write(out[json_key_of<m>()], what.[:m:]);
-            } else
-                json_value<F>::write(out[json_key_of<m>()], what.[:m:]);
+            if (!is_omitted(what.[:m:])) {
+                auto status = json_value<F>::template write<Policy>(out[key], what.[:m:]);
+
+                if (!status)
+                    return Policy::template propagate<void>(std::move(status), "'{}'", key);
+            }
         }
+
+        return Policy::done();
     }
 };

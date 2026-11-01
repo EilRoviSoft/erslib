@@ -31,14 +31,24 @@ struct utl::impl::json_value<std::vector<T>> {
         return out;
     }
 
-    template<JsonNode Node>
-    static void write(Node& out, const std::vector<T>& what) {
+    template<typename Policy, JsonNode Node>
+    static write_t<Policy> write(Node& out, const std::vector<T>& what) {
         out = typename Node::array_type {};
+
+        size_t index = 0;
 
         for (const auto& value : what) {
             Node item;
-            json_value<T>::write(item, value);
+
+            auto status = json_value<T>::template write<Policy>(item, value);
+
+            if (!status)
+                return Policy::template propagate<void>(std::move(status), "[{}]", index);
+
             out.push_back(std::move(item));
+            ++index;
         }
+
+        return Policy::done();
     }
 };

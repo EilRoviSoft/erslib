@@ -11,8 +11,9 @@ struct utl::impl::json_value<T> {
         return T(json);
     }
 
-    template<JsonNode Node>
-    static void write(Node& out, const T& what) {
+    template<typename Policy, JsonNode Node>
+    static write_t<Policy> write(Node& out, const T& what) {
         out = Node(what);
+        return Policy::done();
     }
 };

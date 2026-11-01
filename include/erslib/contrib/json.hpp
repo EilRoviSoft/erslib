@@ -64,8 +64,15 @@ namespace utl {
     using impl::JsonNode;
     using impl::JsonConvertible;
 
+
     using impl::read;
+    using impl::try_read;
+    using impl::maybe_read;
+
     using impl::write;
+    using impl::try_write;
+    using impl::maybe_write;
+
 
     using impl::json_object;
     using json_key = impl::json_key_t;

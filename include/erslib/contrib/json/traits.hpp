@@ -11,5 +11,4 @@
 #include <erslib/contrib/json/traits/node.hpp>
 #include <erslib/contrib/json/traits/string.hpp>
 #include <erslib/contrib/json/traits/struct.hpp>
-#include <erslib/contrib/json/traits/vec2.hpp>
 #include <erslib/contrib/json/traits/vector.hpp>

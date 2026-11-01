@@ -1,6 +1,7 @@
 #pragma once
 
 // std
+#include <cmath>
 #include <concepts>
 #include <utility>
 
@@ -27,9 +28,16 @@ struct utl::impl::json_value<T> {
         return static_cast<T>(value);
     }
 
-    template<JsonNode Node>
-    static void write(Node& out, T what) {
+    template<typename Policy, JsonNode Node>
+    static write_t<Policy> write(Node& out, T what) {
+        if (!std::in_range<typename Node::integral_type>(what)) {
+            return Policy::template fail<void>([&] {
+                return std::format("{} doesn't fit into a JSON integer", what);
+            });
+        }
+
         out = what;
+        return Policy::done();
     }
 };
 
@@ -46,8 +54,15 @@ struct utl::impl::json_value<T> {
         return wrong_type<T, Policy>("number", json);
     }
 
-    template<JsonNode Node>
-    static void write(Node& out, T what) {
+    template<typename Policy, JsonNode Node>
+    static write_t<Policy> write(Node& out, T what) {
+        if (!std::isfinite(what)) {
+            return Policy::template fail<void>([&] {
+                return std::format("{} can't be written as a JSON number", what);
+            });
+        }
+
         out = what;
+        return Policy::done();
     }
 };

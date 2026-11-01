@@ -22,11 +22,13 @@ struct utl::impl::json_value<ers::maybe<T>> {
         return result_t(ers::maybe<T> { std::move(*value) });
     }
 
-    template<JsonNode Node>
-    static void write(Node& out, const ers::maybe<T>& what) {
-        if (what)
-            json_value<T>::write(out, *what);
-        else
+    template<typename Policy, JsonNode Node>
+    static write_t<Policy> write(Node& out, const ers::maybe<T>& what) {
+        if (!what) {
             out = nullptr;
+            return Policy::done();
+        }
+
+        return json_value<T>::template write<Policy>(out, *what);
     }
 };

@@ -33,11 +33,19 @@ struct utl::impl::json_value<M> {
         return out;
     }
 
-    template<JsonNode Node>
-    static void write(Node& out, const M& what) {
+    template<typename Policy, JsonNode Node>
+    static write_t<Policy> write(Node& out, const M& what) {
         out = typename Node::object_type {};
 
-        for (const auto& [key, value] : what)
-            json_value<mapped>::write(out[std::string_view(utf8_of(key))], value);
+        for (const auto& [key, value] : what) {
+            auto name = utf8_of(key);
+
+            auto status = json_value<mapped>::template write<Policy>(out[std::string_view(name)], value);
+
+            if (!status)
+                return Policy::template propagate<void>(std::move(status), "'{}'", name);
+        }
+
+        return Policy::done();
     }
 };
