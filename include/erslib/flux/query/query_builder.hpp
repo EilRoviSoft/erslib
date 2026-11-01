@@ -71,6 +71,8 @@ namespace flux::impl {
 
 
         ers::Status _validate() const;
+
+        bool _has(SlotRef slot) const;
     };
 }
 

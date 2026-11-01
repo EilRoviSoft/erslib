@@ -27,6 +27,9 @@ namespace flux::impl {
 
         ers::Status render(Context& ctx) const override;
 
+        ers::Status render_column(Context& ctx) const;
+        ers::Status render_value(Context& ctx) const;
+
 
     private:
         std::string _column;

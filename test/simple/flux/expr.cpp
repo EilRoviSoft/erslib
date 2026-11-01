@@ -282,6 +282,9 @@ ERS_TEST_CASE("assign", "[flux]") {
 
     CHECK(sql_of(insert_into("t") | columns("a", "at") | values("x", now()) | returning("id", col("at").as("created")))
         == "INSERT INTO t (a, at)\nVALUES ($1, now())\nRETURNING id, at AS created");
+
+    CHECK(sql_of(insert_into("t") | set("a", "x", "at", now()) | returning("id", col("at").as("created")))
+        == "INSERT INTO t (a, at)\nVALUES ($1, now())\nRETURNING id, at AS created");
 }
 
 ERS_TEST_CASE("bad alias", "[flux]") {

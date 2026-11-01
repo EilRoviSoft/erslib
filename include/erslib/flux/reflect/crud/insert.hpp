@@ -23,16 +23,11 @@ namespace flux::impl::crud {
         static_assert(reflect::metadata_is_valid<T>, "DeclarationMetadata names a column that does not exist on the entity.");
         static_assert(!reflect::insert_members<T>.empty(), "The entity has no column to insert.");
 
-        std::vector<Clause> columns;
-        std::vector<Expr> values;
+        std::vector<Clause> assigns;
 
-        template for (constexpr auto m : reflect::insert_members<T>) {
-            columns.push_back(clauses::column(std::string(reflect::column_name<m>)));
-            values.push_back(Expr(what.[:m:]));
-        }
+        template for (constexpr auto m : reflect::insert_members<T>)
+            assigns.push_back(clauses::assign(std::string(reflect::column_name<m>), Expr(what.[:m:])));
 
-        return layouts::insert_into(table_of<T>())
-            | std::move(columns)
-            | make_clause<ValuesClause>(std::move(values));
+        return layouts::insert_into(table_of<T>()) | std::move(assigns);
     }
 }

@@ -177,6 +177,16 @@ ERS_TEST_CASE("insert", "[flux]") {
     CHECK(sql_of(flux::crud::insert(image) | returning("id")) == "INSERT INTO images (url, path)\nVALUES ($1, $2)\nRETURNING id");
 }
 
+ERS_TEST_CASE("insert set slot", "[flux]") {
+    auto q = insert_into("t")
+        | flux::impl::make_clause<flux::impl::crud::FailClause>(&flux::impl::slots::set, "boom"s);
+
+    const auto r = q.to_sql();
+
+    REQUIRE_FALSE(r.has_value());
+    CHECK(r.error().to_string().find("boom") != std::string::npos);
+}
+
 ERS_TEST_CASE("update", "[flux]") {
     Image image { .id = 7, .url = "/a", .path = "a" };
     User user { .id = 3, .email = "a@b.c", .name = "bob" };

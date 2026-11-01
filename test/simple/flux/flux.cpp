@@ -76,6 +76,61 @@ ERS_TEST_CASE("insert", "[flux]") {
         "\nRETURNING id");
 }
 
+ERS_TEST_CASE("insert with set", "[flux]") {
+    const auto sql = sql_of(insert_into("images")
+        | set("url", "a.png"s, "path", "/a.png"s)
+        | on_conflict("url")
+        | do_update("path")
+        | returning("id"));
+
+    CHECK(sql ==
+        "INSERT INTO images (url, path)"
+        "\nVALUES ($1, $2)"
+        "\nON CONFLICT (url)"
+        "\nDO UPDATE SET path = excluded.path"
+        "\nRETURNING id");
+}
+
+ERS_TEST_CASE("insert with set: shapes", "[flux]") {
+    CHECK(sql_of(insert_into("t") | assign("a", 1))
+        == "INSERT INTO t (a)\nVALUES ($1)");
+
+    CHECK(sql_of(insert_into("t") | set("a", 1, "b", 2, "c", 3))
+        == "INSERT INTO t (a, b, c)\nVALUES ($1, $2, $3)");
+
+    CHECK(sql_of(insert_into("t") | set("a", "x"s, "at", now()) | returning("id"))
+        == "INSERT INTO t (a, at)\nVALUES ($1, now())\nRETURNING id");
+
+    CHECK(sql_of(insert_into("t") | set("a", 1, "b", 2) | on_conflict_constraint("t_a_key") | do_nothing())
+        == "INSERT INTO t (a, b)\nVALUES ($1, $2)\nON CONFLICT ON CONSTRAINT t_a_key\nDO NOTHING");
+}
+
+ERS_TEST_CASE("insert with set: order of clauses", "[flux]") {
+    CHECK(sql_of(insert_into("t") | returning("id") | set("a", 1, "b", 2))
+        == "INSERT INTO t (a, b)\nVALUES ($1, $2)\nRETURNING id");
+}
+
+ERS_TEST_CASE("insert with set: values are parameters", "[flux]") {
+    const auto sql = sql_of(insert_into("t") | set("a", "'; DROP TABLE t; --"s, "b", 1));
+
+    CHECK(contains(sql, "VALUES ($1, $2)"));
+    CHECK_FALSE(contains(sql, "DROP"));
+}
+
+ERS_TEST_CASE("insert with set: mistakes", "[flux]") {
+    CHECK_FALSE((insert_into("t") | columns("a") | set("b", 1, "c", 2)).to_sql().has_value());
+    CHECK_FALSE((insert_into("t") | set("a", 1, "b", 2) | values(3)).to_sql().has_value());
+    CHECK_FALSE((insert_into("t") | columns("a") | values(1) | assign("b", 2)).to_sql().has_value());
+
+    const auto mixed = (insert_into("t") | columns("a") | values(1) | set("b", 2, "c", 3)).to_sql();
+
+    REQUIRE_FALSE(mixed.has_value());
+    CHECK(contains(mixed.error().to_string(), "can't be used together"));
+
+    CHECK_FALSE((insert_into("t") | set("x; --", 1, "b", 2)).to_sql().has_value());
+    CHECK_FALSE((insert_into("t") | set("a", 1, "1", 2)).to_sql().has_value());
+}
+
 ERS_TEST_CASE("update and delete", "[flux]") {
     CHECK(sql_of(update("users") | assign("name", "bob"s) | where(col("id") == 1))
         == "UPDATE users\nSET name = $1\nWHERE id = $2");

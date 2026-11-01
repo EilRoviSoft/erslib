@@ -130,6 +130,7 @@ ers::Status flux::impl::QueryBuilder::_render_custom(Context& ctx, const SlotBin
     return binding.renderer(ctx, group);
 }
 
+
 ers::Status flux::impl::QueryBuilder::_validate() const {
     for (const auto& it : _clauses) {
         if (!_layout.contains(it->slot())) {
@@ -138,7 +139,25 @@ ers::Status flux::impl::QueryBuilder::_validate() const {
         }
     }
 
+    for (const auto& binding : _layout.bindings()) {
+        if (!_has(binding.slot))
+            continue;
+
+        for (const auto other : binding.excludes) {
+            if (_has(other)) {
+                return ers::make_error("Slots '{}' and '{}' can't be used together.",
+                    binding.slot->name, other->name);
+            }
+        }
+    }
+
     return ers::ok;
+}
+
+bool flux::impl::QueryBuilder::_has(SlotRef slot) const {
+    return std::ranges::any_of(_clauses, [&](const Clause& it) {
+        return same_slot(it->slot(), slot);
+    });
 }
 
 

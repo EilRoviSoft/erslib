@@ -34,6 +34,8 @@ namespace flux::impl {
         std::string_view fallback;
 
         slot_renderer_t renderer = nullptr;
+
+        std::span<const SlotRef> excludes;
     };
     using LayoutView = std::span<const SlotBinding>;
 
