@@ -7,10 +7,10 @@
 
 template<utl::impl::JsonObjectType T>
 struct utl::impl::json_value<T> {
-    template<JsonNode Node>
-    static ers::Result<T> read(const Node& json) {
+    template<typename Policy, JsonNode Node>
+    static read_t<Policy, T> read(const Node& json) {
         if (!json.is_object())
-            return expected_error("object", json);
+            return wrong_type<T, Policy>("object", json);
 
         T out {};
 
@@ -19,11 +19,10 @@ struct utl::impl::json_value<T> {
             using F = [:std::meta::type_of(m):];
 
             if (auto node = json.try_at(key)) {
-                auto value = json_value<F>::read(*node)
-                    .context("'{}'", key);
+                auto value = json_value<F>::template read<Policy>(*node);
 
                 if (!value)
-                    return value.error();
+                    return Policy::template propagate<T>(std::move(value), "'{}'", key);
 
                 out.[:m:] = std::move(*value);
             }

@@ -7,11 +7,11 @@
 
 // ers
 #include <erslib/contrib/json/impl.hpp>
+#include <erslib/contrib/json/policy.hpp>
+#include <erslib/core/exception.hpp>
 #include <erslib/core/type/maybe.hpp>
 #include <erslib/core/type/result.hpp>
 
-
-// Traits ----------------------------------------------------------------------
 
 namespace utl::impl {
     template<typename T>
@@ -22,59 +22,88 @@ namespace utl::impl {
 
     template<typename T>
     concept JsonConvertible = requires(const Json& json, Json& out, const T& what) {
-        { json_value<T>::read(json) } -> std::same_as<ers::Result<T>>;
+        { json_value<T>::template read<result_policy>(json) } -> std::same_as<ers::Result<T>>;
         json_value<T>::write(out, what);
     };
 }
 
 
-// Helpers ---------------------------------------------------------------------
-
 namespace utl::impl {
-    template<JsonNode Node>
-    auto expected_error(std::string_view what, const Node& got) {
-        return ers::make_error("expected {}, got {}",
-            what, type_label(got.type()));
-    }
-
     template<typename S>
     std::string utf8_of(const S& text) {
         return json_detail::to_string_type<std::string>(text);
     }
 
-    template<typename T>
-    ers::Result<T> missing_field(std::string_view key) {
+    template<typename T, typename Policy, JsonNode Node>
+    read_t<Policy, T> wrong_type(std::string_view expected, const Node& got) {
+        return Policy::template fail<T>([&] {
+            return std::format("expected {}, got {}",
+                expected, type_label(got.type()));
+        });
+    }
+
+    template<typename T, typename Policy, JsonNode Node>
+    read_t<Policy, T> read_field(const Node& json, std::string_view key) {
+        if (json.is_object()) {
+            if (auto node = json.try_at(key)) {
+                auto value = json_value<T>::template read<Policy>(*node);
+
+                if (value)
+                    return value;
+
+                return Policy::template propagate<T>(std::move(value), "'{}'", key);
+            }
+        }
+
         if constexpr (OptionalLike<T>)
             return T {};
-        else
-            return ers::make_error("no field '{}'", key);
+        else {
+            return Policy::template fail<T>([&] {
+                return std::format("no field '{}'", key);
+            });
+        }
     }
 }
 
 
-// Functions -------------------------------------------------------------------
-
 namespace utl::impl {
     template<typename T, JsonNode Node>
         requires JsonConvertible<T>
-    ers::Result<T> read(const Node& json) {
-        return json_value<T>::read(json);
+    ers::Result<T> try_read(const Node& json) {
+        return json_value<T>::template read<result_policy>(json);
     }
 
     template<typename T, JsonNode Node>
         requires JsonConvertible<T>
-    ers::Result<T> read(const Node& json, std::string_view key) {
-        if (!json.is_object())
-            return missing_field<T>(key);
-
-        auto node = json.try_at(key);
-
-        if (!node)
-            return missing_field<T>(key);
-
-        return json_value<T>::read(*node)
-            .context("'{}'", key);
+    ers::maybe<T> maybe_read(const Node& json) {
+        return json_value<T>::template read<maybe_policy>(json);
     }
+
+    template<typename T, JsonNode Node>
+        requires JsonConvertible<T>
+    T read(const Node& json) {
+        return std::move(try_read<T>(json)).template or_throw<ers::conversion_error>();
+    }
+
+
+    template<typename T, JsonNode Node>
+        requires JsonConvertible<T>
+    ers::Result<T> try_read(const Node& json, std::string_view key) {
+        return read_field<T, result_policy>(json, key);
+    }
+
+    template<typename T, JsonNode Node>
+        requires JsonConvertible<T>
+    ers::maybe<T> maybe_read(const Node& json, std::string_view key) {
+        return read_field<T, maybe_policy>(json, key);
+    }
+
+    template<typename T, JsonNode Node>
+        requires JsonConvertible<T>
+    T read(const Node& json, std::string_view key) {
+        return std::move(try_read<T>(json, key)).template or_throw<ers::conversion_error>();
+    }
+
 
     template<JsonNode Node = Json, typename T>
         requires JsonConvertible<T>

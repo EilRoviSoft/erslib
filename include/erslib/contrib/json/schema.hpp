@@ -116,10 +116,12 @@ namespace utl::impl {
             if (!node)
                 return ers::none;
 
-            auto value = json_value<T>::read(*node);
+            auto value = json_value<T>::template read<result_policy>(*node);
 
             if (!value) {
-                m_errors.push_back(std::format("field '{}': {}", name, value.error().to_string(true)));
+                m_errors.push_back(std::format("field '{}': {}",
+                    name, value.error().to_string(true)));
+                
                 return ers::none;
             }
 

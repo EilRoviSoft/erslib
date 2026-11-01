@@ -11,12 +11,12 @@
 
 template<std::same_as<std::string> T>
 struct utl::impl::json_value<T> {
-    template<JsonNode Node>
-    static ers::Result<T> read(const Node& json) {
+    template<typename Policy, JsonNode Node>
+    static read_t<Policy, T> read(const Node& json) {
         if (json.is_string())
             return utf8_of(json.as_string());
 
-        return expected_error("string", json);
+        return wrong_type<T, Policy>("string", json);
     }
 
     template<JsonNode Node>

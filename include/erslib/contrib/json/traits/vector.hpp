@@ -9,10 +9,10 @@
 
 template<typename T>
 struct utl::impl::json_value<std::vector<T>> {
-    template<JsonNode Node>
-    static ers::Result<std::vector<T>> read(const Node& json) {
+    template<typename Policy, JsonNode Node>
+    static read_t<Policy, std::vector<T>> read(const Node& json) {
         if (!json.is_array())
-            return expected_error("array", json);
+            return wrong_type<std::vector<T>, Policy>("array", json);
 
         const auto& array = json.as_array();
 
@@ -20,11 +20,10 @@ struct utl::impl::json_value<std::vector<T>> {
         out.reserve(array.size());
 
         for (size_t i = 0; i < array.size(); ++i) {
-            auto item = json_value<T>::read(array[i])
-                .context("[{}]", i);
+            auto item = json_value<T>::template read<Policy>(array[i]);
 
             if (!item)
-                return item.error();
+                return Policy::template propagate<std::vector<T>>(std::move(item), "[{}]", i);
 
             out.push_back(std::move(*item));
         }

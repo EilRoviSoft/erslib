@@ -13,21 +13,19 @@ struct utl::impl::json_value<M> {
     using mapped = typename M::mapped_type;
 
 
-    template<JsonNode Node>
-    static ers::Result<M> read(const Node& json) {
+    template<typename Policy, JsonNode Node>
+    static read_t<Policy, M> read(const Node& json) {
         if (!json.is_object())
-            return expected_error("object", json);
+            return wrong_type<M, Policy>("object", json);
 
         M out;
 
         for (const auto& [key, node] : json.as_object()) {
             auto name = utf8_of(key);
-
-            auto item = json_value<mapped>::read(node)
-                .context("'{}'", name);
+            auto item = json_value<mapped>::template read<Policy>(node);
 
             if (!item)
-                return item.error();
+                return Policy::template propagate<M>(std::move(item), "'{}'", name);
 
             out.try_emplace(typename M::key_type(name), std::move(*item));
         }

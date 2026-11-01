@@ -9,12 +9,12 @@
 
 template<std::same_as<bool> T>
 struct utl::impl::json_value<T> {
-    template<JsonNode Node>
-    static ers::Result<T> read(const Node& json) {
+    template<typename Policy, JsonNode Node>
+    static read_t<Policy, T> read(const Node& json) {
         if (json.is_bool())
             return json.as_bool();
 
-        return expected_error("bool", json);
+        return wrong_type<T, Policy>("bool", json);
     }
 
     template<JsonNode Node>

@@ -6,8 +6,8 @@
 
 template<utl::impl::JsonNode T>
 struct utl::impl::json_value<T> {
-    template<JsonNode Node>
-    static ers::Result<T> read(const Node& json) {
+    template<typename Policy, JsonNode Node>
+    static read_t<Policy, T> read(const Node& json) {
         return T(json);
     }
 
