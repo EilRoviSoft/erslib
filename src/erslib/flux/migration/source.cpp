@@ -2,7 +2,6 @@
 
 // std
 #include <algorithm>
-#include <charconv>
 #include <format>
 #include <regex>
 
@@ -10,6 +9,7 @@
 #include <erslib/core/convert/number.hpp>
 #include <erslib/core/hashing/fnv.hpp>
 #include <erslib/core/util/string.hpp>
+#include <erslib/flux/migration/canonical.hpp>
 
 
 // Details ---------------------------------------------------------------------
@@ -113,7 +113,7 @@ ers::Result<flux::impl::migration_t> flux::impl::parse_migration(std::string_vie
     }
 
 
-    out.checksum = ers::Fnv1AHash<std::string_view> {}(sql);
+    out.checksum = ers::Fnv1AHash<std::string_view> {}(canonical_sql(sql));
     out.sql = std::move(sql);
 
     ERS_TRY(read_directives(out));

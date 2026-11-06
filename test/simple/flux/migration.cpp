@@ -12,6 +12,7 @@
 
 // ers
 #include <erslib/core/hashing/fnv.hpp>
+#include <erslib/flux/migration/canonical.hpp>
 #include <erslib/flux/migration/declaration_diff.hpp>
 #include <erslib/flux/migration/migrator.hpp>
 #include <erslib/flux/migration/source.hpp>
@@ -116,8 +117,13 @@ namespace {
         }
     };
 
+
     bool reported(const migration_report_t& report, EMigrationEvent kind, std::string_view subject) {
         return std::ranges::contains(report, migration_event_t { .kind = kind, .subject = std::string(subject) });
+    }
+
+    bool has_event(const migration_report_t& report, EMigrationEvent kind) {
+        return std::ranges::any_of(report, [&](const auto& event) { return event.kind == kind; });
     }
 }
 
@@ -133,6 +139,98 @@ ERS_TEST_CASE("fnv1a", "[flux][compile_time]") {
 ERS_TEST_CASE("checksum", "[flux]") {
     CHECK(parsed("0001_x.always.sql", "SELECT 1;\r\nSELECT 2;").checksum
         == parsed("0001_x.always.sql", "SELECT 1;\nSELECT 2;").checksum);
+}
+
+ERS_TEST_CASE("checksum: canonical", "[flux]") {
+    const auto base = parsed("0001_x.always.sql", "SELECT a, b FROM t;");
+
+    CHECK(parsed("0001_x.always.sql", "select a,b\n  from t ;\n\n").checksum == base.checksum);
+    CHECK(parsed("0001_x.always.sql", "-- why\nSELECT a, b FROM t; /* ok */").checksum == base.checksum);
+    CHECK(parsed("0001_x.always.sql", "SELECT a, c FROM t;").checksum != base.checksum);
+    CHECK(parsed("0001_x.always.sql", "SELECT a, b FROM t").checksum != base.checksum);
+}
+
+ERS_TEST_CASE("checksum: directives count", "[flux]") {
+    const auto a = parsed("0001_x.existing.sql", claim("public.sales", "x") + "SELECT 1;");
+    const auto b = parsed("0001_x.existing.sql", claim("public.sales", "y") + "SELECT 1;");
+    const auto c = parsed("0001_x.existing.sql", claim("public.sales", "x") + "\n\n-- note\nSELECT   1;");
+
+    CHECK(a.checksum != b.checksum);
+    CHECK(a.checksum == c.checksum);
+}
+
+ERS_TEST_CASE("canonical: layout does not matter", "[flux]") {
+    CHECK(canonical_sql("SELECT 1;") == "select 1;");
+    CHECK(canonical_sql("SELECT 1;") == canonical_sql("select  1 ;\n-- x\n"));
+    CHECK(canonical_sql("SELECT 1;\r\nSELECT 2;") == canonical_sql("SELECT 1;\nSELECT 2;"));
+    CHECK(canonical_sql("SELECT 1;\r\nSELECT 2;") == "select 1;select 2;");
+
+    CHECK(canonical_sql("f(a,b)") == canonical_sql("f ( a , b )"));
+    CHECK(canonical_sql("CREATE TABLE T (A INT)") == canonical_sql("create table t ( a int )"));
+    CHECK(canonical_sql("CREATE TABLE T (A INT)") == "create table t(a int)");
+
+    CHECK(canonical_sql("\n\n  SELECT 1;\n\n\n") == "select 1;");
+    CHECK(canonical_sql("") == "");
+    CHECK(canonical_sql(" \t\r\n ") == "");
+}
+
+ERS_TEST_CASE("canonical: comments", "[flux]") {
+    CHECK(canonical_sql("a /*c*/ b") == "a b");
+    CHECK(canonical_sql("a/*c*/b") == "a b");
+    CHECK(canonical_sql("/* a /* b */ c */ x") == "x");
+    CHECK(canonical_sql("SELECT 1; -- tail") == "select 1;");
+    CHECK(canonical_sql("-- one\n-- two\nSELECT 1;") == "select 1;");
+
+    CHECK(canonical_sql("a /* never closed") == "a");
+}
+
+ERS_TEST_CASE("canonical: operators do not glue together", "[flux]") {
+    CHECK(canonical_sql("a - -b") == "a - -b");
+    CHECK(canonical_sql("a / *b") == "a / *b");
+    CHECK(canonical_sql("a - -b") != canonical_sql("a --b"));
+}
+
+ERS_TEST_CASE("canonical: literals are kept verbatim", "[flux]") {
+    CHECK(canonical_sql("SELECT 'A'") == "select 'A'");
+    CHECK(canonical_sql("SELECT 'A'") != canonical_sql("SELECT 'a'"));
+    CHECK(canonical_sql("SELECT 'a  b'") != canonical_sql("SELECT 'a b'"));
+
+    CHECK(canonical_sql("SELECT 'it''s'") == "select 'it''s'");
+    CHECK(canonical_sql("SELECT '-- not a comment'") == "select '-- not a comment'");
+    CHECK(canonical_sql("SELECT '/* x */'") == "select '/* x */'");
+
+    CHECK(canonical_sql("SELECT 'abc") == "select 'abc");
+}
+
+ERS_TEST_CASE("canonical: escape strings", "[flux]") {
+    CHECK(canonical_sql("SELECT E'a\\'b' , 1") == "select e'a\\'b',1");
+    CHECK(canonical_sql("SELECT E'a\\'b -- x'") == "select e'a\\'b -- x'");
+    CHECK(canonical_sql("SELECT E'A'") == canonical_sql("SELECT e'A'"));
+    CHECK(canonical_sql("SELECT E'A'") != canonical_sql("SELECT E'a'"));
+}
+
+ERS_TEST_CASE("canonical: quoted identifiers", "[flux]") {
+    CHECK(canonical_sql("SELECT \"Foo\"") == "select \"Foo\"");
+    CHECK(canonical_sql("SELECT \"Foo\"") != canonical_sql("SELECT \"foo\""));
+    CHECK(canonical_sql("SELECT \"a\"\"b\"") == "select \"a\"\"b\"");
+}
+
+ERS_TEST_CASE("canonical: dollar quoting", "[flux]") {
+    CHECK(canonical_sql("$$ a  b $$") != canonical_sql("$$ a b $$"));
+    CHECK(canonical_sql("SELECT $f$ a  b $f$") == "select $f$ a  b $f$");
+    CHECK(canonical_sql("SELECT $f$ $$ -- x $f$ , 1") == "select $f$ $$ -- x $f$,1");
+
+    CHECK(canonical_sql("SELECT $1") == "select $1");
+    CHECK(canonical_sql("SELECT $1 , $2") == "select $1,$2");
+}
+
+ERS_TEST_CASE("canonical: flux directives", "[flux]") {
+    CHECK(canonical_sql("-- flux: drop x \n") == canonical_sql("--flux:drop x\n"));
+    CHECK(canonical_sql("-- flux: drop x\n") != canonical_sql("-- flux: drop y\n"));
+    CHECK(canonical_sql("-- flux: drop x\n") != canonical_sql("-- just a comment\n"));
+
+    CHECK(canonical_sql("  -- flux: drop x\n") == "");
+    CHECK(canonical_sql("SELECT 1; -- flux: drop x") == "select 1;");
 }
 
 ERS_TEST_CASE("file names", "[flux]") {
@@ -392,6 +490,38 @@ ERS_TEST_CASE("failing migration", "[flux]") {
 
     CHECK(report.error().message().contains("public/0007_broken"));
     CHECK_FALSE(s.store.migrations.contains("0007_broken"));
+}
+
+ERS_TEST_CASE("reformatting an applied migration is not an edit", "[flux]") {
+    Scenario scenario;
+    scenario.track(sales_v2);
+
+    const auto original = parsed("0001_x.existing.sql", "SELECT a,b FROM t;");
+    scenario.store.migrations.insert_or_assign(original.id, original.checksum);
+
+    scenario.set.versioned.push_back(parsed("0001_x.existing.sql", "-- datagrip\nselect a, b\n    from t;\n"));
+
+    auto report = scenario.run();
+    REQUIRE(report);
+
+    CHECK_FALSE(has_event(*report, EMigrationEvent::Edited));
+    CHECK_FALSE(std::ranges::contains(scenario.store.executed, "-- datagrip\nselect a, b\n    from t;\n"sv));
+}
+
+ERS_TEST_CASE("changing an applied migration is an edit", "[flux]") {
+    Scenario scenario;
+    scenario.track(sales_v2);
+
+    const auto original = parsed("0001_x.existing.sql", "SELECT a, b FROM t;");
+    scenario.store.migrations.insert_or_assign(original.id, original.checksum);
+
+    scenario.set.versioned.push_back(parsed("0001_x.existing.sql", "SELECT a, c FROM t;"));
+
+    auto report = scenario.run();
+    REQUIRE(report);
+
+    CHECK(has_event(*report, EMigrationEvent::Edited));
+    CHECK_FALSE(std::ranges::contains(scenario.store.executed, "SELECT a, c FROM t;"sv));
 }
 
 

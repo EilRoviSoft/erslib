@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.28)
 
 project(erslib
-    VERSION 1.2.5
-    DESCRIPTION "EilRoviSoft's universal library"
-    LANGUAGES CXX
+	VERSION 1.2.5
+	DESCRIPTION "EilRoviSoft's universal library"
+	LANGUAGES CXX
 )
 
 
@@ -39,12 +39,12 @@ option(ERSLIB_ENABLE_REFLECTION "Use C++26 static reflection (P2996)" OFF)
 
 
 set_if_undefined(ERSLIB_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/erslib"
-    CACHE STRING "Install path for erslib package-related CMake files"
+	CACHE STRING "Install path for erslib package-related CMake files"
 )
 
 if(NOT DEFINED CMAKE_BUILD_TYPE AND NOT DEFINED CMAKE_CONFIGURATION_TYPES)
-    set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
-    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+	set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
+	set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif()
 
 #----------------------------------------------------------------------------------------------------------------------
@@ -53,49 +53,49 @@ endif()
 
 
 function(erslib_add_library target_name alias_name)
-    if(ERSLIB_SHARED_LIBS)
-        add_library(${target_name} SHARED)
-    else()
-        add_library(${target_name} STATIC)
-    endif()
+	if(ERSLIB_SHARED_LIBS)
+		add_library(${target_name} SHARED)
+	else()
+		add_library(${target_name} STATIC)
+	endif()
 
-    add_library(erslib::${alias_name} ALIAS ${target_name})
+	add_library(erslib::${alias_name} ALIAS ${target_name})
 
-    set_target_properties(${target_name} PROPERTIES EXPORT_NAME ${alias_name})
+	set_target_properties(${target_name} PROPERTIES EXPORT_NAME ${alias_name})
 
-    target_compile_features(${target_name} PUBLIC cxx_std_26)
+	target_compile_features(${target_name} PUBLIC cxx_std_26)
 
-    target_include_directories(${target_name}
-        PUBLIC
-            "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-            "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>"
-    )
+	target_include_directories(${target_name}
+		PUBLIC
+			"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+			"$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>"
+	)
 
-    target_compile_definitions(${target_name}
-        PUBLIC
-            "$<$<NOT:$<BOOL:${BUILD_SHARED_LIBS}>>:ERSLIB_STATIC_DEFINE>"
-    )
+	target_compile_definitions(${target_name}
+		PUBLIC
+			"$<$<NOT:$<BOOL:${BUILD_SHARED_LIBS}>>:ERSLIB_STATIC_DEFINE>"
+	)
 
-    message(STATUS "erslib: added target ${target_name} with alias ${alias_name}")
+	message(STATUS "erslib: added target ${target_name} with alias ${alias_name}")
 endfunction()
 
 
 function(erslib_optional_package target_name package_name dep_target_name compile_definition)
-    find_package(${package_name} CONFIG)
+	find_package(${package_name} CONFIG)
 
-    if(TARGET ${dep_target_name})
-        message(STATUS "erslib: found optional dependency ${package_name} for ${target_name}")
-        target_compile_definitions(${target_name} PUBLIC ${compile_definition})
-        target_link_libraries(${target_name} PUBLIC ${dep_target_name})
-    else()
-        message(STATUS "erslib: optional dependency ${package_name} not found")
-    endif()
+	if(TARGET ${dep_target_name})
+		message(STATUS "erslib: found optional dependency ${package_name} for ${target_name}")
+		target_compile_definitions(${target_name} PUBLIC ${compile_definition})
+		target_link_libraries(${target_name} PUBLIC ${dep_target_name})
+	else()
+		message(STATUS "erslib: optional dependency ${package_name} not found")
+	endif()
 endfunction()
 
 
 function(erslib_required_package target_name package_name dep_target_name)
-    find_package(${package_name} CONFIG REQUIRED)
-    target_link_libraries(${target_name} PUBLIC ${dep_target_name})
+	find_package(${package_name} CONFIG REQUIRED)
+	target_link_libraries(${target_name} PUBLIC ${dep_target_name})
 endfunction()
 
 
@@ -110,14 +110,14 @@ set(ERSLIB_TARGETS "")
 erslib_add_library(erslib_core core)
 
 target_sources(erslib_core
-    PRIVATE
-        "include/erslib/export.hpp"
+	PRIVATE
+		"include/erslib/export.hpp"
 
-        "src/erslib/core/assert.cpp"
+		"src/erslib/core/assert.cpp"
 
-        "src/erslib/core/algorithm/args.cpp"
-        "src/erslib/core/algorithm/split/regular.cpp"
-        "src/erslib/core/algorithm/split/smart.cpp"
+		"src/erslib/core/algorithm/args.cpp"
+		"src/erslib/core/algorithm/split/regular.cpp"
+		"src/erslib/core/algorithm/split/smart.cpp"
 
 		"src/erslib/core/async/bulkhead.cpp"
 		"src/erslib/core/async/control.cpp"
@@ -126,29 +126,29 @@ target_sources(erslib_core
 		"src/erslib/core/async/scheduler.cpp"
 		"src/erslib/core/async/task.cpp"
 
-        "src/erslib/core/convert/pg_time.cpp"
-        "src/erslib/core/convert/time.cpp"
+		"src/erslib/core/convert/pg_time.cpp"
+		"src/erslib/core/convert/time.cpp"
 
-        "src/erslib/core/exception/internal.cpp"
+		"src/erslib/core/exception/internal.cpp"
 
-        "src/erslib/core/localization/config.cpp"
-        "src/erslib/core/localization/domain.cpp"
-        "src/erslib/core/localization/domain_view.cpp"
-        "src/erslib/core/localization/key.cpp"
-        "src/erslib/core/localization/locale_table.cpp"
-        "src/erslib/core/localization/locale_view.cpp"
+		"src/erslib/core/localization/config.cpp"
+		"src/erslib/core/localization/domain.cpp"
+		"src/erslib/core/localization/domain_view.cpp"
+		"src/erslib/core/localization/key.cpp"
+		"src/erslib/core/localization/locale_table.cpp"
+		"src/erslib/core/localization/locale_view.cpp"
 
-        "src/erslib/core/random/entropy.cpp"
+		"src/erslib/core/random/entropy.cpp"
 
-        "src/erslib/core/thread_safe/rate_limiter.cpp"
-        "src/erslib/core/thread_safe/shuffle_seed.cpp"
+		"src/erslib/core/thread_safe/rate_limiter.cpp"
+		"src/erslib/core/thread_safe/shuffle_seed.cpp"
 
-        "src/erslib/core/type/diagnostic.cpp"
-        "src/erslib/core/type/uuid.cpp"
-        "src/erslib/core/type/version.cpp"
+		"src/erslib/core/type/diagnostic.cpp"
+		"src/erslib/core/type/uuid.cpp"
+		"src/erslib/core/type/version.cpp"
 
-        "src/erslib/core/util/file.cpp"
-        "src/erslib/core/util/string.cpp"
+		"src/erslib/core/util/file.cpp"
+		"src/erslib/core/util/string.cpp"
 )
 
 erslib_required_package(erslib_core boost_preprocessor Boost::preprocessor)
@@ -163,58 +163,58 @@ erslib_optional_package(erslib_core cpptrace cpptrace::cpptrace _HAS_CPPTRACE)
 
 
 if(ERSLIB_EXPOSE_GENERAL)
-    target_compile_definitions(erslib_core PUBLIC ERS_EXPOSE_GENERAL)
+	target_compile_definitions(erslib_core PUBLIC ERS_EXPOSE_GENERAL)
 endif()
 
 if(ERSLIB_ENABLE_REFLECTION)
-    include(CheckCXXSourceCompiles)
-    set(CMAKE_REQUIRED_FLAGS "-std=c++26 -freflection")
-    check_cxx_source_compiles("
-        #include <meta>
-        struct S { int x; };
-        constexpr auto r = ^^S;
-        static_assert(std::meta::is_type(r));
-        int main() {}
-    " ERSLIB_HAVE_P2996)
-    unset(CMAKE_REQUIRED_FLAGS)
+	include(CheckCXXSourceCompiles)
+	set(CMAKE_REQUIRED_FLAGS "-std=c++26 -freflection")
+	check_cxx_source_compiles("
+		#include <meta>
+		struct S { int x; };
+		constexpr auto r = ^^S;
+		static_assert(std::meta::is_type(r));
+		int main() {}
+	" ERSLIB_HAVE_P2996)
+	unset(CMAKE_REQUIRED_FLAGS)
 
-    if(NOT ERSLIB_HAVE_P2996)
-        message(FATAL_ERROR "ERSLIB_ENABLE_REFLECTION requires GCC >= 16.1 with -freflection.")
-    endif()
+	if(NOT ERSLIB_HAVE_P2996)
+		message(FATAL_ERROR "ERSLIB_ENABLE_REFLECTION requires GCC >= 16.1 with -freflection.")
+	endif()
 
-    target_compile_options(erslib_core
-        PUBLIC
-            $<$<COMPILE_LANG_AND_ID:CXX,GNU>:-freflection>
-    )
-    target_compile_definitions(erslib_core PUBLIC ERSLIB_HAS_REFLECTION)
+	target_compile_options(erslib_core
+		PUBLIC
+			$<$<COMPILE_LANG_AND_ID:CXX,GNU>:-freflection>
+	)
+	target_compile_definitions(erslib_core PUBLIC ERSLIB_HAS_REFLECTION)
 endif()
 
 if(IS_TOP_LEVEL)
-    target_compile_definitions(erslib_core
-        PRIVATE
-            ERS_ASSERT_INFO
-    )
+	target_compile_definitions(erslib_core
+		PRIVATE
+			ERS_ASSERT_INFO
+	)
 endif()
 
 set(ERS_TRACE_VERBOSITY "1" CACHE STRING "Trace verbosity level for erslib (0 = off, 1 = basic, 2 = full)")
 
 target_compile_definitions(erslib_core
-    PUBLIC
-        ERS_TRACE_VERBOSITY=${ERS_TRACE_VERBOSITY}
+	PUBLIC
+		ERS_TRACE_VERBOSITY=${ERS_TRACE_VERBOSITY}
 )
 
 target_compile_options(erslib_core
-    PUBLIC
-        "$<BUILD_INTERFACE:$<$<CXX_COMPILER_ID:GNU>:SHELL:-include erslib/ide_compat.hpp>>"
+	PUBLIC
+		"$<BUILD_INTERFACE:$<$<CXX_COMPILER_ID:GNU>:SHELL:-include erslib/ide_compat.hpp>>"
 )
 
 if(ERS_TRACE_VERBOSITY STREQUAL "2")
-    set(ERS_TRACE_MAX_DEPTH "0" CACHE STRING "Trace verbosity max depth")
+	set(ERS_TRACE_MAX_DEPTH "0" CACHE STRING "Trace verbosity max depth")
 
-    target_compile_definitions(erslib_core
-        PUBLIC
-            ERS_TRACE_MAX_DEPTH=${ERS_TRACE_MAX_DEPTH}
-    )
+	target_compile_definitions(erslib_core
+		PUBLIC
+			ERS_TRACE_MAX_DEPTH=${ERS_TRACE_MAX_DEPTH}
+	)
 endif()
 
 list(APPEND ERSLIB_TARGETS erslib_core)
@@ -226,30 +226,30 @@ list(APPEND ERSLIB_TARGETS erslib_core)
 
 
 if(ERSLIB_BUILD_CONTRIB)
-    erslib_add_library(erslib_contrib contrib)
+	erslib_add_library(erslib_contrib contrib)
 
-    target_sources(erslib_contrib
-        PRIVATE
-            "src/erslib/contrib/l10n.cpp"
-            "src/erslib/contrib/json/impl.cpp"
-    )
+	target_sources(erslib_contrib
+		PRIVATE
+			"src/erslib/contrib/l10n.cpp"
+			"src/erslib/contrib/json/impl.cpp"
+	)
 
-    target_link_libraries(erslib_contrib
-        PUBLIC
-            erslib_core
-    )
+	target_link_libraries(erslib_contrib
+		PUBLIC
+			erslib_core
+	)
 
-    erslib_optional_package(erslib_contrib boost_unordered Boost::unordered _HAS_BOOST_UNORDERED)
-    erslib_optional_package(erslib_contrib inja pantor::inja _HAS_INJA)
-    erslib_optional_package(erslib_contrib valijson valijson _HAS_VALIJSON)
-
-
-    if(TARGET valijson)
-        target_sources(erslib_contrib PRIVATE "src/erslib/contrib/valijson.cpp")
-    endif()
+	erslib_optional_package(erslib_contrib boost_unordered Boost::unordered _HAS_BOOST_UNORDERED)
+	erslib_optional_package(erslib_contrib inja pantor::inja _HAS_INJA)
+	erslib_optional_package(erslib_contrib valijson valijson _HAS_VALIJSON)
 
 
-    list(APPEND ERSLIB_TARGETS erslib_contrib)
+	if(TARGET valijson)
+		target_sources(erslib_contrib PRIVATE "src/erslib/contrib/valijson.cpp")
+	endif()
+
+
+	list(APPEND ERSLIB_TARGETS erslib_contrib)
 endif()
 
 
@@ -259,60 +259,61 @@ endif()
 
 
 if(ERSLIB_BUILD_FLUX)
-    erslib_add_library(erslib_flux flux)
+	erslib_add_library(erslib_flux flux)
 
-    target_sources(erslib_flux
-        PRIVATE
-            "src/erslib/flux/sql/context.cpp"
-            "src/erslib/flux/sql/identifier.cpp"
+	target_sources(erslib_flux
+		PRIVATE
+			"src/erslib/flux/sql/context.cpp"
+			"src/erslib/flux/sql/identifier.cpp"
 
-            "src/erslib/flux/expr/aggregate.cpp"
-            "src/erslib/flux/expr/expr.cpp"
+			"src/erslib/flux/expr/aggregate.cpp"
+			"src/erslib/flux/expr/expr.cpp"
 
-            "src/erslib/flux/query/clause.cpp"
-            "src/erslib/flux/query/layout.cpp"
-            "src/erslib/flux/query/query_builder.cpp"
-            "src/erslib/flux/query/query_store.cpp"
-            "src/erslib/flux/query/render.cpp"
+			"src/erslib/flux/query/clause.cpp"
+			"src/erslib/flux/query/layout.cpp"
+			"src/erslib/flux/query/query_builder.cpp"
+			"src/erslib/flux/query/query_store.cpp"
+			"src/erslib/flux/query/render.cpp"
 
-            "src/erslib/flux/query/clauses/assign.cpp"
-            "src/erslib/flux/query/clauses/bound.cpp"
-            "src/erslib/flux/query/clauses/column.cpp"
-            "src/erslib/flux/query/clauses/conflict.cpp"
-            "src/erslib/flux/query/clauses/distinct.cpp"
-            "src/erslib/flux/query/clauses/identity.cpp"
-            "src/erslib/flux/query/clauses/join.cpp"
-            "src/erslib/flux/query/clauses/order.cpp"
-            "src/erslib/flux/query/clauses/raw.cpp"
-            "src/erslib/flux/query/clauses/returning.cpp"
-            "src/erslib/flux/query/clauses/values.cpp"
-            "src/erslib/flux/query/clauses/where.cpp"
+			"src/erslib/flux/query/clauses/assign.cpp"
+			"src/erslib/flux/query/clauses/bound.cpp"
+			"src/erslib/flux/query/clauses/column.cpp"
+			"src/erslib/flux/query/clauses/conflict.cpp"
+			"src/erslib/flux/query/clauses/distinct.cpp"
+			"src/erslib/flux/query/clauses/identity.cpp"
+			"src/erslib/flux/query/clauses/join.cpp"
+			"src/erslib/flux/query/clauses/order.cpp"
+			"src/erslib/flux/query/clauses/raw.cpp"
+			"src/erslib/flux/query/clauses/returning.cpp"
+			"src/erslib/flux/query/clauses/values.cpp"
+			"src/erslib/flux/query/clauses/where.cpp"
 
-            "src/erslib/flux/query/layouts/delete.cpp"
-            "src/erslib/flux/query/layouts/exists.cpp"
-            "src/erslib/flux/query/layouts/insert.cpp"
-            "src/erslib/flux/query/layouts/select.cpp"
-            "src/erslib/flux/query/layouts/update.cpp"
+			"src/erslib/flux/query/layouts/delete.cpp"
+			"src/erslib/flux/query/layouts/exists.cpp"
+			"src/erslib/flux/query/layouts/insert.cpp"
+			"src/erslib/flux/query/layouts/select.cpp"
+			"src/erslib/flux/query/layouts/update.cpp"
 
-            "src/erslib/flux/connection/connection_pool.cpp"
-            "src/erslib/flux/connection/database.cpp"
-            "src/erslib/flux/connection/options.cpp"
+			"src/erslib/flux/connection/connection_pool.cpp"
+			"src/erslib/flux/connection/database.cpp"
+			"src/erslib/flux/connection/options.cpp"
 
-            "src/erslib/flux/migration/declaration_diff.cpp"
-            "src/erslib/flux/migration/migrate.cpp"
-            "src/erslib/flux/migration/migrator.cpp"
-            "src/erslib/flux/migration/source.cpp"
-    )
+			"src/erslib/flux/migration/canonical.cpp"
+			"src/erslib/flux/migration/declaration_diff.cpp"
+			"src/erslib/flux/migration/migrate.cpp"
+			"src/erslib/flux/migration/migrator.cpp"
+			"src/erslib/flux/migration/source.cpp"
+	)
 
-    target_link_libraries(erslib_flux
-        PUBLIC
-            erslib_core
-    )
+	target_link_libraries(erslib_flux
+		PUBLIC
+			erslib_core
+	)
 
-    find_package(PostgreSQL)
-    erslib_required_package(erslib_flux libpqxx libpqxx::pqxx)
+	find_package(PostgreSQL)
+	erslib_required_package(erslib_flux libpqxx libpqxx::pqxx)
 
-    list(APPEND ERSLIB_TARGETS erslib_flux)
+	list(APPEND ERSLIB_TARGETS erslib_flux)
 endif()
 
 
@@ -322,29 +323,29 @@ endif()
 
 
 if(ERSLIB_BUILD_CRYPTO)
-    erslib_add_library(erslib_crypto crypto)
+	erslib_add_library(erslib_crypto crypto)
 
-    target_sources(erslib_crypto
-        PRIVATE
-            "src/erslib/crypto/hash.cpp"
-            "src/erslib/crypto/password.cpp"
-            "src/erslib/crypto/random.cpp"
-    )
+	target_sources(erslib_crypto
+		PRIVATE
+			"src/erslib/crypto/hash.cpp"
+			"src/erslib/crypto/password.cpp"
+			"src/erslib/crypto/random.cpp"
+	)
 
-    target_link_libraries(erslib_crypto
-        PUBLIC
-            erslib_core
-    )
+	target_link_libraries(erslib_crypto
+		PUBLIC
+			erslib_core
+	)
 
-    find_package(botan CONFIG REQUIRED)
+	find_package(botan CONFIG REQUIRED)
 
-    if(TARGET botan::botan-static)
-        target_link_libraries(erslib_crypto PRIVATE botan::botan-static)
-    else()
-        target_link_libraries(erslib_crypto PRIVATE botan::botan)
-    endif()
+	if(TARGET botan::botan-static)
+		target_link_libraries(erslib_crypto PRIVATE botan::botan-static)
+	else()
+		target_link_libraries(erslib_crypto PRIVATE botan::botan)
+	endif()
 
-    list(APPEND ERSLIB_TARGETS erslib_crypto)
+	list(APPEND ERSLIB_TARGETS erslib_crypto)
 endif()
 
 
@@ -354,22 +355,22 @@ endif()
 
 
 if(ERSLIB_BUILD_LOGGING)
-    erslib_add_library(erslib_logging logging)
+	erslib_add_library(erslib_logging logging)
 
-    target_sources(erslib_logging
-        PRIVATE
-            "src/erslib/logging/diagnostic.cpp"
-            "src/erslib/logging/factory.cpp"
-    )
+	target_sources(erslib_logging
+		PRIVATE
+			"src/erslib/logging/diagnostic.cpp"
+			"src/erslib/logging/factory.cpp"
+	)
 
-    target_link_libraries(erslib_logging
-        PUBLIC
-            erslib_core
-    )
+	target_link_libraries(erslib_logging
+		PUBLIC
+			erslib_core
+	)
 
-    erslib_required_package(erslib_logging quill quill::quill)
+	erslib_required_package(erslib_logging quill quill::quill)
 
-    list(APPEND ERSLIB_TARGETS erslib_logging)
+	list(APPEND ERSLIB_TARGETS erslib_logging)
 endif()
 
 
@@ -379,50 +380,50 @@ endif()
 
 
 if(ERSLIB_BUILD_WEB)
-    if(NOT ERSLIB_BUILD_CONTRIB)
-        message(FATAL_ERROR "ERSLIB_BUILD_WEB requires ERSLIB_BUILD_CONTRIB")
-    endif()
+	if(NOT ERSLIB_BUILD_CONTRIB)
+		message(FATAL_ERROR "ERSLIB_BUILD_WEB requires ERSLIB_BUILD_CONTRIB")
+	endif()
 
-    erslib_add_library(erslib_web web)
+	erslib_add_library(erslib_web web)
 
-    target_sources(erslib_web
-        PRIVATE
-            "src/erslib/web/request.cpp"
-            "src/erslib/web/response.cpp"
+	target_sources(erslib_web
+		PRIVATE
+			"src/erslib/web/request.cpp"
+			"src/erslib/web/response.cpp"
 
-            "src/erslib/web/middleware/cors.cpp"
-            "src/erslib/web/middleware/json_body.cpp"
-            "src/erslib/web/middleware/rate_limit.cpp"
-    )
+			"src/erslib/web/middleware/cors.cpp"
+			"src/erslib/web/middleware/json_body.cpp"
+			"src/erslib/web/middleware/rate_limit.cpp"
+	)
 
-    target_link_libraries(erslib_web
-        PUBLIC
-            erslib_core
-            erslib_contrib
-    )
+	target_link_libraries(erslib_web
+		PUBLIC
+			erslib_core
+			erslib_contrib
+	)
 
-    erslib_required_package(erslib_web Crow Crow::Crow)
+	erslib_required_package(erslib_web Crow Crow::Crow)
 
-    if(ERSLIB_WEB_USE_BOOST_ASIO)
-        erslib_required_package(erslib_web boost_asio Boost::asio)
-        target_compile_definitions(erslib_web PUBLIC CROW_USE_BOOST)
-    endif()
+	if(ERSLIB_WEB_USE_BOOST_ASIO)
+		erslib_required_package(erslib_web boost_asio Boost::asio)
+		target_compile_definitions(erslib_web PUBLIC CROW_USE_BOOST)
+	endif()
 
-    if(ERSLIB_BUILD_LOGGING)
-        target_sources(erslib_web
-            PRIVATE
-                "src/erslib/web/log.cpp"
-        )
+	if(ERSLIB_BUILD_LOGGING)
+		target_sources(erslib_web
+			PRIVATE
+				"src/erslib/web/log.cpp"
+		)
 
-        target_link_libraries(erslib_web
-            PUBLIC
-                erslib_logging
-        )
+		target_link_libraries(erslib_web
+			PUBLIC
+				erslib_logging
+		)
 
-        target_compile_definitions(erslib_web PUBLIC ERSLIB_WEB_HAS_LOGGING)
-    endif()
+		target_compile_definitions(erslib_web PUBLIC ERSLIB_WEB_HAS_LOGGING)
+	endif()
 
-    list(APPEND ERSLIB_TARGETS erslib_web)
+	list(APPEND ERSLIB_TARGETS erslib_web)
 endif()
 
 
@@ -432,46 +433,46 @@ endif()
 
 
 if(ERSLIB_BUILD_MODKIT)
-    erslib_add_library(erslib_modkit modkit)
+	erslib_add_library(erslib_modkit modkit)
 
-    target_sources(erslib_modkit
-        PRIVATE
-            "src/erslib/modkit/dependency.cpp"
-            "src/erslib/modkit/dependency_graph.cpp"
-            "src/erslib/modkit/mod.cpp"
+	target_sources(erslib_modkit
+		PRIVATE
+			"src/erslib/modkit/dependency.cpp"
+			"src/erslib/modkit/dependency_graph.cpp"
+			"src/erslib/modkit/mod.cpp"
 
-            "src/erslib/modkit/resource/texture.cpp"
+			"src/erslib/modkit/resource/texture.cpp"
 
-            "src/erslib/modkit/util/stage.cpp"
-    )
+			"src/erslib/modkit/util/stage.cpp"
+	)
 
-    target_link_libraries(erslib_modkit
-        PUBLIC
-            erslib_core
-    )
+	target_link_libraries(erslib_modkit
+		PUBLIC
+			erslib_core
+	)
 
-    if(ERSLIB_BUILD_CONTRIB)
-        target_link_libraries(erslib_modkit
-            PRIVATE
-                erslib_contrib
-        )
-    endif()
+	if(ERSLIB_BUILD_CONTRIB)
+		target_link_libraries(erslib_modkit
+			PRIVATE
+				erslib_contrib
+		)
+	endif()
 
-    erslib_required_package(erslib_modkit boost_container Boost::container)
-    erslib_required_package(erslib_modkit boost_regex Boost::regex)
-    erslib_required_package(erslib_modkit boost_unordered Boost::unordered)
-    erslib_required_package(erslib_modkit sol2 sol2::sol2)
-    
-    find_package(PkgConfig)
-    pkg_check_modules(LuaJIT IMPORTED_TARGET luajit)
-    target_compile_definitions(erslib_modkit PUBLIC _HAS_LUAJIT)
-    target_link_libraries(erslib_modkit PUBLIC PkgConfig::LuaJIT)
+	erslib_required_package(erslib_modkit boost_container Boost::container)
+	erslib_required_package(erslib_modkit boost_regex Boost::regex)
+	erslib_required_package(erslib_modkit boost_unordered Boost::unordered)
+	erslib_required_package(erslib_modkit sol2 sol2::sol2)
+	
+	find_package(PkgConfig)
+	pkg_check_modules(LuaJIT IMPORTED_TARGET luajit)
+	target_compile_definitions(erslib_modkit PUBLIC _HAS_LUAJIT)
+	target_link_libraries(erslib_modkit PUBLIC PkgConfig::LuaJIT)
 
-    erslib_required_package(erslib_modkit SDL3 SDL3::SDL3)
-    erslib_required_package(erslib_modkit quill quill::quill)
-    erslib_required_package(erslib_modkit RmlUi RmlUi::RmlUi)
+	erslib_required_package(erslib_modkit SDL3 SDL3::SDL3)
+	erslib_required_package(erslib_modkit quill quill::quill)
+	erslib_required_package(erslib_modkit RmlUi RmlUi::RmlUi)
 
-    list(APPEND ERSLIB_TARGETS erslib_modkit)
+	list(APPEND ERSLIB_TARGETS erslib_modkit)
 endif()
 
 
@@ -481,27 +482,27 @@ endif()
 
 
 if(ERSLIB_BUILD_EASY_ECS)
-    if(NOT ERSLIB_BUILD_MODKIT)
-        message(FATAL_ERROR "ERSLIB_BUILD_EASY_ECS requires ERSLIB_BUILD_MODKIT")
-    endif()
+	if(NOT ERSLIB_BUILD_MODKIT)
+		message(FATAL_ERROR "ERSLIB_BUILD_EASY_ECS requires ERSLIB_BUILD_MODKIT")
+	endif()
 
-    erslib_add_library(erslib_easy_ecs easy_ecs)
+	erslib_add_library(erslib_easy_ecs easy_ecs)
 
-    target_sources(erslib_easy_ecs
-        PRIVATE
-            "src/erslib/easy_ecs/entity.cpp"
-            "src/erslib/easy_ecs/group.cpp"
-            "src/erslib/easy_ecs/registry.cpp"
-    )
+	target_sources(erslib_easy_ecs
+		PRIVATE
+			"src/erslib/easy_ecs/entity.cpp"
+			"src/erslib/easy_ecs/group.cpp"
+			"src/erslib/easy_ecs/registry.cpp"
+	)
 
-    target_link_libraries(erslib_easy_ecs
-        PUBLIC
-            erslib_modkit
-    )
+	target_link_libraries(erslib_easy_ecs
+		PUBLIC
+			erslib_modkit
+	)
 
-    erslib_required_package(erslib_easy_ecs frozen frozen::frozen _HAS_FROZEN)
+	erslib_required_package(erslib_easy_ecs frozen frozen::frozen _HAS_FROZEN)
 
-    list(APPEND ERSLIB_TARGETS erslib_easy_ecs)
+	list(APPEND ERSLIB_TARGETS erslib_easy_ecs)
 endif()
 
 
@@ -511,32 +512,32 @@ endif()
 
 
 if(ERSLIB_BUILD_LUASCHEMA)
-    if(NOT ERSLIB_BUILD_MODKIT)
-        message(FATAL_ERROR "ERSLIB_BUILD_LUASCHEMA requires ERSLIB_BUILD_MODKIT")
-    endif()
+	if(NOT ERSLIB_BUILD_MODKIT)
+		message(FATAL_ERROR "ERSLIB_BUILD_LUASCHEMA requires ERSLIB_BUILD_MODKIT")
+	endif()
 
-    erslib_add_library(erslib_luaschema luaschema)
+	erslib_add_library(erslib_luaschema luaschema)
 
-    target_sources(erslib_luaschema
-        PRIVATE
-            "src/erslib/luaschema/impl/field.cpp"
-            "src/erslib/luaschema/impl/layout.cpp"
-            "src/erslib/luaschema/impl/util.cpp"
+	target_sources(erslib_luaschema
+		PRIVATE
+			"src/erslib/luaschema/impl/field.cpp"
+			"src/erslib/luaschema/impl/layout.cpp"
+			"src/erslib/luaschema/impl/util.cpp"
 
-            "src/erslib/luaschema/properties/exclusive_with.cpp"
-            "src/erslib/luaschema/properties/inclusive_with.cpp"
-            "src/erslib/luaschema/properties/one_of.cpp"
-            "src/erslib/luaschema/properties/presence.cpp"
-    )
+			"src/erslib/luaschema/properties/exclusive_with.cpp"
+			"src/erslib/luaschema/properties/inclusive_with.cpp"
+			"src/erslib/luaschema/properties/one_of.cpp"
+			"src/erslib/luaschema/properties/presence.cpp"
+	)
 
-    target_link_libraries(erslib_luaschema
-        PUBLIC
-            erslib_modkit
-    )
+	target_link_libraries(erslib_luaschema
+		PUBLIC
+			erslib_modkit
+	)
 
-    erslib_required_package(erslib_luaschema sol2 sol2::sol2)
+	erslib_required_package(erslib_luaschema sol2 sol2::sol2)
 
-    list(APPEND ERSLIB_TARGETS erslib_luaschema)
+	list(APPEND ERSLIB_TARGETS erslib_luaschema)
 endif()
 
 
@@ -549,12 +550,12 @@ include(GenerateExportHeader)
 set(EXPORT_FILE_NAME "export_shared.hpp")
 
 if(NOT BUILD_SHARED_LIBS)
-    set(EXPORT_FILE_NAME "export_static.hpp")
+	set(EXPORT_FILE_NAME "export_static.hpp")
 endif()
 
 generate_export_header(erslib_core
-    BASE_NAME erslib
-    EXPORT_FILE_NAME include/erslib/${EXPORT_FILE_NAME}
+	BASE_NAME erslib
+	EXPORT_FILE_NAME include/erslib/${EXPORT_FILE_NAME}
 )
 
 
@@ -564,58 +565,58 @@ generate_export_header(erslib_core
 
 
 if(ERSLIB_INSTALL AND NOT CMAKE_SKIP_INSTALL_RULES)
-    include(CMakePackageConfigHelpers)
+	include(CMakePackageConfigHelpers)
 
-    configure_package_config_file(
-        cmake/erslib-config.cmake.in
-        erslib-config.cmake
-        INSTALL_DESTINATION "${ERSLIB_INSTALL_CMAKEDIR}"
-    )
+	configure_package_config_file(
+		cmake/erslib-config.cmake.in
+		erslib-config.cmake
+		INSTALL_DESTINATION "${ERSLIB_INSTALL_CMAKEDIR}"
+	)
 
-    write_basic_package_version_file(
-        erslib-config-version.cmake
-        COMPATIBILITY SameMajorVersion
-    )
+	write_basic_package_version_file(
+		erslib-config-version.cmake
+		COMPATIBILITY SameMajorVersion
+	)
 
-    install(TARGETS ${ERSLIB_TARGETS} EXPORT erslib_export
-        RUNTIME COMPONENT erslib
-        LIBRARY COMPONENT erslib NAMELINK_COMPONENT erslib_dev
-        ARCHIVE COMPONENT erslib_dev
-        INCLUDES DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
-    )
+	install(TARGETS ${ERSLIB_TARGETS} EXPORT erslib_export
+		RUNTIME COMPONENT erslib
+		LIBRARY COMPONENT erslib NAMELINK_COMPONENT erslib_dev
+		ARCHIVE COMPONENT erslib_dev
+		INCLUDES DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+	)
 
-    install(
-        DIRECTORY include/
-        TYPE INCLUDE
-        COMPONENT erslib_dev
-        PATTERN "export_static.hpp" EXCLUDE
-        PATTERN "export_shared.hpp" EXCLUDE
-        PATTERN "ide_compat.hpp" EXCLUDE
-    )
+	install(
+		DIRECTORY include/
+		TYPE INCLUDE
+		COMPONENT erslib_dev
+		PATTERN "export_static.hpp" EXCLUDE
+		PATTERN "export_shared.hpp" EXCLUDE
+		PATTERN "ide_compat.hpp" EXCLUDE
+	)
 
-    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/include/erslib/${EXPORT_FILE_NAME}"
-        COMPONENT erslib_dev
-        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/erslib"
-    )
+	install(FILES "${CMAKE_CURRENT_BINARY_DIR}/include/erslib/${EXPORT_FILE_NAME}"
+		COMPONENT erslib_dev
+		DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/erslib"
+	)
 
-    if(BUILD_SHARED_LIBS)
-        set(TARGETS_FILE "erslib-shared-targets.cmake")
-    else()
-        set(TARGETS_FILE "erslib-static-targets.cmake")
-    endif()
+	if(BUILD_SHARED_LIBS)
+		set(TARGETS_FILE "erslib-shared-targets.cmake")
+	else()
+		set(TARGETS_FILE "erslib-static-targets.cmake")
+	endif()
 
-    install(EXPORT erslib_export
-        COMPONENT erslib_dev
-        FILE "${TARGETS_FILE}"
-        DESTINATION "${ERSLIB_INSTALL_CMAKEDIR}"
-        NAMESPACE erslib::
-    )
+	install(EXPORT erslib_export
+		COMPONENT erslib_dev
+		FILE "${TARGETS_FILE}"
+		DESTINATION "${ERSLIB_INSTALL_CMAKEDIR}"
+		NAMESPACE erslib::
+	)
 
-    install(FILES
-        "${CMAKE_CURRENT_BINARY_DIR}/erslib-config.cmake"
-        COMPONENT erslib_dev
-        DESTINATION "${ERSLIB_INSTALL_CMAKEDIR}"
-    )
+	install(FILES
+		"${CMAKE_CURRENT_BINARY_DIR}/erslib-config.cmake"
+		COMPONENT erslib_dev
+		DESTINATION "${ERSLIB_INSTALL_CMAKEDIR}"
+	)
 
 endif()
 
@@ -626,6 +627,6 @@ endif()
 
 
 if(ERSLIB_BUILD_TESTS)
-    enable_testing()
-    add_subdirectory(test)
+	enable_testing()
+	add_subdirectory(test)
 endif()
