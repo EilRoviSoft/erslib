@@ -192,8 +192,13 @@ ers::impl::AsyncTask<ers::process_output_t> ers::impl::run_process(std::vector<s
     auto executor = co_await boost::asio::this_coro::executor;
     bool has_input = !options.input.empty();
 
+    decltype(proc::environment::find_executable(args[0])) executable;
 
-    auto executable = proc::environment::find_executable(args[0]);
+    if (args[0].contains('/')) {
+        if (::access(args[0].c_str(), X_OK) == 0)
+            executable = args[0];
+    } else
+        executable = proc::environment::find_executable(args[0]);
 
     if (executable.empty()) {
         co_return make_error("Could not start '{}': executable not found.",

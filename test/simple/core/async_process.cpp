@@ -106,6 +106,20 @@ ERS_TEST_CASE("missing", "[async]") {
     REQUIRE(mentions(result, "Could not start"));
 }
 
+ERS_TEST_CASE("path", "[async]") {
+    auto result = ers::sync_wait(ers::run_process({ "/bin/echo", "hello" }));
+
+    REQUIRE(result.has_value());
+    REQUIRE(result->exit_code == 0);
+    REQUIRE(result->out == "hello\n");
+}
+
+ERS_TEST_CASE("not executable", "[async]") {
+    auto result = ers::sync_wait(ers::run_process({ "/etc/hostname" }));
+
+    REQUIRE(mentions(result, "Could not start"));
+}
+
 ERS_TEST_CASE("empty", "[async]") {
     REQUIRE(!ers::sync_wait(ers::run_process({})));
 }
