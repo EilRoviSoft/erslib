@@ -20,8 +20,8 @@ namespace utl::impl {
     struct json_key_t {
         const char* name;
 
-        consteval json_key_t(const char* value) :
-            name(value) {
+        consteval json_key_t(std::string_view value) :
+            name(std::define_static_string(value)) {
         }
     };
 
