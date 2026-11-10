@@ -42,9 +42,9 @@ namespace ers::web::impl {
     struct Response {
         static constexpr crow::status code = Code;
 
-        static constexpr bool is_success = is_between_upto(std::to_underlying(Code), 200, 300);
-        static constexpr bool is_redirect = is_between_upto(std::to_underlying(Code), 300, 400);
-        static constexpr bool is_failure = is_between_upto(std::to_underlying(Code), 400, 600);
+        static constexpr bool is_success = is_between_from(std::to_underlying(Code), 200, 300);
+        static constexpr bool is_redirect = is_between_from(std::to_underlying(Code), 300, 400);
+        static constexpr bool is_failure = is_between_from(std::to_underlying(Code), 400, 600);
 
         static constexpr bool has_no_body = is_one_of<Code, crow::NO_CONTENT, crow::RESET_CONTENT, crow::NOT_MODIFIED>;
 

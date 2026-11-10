@@ -92,14 +92,8 @@ namespace ers::impl::enum_gen {
             taken.push_back(name);
 
             specs.push_back(std::meta::data_member_spec(
-                std::meta::substitute(^^T::template entry),
-                {
-                    .name      = std::meta::reflect_constant(value),
-                    .alignment = {
-                        .name              = std::define_static_string(name),
-                        .no_unique_address = true,
-                    }
-                }
+                std::meta::substitute(^^T::template entry, { std::meta::reflect_constant(value) }),
+                { .name = std::define_static_string(name), .no_unique_address = true, }
             ));
         }
 

@@ -15,9 +15,12 @@
 
 namespace ers::web {
     using impl::failure_json;
+    
     using impl::make_response;
     using impl::make_failure;
-    using impl::make_ok;
+    using impl::make_empty;
+    using impl::make_redirect;
+
     using impl::end_with_json;
     using impl::end_with_failure;
 
