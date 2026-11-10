@@ -25,6 +25,7 @@ utl::Json ers::web::impl::failure_json(std::string_view message) {
     return out;
 }
 
+
 crow::response ers::web::impl::make_response(crow::status code, const utl::Json& body) {
     crow::response res;
     write_json(res, code, body);
@@ -35,6 +36,18 @@ crow::response ers::web::impl::make_response(crow::status code, const utl::Json&
 crow::response ers::web::impl::make_failure(crow::status code, std::string_view message) {
     return make_response(code, failure_json(message));
 }
+
+
+crow::response ers::web::impl::make_empty(crow::status code) {
+    return crow::response(code);
+}
+
+crow::response ers::web::impl::make_redirect(crow::status code, std::string_view location) {
+    crow::response res(code);
+    res.add_header("Location", std::string(location));
+    return res;
+}
+
 
 void ers::web::impl::end_with_json(crow::response& res, crow::status code, const utl::Json& body) {
     write_json(res, code, body);
