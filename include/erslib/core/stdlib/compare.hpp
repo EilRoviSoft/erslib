@@ -10,12 +10,12 @@ namespace ers::impl {
     constexpr bool is_between(V v, A a, B b) {
         return v > a && v < b;
     }
-    // v ∈ [a, b)
+    // v ∈ (a, b]
     template<std::integral V, std::integral A, std::integral B>
     constexpr bool is_between_upto(V v, A a, B b) {
         return v > a && v <= b;
     }
-    // v ∈ (a, b]
+    // v ∈ [a, b)
     template<std::integral V, std::integral A, std::integral B>
     constexpr bool is_between_from(V v, A a, B b) {
         return v >= a && v < b;
