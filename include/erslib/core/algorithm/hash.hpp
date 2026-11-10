@@ -17,3 +17,10 @@ namespace ers::impl {
         return r;
     }
 }
+
+
+// Exports ---------------------------------------------------------------------
+
+namespace ers {
+    using impl::hash_combine;
+}

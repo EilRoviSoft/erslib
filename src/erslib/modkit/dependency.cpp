@@ -1,7 +1,7 @@
 #include "erslib/modkit/dependency.hpp"
 
 // ers
-#include <erslib/core/algorithm.hpp>
+#include <erslib/core/algorithm/split.hpp>
 #include <erslib/modkit/mod.hpp>
 
 

@@ -19,3 +19,13 @@ namespace ers::impl {
     ERSLIB_EXPORT std::string quote_arg(std::string_view arg);
     ERSLIB_EXPORT std::string join_args(const std::span<std::string>& args);
 }
+
+
+// Exports ---------------------------------------------------------------------
+
+namespace ers {
+    using impl::split_args;
+
+    using impl::quote_arg;
+    using impl::join_args;
+}

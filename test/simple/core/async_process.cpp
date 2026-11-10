@@ -15,8 +15,8 @@
 #include <unistd.h>
 
 // ers
-#include <erslib/core/algorithm.hpp>
 #include <erslib/core/filesystem.hpp>
+#include <erslib/core/algorithm/args.hpp>
 #include <erslib/core/async/process.hpp>
 #include <erslib/core/async/scheduler.hpp>
 

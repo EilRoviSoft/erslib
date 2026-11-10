@@ -41,3 +41,11 @@ namespace ers::impl {
         return v.insert(pos, std::move(value));
     }
 }
+
+
+// Exports ---------------------------------------------------------------------
+
+namespace ers {
+    using impl::keys_sorted_by_value;
+    using impl::insert_sorted;
+}

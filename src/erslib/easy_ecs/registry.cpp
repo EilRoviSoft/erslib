@@ -5,8 +5,8 @@
 #include <string_view>
 
 // ers
-#include <erslib/core/algorithm.hpp>
 #include <erslib/core/exception.hpp>
+#include <erslib/core/algorithm/hash.hpp>
 #include <erslib/core/hashing/rapid.hpp>
 
 

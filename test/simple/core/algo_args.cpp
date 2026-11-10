@@ -8,7 +8,7 @@
 #include <vector>
 
 // ers
-#include <erslib/core/algorithm.hpp>
+#include <erslib/core/algorithm/args.hpp>
 
 // test
 #include "support/test_case.hpp"

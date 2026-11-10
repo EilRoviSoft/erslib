@@ -9,10 +9,11 @@
 #include <utility>
 
 // ers
-#include <erslib/core/algorithm.hpp>
 #include <erslib/core/assert.hpp>
 #include <erslib/core/fwd.hpp>
 #include <erslib/core/macro.hpp>
+#include <erslib/core/algorithm/hash.hpp>
+#include <erslib/core/hashing/rapid.hpp>
 #include <erslib/core/util/tuple.hpp>
 #include <erslib/easy_ecs/component.hpp>
 #include <erslib/easy_ecs/entity.hpp>
