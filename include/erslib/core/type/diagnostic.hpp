@@ -48,7 +48,7 @@ namespace ers {
 }
 
 
-// Error
+// Diagnostic
 
 #ifdef _HAS_CPPTRACE
 
@@ -123,34 +123,36 @@ namespace ers::impl {
     };
 }
 
-namespace ers {
-    using impl::Diagnostic;
-}
 
+// Formatters
 
-#define DEFINE_DIAGNOSTIC(NAME, SEVERITY) \
+#define X_DIAGNOSTIC(NAME, SEVERITY) \
     template<typename... Args> \
         requires (sizeof...(Args) >= 1) \
-    Diagnostic make_##NAME(std::format_string<Args...> fmt, Args&&... args) { \
+    Diagnostic NAME(std::format_string<Args...> fmt, Args&&... args) { \
         return Diagnostic(ers::ESeverity::SEVERITY, std::format(fmt, std::forward<Args>(args)...)); \
     } \
     \
-    inline Diagnostic make_##NAME(std::string message) { \
+    inline Diagnostic NAME(std::string message) { \
         return Diagnostic(ers::ESeverity::SEVERITY, std::move(message)); \
     }
 
 namespace ers::impl {
-    DEFINE_DIAGNOSTIC(debug, Debug);
-    DEFINE_DIAGNOSTIC(info, Info);
-    DEFINE_DIAGNOSTIC(warning, Warning);
-    DEFINE_DIAGNOSTIC(error, Error);
-    DEFINE_DIAGNOSTIC(crit, Crit);
+    X_DIAGNOSTIC(make_debug, Debug);
+    X_DIAGNOSTIC(make_info, Info);
+    X_DIAGNOSTIC(make_warning, Warning);
+    X_DIAGNOSTIC(make_error, Error);
+    X_DIAGNOSTIC(make_crit, Crit);
 }
 
 #undef DEFINE_DIAGNOSTIC
 
 
 // Exports ---------------------------------------------------------------------
+
+namespace ers {
+    using impl::Diagnostic;
+}
 
 namespace ers {
     using impl::make_debug;

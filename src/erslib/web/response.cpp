@@ -36,14 +36,6 @@ crow::response ers::web::impl::make_failure(crow::status code, std::string_view 
     return make_response(code, failure_json(message));
 }
 
-crow::response ers::web::impl::make_ok() {
-    utl::Json body;
-
-    body["ok"] = true;
-
-    return make_response(crow::OK, body);
-}
-
 void ers::web::impl::end_with_json(crow::response& res, crow::status code, const utl::Json& body) {
     write_json(res, code, body);
     res.end();
