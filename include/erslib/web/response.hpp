@@ -142,7 +142,7 @@ namespace ers::web::impl {
     X(insufficient_storage, WEBDAV_INSUFFICIENT_STORAGE)
 
 #define ERS_WEB_DEFINE_STATUS(NAME, CODE) \
-    inline constexpr impl::Response<crow::CODE> make_##NAME {};
+    inline constexpr impl::Response<crow::CODE> NAME {};
 
 namespace ers::web {
     ERS_WEB_STATUSES(ERS_WEB_DEFINE_STATUS)
