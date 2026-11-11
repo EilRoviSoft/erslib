@@ -140,6 +140,8 @@ target_sources(erslib_core
 
 		"src/erslib/core/random/entropy.cpp"
 
+		"src/erslib/core/text/language_layout.cpp"
+
 		"src/erslib/core/thread_safe/rate_limiter.cpp"
 		"src/erslib/core/thread_safe/shuffle_seed.cpp"
 
