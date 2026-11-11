@@ -49,27 +49,27 @@
 // Exports ---------------------------------------------------------------------
 
 namespace ers::luaschema {
-    namespace properties = impl::properties;
+    namespace properties = impl::luaschema::properties;
 
 
-    using impl::verify_context;
-    using impl::parser_context;
+    using impl::luaschema::verify_context;
+    using impl::luaschema::parser_context;
 
-    using impl::IVerifier;
-    using impl::Verifier;
+    using impl::luaschema::IVerifier;
+    using impl::luaschema::Verifier;
 
-    using impl::IParser;
-    using impl::Parser;
+    using impl::luaschema::IParser;
+    using impl::luaschema::Parser;
 
-    using impl::IDescriptor;
-    using impl::Descriptor;
+    using impl::luaschema::IDescriptor;
+    using impl::luaschema::Descriptor;
 
-    using impl::Field;
+    using impl::luaschema::Field;
 
-    using impl::Layout;
-    using impl::LayoutContainer;
+    using impl::luaschema::Layout;
+    using impl::luaschema::LayoutContainer;
 
 
-    using impl::required_field;
-    using impl::optional_field;
+    using impl::luaschema::required_field;
+    using impl::luaschema::optional_field;
 }

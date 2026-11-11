@@ -11,7 +11,7 @@
 #include <erslib/modkit/fwd.hpp>
 
 
-namespace ers::modkit::impl {
+namespace ers::impl::modkit {
     template<typename T>
     struct value_bounds_t {
         T min;
@@ -45,7 +45,7 @@ namespace ers::modkit::impl {
 }
 
 
-namespace ers::modkit::impl {
+namespace ers::impl::modkit {
     template<typename T, typename ViewT = T>
     class BaseSetting {
     public:
@@ -81,7 +81,7 @@ namespace ers::modkit::impl {
 }
 
 
-namespace ers::modkit::impl {
+namespace ers::impl::modkit {
     class BoolSetting : BaseSetting<bool> {
     public:
         BoolSetting(ViewType default_value, ViewType forced_value);
@@ -117,8 +117,8 @@ namespace ers::modkit::impl {
 // Exports ---------------------------------------------------------------------
 
 namespace ers::modkit {
-    using impl::BoolSetting;
-    using impl::IntSetting;
-    using impl::DoubleSetting;
-    using impl::StringSetting;
+    using impl::modkit::BoolSetting;
+    using impl::modkit::IntSetting;
+    using impl::modkit::DoubleSetting;
+    using impl::modkit::StringSetting;
 }

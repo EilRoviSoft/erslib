@@ -8,7 +8,7 @@
 #include <erslib/luaschema/impl/field.hpp>
 
 
-ers::luaschema::impl::Layout::Layout(std::initializer_list<possible_property_t> il) {
+ers::impl::luaschema::Layout::Layout(std::initializer_list<possible_property_t> il) {
     for (auto& it : il) {
         std::visit([this]<typename T>(const T& v) {
             if constexpr (std::is_same_v<std::decay_t<T>, Field>)
@@ -20,16 +20,16 @@ ers::luaschema::impl::Layout::Layout(std::initializer_list<possible_property_t> 
 }
 
 
-void ers::luaschema::impl::Layout::add_field(Field field) {
+void ers::impl::luaschema::Layout::add_field(Field field) {
     _fields.emplace(std::move(field));
 }
 
-void ers::luaschema::impl::Layout::add_property(Descriptor property) {
+void ers::impl::luaschema::Layout::add_property(Descriptor property) {
     _descriptors.push_back(std::move(property));
 }
 
 
-ers::Status ers::luaschema::impl::Layout::verify(sol::table table) const {
+ers::Status ers::impl::luaschema::Layout::verify(sol::table table) const {
     for (const auto& field : _fields) {
         if (auto r = field.verify(table); !r)
             return r;
@@ -38,7 +38,7 @@ ers::Status ers::luaschema::impl::Layout::verify(sol::table table) const {
     return ers::ok;
 }
 
-ers::Status ers::luaschema::impl::Layout::parse(sol::table table, void* where) const {
+ers::Status ers::impl::luaschema::Layout::parse(sol::table table, void* where) const {
     for (const auto& field : _fields) {
         if (auto s = field.parse(table, where); !s) {
             return s;

@@ -12,7 +12,7 @@
 
 // Handlers
 
-void ers::web::impl::JsonBody::before_handle(crow::request& req, crow::response& res, context& ctx) {
+void ers::impl::web::JsonBody::before_handle(crow::request& req, crow::response& res, context& ctx) {
     auto body = read_body(req);
 
     if (!body)
@@ -21,4 +21,4 @@ void ers::web::impl::JsonBody::before_handle(crow::request& req, crow::response&
     ctx.body = std::move(*body);
 }
 
-void ers::web::impl::JsonBody::after_handle(crow::request&, crow::response&, context&) {}
+void ers::impl::web::JsonBody::after_handle(crow::request&, crow::response&, context&) {}

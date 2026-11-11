@@ -15,7 +15,7 @@
 #include <erslib/export.hpp>
 
 
-namespace ers::logging::impl {
+namespace ers::impl::logging {
     struct logger_options_t {
         std::string name = "main";
         fs::path file = "logs/latest.log";
@@ -32,6 +32,6 @@ namespace ers::logging::impl {
 }
 
 namespace ers::logging {
-    using impl::logger_options_t;
-    using impl::make_logger;
+    using impl::logging::logger_options_t;
+    using impl::logging::make_logger;
 }

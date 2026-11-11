@@ -8,14 +8,14 @@
 
 // Member functions
 
-ers::web::impl::LogHandler::LogHandler(quill::Logger* logger) :
+ers::impl::web::LogHandler::LogHandler(quill::Logger* logger) :
     _logger(logger) {
 }
 
 
 // Handlers
 
-void ers::web::impl::LogHandler::log(const std::string& message, crow::LogLevel level) {
+void ers::impl::web::LogHandler::log(const std::string& message, crow::LogLevel level) {
     switch (level) {
 #define X(CROW, QUILL) \
     case crow::LogLevel::CROW: \

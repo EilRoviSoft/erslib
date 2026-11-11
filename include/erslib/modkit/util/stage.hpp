@@ -11,7 +11,7 @@
 
 // Stage is '<phase>-<index>'
 
-namespace ers::modkit::impl {
+namespace ers::impl::modkit {
     ERSLIB_EXPORT bool is_stage_naming_scheme(std::string_view sv);
 
     // Returns slice of 'sv'
@@ -22,6 +22,6 @@ namespace ers::modkit::impl {
 // Exports ---------------------------------------------------------------------
 
 namespace ers::modkit::util {
-    using impl::is_stage_naming_scheme;
-    using impl::extract_stage_info;
+    using impl::modkit::is_stage_naming_scheme;
+    using impl::modkit::extract_stage_info;
 }

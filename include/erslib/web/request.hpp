@@ -21,7 +21,7 @@
 #include <erslib/export.hpp>
 
 
-namespace ers::web::impl {
+namespace ers::impl::web {
     ERSLIB_EXPORT Result<utl::Json> read_body(const crow::request& req);
 
     ERSLIB_EXPORT maybe<std::string> read_header(const crow::request& req, std::string_view name, size_t max_length = 256);

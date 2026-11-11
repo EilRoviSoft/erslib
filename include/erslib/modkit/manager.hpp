@@ -13,7 +13,7 @@
 #include <erslib/modkit/resource.hpp>
 
 
-namespace ers::modkit::impl {
+namespace ers::impl::modkit {
     class ResourceManager {
         using underlying_container_type = HashMap<
             std::string, Object,
@@ -75,5 +75,5 @@ namespace ers::modkit::impl {
 // Exports ---------------------------------------------------------------------
 
 namespace ers::modkit {
-    using impl::ResourceManager;
+    using impl::modkit::ResourceManager;
 }

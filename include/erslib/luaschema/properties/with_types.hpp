@@ -8,13 +8,13 @@
 #include <erslib/luaschema/impl/verifier.hpp>
 
 
-namespace ers::luaschema::impl {
+namespace ers::impl::luaschema {
     template<typename T>
     concept FieldType = HasLayoutDescriptor<T> || SolInnateType<T> || HasVerifier<T>;
 }
 
 
-namespace ers::luaschema::impl {
+namespace ers::impl::luaschema {
     template<FieldType... Ts>
     class WithTypesProperty : public IVerifier {
     public:

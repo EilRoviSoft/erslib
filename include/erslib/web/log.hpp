@@ -15,7 +15,7 @@
 #include <erslib/export.hpp>
 
 
-namespace ers::web::impl {
+namespace ers::impl::web {
     class ERSLIB_EXPORT LogHandler : public crow::ILogHandler {
     public:
         // Member functions

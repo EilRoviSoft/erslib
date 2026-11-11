@@ -9,7 +9,7 @@
 
 template<typename T>
 struct ers::luaschema::verifier_t<std::vector<T>> {
-    Status exec(impl::verify_context& ctx, sol::object obj) const {
+    Status exec(impl::luaschema::verify_context& ctx, sol::object obj) const {
         if (!obj.is<sol::table>())
             return make_error("Expected array table");
 

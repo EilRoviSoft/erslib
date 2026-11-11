@@ -12,7 +12,7 @@
 #include <erslib/export.hpp>
 
 
-namespace ers::luaschema::impl {
+namespace ers::impl::luaschema {
     class ERSLIB_EXPORT InclusiveWithProperty : public IVerifier {
     public:
         // Member functions

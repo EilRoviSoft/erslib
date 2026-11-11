@@ -4,7 +4,7 @@
 #include <quill/LogMacros.h>
 
 
-void ers::logging::impl::log(quill::Logger* logger, const Diagnostic& what) {
+void ers::impl::logging::log(quill::Logger* logger, const Diagnostic& what) {
     switch (what.severity()) {
 #define X(SEVERITY, LOG_LEVEL) \
     case ESeverity::SEVERITY: \

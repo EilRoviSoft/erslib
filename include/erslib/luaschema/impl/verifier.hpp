@@ -13,7 +13,7 @@
 #include <erslib/core/type/result.hpp>
 
 
-namespace ers::luaschema::impl {
+namespace ers::impl::luaschema {
     using Verifier = std::polymorphic<class IVerifier>;
 
     class IVerifier {
@@ -49,6 +49,6 @@ namespace ers::luaschema::impl {
 namespace ers::luaschema {
     template<typename T>
     struct verifier_t {
-        Status exec(impl::verify_context& ctx, sol::object obj) const = delete("no verifier_t specialization for T");
+        Status exec(impl::luaschema::verify_context& ctx, sol::object obj) const = delete("no verifier_t specialization for T");
     };
 }

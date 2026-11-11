@@ -13,7 +13,7 @@
 
 // Implementation --------------------------------------------------------------
 
-namespace ers::luaschema::impl {
+namespace ers::impl::luaschema {
     template<typename T, typename... Args>
     auto tunnel_error(sol::state_view& lua, std::format_string<Args...> fmt, Args&&... args) {
         std::string message = std::format(fmt, std::forward<Args>(args)...);
@@ -26,5 +26,5 @@ namespace ers::luaschema::impl {
 // Exports ---------------------------------------------------------------------
 
 namespace ers::luaschema {
-    using impl::tunnel_error;
+    using impl::luaschema::tunnel_error;
 }

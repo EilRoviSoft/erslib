@@ -15,7 +15,7 @@
 
 // Details ---------------------------------------------------------------------
 
-namespace ers::modkit::impl {
+namespace ers::impl::modkit {
     template<typename T>
     class TResource;
 }
@@ -25,7 +25,7 @@ namespace ers::modkit::impl {
 
 // Control block
 
-namespace ers::modkit::impl {
+namespace ers::impl::modkit {
     template<typename T>
     struct control_block_t {
         using ctor_fn = std::function<ers::Status(control_block_t& cb)>;
@@ -52,7 +52,7 @@ namespace ers::modkit::impl {
 
 // Handle
 
-namespace ers::modkit::impl {
+namespace ers::impl::modkit {
     template<typename T>
     class Handle {
         friend TResource<T>;
@@ -123,7 +123,7 @@ namespace ers::modkit::impl {
 
 // Control block helper functions
 
-namespace ers::modkit::impl {
+namespace ers::impl::modkit {
     template<typename T>
     void default_dtor(control_block_t<T>& cb) {
         std::scoped_lock lock(cb.mutex);
@@ -134,7 +134,7 @@ namespace ers::modkit::impl {
 
 // TResource
 
-namespace ers::modkit::impl {
+namespace ers::impl::modkit {
     template<typename T>
     class TResource {
     public:
@@ -177,8 +177,8 @@ namespace ers::modkit::impl {
 // Exports ---------------------------------------------------------------------
 
 namespace ers::modkit {
-    using impl::Handle;
-    using impl::TResource;
+    using impl::modkit::Handle;
+    using impl::modkit::TResource;
 }
 
 namespace ers::modkit {

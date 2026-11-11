@@ -13,12 +13,12 @@ namespace {
 }
 
 
-bool ers::modkit::impl::is_stage_naming_scheme(std::string_view sv) {
+bool ers::impl::modkit::is_stage_naming_scheme(std::string_view sv) {
     boost::regex regex(stage_name_pattern);
     return boost::regex_match(sv.begin(), sv.end(), regex);
 }
 
-std::tuple<std::string, size_t> ers::modkit::impl::extract_stage_info(std::string_view sv) {
+std::tuple<std::string, size_t> ers::impl::modkit::extract_stage_info(std::string_view sv) {
     boost::regex regex(stage_name_pattern);
     boost::match_results<std::string_view::const_iterator> match;
 

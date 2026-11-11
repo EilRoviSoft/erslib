@@ -19,7 +19,7 @@
 
 // Implementation --------------------------------------------------------------
 
-namespace ers::web::impl {
+namespace ers::impl::web {
     ERSLIB_EXPORT utl::Json failure_json(std::string_view message);
 
 
@@ -37,7 +37,7 @@ namespace ers::web::impl {
 
 // Specialization --------------------------------------------------------------
 
-namespace ers::web::impl {
+namespace ers::impl::web {
     template<crow::status Code>
     struct Response {
         static constexpr crow::status code = Code;
@@ -142,7 +142,7 @@ namespace ers::web::impl {
     X(insufficient_storage, WEBDAV_INSUFFICIENT_STORAGE)
 
 #define ERS_WEB_DEFINE_STATUS(NAME, CODE) \
-    inline constexpr impl::Response<crow::CODE> NAME {};
+    inline constexpr impl::web::Response<crow::CODE> NAME {};
 
 namespace ers::web {
     ERS_WEB_STATUSES(ERS_WEB_DEFINE_STATUS)

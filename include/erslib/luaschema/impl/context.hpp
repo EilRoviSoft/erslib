@@ -1,7 +1,7 @@
 #pragma once
 
 
-namespace ers::luaschema::impl {
+namespace ers::impl::luaschema {
     struct verify_context {
         bool skip : 1 = false;
     };

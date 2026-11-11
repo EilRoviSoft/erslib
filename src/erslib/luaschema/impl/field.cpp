@@ -10,20 +10,20 @@
 
 // Implementation --------------------------------------------------------------
 
-ers::luaschema::impl::Field::Field(std::string name) :
+ers::impl::luaschema::Field::Field(std::string name) :
     _name(std::move(name)) {
 }
 
-ers::luaschema::impl::Field::Field(const Field& other) {
+ers::impl::luaschema::Field::Field(const Field& other) {
     _copy_from(other);
 }
-ers::luaschema::impl::Field& ers::luaschema::impl::Field::operator=(const Field& other) {
+ers::impl::luaschema::Field& ers::impl::luaschema::Field::operator=(const Field& other) {
     _copy_from(other);
     return *this;
 }
 
 
-void ers::luaschema::impl::Field::add(Verifier verifier) {
+void ers::impl::luaschema::Field::add(Verifier verifier) {
     _verifiers.push_front(std::move(verifier));
 
     auto inorder_it = std::ranges::lower_bound(
@@ -35,12 +35,12 @@ void ers::luaschema::impl::Field::add(Verifier verifier) {
 
     _verifiers_order.emplace(inorder_it, _verifiers.begin());
 }
-void ers::luaschema::impl::Field::add(Parser parser) {
+void ers::impl::luaschema::Field::add(Parser parser) {
     _parsers.push_front(std::move(parser));
 }
 
 
-ers::Status ers::luaschema::impl::Field::verify(sol::table table) const {
+ers::Status ers::impl::luaschema::Field::verify(sol::table table) const {
     for (const auto& prop : _verifiers_order) {
         verify_context ctx;
 
@@ -54,7 +54,7 @@ ers::Status ers::luaschema::impl::Field::verify(sol::table table) const {
     return ers::ok;
 }
 
-ers::Status ers::luaschema::impl::Field::parse(sol::table table, void* where) const {
+ers::Status ers::impl::luaschema::Field::parse(sol::table table, void* where) const {
     // At this point we have already verified table
     // so we can skip processing of every absent field.
 
@@ -73,7 +73,7 @@ ers::Status ers::luaschema::impl::Field::parse(sol::table table, void* where) co
 }
 
 
-void ers::luaschema::impl::Field::_copy_from(const Field& other) {
+void ers::impl::luaschema::Field::_copy_from(const Field& other) {
     _name = other._name;
 
     _verifiers.clear();
@@ -90,20 +90,20 @@ void ers::luaschema::impl::Field::_copy_from(const Field& other) {
 
 // Operators
 
-ers::luaschema::impl::Field& ers::luaschema::impl::operator|(Field& lhs, Verifier rhs) {
+ers::impl::luaschema::Field& ers::impl::luaschema::operator|(Field& lhs, Verifier rhs) {
     lhs.add(std::move(rhs));
     return lhs;
 }
-ers::luaschema::impl::Field&& ers::luaschema::impl::operator|(Field&& lhs, Verifier rhs) {
+ers::impl::luaschema::Field&& ers::impl::luaschema::operator|(Field&& lhs, Verifier rhs) {
     lhs.add(std::move(rhs));
     return std::move(lhs);
 }
 
-ers::luaschema::impl::Field& ers::luaschema::impl::operator|(Field& lhs, Parser rhs) {
+ers::impl::luaschema::Field& ers::impl::luaschema::operator|(Field& lhs, Parser rhs) {
     lhs.add(std::move(rhs));
     return lhs;
 }
-ers::luaschema::impl::Field&& ers::luaschema::impl::operator|(Field&& lhs, Parser rhs) {
+ers::impl::luaschema::Field&& ers::impl::luaschema::operator|(Field&& lhs, Parser rhs) {
     lhs.add(std::move(rhs));
     return std::move(lhs);
 }

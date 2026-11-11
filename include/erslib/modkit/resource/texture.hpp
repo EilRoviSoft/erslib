@@ -9,7 +9,7 @@
 
 // Implementation --------------------------------------------------------------
 
-//namespace ers::modkit::impl {
+//namespace ers::impl::modkit {
 //    class TextureResource : public TResource<sf::Texture> {
 //    public:
 //        // Constructor

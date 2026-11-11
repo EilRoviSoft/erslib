@@ -15,7 +15,7 @@
 #include <erslib/modkit/fwd.hpp>
 
 
-namespace ers::modkit::impl {
+namespace ers::impl::modkit {
     enum class EDependencyType : u8 {
         None = 0,
         Incompatible,
@@ -56,13 +56,13 @@ namespace ers::modkit::impl {
 // Exports ---------------------------------------------------------------------
 
 namespace ers::modkit {
-    using impl::EDependencyType;
-    using impl::EDependencyLimit;
-    using impl::dependency_t;
-    using impl::DependencyContainer;
+    using impl::modkit::EDependencyType;
+    using impl::modkit::EDependencyLimit;
+    using impl::modkit::dependency_t;
+    using impl::modkit::DependencyContainer;
 
-    using impl::dependency_error;
-    using impl::make_dependency_error;
-    using impl::make_dependency_error_with_trace;
+    using impl::modkit::dependency_error;
+    using impl::modkit::make_dependency_error;
+    using impl::modkit::make_dependency_error_with_trace;
 }
 

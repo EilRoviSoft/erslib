@@ -7,7 +7,7 @@
 
 // Implementation --------------------------------------------------------------
 
-ers::Result<ers::modkit::impl::dependency_t> ers::modkit::impl::dependency_t::parse(
+ers::Result<ers::impl::modkit::dependency_t> ers::impl::modkit::dependency_t::parse(
     std::string_view source
 ) {
     dependency_t result;

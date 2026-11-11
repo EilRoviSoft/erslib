@@ -10,7 +10,7 @@
 #include <erslib/export.hpp>
 
 
-namespace ers::luaschema::impl {
+namespace ers::impl::luaschema {
     class ERSLIB_EXPORT PresenceProperty : public IVerifier {
     public:
         // Member functions

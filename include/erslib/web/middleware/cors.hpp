@@ -13,7 +13,7 @@
 #include <erslib/export.hpp>
 
 
-namespace ers::web::impl {
+namespace ers::impl::web {
     struct cors_options_t {
         std::vector<std::string> origins;
         std::string allow_headers = "Authorization, Content-Type";
@@ -55,6 +55,6 @@ namespace ers::web::impl {
 // Exports ---------------------------------------------------------------------
 
 namespace ers::web {
-    using impl::cors_options_t;
-    using impl::Cors;
+    using impl::web::cors_options_t;
+    using impl::web::Cors;
 }

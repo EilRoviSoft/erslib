@@ -8,11 +8,11 @@
 #include <erslib/core/formatter/range.hpp>
 
 
-ers::luaschema::impl::OneOfProperty::OneOfProperty(std::vector<std::string> names) :
+ers::impl::luaschema::OneOfProperty::OneOfProperty(std::vector<std::string> names) :
     _names(std::move(names)) {
 }
 
-ers::Status ers::luaschema::impl::OneOfProperty::verify(sol::table table) const {
+ers::Status ers::impl::luaschema::OneOfProperty::verify(sol::table table) const {
     std::vector<std::string_view> present;
 
     present.reserve(_names.size());
@@ -35,7 +35,7 @@ ers::Status ers::luaschema::impl::OneOfProperty::verify(sol::table table) const 
 }
 
 
-ers::luaschema::impl::Descriptor ers::luaschema::impl::properties::one_of(std::initializer_list<std::string_view> il) {
+ers::impl::luaschema::Descriptor ers::impl::luaschema::properties::one_of(std::initializer_list<std::string_view> il) {
     std::vector<std::string> names;
 
     names.reserve(il.size());

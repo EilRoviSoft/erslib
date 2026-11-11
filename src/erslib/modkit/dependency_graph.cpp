@@ -10,7 +10,7 @@
 #include <erslib/modkit/util/stage.hpp>
 
 
-std::vector<std::string> ers::modkit::impl::resolve_mods_order(const ModContainer& mods, std::string_view initial_mod) {
+std::vector<std::string> ers::impl::modkit::resolve_mods_order(const ModContainer& mods, std::string_view initial_mod) {
     // Step 0: preparing
 
     StringMap<std::vector<std::string>> outgoing;
@@ -134,7 +134,7 @@ std::vector<std::string> ers::modkit::impl::resolve_mods_order(const ModContaine
     return mods_order;
 }
 
-std::vector<ers::modkit::impl::stage_order_info_t> ers::modkit::impl::resolve_stages_order(
+std::vector<ers::impl::modkit::stage_order_info_t> ers::impl::modkit::resolve_stages_order(
     const ModContainer& mods,
     std::span<const std::string> mods_order,
     std::span<const std::string> phases_order

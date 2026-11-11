@@ -5,7 +5,7 @@
 #include <string_view>
 
 
-namespace ers::utf8::impl {
+namespace ers::impl::utf8 {
     constexpr bool is_continuation(char c) noexcept {
         return (static_cast<unsigned char>(c) & 0xC0) == 0x80;
     }
@@ -93,7 +93,7 @@ namespace ers::utf8::impl {
 // Exports ---------------------------------------------------------------------
 
 namespace ers::utf8 {
-    using impl::truncate;
-    using impl::is_valid;
-    using impl::append;
+    using impl::utf8::truncate;
+    using impl::utf8::is_valid;
+    using impl::utf8::append;
 }

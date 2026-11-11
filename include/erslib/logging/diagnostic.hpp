@@ -10,10 +10,10 @@
 #include <erslib/export.hpp>
 
 
-namespace ers::logging::impl {
+namespace ers::impl::logging {
     ERSLIB_EXPORT void log(quill::Logger* logger, const Diagnostic& what);
 }
 
 namespace ers::logging {
-    using impl::log;
+    using impl::logging::log;
 }

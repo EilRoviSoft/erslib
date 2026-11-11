@@ -13,7 +13,7 @@
 #include <quill/sinks/RotatingFileSink.h>
 
 
-quill::Logger* ers::logging::impl::make_logger(const logger_options_t& options) {
+quill::Logger* ers::impl::logging::make_logger(const logger_options_t& options) {
     static std::once_flag backend_started;
     std::call_once(backend_started, [] {
         quill::BackendOptions backend_options;

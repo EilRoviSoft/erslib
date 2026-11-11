@@ -13,7 +13,7 @@
 #include <erslib/core/type/result.hpp>
 
 
-namespace ers::luaschema::impl {
+namespace ers::impl::luaschema {
     using Parser = std::polymorphic<class IParser>;
 
     class IParser {
@@ -41,7 +41,7 @@ namespace ers::luaschema {
     template<typename T>
     struct parser_t {
         Status exec(
-            impl::parser_context& ctx,
+            impl::luaschema::parser_context& ctx,
             sol::object obj,
             T& dst
         ) const = delete("generic specialization");

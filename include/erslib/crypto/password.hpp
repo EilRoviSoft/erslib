@@ -8,7 +8,7 @@
 #include <erslib/export.hpp>
 
 
-namespace ers::crypto::impl {
+namespace ers::impl::crypto {
     struct argon2_params_t {
         size_t parallelism = 1;
         size_t memory_kib = 1 << 16;
@@ -21,8 +21,8 @@ namespace ers::crypto::impl {
 }
 
 namespace ers::crypto {
-    using impl::argon2_params_t;
+    using impl::crypto::argon2_params_t;
 
-    using impl::argon2_hash;
-    using impl::argon2_verify;
+    using impl::crypto::argon2_hash;
+    using impl::crypto::argon2_verify;
 }

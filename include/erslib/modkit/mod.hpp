@@ -27,7 +27,7 @@
 
 // Details ---------------------------------------------------------------------
 
-namespace ers::modkit::impl {
+namespace ers::impl::modkit {
     struct ModIdentity {
         std::string name;
         std::string title;
@@ -60,7 +60,7 @@ namespace ers::modkit::impl {
 
 // Implementation --------------------------------------------------------------
 
-namespace ers::modkit::impl {
+namespace ers::impl::modkit {
     class ERSLIB_EXPORT Mod {
     public:
         // Member types
@@ -127,6 +127,6 @@ namespace ers::modkit::impl {
 // Exports ---------------------------------------------------------------------
 
 namespace ers::modkit {
-    using impl::Mod;
-    using impl::ModContainer;
+    using impl::modkit::Mod;
+    using impl::modkit::ModContainer;
 }

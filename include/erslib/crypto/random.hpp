@@ -9,12 +9,12 @@
 #include <erslib/export.hpp>
 
 
-namespace ers::crypto::impl {
+namespace ers::impl::crypto {
     ERSLIB_EXPORT std::vector<std::byte> random_bytes(size_t count);
     ERSLIB_EXPORT std::string random_hex(size_t byte_count);
 }
 
 namespace ers::crypto {
-    using impl::random_bytes;
-    using impl::random_hex;
+    using impl::crypto::random_bytes;
+    using impl::crypto::random_hex;
 }

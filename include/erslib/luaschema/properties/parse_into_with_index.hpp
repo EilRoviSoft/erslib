@@ -8,7 +8,7 @@
 #include <erslib/luaschema/impl/parser.hpp>
 
 
-namespace ers::luaschema::impl {
+namespace ers::impl::luaschema {
     template<typename Owner, typename Element, typename Member>
     class ParseIntoWithIndex : public IParser {
     public:

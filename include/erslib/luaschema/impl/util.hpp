@@ -10,7 +10,7 @@
 #include <erslib/export.hpp>
 
 
-namespace ers::luaschema::impl {
+namespace ers::impl::luaschema {
     ERSLIB_EXPORT Field required_field(std::string name);
     ERSLIB_EXPORT Field optional_field(std::string name);
 }

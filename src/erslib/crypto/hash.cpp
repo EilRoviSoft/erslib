@@ -18,18 +18,18 @@ namespace {
 
 // Implementation --------------------------------------------------------------
 
-std::string ers::crypto::impl::sha256_hex(std::span<const std::byte> bytes) {
+std::string ers::impl::crypto::sha256_hex(std::span<const std::byte> bytes) {
     auto hasher = Botan::HashFunction::create_or_throw("SHA-256");
     hasher->update(reinterpret_cast<const uint8_t*>(bytes.data()), bytes.size());
 
     return Botan::hex_encode(hasher->final(), false);
 }
 
-std::string ers::crypto::impl::sha256_hex(std::string_view text) {
+std::string ers::impl::crypto::sha256_hex(std::string_view text) {
     return sha256_hex(std::as_bytes(std::span(text)));
 }
 
-ers::Result<std::string> ers::crypto::impl::sha256_hex_file(const fs::path& path) {
+ers::Result<std::string> ers::impl::crypto::sha256_hex_file(const fs::path& path) {
     auto stream = std::ifstream(path, std::ios::binary);
 
     if (!stream)

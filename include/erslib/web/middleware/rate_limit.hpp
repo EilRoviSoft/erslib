@@ -19,7 +19,7 @@
 #include <erslib/export.hpp>
 
 
-namespace ers::web::impl {
+namespace ers::impl::web {
     template<typename T>
     concept RateLimitPolicy = requires {
         { T::reset_on_success } -> std::convertible_to<bool>;
@@ -84,7 +84,7 @@ namespace ers::web::impl {
 // Exports ---------------------------------------------------------------------
 
 namespace ers::web {
-    using impl::RateLimitPolicy;
-    using impl::KeyedRateLimit;
-    using impl::refuse_too_many;
+    using impl::web::RateLimitPolicy;
+    using impl::web::KeyedRateLimit;
+    using impl::web::refuse_too_many;
 }

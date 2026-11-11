@@ -7,7 +7,7 @@
 #include <erslib/modkit/mod.hpp>
 
 
-namespace ers::modkit::impl {
+namespace ers::impl::modkit {
     class IPhaseContext {
     public:
         // Member functions
@@ -28,5 +28,5 @@ namespace ers::modkit::impl {
 // Exports ---------------------------------------------------------------------
 
 namespace ers::modkit {
-    using impl::IPhaseContext;
+    using impl::modkit::IPhaseContext;
 }

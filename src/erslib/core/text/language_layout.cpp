@@ -83,7 +83,7 @@ namespace {
 
 // Implementation --------------------------------------------------------------
 
-std::string ers::text::impl::ru_to_en(std::string_view text) {
+std::string ers::impl::text::ru_to_en(std::string_view text) {
     std::string out;
     out.reserve(text.size() * 2);
 

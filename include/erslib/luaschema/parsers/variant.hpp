@@ -12,7 +12,7 @@
 
 template<typename... Ts>
 struct ers::luaschema::parser_t<std::variant<Ts...>> {
-    Status exec(impl::parser_context& ctx, sol::object obj, std::variant<Ts...>& dst) const {
+    Status exec(impl::luaschema::parser_context& ctx, sol::object obj, std::variant<Ts...>& dst) const {
         bool matched = (this->_try_one<Ts>(ctx, obj, dst) || ...);
         if (!matched)
             return make_error("No variant alternative matched");
@@ -22,7 +22,7 @@ struct ers::luaschema::parser_t<std::variant<Ts...>> {
 
 private:
     template<typename T>
-    static bool _try_one(impl::parser_context& ctx, sol::object obj, std::variant<Ts...>& dst) {
+    static bool _try_one(impl::luaschema::parser_context& ctx, sol::object obj, std::variant<Ts...>& dst) {
         T value {};
 
         if (!parser_t<T> {}.exec(ctx, obj, value))

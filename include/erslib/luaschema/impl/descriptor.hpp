@@ -11,7 +11,7 @@
 #include <erslib/core/type/result.hpp>
 
 
-namespace ers::luaschema::impl {
+namespace ers::impl::luaschema {
     using Descriptor = std::polymorphic<class IDescriptor>;
 
     class IDescriptor {

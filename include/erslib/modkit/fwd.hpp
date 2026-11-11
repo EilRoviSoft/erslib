@@ -5,7 +5,7 @@
 #include <erslib/core/memory.hpp>
 
 
-namespace ers::modkit::impl {
+namespace ers::impl::modkit {
     using Object = Any;
 }
 
@@ -13,5 +13,5 @@ namespace ers::modkit::impl {
 // Exports ---------------------------------------------------------------------
 
 namespace ers::modkit {
-    using impl::Object;
+    using impl::modkit::Object;
 }

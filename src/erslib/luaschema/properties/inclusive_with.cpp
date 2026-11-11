@@ -5,13 +5,13 @@
 #include <utility>
 
 
-ers::luaschema::impl::InclusiveWithProperty::InclusiveWithProperty(std::vector<std::string> mandatory_fields) :
+ers::impl::luaschema::InclusiveWithProperty::InclusiveWithProperty(std::vector<std::string> mandatory_fields) :
     IVerifier(1),
     _mandatory_fields(std::move(mandatory_fields)) {
 }
 
 
-ers::Status ers::luaschema::impl::InclusiveWithProperty::exec([[maybe_unused]] verify_context& ctx, sol::table table, std::string_view field) const {
+ers::Status ers::impl::luaschema::InclusiveWithProperty::exec([[maybe_unused]] verify_context& ctx, sol::table table, std::string_view field) const {
     if (!table.get<std::optional<sol::object>>(field))
         return ers::ok;
 
@@ -34,11 +34,11 @@ ers::Status ers::luaschema::impl::InclusiveWithProperty::exec([[maybe_unused]] v
 }
 
 
-ers::luaschema::impl::Verifier ers::luaschema::impl::properties::inclusive_with(std::string_view field) {
+ers::impl::luaschema::Verifier ers::impl::luaschema::properties::inclusive_with(std::string_view field) {
     return inclusive_with({ field });
 }
 
-ers::luaschema::impl::Verifier ers::luaschema::impl::properties::inclusive_with(std::initializer_list<std::string_view> il) {
+ers::impl::luaschema::Verifier ers::impl::luaschema::properties::inclusive_with(std::initializer_list<std::string_view> il) {
     std::vector<std::string> mandatory_fields;
 
     mandatory_fields.reserve(il.size());

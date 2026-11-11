@@ -11,7 +11,7 @@
 #include <erslib/core/type/result.hpp>
 
 
-namespace ers::luaschema::impl {
+namespace ers::impl::luaschema {
     template<typename T>
     concept SolInnateType =
         std::same_as<T, std::string>
@@ -36,7 +36,7 @@ namespace ers::luaschema::impl {
     template<SolInnateType T>
     [[nodiscard]]
     Status check_type(sol::object obj) {
-        static constexpr sol::type expected_type = impl::sol_type_for<T>();
+        static constexpr sol::type expected_type = impl::luaschema::sol_type_for<T>();
 
         if (!obj.valid())
             return make_error("Object is not valid or nil");
@@ -49,7 +49,7 @@ namespace ers::luaschema::impl {
 }
 
 
-namespace ers::luaschema::impl {
+namespace ers::impl::luaschema {
     template<typename T>
     concept HasLayoutDescriptor = requires() {
         { T::get_layout() } -> std::same_as<const Layout&>;

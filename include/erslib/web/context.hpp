@@ -12,7 +12,7 @@
 #include <crow/middleware_context.h>
 
 
-namespace ers::web::impl {
+namespace ers::impl::web {
     template<typename AllContext, typename Middleware>
     struct context_has : std::false_type {};
 
@@ -43,6 +43,6 @@ namespace ers::web::impl {
 
 
 namespace ers::web {
-    using impl::ContextWith;
-    using impl::runs_before;
+    using impl::web::ContextWith;
+    using impl::web::runs_before;
 }

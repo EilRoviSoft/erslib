@@ -5,9 +5,9 @@
 #include <erslib/luaschema/impl/verifier.hpp>
 
 
-template<ers::luaschema::impl::SolInnateType T>
+template<ers::impl::luaschema::SolInnateType T>
 struct ers::luaschema::verifier_t<T> {
-    Status exec(impl::verify_context&, sol::object obj) const {
-        return impl::check_type<T>(obj);
+    Status exec(impl::luaschema::verify_context&, sol::object obj) const {
+        return impl::luaschema::check_type<T>(obj);
     }
 };

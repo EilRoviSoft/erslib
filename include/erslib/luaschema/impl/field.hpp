@@ -21,7 +21,7 @@
 
 // Implementation --------------------------------------------------------------
 
-namespace ers::luaschema::impl {
+namespace ers::impl::luaschema {
     class ERSLIB_EXPORT Field {
         using storage_iterator = std::list<Verifier>::const_iterator;
 
@@ -73,7 +73,7 @@ namespace ers::luaschema::impl {
 
 // Operators
 
-namespace ers::luaschema::impl {
+namespace ers::impl::luaschema {
     Field& operator|(Field& lhs, Verifier rhs);
     Field&& operator|(Field&& lhs, Verifier rhs);
 

@@ -15,7 +15,7 @@
 #include <erslib/export.hpp>
 
 
-namespace ers::web::impl {
+namespace ers::impl::web {
     class ERSLIB_EXPORT JsonBody : public crow::ILocalMiddleware {
     public:
         struct context {
@@ -34,5 +34,5 @@ namespace ers::web::impl {
 // Exports ---------------------------------------------------------------------
 
 namespace ers::web {
-    using impl::JsonBody;
+    using impl::web::JsonBody;
 }

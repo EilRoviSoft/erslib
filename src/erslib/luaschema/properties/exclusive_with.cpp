@@ -5,13 +5,13 @@
 #include <utility>
 
 
-ers::luaschema::impl::ExclusiveWithProperty::ExclusiveWithProperty(std::vector<std::string> incompatible_fields) :
+ers::impl::luaschema::ExclusiveWithProperty::ExclusiveWithProperty(std::vector<std::string> incompatible_fields) :
     IVerifier(1),
     _incompatible_fields(std::move(incompatible_fields)) {
 }
 
 
-ers::Status ers::luaschema::impl::ExclusiveWithProperty::exec([[maybe_unused]] verify_context& ctx, sol::table table, std::string_view field) const {
+ers::Status ers::impl::luaschema::ExclusiveWithProperty::exec([[maybe_unused]] verify_context& ctx, sol::table table, std::string_view field) const {
     if (!table.get<std::optional<sol::object>>(field))
         return ers::ok;
 
@@ -34,11 +34,11 @@ ers::Status ers::luaschema::impl::ExclusiveWithProperty::exec([[maybe_unused]] v
 }
 
 
-ers::luaschema::impl::Verifier ers::luaschema::impl::properties::exclusive_with(std::string_view field) {
+ers::impl::luaschema::Verifier ers::impl::luaschema::properties::exclusive_with(std::string_view field) {
     return exclusive_with({ field });
 }
 
-ers::luaschema::impl::Verifier ers::luaschema::impl::properties::exclusive_with(std::initializer_list<std::string_view> il) {
+ers::impl::luaschema::Verifier ers::impl::luaschema::properties::exclusive_with(std::initializer_list<std::string_view> il) {
     std::vector<std::string> incompatible_fields;
 
     incompatible_fields.reserve(il.size());

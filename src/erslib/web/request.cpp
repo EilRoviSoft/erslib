@@ -16,14 +16,14 @@ namespace {
 
 // Body
 
-ers::Result<utl::Json> ers::web::impl::read_body(const crow::request& req) {
+ers::Result<utl::Json> ers::impl::web::read_body(const crow::request& req) {
     return utl::try_from_string(req.body);
 }
 
 
 // Headers
 
-ers::maybe<std::string> ers::web::impl::read_header(const crow::request& req, std::string_view name, size_t max_length) {
+ers::maybe<std::string> ers::impl::web::read_header(const crow::request& req, std::string_view name, size_t max_length) {
     auto value = util::keep_if(req.get_header_value(std::string(name)), is_print, max_length);
 
     if (value.empty())
@@ -32,7 +32,7 @@ ers::maybe<std::string> ers::web::impl::read_header(const crow::request& req, st
     return value;
 }
 
-std::string ers::web::impl::bearer_token(const crow::request& req) {
+std::string ers::impl::web::bearer_token(const crow::request& req) {
     const auto& header = req.get_header_value("Authorization");
 
     if (!std::string_view(header).starts_with(bearer_prefix))
@@ -41,7 +41,7 @@ std::string ers::web::impl::bearer_token(const crow::request& req) {
     return header.substr(bearer_prefix.size());
 }
 
-ers::maybe<std::string> ers::web::impl::read_cookie(const crow::request& req, std::string_view name) {
+ers::maybe<std::string> ers::impl::web::read_cookie(const crow::request& req, std::string_view name) {
     auto [first, last] = req.headers.equal_range("Cookie");
 
     for (auto it = first; it != last; ++it) {
@@ -65,7 +65,7 @@ ers::maybe<std::string> ers::web::impl::read_cookie(const crow::request& req, st
 
 // Query string
 
-bool ers::web::impl::query_flag(const crow::query_string& qs, const std::string& key) {
+bool ers::impl::web::query_flag(const crow::query_string& qs, const std::string& key) {
     const char* raw = qs.get(key);
     return raw && std::string_view(raw) == "true";
 }

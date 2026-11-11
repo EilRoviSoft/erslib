@@ -11,7 +11,7 @@
 
 template<typename T>
 struct ers::luaschema::parser_t<std::vector<T>> {
-    Status exec(impl::parser_context& ctx, sol::object obj, std::vector<T>& dst) const {
+    Status exec(impl::luaschema::parser_context& ctx, sol::object obj, std::vector<T>& dst) const {
         if (!obj.is<sol::table>())
             return make_error("Expected array table");
 

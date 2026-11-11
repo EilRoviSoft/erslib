@@ -46,8 +46,8 @@ namespace {
 
 
     auto extract_info(const fs::path& m_dir) {
-        ers::modkit::impl::ModIdentity identity;
-        ers::modkit::impl::ModMetadata metadata;
+        ers::impl::modkit::ModIdentity identity;
+        ers::impl::modkit::ModMetadata metadata;
 
 
         fs::path info_path = m_dir / "info.json";
@@ -99,19 +99,19 @@ namespace {
 
 // Implementation --------------------------------------------------------------
 
-ers::modkit::impl::Mod::Mod(fs::path dir) :
+ers::impl::modkit::Mod::Mod(fs::path dir) :
     m_dir(std::move(dir)) {
 }
 
 
-void ers::modkit::impl::Mod::init_info() {
+void ers::impl::modkit::Mod::init_info() {
     auto [identity, metadata] = extract_info(m_dir);
 
     m_identity = std::move(identity);
     m_metadata = std::make_unique<ModMetadata>(std::move(metadata));
 }
 
-void ers::modkit::impl::Mod::init_content(const std::function<bool(std::string_view)>& stage_filter) const {
+void ers::impl::modkit::Mod::init_content(const std::function<bool(std::string_view)>& stage_filter) const {
     content_type content;
 
     for (const auto& it : fs::recursive_directory_iterator(m_dir)) {
@@ -133,7 +133,7 @@ void ers::modkit::impl::Mod::init_content(const std::function<bool(std::string_v
     m_content = std::make_unique<content_type>(std::move(content));
 }
 
-void ers::modkit::impl::Mod::init_runtime(sol::state_view& lua) const {
+void ers::impl::modkit::Mod::init_runtime(sol::state_view& lua) const {
     runtime_type runtime;
 
     {
@@ -154,7 +154,7 @@ void ers::modkit::impl::Mod::init_runtime(sol::state_view& lua) const {
     m_runtime = std::make_unique<runtime_type>(std::move(runtime));
 }
 
-void ers::modkit::impl::Mod::load_runtime(std::string_view stage_name) const {
+void ers::impl::modkit::Mod::load_runtime(std::string_view stage_name) const {
     auto it = content().stages.find(stage_name);
     if (it == content().stages.end())
         throw make_lua_stage_error("Stage {} is not found", stage_name);
@@ -193,7 +193,7 @@ void ers::modkit::impl::Mod::load_runtime(std::string_view stage_name) const {
 }
 
 
-std::function<sol::object(sol::this_state, std::string_view)> ers::modkit::impl::Mod::_make_require_fn() const {
+std::function<sol::object(sol::this_state, std::string_view)> ers::impl::modkit::Mod::_make_require_fn() const {
     return [this](sol::this_state ts, std::string_view package_name) -> sol::object {
         sol::state_view lua = ts.lua_state();
 
