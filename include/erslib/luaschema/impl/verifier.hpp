@@ -43,12 +43,17 @@ namespace ers::impl::luaschema {
     Verifier make_verifier(Args&&... args) {
         return Verifier(std::in_place_type<T>, std::forward<Args>(args)...);
     }
+
+
+    template<typename T>
+    struct verifier_t {
+        Status exec(verify_context& ctx, sol::object obj) const = delete("no verifier_t specialization for T");
+    };
 }
 
 
+// Exports ---------------------------------------------------------------------
+
 namespace ers::luaschema {
-    template<typename T>
-    struct verifier_t {
-        Status exec(impl::luaschema::verify_context& ctx, sol::object obj) const = delete("no verifier_t specialization for T");
-    };
+    using impl::luaschema::verifier_t;
 }

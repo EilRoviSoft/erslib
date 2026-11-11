@@ -6,9 +6,9 @@
 
 
 template<ers::impl::luaschema::SolInnateType T>
-struct ers::luaschema::parser_t<T> {
+struct ers::impl::luaschema::parser_t<T> {
     Status exec(
-        impl::luaschema::parser_context& /*ctx*/,
+        parser_context& /*ctx*/,
         sol::object obj,
         T& dst
     ) const {

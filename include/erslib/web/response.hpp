@@ -142,11 +142,23 @@ namespace ers::impl::web {
     X(insufficient_storage, WEBDAV_INSUFFICIENT_STORAGE)
 
 #define ERS_WEB_DEFINE_STATUS(NAME, CODE) \
-    inline constexpr impl::web::Response<crow::CODE> NAME {};
+    inline constexpr Response<crow::CODE> NAME {};
 
-namespace ers::web {
+#define ERS_WEB_EXPORT_STATUS(NAME, CODE) \
+    using impl::web::status::NAME;
+
+
+namespace ers::impl::web::status {
     ERS_WEB_STATUSES(ERS_WEB_DEFINE_STATUS)
 }
 
+
+// Exports ---------------------------------------------------------------------
+
+namespace ers::web {
+    ERS_WEB_STATUSES(ERS_WEB_EXPORT_STATUS)
+}
+
 #undef ERS_WEB_DEFINE_STATUS
+#undef ERS_WEB_EXPORT_STATUS
 #undef ERS_WEB_STATUSES

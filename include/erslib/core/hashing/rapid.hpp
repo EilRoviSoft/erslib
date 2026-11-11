@@ -23,19 +23,22 @@ namespace ers::impl {
 
 
 template<>
-struct ers::hashing::backend<ers::impl::rapid_hash_policy> {
+struct ers::impl::hashing::backend<ers::impl::rapid_hash_policy> {
     static constexpr size_t process_raw_bytes(std::span<const std::byte> what, size_t seed) noexcept {
-        return impl::hashing::rapidhash_micro(what.data(), what.size(), seed, impl::hashing::rapid_secret);
+        return rapidhash_micro(what.data(), what.size(), seed, rapid_secret);
     }
 };
 
 
-// Declaration
+// Declaration -----------------------------------------------------------------
 
 namespace ers::impl {
     template<typename T>
     using RapidHash = THashBase<T, rapid_hash_policy>;
 }
+
+
+// Exports ---------------------------------------------------------------------
 
 namespace ers {
     using impl::rapid_hash_policy;

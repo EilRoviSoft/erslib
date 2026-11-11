@@ -59,11 +59,11 @@ namespace ers::impl::luaschema {
 
     template<typename T>
     concept HasVerifier = requires(verify_context ctx, sol::object obj) {
-        { ers::luaschema::verifier_t<T> {}.exec(ctx, obj) } -> std::convertible_to<Status>;
+        { verifier_t<T> {}.exec(ctx, obj) } -> std::convertible_to<Status>;
     };
 
     template<typename T>
     concept HasParser = requires(verify_context ctx, sol::object obj, void* dst) {
-        { ers::luaschema::parser_t<T> {}.exec(ctx, obj, dst) } -> std::convertible_to<Status>;
+        { parser_t<T> {}.exec(ctx, obj, dst) } -> std::convertible_to<Status>;
     };
 }

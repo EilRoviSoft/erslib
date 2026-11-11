@@ -34,16 +34,21 @@ namespace ers::impl::luaschema {
     Parser make_parser(Args&&... args) {
         return Parser(std::in_place_type<T>, std::forward<Args>(args)...);
     }
-}
 
 
-namespace ers::luaschema {
     template<typename T>
     struct parser_t {
         Status exec(
-            impl::luaschema::parser_context& ctx,
+            parser_context& ctx,
             sol::object obj,
             T& dst
         ) const = delete("generic specialization");
     };
+}
+
+
+// Exports ---------------------------------------------------------------------
+
+namespace ers::luaschema {
+    using impl::luaschema::parser_t;
 }

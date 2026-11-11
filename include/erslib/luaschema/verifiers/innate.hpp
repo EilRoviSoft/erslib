@@ -6,8 +6,8 @@
 
 
 template<ers::impl::luaschema::SolInnateType T>
-struct ers::luaschema::verifier_t<T> {
-    Status exec(impl::luaschema::verify_context&, sol::object obj) const {
-        return impl::luaschema::check_type<T>(obj);
+struct ers::impl::luaschema::verifier_t<T> {
+    Status exec(verify_context&, sol::object obj) const {
+        return luaschema::check_type<T>(obj);
     }
 };

@@ -20,7 +20,7 @@
 
 // Definition
 
-namespace ers::hashing {
+namespace ers::impl::hashing {
     template<typename Policy>
     struct backend {};
 
@@ -30,6 +30,15 @@ namespace ers::hashing {
     };
 }
 
+// Exports ---------------------------------------------------------------------
+
+namespace ers::hashing {
+    using impl::hashing::backend;
+    using impl::hashing::RawBytesBackend;
+}
+
+
+// Specializations -------------------------------------------------------------
 
 namespace ers {
     template<typename T, typename Policy>

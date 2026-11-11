@@ -7,8 +7,8 @@
 
 template<typename T>
     requires ers::impl::luaschema::HasLayoutDescriptor<T>
-struct ers::luaschema::parser_t<T> {
-    Status exec(impl::luaschema::parser_context& /*ctx*/, sol::object obj, T& dst) const {
+struct ers::impl::luaschema::parser_t<T> {
+    Status exec(parser_context& /*ctx*/, sol::object obj, T& dst) const {
         if (!obj.is<sol::table>())
             return make_error("Expected table");
 

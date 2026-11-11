@@ -12,8 +12,8 @@
 
 
 template<typename... Ts>
-struct ers::luaschema::parser_t<std::variant<Ts...>> {
-    Status exec(impl::luaschema::parser_context& ctx, sol::object obj, std::variant<Ts...>& dst) const {
+struct ers::impl::luaschema::parser_t<std::variant<Ts...>> {
+    Status exec(parser_context& ctx, sol::object obj, std::variant<Ts...>& dst) const {
         if (!obj.is<sol::table>())
             return make_error("Expected array table for tuple");
         return this->_impl(ctx, obj.as<sol::table>(), dst, std::index_sequence_for<Ts...> {});
@@ -23,7 +23,7 @@ struct ers::luaschema::parser_t<std::variant<Ts...>> {
 private:
     template<size_t... Is>
     static Status _impl(
-        impl::luaschema::parser_context& ctx,
+        parser_context& ctx,
         sol::table arr,
         std::tuple<Ts...>& dst, std::index_sequence<Is...>
     ) {

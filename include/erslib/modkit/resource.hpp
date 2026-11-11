@@ -171,6 +171,15 @@ namespace ers::impl::modkit {
     protected:
         holder_ptr<control_block_type> m_cb;
     };
+
+
+    template<typename T>
+    struct resource_type {
+        using type = TResource<T>;
+    };
+
+    template<typename T>
+    using resource_type_t = typename resource_type<T>::type;
 }
 
 
@@ -179,14 +188,7 @@ namespace ers::impl::modkit {
 namespace ers::modkit {
     using impl::modkit::Handle;
     using impl::modkit::TResource;
-}
 
-namespace ers::modkit {
-    template<typename T>
-    struct resource_type {
-        using type = TResource<T>;
-    };
-
-    template<typename T>
-    using resource_type_t = typename resource_type<T>::type;
+    using impl::modkit::resource_type;
+    using impl::modkit::resource_type_t;
 }
