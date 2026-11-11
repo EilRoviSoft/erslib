@@ -10,7 +10,7 @@
 
 // Member functions
 
-ers::impl::ShuffleSeeds::ShuffleSeeds(duration_t lifetime, u64 seed) :
+ers::impl::thread_safe::ShuffleSeeds::ShuffleSeeds(duration_t lifetime, u64 seed) :
     _lifetime(lifetime),
     _rng(seed) {
 }
@@ -18,7 +18,7 @@ ers::impl::ShuffleSeeds::ShuffleSeeds(duration_t lifetime, u64 seed) :
 
 // Accessors
 
-i64 ers::impl::ShuffleSeeds::acquire(std::string_view session, timestamp_t now) {
+i64 ers::impl::thread_safe::ShuffleSeeds::acquire(std::string_view session, timestamp_t now) {
     boost::upgrade_lock read_lock(_mutex);
 
     auto it = _data.find(session);
@@ -37,7 +37,7 @@ i64 ers::impl::ShuffleSeeds::acquire(std::string_view session, timestamp_t now) 
     return it->second.value;
 }
 
-size_t ers::impl::ShuffleSeeds::size() const {
+size_t ers::impl::thread_safe::ShuffleSeeds::size() const {
     std::shared_lock lock(_mutex);
     return _data.size();
 }
@@ -45,7 +45,7 @@ size_t ers::impl::ShuffleSeeds::size() const {
 
 // Modifiers
 
-i64 ers::impl::ShuffleSeeds::rotate(std::string_view session, timestamp_t now) {
+i64 ers::impl::thread_safe::ShuffleSeeds::rotate(std::string_view session, timestamp_t now) {
     std::unique_lock lock(_mutex);
 
     auto it = _data.find(session);
@@ -58,12 +58,12 @@ i64 ers::impl::ShuffleSeeds::rotate(std::string_view session, timestamp_t now) {
     return it->second.value;
 }
 
-void ers::impl::ShuffleSeeds::forget(std::string_view session) {
+void ers::impl::thread_safe::ShuffleSeeds::forget(std::string_view session) {
     std::unique_lock lock(_mutex);
     _data.erase(session);
 }
 
-size_t ers::impl::ShuffleSeeds::maintain(timestamp_t now) {
+size_t ers::impl::thread_safe::ShuffleSeeds::maintain(timestamp_t now) {
     std::unique_lock lock(_mutex);
     return erase_if(_data, [&](const auto& it) { return it.second.is_expired(now); });
 }
@@ -71,6 +71,6 @@ size_t ers::impl::ShuffleSeeds::maintain(timestamp_t now) {
 
 // Generators
 
-i64 ers::impl::ShuffleSeeds::_mint() {
+i64 ers::impl::thread_safe::ShuffleSeeds::_mint() {
     return static_cast<i64>(_rng());
 }

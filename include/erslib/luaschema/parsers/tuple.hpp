@@ -3,7 +3,6 @@
 // std
 #include <tuple>
 #include <utility>
-#include <variant>
 
 // ers
 #include <erslib/luaschema/impl/context.hpp>
@@ -12,8 +11,8 @@
 
 
 template<typename... Ts>
-struct ers::impl::luaschema::parser_t<std::variant<Ts...>> {
-    Status exec(parser_context& ctx, sol::object obj, std::variant<Ts...>& dst) const {
+struct ers::impl::luaschema::parser_t<std::tuple<Ts...>> {
+    Status exec(parser_context& ctx, sol::object obj, std::tuple<Ts...>& dst) const {
         if (!obj.is<sol::table>())
             return make_error("Expected array table for tuple");
         return this->_impl(ctx, obj.as<sol::table>(), dst, std::index_sequence_for<Ts...> {});

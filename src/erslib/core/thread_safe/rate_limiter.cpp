@@ -14,7 +14,7 @@
 
 // Member functions
 
-ers::impl::RateLimiter::RateLimiter(size_t burst, duration interval, size_t capacity) :
+ers::impl::thread_safe::RateLimiter::RateLimiter(size_t burst, duration interval, size_t capacity) :
     _interval(interval),
     _capacity(capacity),
     _low_water(capacity - std::min(capacity, std::max<size_t>(capacity / 8, 1))) {
@@ -37,7 +37,7 @@ ers::impl::RateLimiter::RateLimiter(size_t burst, duration interval, size_t capa
 
 // Accessors
 
-ers::impl::RateLimiter::decision_t ers::impl::RateLimiter::try_acquire(std::string_view key, time_point now) {
+ers::impl::thread_safe::RateLimiter::decision_t ers::impl::thread_safe::RateLimiter::try_acquire(std::string_view key, time_point now) {
     std::unique_lock lock(_mutex);
 
     auto it = _data.find(key);
@@ -66,7 +66,7 @@ ers::impl::RateLimiter::decision_t ers::impl::RateLimiter::try_acquire(std::stri
     };
 }
 
-size_t ers::impl::RateLimiter::size() const {
+size_t ers::impl::thread_safe::RateLimiter::size() const {
     std::unique_lock lock(_mutex);
     return _data.size();
 }
@@ -74,12 +74,12 @@ size_t ers::impl::RateLimiter::size() const {
 
 // Modifiers
 
-void ers::impl::RateLimiter::reset(std::string_view key) {
+void ers::impl::thread_safe::RateLimiter::reset(std::string_view key) {
     std::unique_lock lock(_mutex);
     _data.erase(key);
 }
 
-size_t ers::impl::RateLimiter::maintain(time_point now) {
+size_t ers::impl::thread_safe::RateLimiter::maintain(time_point now) {
     std::unique_lock lock(_mutex);
     return erase_if(_data, [&](const auto& it) { return it.second <= now; });
 }
@@ -87,11 +87,11 @@ size_t ers::impl::RateLimiter::maintain(time_point now) {
 
 // Observers
 
-bool ers::impl::RateLimiter::_is_blocked(time_point arrival, time_point now) const {
+bool ers::impl::thread_safe::RateLimiter::_is_blocked(time_point arrival, time_point now) const {
     return arrival - now > _tolerance;
 }
 
-bool ers::impl::RateLimiter::_make_room(time_point now) {
+bool ers::impl::thread_safe::RateLimiter::_make_room(time_point now) {
     if (_data.size() < _capacity)
         return true;
 

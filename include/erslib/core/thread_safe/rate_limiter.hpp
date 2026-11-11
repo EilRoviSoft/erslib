@@ -13,7 +13,7 @@
 #include <erslib/export.hpp>
 
 
-namespace ers::impl {
+namespace ers::impl::thread_safe {
     class ERSLIB_EXPORT RateLimiter {
     public:
         // Member types
@@ -72,5 +72,5 @@ namespace ers::impl {
 // Exports ---------------------------------------------------------------------
 
 namespace ers::thread_safe {
-    using impl::RateLimiter;
+    using impl::thread_safe::RateLimiter;
 }
