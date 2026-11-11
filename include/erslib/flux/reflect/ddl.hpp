@@ -11,6 +11,7 @@
 
 // ers
 #include <erslib/flux/reflect/schema.hpp>
+#include <erslib/flux/reflect/types/index.hpp>
 
 
 namespace flux::impl::reflect {
@@ -80,6 +81,43 @@ namespace flux::impl::reflect {
 
         return std::define_static_string(join(lines, "\n"));
     }
+}
+
+
+namespace flux::impl::reflect {
+    template<Entity T>
+    consteval size_t index_count() {
+        size_t out = 0;
+
+        template for (constexpr auto it : declaration_list<T>) {
+            if constexpr (TableIndex<entry_type<it>>)
+                ++out;
+        }
+
+        return out;
+    }
+
+    template<Entity T>
+    consteval auto build_index_statements() {
+        std::array<std::string_view, index_count<T>()> out {};
+        size_t i = 0;
+
+        template for (constexpr auto it : declaration_list<T>) {
+            using entry = entry_type<it>;
+
+            if constexpr (TableIndex<entry>) {
+                out[i++] = std::define_static_string(entry_traits<entry>::index_ddl({
+                    .name  = std::meta::identifier_of(it),
+                    .table = qualified_name<T>
+                }));
+            }
+        }
+
+        return out;
+    }
+
+    template<Entity T>
+    constexpr auto index_statements = build_index_statements<T>();
 }
 
 

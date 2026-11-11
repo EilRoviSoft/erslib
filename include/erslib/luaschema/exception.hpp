@@ -20,11 +20,7 @@ namespace ers::impl::luaschema {
 // Exports ---------------------------------------------------------------------
 
 namespace ers::luaschema {
-    using impl::luaschema::lua_error;
-    using impl::luaschema::lua_package_error;
-    using impl::luaschema::lua_stage_error;
-
-    ERS_MAKE_EXCEPTION_EXPORTS(impl, lua_error);
-    ERS_MAKE_EXCEPTION_EXPORTS(impl, lua_package_error);
-    ERS_MAKE_EXCEPTION_EXPORTS(impl, lua_stage_error);
+    ERS_MAKE_EXCEPTION_EXPORTS(impl::luaschema, lua_error);
+    ERS_MAKE_EXCEPTION_EXPORTS(impl::luaschema, lua_package_error);
+    ERS_MAKE_EXCEPTION_EXPORTS(impl::luaschema, lua_stage_error);
 }

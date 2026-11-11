@@ -524,6 +524,61 @@ ERS_TEST_CASE("changing an applied migration is an edit", "[flux]") {
     CHECK_FALSE(std::ranges::contains(scenario.store.executed, "SELECT a, c FROM t;"sv));
 }
 
+ERS_TEST_CASE("extensions and indexes", "[flux]") {
+    static constexpr std::array<std::string_view, 1> extensions = { "CREATE EXTENSION IF NOT EXISTS pg_trgm" };
+    static constexpr std::array<std::string_view, 1> indexes = { "CREATE INDEX IF NOT EXISTS sales_banner ON public.sales (banner)" };
+
+    static constexpr table_declaration_t indexed {
+        .name    = sales.name,
+        .ddl     = sales.ddl,
+        .text    = sales.text,
+        .indexes = indexes,
+        .hash    = sales.hash,
+    };
+
+    static constexpr migration_target_t target {
+        .schema        = "public",
+        .create_schema = "CREATE SCHEMA IF NOT EXISTS public",
+        .tables        = std::span(&indexed, 1),
+        .extensions    = extensions,
+    };
+
+    FakeStore store;
+    migrate_options_t options;
+    migration_set_t set;
+
+    REQUIRE(Migrator(store, store, options, target, set).run());
+
+    REQUIRE(store.executed.size() == 4);
+    CHECK(store.executed[0] == extensions[0]);
+    CHECK(store.executed[1] == target.create_schema);
+    CHECK(store.executed[2] == indexed.ddl);
+    CHECK(store.executed[3] == indexes[0]);
+}
+
+ERS_TEST_CASE("failing extension", "[flux]") {
+    static constexpr std::array<std::string_view, 1> extensions = { "CREATE EXTENSION IF NOT EXISTS missing" };
+
+    static constexpr migration_target_t target {
+        .schema        = "public",
+        .create_schema = "CREATE SCHEMA IF NOT EXISTS public",
+        .tables        = std::span(&sales, 1),
+        .extensions    = extensions,
+    };
+
+    FakeStore store;
+    store.failing_sql = extensions[0];
+
+    migrate_options_t options;
+    migration_set_t set;
+
+    const auto report = Migrator(store, store, options, target, set).run();
+    REQUIRE_FALSE(report);
+
+    CHECK(report.error().message().contains("division by zero"));
+    CHECK(store.executed.empty());
+}
+
 
 // Reflection ------------------------------------------------------------------
 

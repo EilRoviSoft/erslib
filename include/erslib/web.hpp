@@ -14,24 +14,24 @@
 // Exports ---------------------------------------------------------------------
 
 namespace ers::web {
-    using impl::failure_json;
-    
-    using impl::make_response;
-    using impl::make_failure;
-    using impl::make_empty;
-    using impl::make_redirect;
+    using impl::web::failure_json;
 
-    using impl::end_with_json;
-    using impl::end_with_failure;
+    using impl::web::make_response;
+    using impl::web::make_failure;
+    using impl::web::make_empty;
+    using impl::web::make_redirect;
 
-    using impl::read_body;
-    using impl::read_header;
-    using impl::read_cookie;
-    using impl::bearer_token;
-    using impl::query_number;
-    using impl::query_flag;
+    using impl::web::end_with_json;
+    using impl::web::end_with_failure;
+
+    using impl::web::read_body;
+    using impl::web::read_header;
+    using impl::web::read_cookie;
+    using impl::web::bearer_token;
+    using impl::web::query_number;
+    using impl::web::query_flag;
 
 #ifdef ERSLIB_WEB_HAS_LOGGING
-    using impl::LogHandler;
+    using impl::web::LogHandler;
 #endif
 }

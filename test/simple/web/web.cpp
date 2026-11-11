@@ -54,7 +54,7 @@ ERS_TEST_CASE("responses", "[web]") {
     REQUIRE(res.get_header_value("Content-Type") == "application/json");
     REQUIRE(utl::from_string(res.body)["error"].as_string() == "bad");
 
-    REQUIRE(utl::from_string(ers::web::make_ok().body)["ok"].as_bool());
+    REQUIRE(utl::from_string(ers::web::ok().body)["ok"].as_bool());
 }
 
 ERS_TEST_CASE("request helpers", "[web]") {

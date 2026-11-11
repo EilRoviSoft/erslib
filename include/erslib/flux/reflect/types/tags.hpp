@@ -44,4 +44,11 @@ namespace flux::impl::reflect {
         using kind = kinds::EQuery;
         static constexpr std::string_view name = Name.to_sv();
     };
+
+
+    template<ers::fixed_string Name>
+    struct Extension {
+        using kind = kinds::EExtension;
+        static constexpr std::string_view name = Name.to_sv();
+    };
 }

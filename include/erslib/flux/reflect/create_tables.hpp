@@ -23,11 +23,17 @@ namespace flux::impl::reflect {
             with_tx(source, [&stage](pqxx::work& tx) {
                 tx.exec(create_schema<S>());
 
+                for (const std::string_view it : extension_statements<S>)
+                    tx.exec(it);
+
                 template for (constexpr auto it : entities_of<S>) {
                     using T = typename [:it:];
 
                     stage = qualified_name<T>;
                     tx.exec(create_table<T>());
+
+                    for (const std::string_view index : index_statements<T>)
+                        tx.exec(index);
                 }
 
                 stage = "commit";

@@ -17,6 +17,7 @@
 #include <erslib/flux/expr/functions.hpp>
 #include <erslib/flux/expr/node.hpp>
 #include <erslib/flux/expr/ops.hpp>
+#include <erslib/flux/expr/search.hpp>
 #include <erslib/flux/query/clause.hpp>
 #include <erslib/flux/query/layout.hpp>
 #include <erslib/flux/query/query_builder.hpp>

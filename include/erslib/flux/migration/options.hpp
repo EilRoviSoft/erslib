@@ -17,6 +17,7 @@ namespace flux::impl {
         std::string_view schema;
         std::string_view create_schema;
         std::span<const table_declaration_t> tables;
+        std::span<const std::string_view> extensions;
     };
 
     struct migrate_options_t {

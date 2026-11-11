@@ -33,7 +33,6 @@ namespace {
         return r ? *r : std::string("<error>");
     }
 
-    constexpr flux::ext::binary_op_t<"%"> trgm_similar {};
     constexpr flux::ext::fn_t<"lower"> lower {};
     constexpr flux::ext::fn_t<"date_trunc"> date_trunc {};
 }

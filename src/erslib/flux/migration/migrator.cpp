@@ -76,6 +76,8 @@ ers::Result<flux::impl::migration_report_t> flux::impl::Migrator::run() && {
     _recorded = _ledger.make_tables(_target.schema);
 
 
+    ERS_TRY(_ensure_extensions());
+
     if (_state != EDatabaseState::Fresh)
         ERS_TRY(_apply_versioned());
 
@@ -220,8 +222,22 @@ ers::Status flux::impl::Migrator::_apply_repeatable() {
 ers::Status flux::impl::Migrator::_bootstrap() {
     ERS_TRY(_execute(_target.schema, _target.create_schema));
 
-    for (const auto& table : _target.tables)
+    for (const auto& table : _target.tables) {
         ERS_TRY(_execute(table.name, table.ddl));
+    }
+
+    for (const auto& table : _target.tables)
+        for (const auto& index : table.indexes) {
+            ERS_TRY(_execute(table.name, index));
+        }
+
+    return ers::ok;
+}
+
+ers::Status flux::impl::Migrator::_ensure_extensions() {
+    for (const auto& it : _target.extensions) {
+        ERS_TRY(_execute(it, it));
+    }
 
     return ers::ok;
 }

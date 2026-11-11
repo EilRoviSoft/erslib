@@ -268,8 +268,10 @@ if(ERSLIB_BUILD_FLUX)
 			"src/erslib/flux/sql/context.cpp"
 			"src/erslib/flux/sql/identifier.cpp"
 
+
 			"src/erslib/flux/expr/aggregate.cpp"
 			"src/erslib/flux/expr/expr.cpp"
+
 
 			"src/erslib/flux/query/clause.cpp"
 			"src/erslib/flux/query/layout.cpp"
@@ -296,9 +298,14 @@ if(ERSLIB_BUILD_FLUX)
 			"src/erslib/flux/query/layouts/select.cpp"
 			"src/erslib/flux/query/layouts/update.cpp"
 
+
+			"src/erslib/flux/search/pattern.cpp"
+
+
 			"src/erslib/flux/connection/connection_pool.cpp"
 			"src/erslib/flux/connection/database.cpp"
 			"src/erslib/flux/connection/options.cpp"
+
 
 			"src/erslib/flux/migration/canonical.cpp"
 			"src/erslib/flux/migration/declaration_diff.cpp"

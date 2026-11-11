@@ -9,6 +9,8 @@
 
 // ers
 #include <erslib/core/type/result.hpp>
+#include <erslib/luaschema/impl/parser.hpp>
+#include <erslib/luaschema/impl/verifier.hpp>
 
 
 namespace ers::impl::luaschema {
@@ -57,11 +59,11 @@ namespace ers::impl::luaschema {
 
     template<typename T>
     concept HasVerifier = requires(verify_context ctx, sol::object obj) {
-        { verifier_t<T> {}.exec(ctx, obj) } -> std::convertible_to<Status>;
+        { ers::luaschema::verifier_t<T> {}.exec(ctx, obj) } -> std::convertible_to<Status>;
     };
 
     template<typename T>
     concept HasParser = requires(verify_context ctx, sol::object obj, void* dst) {
-        { parser_t<T> {}.exec(ctx, obj, dst) } -> std::convertible_to<Status>;
+        { ers::luaschema::parser_t<T> {}.exec(ctx, obj, dst) } -> std::convertible_to<Status>;
     };
 }

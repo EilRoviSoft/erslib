@@ -28,7 +28,7 @@ namespace ers::impl::luaschema {
         Status exec(verify_context& ctx, sol::table table, std::string_view field) const override {
             sol::object obj = table[field];
             Status result = ok;
-            ((result = verifier_t<Ts> {}.exec(ctx, obj)) && ...);
+            ((result = ers::luaschema::verifier_t<Ts> {}.exec(ctx, obj)) && ...);
             return result;
         }
     };

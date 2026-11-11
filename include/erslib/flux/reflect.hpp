@@ -78,6 +78,9 @@ namespace flux::reflect {
 
 namespace flux::reflect {
     using impl::reflect::EActionOnDelete;
+    using impl::reflect::EIndexMethod;
+
+    using impl::reflect::raw_sql;
 
     using impl::reflect::constraint_context;
     using impl::reflect::entry_defaults;
@@ -89,10 +92,12 @@ namespace flux::reflect {
     using impl::reflect::NoSchema;
     using impl::reflect::Table;
     using impl::reflect::Query;
+    using impl::reflect::Extension;
 
     using impl::reflect::Pk;
     using impl::reflect::Unique;
     using impl::reflect::Fk;
+    using impl::reflect::Index;
 
     using impl::reflect::Default;
     using impl::reflect::Identity;

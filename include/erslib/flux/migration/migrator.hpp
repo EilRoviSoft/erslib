@@ -89,6 +89,7 @@ namespace flux::impl {
         ers::Status _apply_repeatable();
 
         ers::Status _bootstrap();
+        ers::Status _ensure_extensions();
         ers::Status _reconcile_declarations();
 
         void _record(const migration_t& migration, EMigrationEvent outcome);

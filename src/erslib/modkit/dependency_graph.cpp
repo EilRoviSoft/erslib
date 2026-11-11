@@ -144,7 +144,7 @@ std::vector<ers::impl::modkit::stage_order_info_t> ers::impl::modkit::resolve_st
 
     for (const auto& mod : mods) {
         for (const auto& stage : mod.content().stages | std::views::keys) {
-            auto [phase, index] = util::extract_stage_info(stage);
+            auto [phase, index] = extract_stage_info(stage);
             indexes_per_mod[mod.name()][phase].emplace(index);
             ++stages_count;
         }

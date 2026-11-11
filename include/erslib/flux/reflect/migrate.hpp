@@ -18,10 +18,11 @@ namespace flux::impl::reflect {
         constexpr std::string_view text = canonical_declaration<T>();
 
         return {
-            .name = qualified_name<T>,
-            .ddl  = create_table<T>(),
-            .text = text,
-            .hash = ers::Fnv1AHash<std::string_view> {}(text),
+            .name    = qualified_name<T>,
+            .ddl     = create_table<T>(),
+            .text    = text,
+            .indexes = index_statements<T>,
+            .hash    = ers::Fnv1AHash<std::string_view> {}(text),
         };
     }
 
@@ -47,6 +48,7 @@ namespace flux::impl::reflect {
         .schema        = S::name,
         .create_schema = create_schema<S>(),
         .tables        = table_declarations<S>,
+        .extensions    = extension_statements<S>,
     };
 
 

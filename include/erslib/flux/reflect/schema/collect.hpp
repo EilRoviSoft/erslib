@@ -1,6 +1,7 @@
 #pragma once
 
 // std
+#include <array>
 #include <meta>
 #include <span>
 #include <string>
@@ -10,9 +11,9 @@
 
 // ers
 #include <erslib/flux/reflect/declaration.hpp>
+#include <erslib/flux/reflect/types.hpp>
 #include <erslib/flux/reflect/schema/entity.hpp>
 #include <erslib/flux/reflect/schema/members.hpp>
-#include <erslib/flux/reflect/types.hpp>
 
 
 // Implementation --------------------------------------------------------------
@@ -207,4 +208,40 @@ namespace flux::impl::reflect {
 
     template<SchemaType S>
     constexpr std::span<const std::meta::info> entities_of = schema_plan<S>::value.entities;
+}
+
+namespace flux::impl::reflect {
+    template<SchemaType S>
+    constexpr auto extension_members = std::define_static_array(
+        std::meta::nonstatic_data_members_of(^^S, std::meta::access_context::current()));
+
+    template<SchemaType S>
+    consteval size_t extension_count() {
+        size_t out = 0;
+
+        template for (constexpr auto it : extension_members<S>) {
+            if constexpr (EntryOf<entry_type<it>, kinds::EExtension>)
+                ++out;
+        }
+
+        return out;
+    }
+
+    template<SchemaType S>
+    consteval auto build_extension_statements() {
+        std::array<std::string_view, extension_count<S>()> out {};
+        size_t i = 0;
+
+        template for (constexpr auto it : extension_members<S>) {
+            using entry = entry_type<it>;
+
+            if constexpr (EntryOf<entry, kinds::EExtension>)
+                out[i++] = std::define_static_string("CREATE EXTENSION IF NOT EXISTS " + std::string(entry::name));
+        }
+
+        return out;
+    }
+
+    template<SchemaType S>
+    constexpr auto extension_statements = build_extension_statements<S>();
 }

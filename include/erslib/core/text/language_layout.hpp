@@ -3,9 +3,12 @@
 // std
 #include <string>
 
+// export
+#include <erslib/export.hpp>
+
 
 namespace ers::impl::text {
-    std::string ru_to_en(std::string_view text);
+    ERSLIB_EXPORT std::string ru_to_en(std::string_view text);
 }
 
 

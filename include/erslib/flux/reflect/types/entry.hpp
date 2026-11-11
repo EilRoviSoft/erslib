@@ -11,6 +11,7 @@ namespace flux::impl::reflect::kinds {
     struct ESchema {};
     struct ETable {};
     struct EQuery {};
+    struct EExtension {};
 
     struct EPk {};
     struct EUnique {};
@@ -22,6 +23,7 @@ namespace flux::impl::reflect::kinds {
     struct EReadOnly {};
     struct ESoftDelete {};
     struct EColumn {};
+    struct EIndex {};
 }
 
 namespace flux::impl::reflect {

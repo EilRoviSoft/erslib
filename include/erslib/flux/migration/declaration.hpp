@@ -1,6 +1,7 @@
 #pragma once
 
 // std
+#include <span>
 #include <string>
 #include <string_view>
 
@@ -15,6 +16,7 @@ namespace flux::impl {
         std::string_view name;
         std::string_view ddl;
         std::string_view text;
+        std::span<const std::string_view> indexes;
         u64 hash = 0;
     };
 
