@@ -589,6 +589,7 @@ namespace utl::impl {
 namespace utl::impl {
     struct inja_traits : ordered_traits {
         static constexpr bool assign_by_value = true;
+        static constexpr bool implicit_strings = true;
 
 
         template<typename Node>

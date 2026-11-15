@@ -81,6 +81,7 @@ namespace utl::impl {
 
     struct default_traits {
         static constexpr bool assign_by_value = false;
+        static constexpr bool implicit_strings = false;
 
 
         template<typename Node>
@@ -117,6 +118,7 @@ namespace utl::impl {
         && std::signed_integral<typename Traits::integral_type>
         && std::floating_point<typename Traits::floating_type>
         && std::same_as<std::remove_cv_t<decltype(Traits::assign_by_value)>, bool>
+        && std::same_as<std::remove_cv_t<decltype(Traits::implicit_strings)>, bool>
         && requires(std::string utf8, const typename Traits::string_type& value) {
             { string_adaptor<typename Traits::string_type>::from_utf8(std::move(utf8)) } -> std::same_as<typename Traits::string_type>;
             { string_adaptor<typename Traits::string_type>::to_utf8(value) } -> std::convertible_to<std::string_view>;
@@ -405,23 +407,31 @@ namespace utl::impl {
             _data(std::in_place_type<bool_type>, value) {
         }
 
+        // A pointer must not reach the bool constructor.
+        template<class P>
+        TNode(P*) = delete;
+
         template<class T>
             requires json_detail::ConvertibleSource<T, TNode>
+        explicit(!Traits::implicit_strings && json_detail::classify<T, TNode>() == json_detail::ESourceKind::String)
         TNode(T&& value);
 
-        TNode(const char* value) :
+        explicit(!Traits::implicit_strings) TNode(const char* value) :
+            TNode(std::string_view(value)) {
+        }
+        explicit(!Traits::implicit_strings) TNode(char* value) :
             TNode(std::string_view(value)) {
         }
 
-        TNode(std::string_view value) :
+        explicit(!Traits::implicit_strings) TNode(std::string_view value) :
             _data(std::in_place_type<string_type>, string_adaptor<string_type>::from_utf8(std::string(value))) {
         }
 
-        TNode(const string_type& value)
+        explicit(!Traits::implicit_strings) TNode(const string_type& value)
             requires (!std::same_as<string_type, std::string_view>) :
             _data(std::in_place_type<string_type>, value) {
         }
-        TNode(string_type&& value) :
+        explicit(!Traits::implicit_strings) TNode(string_type&& value) :
             _data(std::in_place_type<string_type>, std::move(value)) {
         }
 
@@ -461,6 +471,14 @@ namespace utl::impl {
             requires (!Traits::assign_by_value) {
             auto data = std::move(other._data);
             _data.swap(data);
+            return *this;
+        }
+
+
+        template<class S>
+            requires (StringLike<std::remove_cvref_t<S>> && !json_detail::is_node_v<std::remove_cvref_t<S>>)
+        TNode& operator=(S&& value) {
+            _data.template emplace<string_type>(json_detail::to_string_type<string_type>(std::forward<S>(value)));
             return *this;
         }
 

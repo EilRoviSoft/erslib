@@ -277,7 +277,7 @@ ERS_TEST_CASE("push_back", "[contrib]") {
     utl::Json json;
 
     json["items"].push_back(1);
-    json["items"].push_back("x");
+    json["items"].push_back(utl::Json("x"));
 
     REQUIRE(json["items"].is_array());
     CHECK(json["items"].as_array().size() == 2);
@@ -368,9 +368,47 @@ ERS_TEST_CASE("unsupported types", "[contrib][compile_time]") {
     static_assert(std::constructible_from<utl::Json, std::span<const utl::Json>>);
 }
 
+struct implicit_string_traits : utl::default_traits {
+    static constexpr bool implicit_strings = true;
+};
+
+ERS_TEST_CASE("implicit strings by traits", "[contrib][compile_time]") {
+    using Node = utl::TNode<implicit_string_traits>;
+
+    static_assert(std::is_convertible_v<const char*, Node>);
+    static_assert(std::is_convertible_v<std::string_view, Node>);
+    static_assert(std::is_convertible_v<std::string, Node>);
+    static_assert(!std::is_convertible_v<const int*, Node>);
+}
+
+ERS_TEST_CASE("strings only explicitly", "[contrib][compile_time]") {
+    static_assert(std::constructible_from<utl::Json, const char*>);
+    static_assert(std::constructible_from<utl::Json, char*>);
+    static_assert(std::constructible_from<utl::Json, std::string_view>);
+    static_assert(std::constructible_from<utl::Json, std::string>);
+    static_assert(std::constructible_from<utl::Json, const char (&)[2]>);
+
+    static_assert(!std::is_convertible_v<const char*, utl::Json>);
+    static_assert(!std::is_convertible_v<char*, utl::Json>);
+    static_assert(!std::is_convertible_v<std::string_view, utl::Json>);
+    static_assert(!std::is_convertible_v<std::string, utl::Json>);
+    static_assert(!std::is_convertible_v<const char (&)[2], utl::Json>);
+
+    static_assert(std::is_assignable_v<utl::Json&, const char*>);
+    static_assert(std::is_assignable_v<utl::Json&, std::string_view>);
+    static_assert(std::is_assignable_v<utl::Json&, std::string>);
+
+    static_assert(!std::constructible_from<utl::Json, const int*>);
+    static_assert(!std::is_convertible_v<const int*, utl::Json>);
+
+    static_assert(std::is_convertible_v<bool, utl::Json>);
+    static_assert(std::is_convertible_v<int, utl::Json>);
+    static_assert(std::is_convertible_v<std::vector<std::string>, utl::Json>);
+}
+
 ERS_TEST_CASE("lvalues", "[contrib]") {
     std::string string = "x";
-    utl::Json from_string = string;
+    utl::Json from_string(string);
     CHECK(from_string.as_string() == "x");
     CHECK(string == "x");
 
