@@ -1,8 +1,11 @@
 #pragma once
 
 // std
+#include <concepts>
 #include <format>
 #include <string_view>
+#include <type_traits>
+#include <utility>
 
 // crow
 #include <crow/common.h>
@@ -35,6 +38,25 @@ namespace ers::impl::web {
 }
 
 
+// Details ---------------------------------------------------------------------
+
+namespace ers::impl::web {
+    // a string is a message (or a location), never a JSON body
+    template<typename Body>
+    concept ResponseBody = std::constructible_from<utl::Json, Body>
+        && !utl::impl::StringLike<std::remove_cvref_t<Body>>;
+
+
+    template<ResponseBody Body>
+    decltype(auto) as_json(Body&& body) {
+        if constexpr (std::same_as<std::remove_cvref_t<Body>, utl::Json>)
+            return static_cast<const utl::Json&>(body);
+        else
+            return utl::Json(std::forward<Body>(body));
+    }
+}
+
+
 // Specialization --------------------------------------------------------------
 
 namespace ers::impl::web {
@@ -58,9 +80,13 @@ namespace ers::impl::web {
             return make_response(Code, body);
         }
 
-        crow::response operator()(const utl::Json& body) const
-            requires (is_success && !has_no_body) {
-            return make_response(Code, body);
+
+        // 2xx, 4xx and 5xx with a body of the caller: an utl::Json or anything it is made of
+
+        template<ResponseBody Body>
+        crow::response operator()(Body&& body) const
+            requires ((is_success || is_failure) && !has_no_body) {
+            return make_response(Code, as_json(std::forward<Body>(body)));
         }
 
 

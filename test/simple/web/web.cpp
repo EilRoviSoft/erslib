@@ -3,8 +3,10 @@
 
 // std
 #include <chrono>
+#include <concepts>
 #include <string>
 #include <utility>
+#include <vector>
 
 // ers
 #include <erslib/web.hpp>
@@ -55,6 +57,52 @@ ERS_TEST_CASE("responses", "[web]") {
     REQUIRE(utl::from_string(res.body)["error"].as_string() == "bad");
 
     REQUIRE(utl::from_string(ers::web::ok().body)["ok"].as_bool());
+}
+
+ERS_TEST_CASE("responses with a body", "[web]") {
+    utl::Json body;
+    body["id"] = 7;
+
+    const auto& view = body;
+
+    CHECK(utl::from_string(ers::web::ok(view).body)["id"].as_integral() == 7);
+    CHECK(utl::from_string(ers::web::created(utl::Json(body)).body)["id"].as_integral() == 7);
+    CHECK(ers::web::created(body).code == 201);
+
+    auto list = ers::web::ok(std::vector { 1, 2 });
+    CHECK(utl::from_string(list.body).as_array().size() == 2);
+
+
+    utl::Json failure;
+    failure["error"] = "taken";
+    failure["field"] = "email";
+
+    auto conflict = ers::web::conflict(failure);
+    REQUIRE(conflict.code == 409);
+    CHECK(conflict.get_header_value("Content-Type") == "application/json");
+    CHECK(utl::from_string(conflict.body)["field"].as_string() == "email");
+
+    CHECK(utl::from_string(ers::web::too_many_requests(std::move(failure)).body)["error"].as_string() == "taken");
+
+
+    CHECK(utl::from_string(ers::web::bad_request("plain").body)["error"].as_string() == "plain");
+    CHECK(utl::from_string(ers::web::bad_request("plain"s).body)["error"].as_string() == "plain");
+    CHECK(utl::from_string(ers::web::not_found("no #{}", 5).body)["error"].as_string() == "no #5");
+    CHECK(ers::web::no_content().code == 204);
+    CHECK(ers::web::found("/next").get_header_value("Location") == "/next");
+}
+
+ERS_TEST_CASE("response arguments", "[web][compile_time]") {
+    static_assert(std::invocable<decltype(ers::web::ok), const utl::Json&>);
+    static_assert(std::invocable<decltype(ers::web::ok), utl::Json&&>);
+    static_assert(std::invocable<decltype(ers::web::conflict), const utl::Json&>);
+    static_assert(std::invocable<decltype(ers::web::conflict), utl::Json&&>);
+    static_assert(std::invocable<decltype(ers::web::conflict), const char*>);
+
+    static_assert(!std::invocable<decltype(ers::web::ok), const char*>);
+    static_assert(!std::invocable<decltype(ers::web::ok), std::string>);
+    static_assert(!std::invocable<decltype(ers::web::no_content), const utl::Json&>);
+    static_assert(!std::invocable<decltype(ers::web::found), const utl::Json&>);
 }
 
 ERS_TEST_CASE("request helpers", "[web]") {
