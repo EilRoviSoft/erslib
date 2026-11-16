@@ -258,6 +258,10 @@ ers::Result<ers::date_t> ers::impl::date_from_iso8601(std::string_view text) {
 
     read_digits(s, year_digits, year);
 
+    if (year == 0)
+        return make_error("Malformed date '{}': there is no year zero.", text);
+
+
     bool ok = read_char(s, '-')
         && read_digits(s, 2, month)
         && read_char(s, '-')
@@ -267,7 +271,7 @@ ers::Result<ers::date_t> ers::impl::date_from_iso8601(std::string_view text) {
         return make_error("Malformed date '{}'.", text);
 
     if (read_char(s, ' ')) {
-        if (s != "BC" || year == 0)
+        if (s != "BC")
             return make_error("Malformed date '{}'.", text);
 
         s = {};
