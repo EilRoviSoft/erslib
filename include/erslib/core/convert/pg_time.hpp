@@ -25,10 +25,14 @@
 
 namespace ers::impl {
     ERSLIB_EXPORT timestamp_t floor_to_pg_precision(timestamp_t what);
+    ERSLIB_EXPORT timestamp_t pg_now();
+
+
     ERSLIB_EXPORT std::string timestamp_to_iso8601(timestamp_t what);
     ERSLIB_EXPORT Result<timestamp_t> timestamp_from_iso8601(std::string_view text);
 
-    ERSLIB_EXPORT timestamp_t pg_now();
+    ERSLIB_EXPORT std::string date_to_iso8601(date_t what);
+    ERSLIB_EXPORT Result<date_t> date_from_iso8601(std::string_view text);
 }
 
 
@@ -36,8 +40,11 @@ namespace ers::impl {
 
 namespace ers {
     using impl::floor_to_pg_precision;
+    using impl::pg_now;
+
     using impl::timestamp_from_iso8601;
     using impl::timestamp_to_iso8601;
 
-    using impl::pg_now;
+    using impl::date_from_iso8601;
+    using impl::date_to_iso8601;
 }

@@ -107,13 +107,20 @@ ers::timestamp_t ers::impl::floor_to_pg_precision(timestamp_t what) {
     return std::chrono::floor<duration_t>(std::chrono::floor<pg_precision_t>(what));
 }
 
+ers::timestamp_t ers::impl::pg_now() {
+    return floor_to_pg_precision(clock_t::now());
+}
+
+
+// timestamp_t
+
 std::string ers::impl::timestamp_to_iso8601(timestamp_t what) {
     char buffer[pg_timestamp_max_size];
     char* last = write_timestamp(buffer, buffer + sizeof buffer, what);
     return std::string(buffer, last);
 }
 
-ers::Result<std::chrono::time_point<std::chrono::system_clock>> ers::impl::timestamp_from_iso8601(std::string_view text) {
+ers::Result<ers::timestamp_t> ers::impl::timestamp_from_iso8601(std::string_view text) {
     if (text == "infinity")
         return timestamp_t::max();
 
@@ -220,6 +227,65 @@ ers::Result<std::chrono::time_point<std::chrono::system_clock>> ers::impl::times
     return timestamp_t(std::chrono::floor<duration_t>(utc.time_since_epoch()));
 }
 
-ers::timestamp_t ers::impl::pg_now() {
-    return floor_to_pg_precision(clock_t::now());
+
+// date_t
+
+std::string ers::impl::date_to_iso8601(date_t what) {
+    std::chrono::year_month_day ymd(what);
+    int year = static_cast<int>(ymd.year());
+    bool is_bc = year <= 0;
+
+    if (is_bc)
+        year = 1 - year;
+
+    return std::format("{:04}-{:02}-{:02}{}",
+        year,
+        static_cast<unsigned>(ymd.month()),
+        static_cast<unsigned>(ymd.day()),
+        is_bc ? " BC" : ""
+    );
+}
+
+ers::Result<ers::date_t> ers::impl::date_from_iso8601(std::string_view text) {
+    std::string_view s = text;
+    int year = 0, month = 0, day = 0;
+
+    size_t year_digits = count_digits(s);
+
+    if (year_digits < 4 || year_digits > 5)
+        return make_error("Malformed date '{}': bad year.", text);
+
+
+    read_digits(s, year_digits, year);
+
+    bool ok = read_char(s, '-')
+        && read_digits(s, 2, month)
+        && read_char(s, '-')
+        && read_digits(s, 2, day);
+
+    if (!ok)
+        return make_error("Malformed date '{}'.", text);
+
+    if (read_char(s, ' ')) {
+        if (s != "BC" || year == 0)
+            return make_error("Malformed date '{}'.", text);
+
+        s = {};
+        year = 1 - year;
+    }
+
+    if (!s.empty())
+        return make_error("Malformed date '{}': trailing characters.", text);
+
+
+    std::chrono::year_month_day ymd {
+        std::chrono::year(year),
+        std::chrono::month(month),
+        std::chrono::day(day),
+    };
+
+    if (!ymd.ok())
+        return make_error("Malformed date '{}': field out of range", text);
+
+    return date_t(ymd);
 }

@@ -4,6 +4,7 @@
 
 #include <erslib/flux/traits/basic.hpp>
 #include <erslib/flux/traits/bool.hpp>
+#include <erslib/flux/traits/date.hpp>
 #include <erslib/flux/traits/maybe.hpp>
 #include <erslib/flux/traits/range.hpp>
 #include <erslib/flux/traits/scalar.hpp>

@@ -6,8 +6,10 @@
 
 namespace ers::impl {
     using clock_t = std::chrono::system_clock;
+
     using timestamp_t = std::chrono::system_clock::time_point;
     using duration_t = std::chrono::system_clock::duration;
+    using date_t = std::chrono::sys_days;
 
     using ms_t = std::chrono::milliseconds;
 }
@@ -17,8 +19,10 @@ namespace ers::impl {
 
 namespace ers {
     using impl::clock_t;
+
     using impl::timestamp_t;
     using impl::duration_t;
+    using impl::date_t;
 
     using impl::ms_t;
 }
