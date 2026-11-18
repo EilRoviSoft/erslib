@@ -20,8 +20,8 @@ namespace flux {
 
     template<typename T>
     concept JsonbColumn = std::is_class_v<T>
-        && !std::meta::annotations_of_with_type(^^T, ^^jsonb_t).empty()
-        && utl::JsonConvertible<T>;
+        && utl::JsonConvertible<T>
+        && (!std::meta::annotations_of_with_type(^^T, ^^jsonb_t).empty() || utl::JsonVariant<T>);
 }
 
 template<flux::JsonbColumn T>

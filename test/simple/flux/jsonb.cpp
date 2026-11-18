@@ -44,6 +44,23 @@ namespace {
         ers::maybe<std::vector<std::string>> tags;
     };
 
+
+    struct [[=utl::json_object, =utl::json_tag("image")]] image_meta_t {
+        ers::maybe<std::string> origin;
+    };
+    struct [[=utl::json_object, =utl::json_tag("video")]] video_meta_t {
+        u32 poster_id = 0;
+    };
+
+    using variant_t = utl::json_variant<"kind", image_meta_t, video_meta_t>;
+
+    struct VariantDoc {
+        std::uint32_t id = flux::undefined_id;
+        variant_t metadata;
+        ers::maybe<variant_t> extra;
+    };
+
+
     struct [[=utl::json_object]] json_only_t {
         i64 a = 0;
     };
@@ -98,6 +115,12 @@ template<>
 struct flux::reflect::Declaration<Doc> : Table<"docs"> {
     Pk<"id"> docs_pk;
     Default<"metadata", ers::fixed_string("{}")> docs_metadata_default;
+};
+
+template<>
+struct flux::reflect::Declaration<VariantDoc> : Table<"variant_docs"> {
+    Pk<"id"> variant_docs_pk;
+    Default<"metadata", ers::fixed_string("{\"kind\":\"image\"}")> variant_docs_metadata_default;
 };
 
 
@@ -264,6 +287,66 @@ ERS_TEST_CASE("jsonb read errors", "[flux]") {
     CHECK_THROWS_WITH(read_text(R"({"focus":{"x":9}})"), Catch::Matchers::ContainsSubstring("'y'"));
 
     CHECK_THROWS_WITH(read_text(R"({"focus":{"x":"a"}})"), Catch::Matchers::ContainsSubstring("focus"));
+}
+
+
+// Variants --------------------------------------------------------------------
+
+ERS_TEST_CASE("jsonb variant column", "[flux][compile_time]") {
+    using flux::impl::sql_type;
+
+    static_assert(flux::JsonbColumn<variant_t>);
+    static_assert(!flux::JsonbColumn<std::variant<image_meta_t, video_meta_t>>);
+    static_assert(!flux::JsonbColumn<ers::maybe<variant_t>>);
+
+    static_assert(sql_type<variant_t>::name == "JSONB");
+    static_assert(!sql_type<variant_t>::nullable);
+    static_assert(sql_type<ers::maybe<variant_t>>::nullable);
+}
+
+ERS_TEST_CASE("jsonb variant create_table", "[flux]") {
+    constexpr std::string_view docs = flux::ddl::create_table<VariantDoc>();
+
+    CHECK(contains(docs, "metadata JSONB NOT NULL DEFAULT '{\"kind\":\"image\"}'"));
+    CHECK(contains(docs, "extra JSONB"));
+    CHECK_FALSE(contains(docs, "extra JSONB NOT NULL"));
+}
+
+ERS_TEST_CASE("jsonb variant to_text and read", "[flux]") {
+    using flux::impl::sql_value;
+
+    variant_t video = video_meta_t { .poster_id = 7 };
+
+    const auto json = utl::from_string(sql_value<variant_t>::to_text(video));
+
+    CHECK(json["kind"].as_string() == "video");
+    CHECK(json["poster_id"].as_integral() == 7);
+
+    const auto back = sql_value<variant_t>::read(fake_field { sql_value<variant_t>::to_text(video) });
+
+    REQUIRE(std::holds_alternative<video_meta_t>(back));
+    CHECK(std::get<video_meta_t>(back).poster_id == 7u);
+
+    const auto image = sql_value<variant_t>::read(fake_field { R"({"kind":"image","origin":"a.png"})" });
+
+    REQUIRE(std::holds_alternative<image_meta_t>(image));
+    CHECK(*std::get<image_meta_t>(image).origin == "a.png");
+}
+
+ERS_TEST_CASE("jsonb variant nullable and errors", "[flux]") {
+    using flux::impl::sql_value;
+
+    CHECK_FALSE(sql_value<ers::maybe<variant_t>>::read(fake_field{ ers::none }));
+
+    CHECK_THROWS_AS(sql_value<variant_t>::read(fake_field{ "{}" }), ers::conversion_error);
+    CHECK_THROWS_AS(sql_value<variant_t>::read(fake_field{ R"({"kind":"x"})" }), ers::conversion_error);
+}
+
+ERS_TEST_CASE("jsonb variant in queries", "[flux]") {
+    variant_t image;
+
+    CHECK(sql_of(insert_into("variant_docs") | set("metadata", image, "extra", ers::maybe<variant_t> {}))
+        == "INSERT INTO variant_docs (metadata, extra)\nVALUES ($1, $2)");
 }
 
 #endif

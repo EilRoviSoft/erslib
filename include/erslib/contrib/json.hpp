@@ -74,4 +74,9 @@ namespace utl {
     using impl::json_object;
     using impl::json_skip;
     using json_key = impl::json_key_t;
+    using json_tag = impl::json_tag_t;
+
+
+    using impl::json_variant;
+    using impl::JsonVariant;
 }
